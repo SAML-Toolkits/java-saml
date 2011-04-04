@@ -13,7 +13,7 @@ public class AccountSettings {
 	public String getIdp_sso_target_url() {
 		return idp_sso_target_url;
 	}
-	public void setIdp_sso_target_url(String idp_sso_target_url) {
+	public void setIdpSsoTargetUrl(String idp_sso_target_url) {
 		this.idp_sso_target_url = idp_sso_target_url;
 	}
 }

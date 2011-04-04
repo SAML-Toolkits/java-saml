@@ -19,14 +19,16 @@
     "qdt/19BZrpm7zZI6BWzQKimTLS0gYpgkqbreoKK+AdbbwtyXAgMBAAEwAwYBAAMB"+
     "AA==";
 
+  // user account specific settings. Import the certificate here
   AccountSettings accountSettings = new AccountSettings();
   accountSettings.setCertificate(certificateS);
 
   Response samlResponse = new Response(accountSettings);
   samlResponse.loadXmlFromBase64(request.getParameter("SAMLResponse"));
 
-  if(samlResponse.isValid()){
+  if (samlResponse.isValid()) {
 
+    // the signature of the SAML Response is valid. The source is trusted
   	java.io.PrintWriter writer = response.getWriter();
   	writer.write("OK!");
   	String nameId = samlResponse.getNameId();
@@ -35,6 +37,7 @@
 	
   } else {
 
+    // the signature of the SAML Response is not valid
   	java.io.PrintWriter writer = response.getWriter();
   	writer.write("Failed");
   	writer.flush();
