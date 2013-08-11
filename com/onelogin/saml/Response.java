@@ -50,24 +50,24 @@ public class Response {
 		loadXml(decodedS);	
 	}
 	
-	public boolean isValid() throws Exception {
-		NodeList nodes = xmlDoc.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
-								
-		if(nodes==null || nodes.getLength()==0){
-            throw new Exception("Can't find signature in document.");
+        public boolean isValid() throws Exception {
+            NodeList nodes = xmlDoc.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
+
+            if (nodes == null || nodes.getLength() == 0) {
+                throw new Exception("Can't find signature in document.");
+            }
+
+            if (setIdAttributeExists()) {
+                tagIdAttributes(xmlDoc);
+            }
+
+            X509Certificate cert = certificate.getX509Cert();
+            DOMValidateContext ctx = new DOMValidateContext(cert.getPublicKey(), nodes.item(0));
+            XMLSignatureFactory sigF = XMLSignatureFactory.getInstance("DOM");
+            XMLSignature xmlSignature = sigF.unmarshalXMLSignature(ctx);
+
+            return xmlSignature.validate(ctx);
         }
-
-        if (setIdAttributeExists()) {
-            tagIdAttributes(xmlDoc);
-        }
-
-        X509Certificate cert = certificate.getX509Cert();
-		DOMValidateContext ctx = new DOMValidateContext(cert.getPublicKey() , nodes.item(0));				
-        XMLSignatureFactory sigF = XMLSignatureFactory.getInstance("DOM");
-        XMLSignature xmlSignature = sigF.unmarshalXMLSignature(ctx);
-
-        return xmlSignature.validate(ctx);
-    }
 	
 	public String getNameId() throws Exception {
 		NodeList nodes = xmlDoc.getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:assertion", "NameID");		
