@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
+import javax.xml.XMLConstants;
 import javax.xml.crypto.dsig.XMLSignature;
 import javax.xml.crypto.dsig.XMLSignatureFactory;
 import javax.xml.crypto.dsig.dom.DOMValidateContext;
@@ -37,6 +38,7 @@ public class Response {
 	public void loadXml(String xml) throws ParserConfigurationException, SAXException, IOException {
 		DocumentBuilderFactory fty = DocumentBuilderFactory.newInstance();
 		fty.setNamespaceAware(true);
+		fty.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 		DocumentBuilder builder = fty.newDocumentBuilder();
 		ByteArrayInputStream bais = new ByteArrayInputStream(xml.getBytes());
 		xmlDoc = builder.parse(bais);		
