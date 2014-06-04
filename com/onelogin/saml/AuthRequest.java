@@ -25,7 +25,7 @@ public class AuthRequest {
 	public AuthRequest(AppSettings appSettings, AccountSettings accountSettings){		
 		this.appSettings = appSettings;
 		id="_"+UUID.randomUUID().toString();		
-		SimpleDateFormat simpleDf = new SimpleDateFormat("yyyy-MM-dd'T'H:mm:ss");
+		SimpleDateFormat simpleDf = new SimpleDateFormat("yyyy-MM-dd'T'H:mm:ss'Z'");
 		issueInstant = simpleDf.format(new Date());		
 	}
 	
