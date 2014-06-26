@@ -53,77 +53,76 @@ public class Response {
 		loadXml(decodedS);
 	}
 
-        public boolean isValid() throws Exception {
-            NodeList nodes = xmlDoc.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
+	public boolean isValid() throws Exception {
+		NodeList nodes = xmlDoc.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
 
-            if (nodes == null || nodes.getLength() == 0) {
-                throw new Exception("Can't find signature in document.");
-            }
+		if (nodes == null || nodes.getLength() == 0) {
+			throw new Exception("Can't find signature in document.");
+		}
 
-            if (setIdAttributeExists()) {
-                tagIdAttributes(xmlDoc);
-            }
+		if (setIdAttributeExists()) {
+			tagIdAttributes(xmlDoc);
+		}
 
-            X509Certificate cert = certificate.getX509Cert();
-            DOMValidateContext ctx = new DOMValidateContext(cert.getPublicKey(), nodes.item(0));
-            XMLSignatureFactory sigF = XMLSignatureFactory.getInstance("DOM");
-            XMLSignature xmlSignature = sigF.unmarshalXMLSignature(ctx);
+		X509Certificate cert = certificate.getX509Cert();
+		DOMValidateContext ctx = new DOMValidateContext(cert.getPublicKey(), nodes.item(0));
+		XMLSignatureFactory sigF = XMLSignatureFactory.getInstance("DOM");
+		XMLSignature xmlSignature = sigF.unmarshalXMLSignature(ctx);
 
-            return xmlSignature.validate(ctx);
-        }
+		return xmlSignature.validate(ctx);
+	}
 
 	public String getNameId() throws Exception {
-            NodeList nodes = xmlDoc.getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:assertion", "NameID");
+		NodeList nodes = xmlDoc.getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:assertion", "NameID");
 
-            if(nodes.getLength()==0){
-		throw new Exception("No name id found in document");
-            }
+		if(nodes.getLength()==0){
+			throw new Exception("No name id found in document");
+		}
 
-            return nodes.item(0).getTextContent();
+		return nodes.item(0).getTextContent();
 	}   
         
-        public String getAttribute(String name) {
-        HashMap attributes = getAttributes();
-        if (!attributes.isEmpty()) {
-            return attributes.get(name).toString();
-            }
-        return null;
-        }
+	public String getAttribute(String name) {
+		HashMap attributes = getAttributes();
+		if (!attributes.isEmpty()) {
+			return attributes.get(name).toString();
+		}
+		return null;
+	}
                         
-        public HashMap getAttributes() {
-            HashMap<String,ArrayList> attributes = new HashMap<>();                   
-            NodeList nodes = xmlDoc.getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:assertion", "Attribute");
+	public HashMap getAttributes() {
+		HashMap<String,ArrayList> attributes = new HashMap<>();                   
+		NodeList nodes = xmlDoc.getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:assertion", "Attribute");
 
-            if(nodes.getLength()!=0){
-                for (int i = 0; i < nodes.getLength(); i++) {
-                NamedNodeMap attrName = nodes.item(i).getAttributes();
-                String attName = attrName.getNamedItem("Name").getNodeValue();
-                NodeList children = nodes.item(i).getChildNodes();
-                
-                ArrayList<String> attrValues = new ArrayList<String>();
-                for (int j = 0; j < children.getLength(); j++) {
-                    attrValues.add(children.item(j).getTextContent());
-                      }
-                attributes.put(attName, attrValues);
-                }
-            } else
-                return null;
-        return attributes;
+		if(nodes.getLength()!=0){
+			for (int i = 0; i < nodes.getLength(); i++) {
+				NamedNodeMap attrName = nodes.item(i).getAttributes();
+				String attName = attrName.getNamedItem("Name").getNodeValue();
+				NodeList children = nodes.item(i).getChildNodes();
+
+				ArrayList<String> attrValues = new ArrayList<String>();
+				for (int j = 0; j < children.getLength(); j++) {
+					attrValues.add(children.item(j).getTextContent());
+				}
+				attributes.put(attName, attrValues);
+			}
+		} else {
+		    return null;
+		}
+		return attributes;
 	} 
 
-        private boolean setIdAttributeExists() {
-            for (Method method : Element.class.getDeclaredMethods()) {
-                if (method.getName().equals("setIdAttribute")) {
-                    return true;
-                }
-            }
-            return false;
-        }
+	private boolean setIdAttributeExists() {
+		for (Method method : Element.class.getDeclaredMethods()) {
+			if (method.getName().equals("setIdAttribute")) {
+				return true;
+			}
+		}
+		return false;
+	}
 
-    private void tagIdAttributes(Document xmlDoc) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
-    
-
+	private void tagIdAttributes(Document xmlDoc) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
 }
+
