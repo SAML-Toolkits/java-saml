@@ -8,8 +8,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 import javax.xml.XMLConstants;
 import javax.xml.crypto.dsig.XMLSignature;
 import javax.xml.crypto.dsig.XMLSignatureFactory;
@@ -28,6 +26,8 @@ import org.xml.sax.SAXException;
 public class Response {
 
 	private Document xmlDoc;
+	private Integer Assertions;
+	private Element rootElement;
 	private final AccountSettings accountSettings;
 	private final Certificate certificate;
 
@@ -40,6 +40,7 @@ public class Response {
 	public void loadXml(String xml) throws ParserConfigurationException, SAXException, IOException {
 		DocumentBuilderFactory fty = DocumentBuilderFactory.newInstance();
 		fty.setNamespaceAware(true);
+		// XMLConstants with FEATURE_SECURE_PROCESSING prevents external document access. (XXE/XEE Possible Attacks).
 		fty.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 		DocumentBuilder builder = fty.newDocumentBuilder();
 		ByteArrayInputStream bais = new ByteArrayInputStream(xml.getBytes());
@@ -48,16 +49,36 @@ public class Response {
 
 	public void loadXmlFromBase64(String response) throws ParserConfigurationException, SAXException, IOException {
 		Base64 base64 = new Base64();
-		byte [] decodedB = base64.decode(response);
+		byte[] decodedB = base64.decode(response);
 		String decodedS = new String(decodedB);
 		loadXml(decodedS);
 	}
 
+	// isValid() function should be called to make basic security checks to responses.
 	public boolean isValid() throws Exception {
+		// Security Checks
+		rootElement = xmlDoc.getDocumentElement();
+		Assertions = xmlDoc.getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:assertion", "Assertion").getLength();
+		xmlDoc.getDocumentElement().normalize();
+
+		if (Assertions > 1) {
+			throw new Exception("SAML Response must contain 1 Assertion.");
+		}
+
+		String attName = rootElement.getAttribute("ID");
+		if (attName.equals("")) {
+			throw new Exception("Missing ID attribute on SAML Response.");
+		}
+
+		attName = rootElement.getAttribute("Version");
+		if (!attName.equals("2.0")) {
+			throw new Exception("Unsupported SAML Version.");
+		}
+
 		NodeList nodes = xmlDoc.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
 
 		if (nodes == null || nodes.getLength() == 0) {
-			throw new Exception("Can't find signature in document.");
+			throw new Exception("Can't find signature in Document.");
 		}
 
 		if (setIdAttributeExists()) {
@@ -74,14 +95,12 @@ public class Response {
 
 	public String getNameId() throws Exception {
 		NodeList nodes = xmlDoc.getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:assertion", "NameID");
-
-		if(nodes.getLength()==0){
-			throw new Exception("No name id found in document");
+		if (nodes.getLength() == 0) {
+			throw new Exception("No name id found in Document.");
 		}
-
 		return nodes.item(0).getTextContent();
-	}   
-        
+	}
+
 	public String getAttribute(String name) {
 		HashMap attributes = getAttributes();
 		if (!attributes.isEmpty()) {
@@ -89,12 +108,12 @@ public class Response {
 		}
 		return null;
 	}
-                        
+
 	public HashMap getAttributes() {
-		HashMap<String,ArrayList> attributes = new HashMap<>();                   
+		HashMap<String, ArrayList> attributes = new HashMap<>();
 		NodeList nodes = xmlDoc.getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:assertion", "Attribute");
 
-		if(nodes.getLength()!=0){
+		if (nodes.getLength() != 0) {
 			for (int i = 0; i < nodes.getLength(); i++) {
 				NamedNodeMap attrName = nodes.item(i).getAttributes();
 				String attName = attrName.getNamedItem("Name").getNodeValue();
@@ -107,10 +126,10 @@ public class Response {
 				attributes.put(attName, attrValues);
 			}
 		} else {
-		    return null;
+			return null;
 		}
 		return attributes;
-	} 
+	}
 
 	private boolean setIdAttributeExists() {
 		for (Method method : Element.class.getDeclaredMethods()) {
@@ -124,5 +143,5 @@ public class Response {
 	private void tagIdAttributes(Document xmlDoc) {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
-}
 
+}
