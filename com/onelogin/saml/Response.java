@@ -15,11 +15,17 @@ import javax.xml.crypto.dsig.dom.DOMValidateContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+
 import org.apache.commons.codec.binary.Base64;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -37,7 +43,7 @@ public class Response {
 		certificate.loadCertificate(this.accountSettings.getCertificate());
 	}
 
-	public void loadXml(String xml) throws ParserConfigurationException, SAXException, IOException {
+	public void loadXml(String xml) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
 		DocumentBuilderFactory fty = DocumentBuilderFactory.newInstance();
 		fty.setNamespaceAware(true);
 		// XMLConstants with FEATURE_SECURE_PROCESSING prevents external document access. (XXE/XEE Possible Attacks).
@@ -45,9 +51,18 @@ public class Response {
 		DocumentBuilder builder = fty.newDocumentBuilder();
 		ByteArrayInputStream bais = new ByteArrayInputStream(xml.getBytes());
 		xmlDoc = builder.parse(bais);
+		// Loop through the doc and tag every element with an ID attribute as an XML ID node.
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		XPathExpression expr = xpath.compile("//*[@ID]");
+		NodeList nodeList = (NodeList) expr.evaluate(xmlDoc, XPathConstants.NODESET);
+		for (int i=0; i<nodeList.getLength() ; i++) {
+		  Element elem = (Element) nodeList.item(i);
+		  Attr attr = (Attr) elem.getAttributes().getNamedItem("ID");
+		  elem.setIdAttributeNode(attr, true);
+		}
 	}
 
-	public void loadXmlFromBase64(String response) throws ParserConfigurationException, SAXException, IOException {
+	public void loadXmlFromBase64(String response) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
 		Base64 base64 = new Base64();
 		byte[] decodedB = base64.decode(response);
 		String decodedS = new String(decodedB);
@@ -110,7 +125,7 @@ public class Response {
 	}
 
 	public HashMap getAttributes() {
-		HashMap<String, ArrayList> attributes = new HashMap<>();
+		HashMap<String, ArrayList> attributes = new HashMap<String, ArrayList>();
 		NodeList nodes = xmlDoc.getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:assertion", "Attribute");
 
 		if (nodes.getLength() != 0) {
