@@ -1,6 +1,6 @@
 This example was developed to show how Java Toolkit works.
 
-The com-folder contains the files you’ll copy into your Java application. 
+The com-folder contains the files you'll copy into your Java application. 
 The sample-folder has a minimal webapp with the files on com-folder inside java-folder and The files index.jsp and consume.jsp inside webapp-folder.
 index.jsp and consume.jsp are the ones that actually handle the SAML conversation.
 
@@ -19,7 +19,7 @@ What needs to be configured
 ----------------------------
 
 In the example above, SAML settings are divided into two parts, the application specific (const_assertion_consumer_service_url, const_issuer, const_name_identifier_format) 
-and the user/account specific (idp_sso_target_url, x509certificate). You’ll need to add your own code here to identify the user or user origin (e.g. by subdomain, ip_address etc.).
+and the user/account specific (idp_sso_target_url, x509certificate). You'll need to add your own code here to identify the user or user origin (e.g. by subdomain, ip_address etc.).
 
 The following information needs to be available on the account:
 
