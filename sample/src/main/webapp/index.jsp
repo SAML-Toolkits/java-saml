@@ -22,7 +22,7 @@
   AccountSettings accSettings = new AccountSettings();
 
   // The URL at the Identity Provider where to the authentication request should be sent
-  accSettings.setIdpSsoTargetUrl("https://app.onelogin.com/saml/signon/20956"");
+  accSettings.setIdpSsoTargetUrl("https://app.onelogin.com/saml/signon/20956");
   
   // Generate an AuthRequest and send it to the identity provider
   AuthRequest authReq = new AuthRequest(appSettings, accSettings);
