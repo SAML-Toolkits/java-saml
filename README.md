@@ -1,18 +1,35 @@
 This example was developed to show how Java Toolkit works.
 
-The com-folder contains the files you'll copy into your Java application. 
-The sample-folder has a minimal webapp with the files on com-folder inside java-folder and The files index.jsp and consume.jsp inside webapp-folder.
-index.jsp and consume.jsp are the ones that actually handle the SAML conversation.
+Project Structure
+-----------------
 
-The index.jsp file acts as an initiater for the SAML conversation, if it should be initiated by the application. 
+The com/ folder contains the files you'll copy into your Java application. Note also that Apache Commons Codec is a dependency.
+
+The sample/ folder has a minimal webapp which depends on the core code inside com/ folder and the files index.jsp and consume.jsp inside webapp-folder.
+index.jsp and consume.jsp are the ones that actually handle the SAML conversation. Dependencies are configured in the pom.xml file.
+
+SAML Overview for project
+-------------------------
+
+The index.jsp file acts as an initiater for the SAML conversation, if it should be initiated by the application.
 
 This is called Service Provider Initiated SAML. The service provider creates a SAML Authentication Request and sends it to the identity provider (IdP), 
 We authenticate at the IdP and then a Response is sent to the Consumer Service Url configured on index.jsp.
 
-In order to know where to redirect the user with the authentication request, we need to establish the user's identity provider affinity. 
+In order to know where to redirect the user with the authentication request, we need to establish the user's identity provider affinity.
 This depends on your application. In this example, those validations are provided by consume.jsp, which is meant as a stub for you customization.
 
-Dependencies are configured on file pom.xml, also a jetty plugin is configured to execute the example with command "mvn jetty:run"
+Running the sample
+------------------
+
+First install the core code into your local Maven repository with:
+
+    mvn install
+
+You can now run the web app sample which depends on this code:
+
+    cd sample
+    mvn jetty:run
 
 
 What needs to be configured
@@ -33,5 +50,5 @@ accSettings.setIdpSsoTargetUrl
 The URL to which the authentication request should be sent. This would be on the identity provider.
 
 accountSettings.setCertificate
-The x509 certificate fingerprint. 
+The x509 certificate fingerprint.
 This is provided from the identity provider when setting up the relationship, for this version the certificate must be 1024-bit.
