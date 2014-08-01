@@ -3,7 +3,8 @@ This example was developed to show how Java Toolkit works.
 Project Structure
 -----------------
 
-The com/ folder contains the files you'll copy into your Java application. Note also that Apache Commons Codec is a dependency.
+The src/main/java/ folder contains the files you'll copy into your Java application. You can also build the project by running `mvn package` and copy the
+resulting jar into your project instead of relying on the source code directly. Note also that Apache Commons Codec is a dependency.
 
 The sample/ folder has a minimal webapp which depends on the core code inside com/ folder and the files index.jsp and consume.jsp inside webapp-folder.
 index.jsp and consume.jsp are the ones that actually handle the SAML conversation. Dependencies are configured in the pom.xml file.
