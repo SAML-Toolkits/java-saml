@@ -12,7 +12,7 @@
   AppSettings appSettings = new AppSettings();
 
   // set the URL of the consume.jsp (or similar) file for this app. The SAML Response will be posted to this URL
-  appSettings.setAssertionConsumerServiceUrl("http://localhost:3000/saml/consume.jsp");
+  appSettings.setAssertionConsumerServiceUrl("http://localhost:8080/consume.jsp");
 
   // set the issuer of the authentication request. This would usually be the URL of the issuing web application
   appSettings.setIssuer("https://www.mywebapp.com");

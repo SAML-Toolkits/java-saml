@@ -36,20 +36,17 @@ You can now run the web app sample which depends on this code:
 What needs to be configured
 ----------------------------
 
-In the example above, SAML settings are divided into two parts, the application specific (const_assertion_consumer_service_url, const_issuer, const_name_identifier_format) 
-and the user/account specific (idp_sso_target_url, x509certificate). You'll need to add your own code here to identify the user or user origin (e.g. by subdomain, ip_address etc.).
+In the example above, SAML settings are divided into two parts, the application specific (`const_assertion_consumer_service_url`, `const_issuer`, `const_name_identifier_format`) 
+and the user/account specific (`idp_sso_target_url`, `x509certificate`). You'll need to add your own code here to identify the user or user origin (e.g. by subdomain, ip_address etc.).
 
 The following information needs to be available on the account:
 
-appSettings.setAssertionConsumerServiceUrl
-The URL at which the SAML assertion should be received. In this example "http://localhost:3000/saml/consume" would be correct.
+`appSettings.setAssertionConsumerServiceUrl`: The URL at which the SAML assertion should be received.
 
-appSettings.setIssuer
-The name of your application. Some identity providers might need this to establish the identity of the service provider requesting the login.
+`appSettings.setIssuer`: The name of your application. Some identity providers might need this to establish the identity of the service provider requesting the login.
 
-accSettings.setIdpSsoTargetUrl
-The URL to which the authentication request should be sent. This would be on the identity provider.
+`accSettings.setIdpSsoTargetUrl`: The URL to which the authentication request should be sent. This would be on the identity provider.
 
-accountSettings.setCertificate
-The x509 certificate fingerprint.
-This is provided from the identity provider when setting up the relationship, for this version the certificate must be 1024-bit.
+`accountSettings.setCertificate`: The x509 certificate fingerprint. This is provided from the identity provider when setting up the relationship, for this version the certificate must be 1024-bit.
+
+In OneLogin, for this sample project, you'll want to set the SAML Consumer URL to "http://localhost:8080" and the SAML Audience and SAML Recipient to "http://localhost:8080/consume.jsp"
