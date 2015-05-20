@@ -2,16 +2,22 @@ package com.onelogin.saml;
 
 import com.onelogin.AccountSettings;
 import com.onelogin.AppSettings;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
+
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+
 import org.apache.commons.codec.binary.Base64;
 
 public class AuthRequest {
@@ -19,11 +25,13 @@ public class AuthRequest {
 	private final String id;
 	private final String issueInstant;
 	private final AppSettings appSettings;
+	private AccountSettings accountSettings;
 	public static final int base64 = 1;
 	private Deflater deflater;
 
-	public AuthRequest(AppSettings appSettings, AccountSettings accountSettings){
+	public AuthRequest(AppSettings appSettings, AccountSettings accSettings){
 		this.appSettings = appSettings;
+		this.accountSettings = accSettings;
 		id="_"+UUID.randomUUID().toString();
 		SimpleDateFormat simpleDf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 		issueInstant = simpleDf.format(new Date());
@@ -94,4 +102,20 @@ public class AuthRequest {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	
+	public String getSSOurl(String relayState) throws UnsupportedEncodingException, XMLStreamException, IOException{
+		
+		String ssourl = getSSOurl();
+		if(relayState != null && !relayState.isEmpty()){
+			ssourl = ssourl + "&RelayState=" + relayState;
+		}
+		return ssourl;
+	}
+	
+	public String getSSOurl() throws UnsupportedEncodingException, XMLStreamException, IOException{
+		String ssourl = accountSettings.getIdp_sso_target_url()+"?SAMLRequest=" + URLEncoder.encode(getRequest(base64),"UTF-8");
+		return ssourl;
+	}
+	
 }

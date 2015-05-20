@@ -26,8 +26,9 @@
   accountSettings.setCertificate(certificateS);
 
   Response samlResponse = new Response(accountSettings);
+  request.getSession().setAttribute("mySAMLResponse", request.getParameter("SAMLResponse"));
   samlResponse.loadXmlFromBase64(request.getParameter("SAMLResponse"));
-  samlResponse.setDestinationUrl(request.getRequestURL().toString()); 
+  samlResponse.setDestinationUrl(request.getRequestURL().toString());
 
   if (samlResponse.isValid()) {
 
@@ -37,12 +38,13 @@
   	String nameId = samlResponse.getNameId();
   	writer.write(nameId);
   	writer.flush();
-	
+
   } else {
 
     // the signature of the SAML Response is not valid
   	java.io.PrintWriter writer = response.getWriter();
-  	writer.write("Failed");
+  	writer.write("Failed\n");
+    writer.write(samlResponse.getError());
   	writer.flush();
 
   }
