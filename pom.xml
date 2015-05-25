@@ -5,17 +5,38 @@
   <artifactId>java-saml</artifactId>
   <version>1.0-SNAPSHOT</version>
   <name>java-saml</name>
-
+  
+  <properties>
+    <slf4jVersion>1.7.12</slf4jVersion>
+    <junitVersion>4.12</junitVersion>
+  </properties>
+  
   <dependencies>
+   <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junitVersion}</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
       <version>1.9</version>
     </dependency>
+    <dependency>
+		<groupId>org.slf4j</groupId>
+		<artifactId>slf4j-api</artifactId>
+		<version>${slf4jVersion}</version>
+    </dependency>
+    <dependency>
+		<groupId>org.slf4j</groupId>
+		<artifactId>slf4j-simple</artifactId>
+		<version>${slf4jVersion}</version>
+	</dependency>
   </dependencies>
   
   <build>
-    <finalName>java-saml</finalName>
+    <finalName>java-saml-toolkit</finalName>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
