@@ -26,7 +26,6 @@
   accountSettings.setCertificate(certificateS);
 
   Response samlResponse = new Response(accountSettings);
-  request.getSession().setAttribute("mySAMLResponse", request.getParameter("SAMLResponse"));
   samlResponse.loadXmlFromBase64(request.getParameter("SAMLResponse"));
   samlResponse.setDestinationUrl(request.getRequestURL().toString());
 
