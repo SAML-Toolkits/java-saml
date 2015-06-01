@@ -3,6 +3,7 @@ package com.onelogin.saml;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -112,6 +113,57 @@ public class UtilsTest {
 				assertTrue(false);
 			}
       }
+	 
+	 /**
+      * Tests the validateXML method of the OneLogin_Saml2_Utils
+      *
+      * @covers Utils.validateXML
+      */
+	 @Test
+      public void testValidateXML()
+      {
+      	try{
+	            try{
+		            	String metadataUnloaded = "<xml><EntityDescriptor>";
+		            	Document docMetadataUnloaded = Utils.convertStringToDocument(metadataUnloaded);
+		            	Utils.validateXML(docMetadataUnloaded, "saml-schema-metadata-2.0.xsd");
+	            }
+	            catch (Throwable ex){
+	            		assertTrue(ex instanceof Exception);
+	            }
+	
+	            try{
+		            	String metadataInvalid = getFile("metadata/noentity_metadata_settings1.xml");
+		            	Document docMetadataInvalid = Utils.convertStringToDocument(metadataInvalid);
+		            	Utils.validateXML(docMetadataInvalid, "saml-schema-metadata-2.0.xsd");
+	            }
+	            catch(Throwable ex){
+		            	ex.printStackTrace();
+		            	assertTrue(ex instanceof Error);
+	            }
+	
+	            String metadataExpired = getFile("metadata/expired_metadata_settings1.xml");
+	            Document docMetadataExpired = Utils.convertStringToDocument(metadataExpired);
+	            Document doc = Utils.validateXML(docMetadataExpired, "saml-schema-metadata-2.0.xsd");
+	            assertTrue(doc instanceof Document);
+	            assertNotNull(doc);
+	
+	            String metadataOk = getFile("metadata/metadata_settings1.xml");
+	            Document docMetadataOk = Utils.convertStringToDocument(metadataOk);
+	            Document doc2 = Utils.validateXML(docMetadataOk, "saml-schema-metadata-2.0.xsd");
+	            assertTrue(doc2 instanceof Document);
+	            assertNotNull(doc2);
+	        }catch(DOMException e){
+		        	e.printStackTrace();
+		        	assertTrue(false);
+	        } catch (ParserConfigurationException e) {
+				e.printStackTrace();
+				assertTrue(false);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+      }
+
 
 	 private String getFile(String fileName) {
     	 
