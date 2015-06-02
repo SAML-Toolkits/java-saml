@@ -36,6 +36,7 @@ import org.slf4j.MarkerFactory;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -61,7 +62,7 @@ public class Utils {
 	 * @return DOMNodeList The queried node
 	 * @throws XPathExpressionException
 	 */
-	public static NodeList query(Document dom, String query, Element context)
+	public static NodeList query(Document dom, String query, Node context)
 			throws XPathExpressionException {
 		NodeList nodeList;
 
@@ -72,10 +73,12 @@ public class Utils {
 				String result = null;
 				if (prefix.equals("samlp"))
 					result = Constants.NS_SAMLP;
-				else if (prefix.equals("sml"))
+				else if (prefix.equals("saml"))
 					result = Constants.NS_SAML;
 				else if (prefix.equals("ds"))
 					result = Constants.NS_DS;
+				else if (prefix.equals("xenc"))
+					result = Constants.NS_XENC;
 				return result;
 			}
 
@@ -90,13 +93,12 @@ public class Utils {
 		});
 
 		if (context == null)
-			nodeList = (NodeList) xpath.evaluate(query, dom,
-					XPathConstants.NODESET);
+			nodeList = (NodeList) xpath.evaluate(query, dom, XPathConstants.NODESET);
 		else
-			nodeList = (NodeList) xpath.evaluate(query, context,
-					XPathConstants.NODESET);
+			nodeList = (NodeList) xpath.evaluate(query, context, XPathConstants.NODESET);
 		return nodeList;
 	}
+	
 
 	/**
 	 * Get Status from a Response
@@ -208,7 +210,7 @@ public class Utils {
 			}
 			return doc;
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Error executing loadXML: " + e.getMessage(), e);
 		}
 		return null;
 	}
@@ -272,15 +274,15 @@ public class Utils {
 	 * @param xmlStr
 	 * @return
 	 */
-	public static Document convertStringToDocument(String xmlStr) {
+	private static Document convertStringToDocument(String xmlStr) {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder;
 		try {
 			builder = factory.newDocumentBuilder();
 			Document doc = builder.parse(new InputSource(new StringReader(xmlStr)));
 			return doc;
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (Exception ex) {
+			log.error("Error executing convertStringToDocument: " + ex.getMessage(), ex);
 		}
 		return null;
 	}
@@ -305,7 +307,7 @@ public class Utils {
 		}
 		catch(TransformerException ex)
 		{
-			ex.printStackTrace();
+			log.error("Error executing getStringFromDocument: " + ex.getMessage(), ex);
 			return null;
 		}
 	}
