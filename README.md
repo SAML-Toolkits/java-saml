@@ -49,4 +49,9 @@ The following information needs to be available on the account:
 
 `accountSettings.setCertificate`: The x509 certificate fingerprint. This is provided from the identity provider when setting up the relationship, for this version the certificate must be 1024-bit.
 
+The following information needs to be available for the response:
+
+`response.loadXmlFromBase64`: The coded SAML Response on string format
+`response.setDestinationUrl`: The URL of the current host + current view
+
 In OneLogin, for this sample project, you'll want to set the SAML Consumer URL to "http://localhost:8080" and the SAML Audience and SAML Recipient to "http://localhost:8080/consume.jsp"
