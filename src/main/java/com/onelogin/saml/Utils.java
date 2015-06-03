@@ -73,9 +73,9 @@ public class Utils {
 
 			public String getNamespaceURI(String prefix) {
 				String result = null;
-				if (prefix.equals("samlp"))
+				if (prefix.equals("samlp") || prefix.equals("samlp2"))
 					result = Constants.NS_SAMLP;
-				else if (prefix.equals("saml"))
+				else if (prefix.equals("saml") || prefix.equals("saml2"))
 					result = Constants.NS_SAML;
 				else if (prefix.equals("ds"))
 					result = Constants.NS_DS;

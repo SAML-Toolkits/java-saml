@@ -43,14 +43,31 @@ public class Response {
 
 	private static final Logger log = LoggerFactory.getLogger(Response.class);
 
+	/**
+	 * Simple constructor, when you use this constructor you should  call this methods before validate saml response:
+	 * loadXmlFromBase64(response);
+	 * setDestinationUrl(currentUrl)
+	 * 
+	 * @param accountSettings Object with idp information
+	 * 
+	 */
 	public Response(AccountSettings accountSettings) throws CertificateException {
 		error = new StringBuffer();
 		this.accountSettings = accountSettings;		
 	}
 
-	public Response(AccountSettings accountSettings, String response) throws Exception {
+	/**
+	 * Constructor to have a Response object full builded and ready to validate the saml response
+	 * 
+	 * @param accountSettings Object with idp information
+	 * @param response SAML Response on string format
+	 * @param currentURL URL of the current host + current view
+	 */
+			
+	public Response(AccountSettings accountSettings, String response, String currentURL) throws Exception {
 		this(accountSettings);
 		loadXmlFromBase64(response);
+		this.currentUrl = currentURL;
 	}
 
 	public void loadXmlFromBase64(String responseStr) throws Exception {
