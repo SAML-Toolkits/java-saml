@@ -49,7 +49,7 @@ public class Response {
 	}
 
 	public Response(AccountSettings accountSettings, String response) throws Exception {
-		this(accountSettings);		
+		this(accountSettings);
 		loadXmlFromBase64(response);
 	}
 
@@ -59,7 +59,7 @@ public class Response {
 		this.response = new String(decodedB);
 		this.document = Utils.loadXML(this.response);
 		if(this.document == null){
-
+			throw new Exception("SAML Response could not be processed");
 		}
 	}
 
@@ -200,7 +200,7 @@ public class Response {
 			if(signedElements.isEmpty()){
 				throw new Exception("No Signature found. SAML Response rejected");
 			}else{
-				Certificate cert = this.accountSettings.getCert();
+				Certificate cert = this.accountSettings.getIdpCert();
 
 				// Only validates the first signed element
 				if (!Utils.validateSign(signNodes.item(0), cert)) {
