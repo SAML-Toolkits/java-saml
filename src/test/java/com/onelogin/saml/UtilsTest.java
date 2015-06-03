@@ -7,8 +7,11 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
 import java.util.Scanner;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -120,7 +123,7 @@ public class UtilsTest {
 	}
 
 	/**
-	 * Tests the validateXML method of the OneLogin_Saml2_Utils
+	 * Tests the validateXML method of the com.onelogin.saml.Utils
 	 *
 	 * @covers Utils.validateXML
 	 */
@@ -169,7 +172,7 @@ public class UtilsTest {
 	}
 
 	/**
-	 * Tests the query method of the OneLogin_Saml2_Utils
+	 * Tests the query method of the com.onelogin.saml.Utils
 	 *
 	 * covers Utils.query
 	 */
@@ -182,47 +185,47 @@ public class UtilsTest {
 			byte[] decodedB = base64.decode(responseCoded);
 			String response = new String(decodedB);
 			Document dom = Utils.loadXML(response);
-			
+
 			NodeList assertionNodes = Utils.query(dom, "/samlp:Response/saml:Assertion", null);
 			assertEquals(1, assertionNodes.getLength());
 			Node assertion = assertionNodes.item(0);
 			assertEquals("saml:Assertion", assertion.getNodeName());
-			
+
 			NodeList attributeStatementNodes = Utils.query(dom, "/samlp:Response/saml:Assertion/saml:AttributeStatement", null);
 			assertEquals(1, attributeStatementNodes.getLength());
 			Node attributeStatement = attributeStatementNodes.item(0);
 			assertEquals("saml:AttributeStatement", attributeStatement.getNodeName());
-			
+
 			NodeList attributeStatementNodes2 = Utils.query(dom, "./saml:AttributeStatement", assertion);
 			assertEquals(1, attributeStatementNodes2.getLength());
 			Node attributeStatement2 = attributeStatementNodes2.item(0);
 			assertEquals(attributeStatement, attributeStatement2);
-			
+
 			NodeList signatureResNodes = Utils.query(dom, "/samlp:Response/ds:Signature", null);
 			assertEquals(1, signatureResNodes.getLength());
 			Node signatureRes= signatureResNodes.item(0);
 			assertEquals("ds:Signature", signatureRes.getNodeName());
-			
+
 			NodeList signatureNodes = Utils.query(dom, "/samlp:Response/saml:Assertion/ds:Signature", null);
 			assertEquals(1, signatureNodes.getLength());
 			Node signature = signatureNodes.item(0);
 			assertEquals("ds:Signature", signature.getNodeName());
-			
+
 			NodeList signatureNodes2 = Utils.query(dom, "./ds:Signature", assertion);
 			assertEquals(1, signatureNodes2.getLength());
 			Node signature2 = signatureNodes2.item(0);
 			assertEquals(signature.getTextContent(), signature2.getTextContent());
 			assertNotEquals(signatureRes.getTextContent(), signature2.getTextContent());
-			
+
 			NodeList signatureNodes3 = Utils.query(dom, "./ds:SignatureValue", assertion);
 			assertEquals(0, signatureNodes3.getLength());
-			
+
 			NodeList signatureNodes4 = Utils.query(dom, "./ds:Signature/ds:SignatureValue", assertion);
 			assertEquals(1, signatureNodes4.getLength());
-			
+
 			NodeList signatureNodes5 = Utils.query(dom, ".//ds:SignatureValue", assertion);
 			assertEquals(1, signatureNodes5.getLength());
-			
+
 		}catch(DOMException e){
 			e.printStackTrace();
 			assertTrue(false);
@@ -230,6 +233,69 @@ public class UtilsTest {
 			e.printStackTrace();
 			assertTrue(false);
 		}
+	}
+
+	/**
+	 * Tests the validateSign method of the com.onelogin.saml.Utils
+	 *
+	 */
+	@Test
+	public void testValidateSign()
+	{
+		try{
+			String certificate = "MIICgTCCAeoCCQCbOlrWDdX7FTANBgkqhkiG9w0BAQUFADCBhDELMAkGA1UEBhMCTk8xGDAWBgNVBAgTD0FuZHJlYXM"+
+					"gU29sYmVyZzEMMAoGA1UEBxMDRm9vMRAwDgYDVQQKEwdVTklORVRUMRgwFgYDVQQDEw9mZWlkZS5lcmxhbmcubm8xITA"+
+					"fBgkqhkiG9w0BCQEWEmFuZHJlYXNAdW5pbmV0dC5ubzAeFw0wNzA2MTUxMjAxMzVaFw0wNzA4MTQxMjAxMzVaMIGEMQs"+
+					"wCQYDVQQGEwJOTzEYMBYGA1UECBMPQW5kcmVhcyBTb2xiZXJnMQwwCgYDVQQHEwNGb28xEDAOBgNVBAoTB1VOSU5FVFQ"+
+					"xGDAWBgNVBAMTD2ZlaWRlLmVybGFuZy5ubzEhMB8GCSqGSIb3DQEJARYSYW5kcmVhc0B1bmluZXR0Lm5vMIGfMA0GCSq"+
+					"GSIb3DQEBAQUAA4GNADCBiQKBgQDivbhR7P516x/S3BqKxupQe0LONoliupiBOesCO3SHbDrl3+q9IbfnfmE04rNuMcP"+
+					"sIxB161TdDpIesLCn7c8aPHISKOtPlAeTZSnb8QAu7aRjZq3+PbrP5uW3TcfCGPtKTytHOge/OlJbo078dVhXQ14d1ED"+
+					"wXJW1rRXuUt4C8QIDAQABMA0GCSqGSIb3DQEBBQUAA4GBACDVfp86HObqY+e8BUoWQ9+VMQx1ASDohBjwOsg2WykUqRX"+
+					"F+dLfcUH9dWR63CtZIKFDbStNomPnQz7nbK+onygwBspVEbnHuUihZq3ZUdmumQqCw4Uvs/1Uvq3orOo/WJVhTyvLgFV"+
+					"K2QarQ4/67OZfHd7R+POBXhophSMv1ZOo";
+			CertificateFactory fty = CertificateFactory.getInstance("X.509");
+			ByteArrayInputStream bais = new ByteArrayInputStream(Base64.decodeBase64(certificate.getBytes()));
+			Certificate cert = fty.generateCertificate(bais);
+
+			String responseCoded = getFile("responses/signed_message_response.xml.base64");
+			Base64 base64 = new Base64();
+			byte[] decodedB = base64.decode(responseCoded);
+			String response = new String(decodedB);
+			Document dom = Utils.loadXML(response);
+
+			NodeList signatureResNodes = Utils.query(dom, "/samlp:Response/ds:Signature", null);
+			assertEquals(1, signatureResNodes.getLength());
+			assertTrue(Utils.validateSign(signatureResNodes.item(0), cert));
+			try {
+				assertFalse(Utils.validateSign(dom.getChildNodes().item(0), cert));
+				assertTrue(false);
+			} catch (Exception e) {
+				assertTrue(e.getMessage().contains("invalid Signature"));
+			}
+			
+			responseCoded = getFile("responses/invalids/no_key.xml.base64");
+			base64 = new Base64();
+			decodedB = base64.decode(responseCoded);
+			response = new String(decodedB);
+			dom = Utils.loadXML(response);
+
+			NodeList signatureNoKey = Utils.query(dom, "/samlp:Response/saml:Assertion/ds:Signature", null);
+			assertEquals(1, signatureNoKey.getLength());
+			try {
+				assertFalse(Utils.validateSign(signatureNoKey.item(0), cert));
+				assertTrue(false);
+			} catch (Exception e) {
+				assertTrue(true);
+			}
+
+		}catch(DOMException e){
+			e.printStackTrace();
+			assertTrue(false);
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertTrue(false);
+		}
+
 	}
 
 

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URL;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -11,6 +12,10 @@ import java.util.List;
 import java.util.Map;
 
 import javax.xml.XMLConstants;
+import javax.xml.crypto.MarshalException;
+import javax.xml.crypto.dsig.XMLSignature;
+import javax.xml.crypto.dsig.XMLSignatureFactory;
+import javax.xml.crypto.dsig.dom.DOMValidateContext;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -53,12 +58,9 @@ public class Utils {
 	/**
 	 * Extracts a node from the DOMDocument
 	 * 
-	 * @param dom
-	 *            The DOMDocument
-	 * @param query
-	 *            Xpath Expresion
-	 * @param context
-	 *            Context Node (DomElement)
+	 * @param dom The DOMDocument
+	 * @param query Xpath Expresion
+	 * @param context Context Node (DomElement)
 	 * @return DOMNodeList The queried node
 	 * @throws XPathExpressionException
 	 */
@@ -98,13 +100,12 @@ public class Utils {
 			nodeList = (NodeList) xpath.evaluate(query, context, XPathConstants.NODESET);
 		return nodeList;
 	}
-	
+
 
 	/**
 	 * Get Status from a Response
 	 * 
-	 * @param dom
-	 *            The Response as XML
+	 * @param dom The Response as XML
 	 * @return array with the code and a message
 	 * @throws Error 
 	 */
@@ -125,8 +126,7 @@ public class Utils {
 				throw new Error("Missing Status Code on response");
 			}
 			status.put("code",
-					codeEntry.item(0).getAttributes().getNamedItem("Value")
-					.getNodeValue());
+					codeEntry.item(0).getAttributes().getNamedItem("Value").getNodeValue());
 
 			NodeList messageEntry = query(dom,
 					"/samlp:Response/samlp:Status/samlp:StatusMessage",
@@ -150,14 +150,10 @@ public class Utils {
 	/**
 	 * Load an XML string in a save way. Prevent XEE/XXE Attacks
 	 * 
-	 * @param DOMDocument
-	 *            $dom The document where load the xml.
-	 * @param string
-	 *            $xml The XML string to be loaded.
-	 * 
-	 * @throws DOMExceptions
-	 * 
-	 * @throws Exception
+	
+	 * @param string xml The XML string to be loaded.
+	 *            
+	 * @return The document where load the xml.
 	 */
 	public static Document loadXML(String xml) throws Exception {
 		if (xml.contains("<!ENTITY")) {
@@ -218,10 +214,8 @@ public class Utils {
 	/**
 	 * This function attempts to validate an XML against the specified schema.
 	 * 
-	 * @param xml
-	 *            The XML document which should be validated
-	 * @param schema
-	 *            The schema filename which should be used
+	 * @param xml The XML document which should be validated
+	 * @param schema The schema filename which should be used
 	 * @throws Exception
 	 */
 	public static Document validateXML(Document xml, String schemaName)
@@ -234,30 +228,28 @@ public class Utils {
 	 * schema. It will parse the string into a DOM document and validate this
 	 * document against the schema.
 	 * 
-	 * @param xml
-	 *            The XML document which should be validated
-	 * @param schema
-	 *            The schema filename which should be used
+	 * @param xml The XML document which should be validated
+	 * @param schema The schema filename which should be used
 	 * @throws Exception
 	 */
 	public static Document validateXML(String xmlString, String schemaName, Boolean...debugMode)
 			throws Exception {
 
 		try {
- 		    String schemaFullPath = "schemas" + File.separatorChar + schemaName;
- 		    log.debug("schemaFullPath: " +schemaFullPath);
- 		    ClassLoader classLoader = Utils.class.getClassLoader();
- 		    URL schemaFile = classLoader.getResource(schemaFullPath);
- 			SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
- 			Schema schema = schemaFactory.newSchema(schemaFile);
- 			Validator validator = schema.newValidator();
- 			XMLErrorHandler errorHandler = new XMLErrorHandler();
- 			validator.setErrorHandler(errorHandler);
- 			validator.validate(new StreamSource(new StringReader(xmlString)));
- 			
- 			if (errorHandler.getErrorXML().size() > 0) {
- 				throw new Error("Invalid XML. See the log");
- 			}
+			String schemaFullPath = "schemas" + File.separatorChar + schemaName;
+			log.debug("schemaFullPath: " +schemaFullPath);
+			ClassLoader classLoader = Utils.class.getClassLoader();
+			URL schemaFile = classLoader.getResource(schemaFullPath);
+			SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+			Schema schema = schemaFactory.newSchema(schemaFile);
+			Validator validator = schema.newValidator();
+			XMLErrorHandler errorHandler = new XMLErrorHandler();
+			validator.setErrorHandler(errorHandler);
+			validator.validate(new StreamSource(new StringReader(xmlString)));
+
+			if (errorHandler.getErrorXML().size() > 0) {
+				throw new Error("Invalid XML. See the log");
+			}
 		} catch (Error e) {
 			throw e;
 		} catch (Exception ex) {
@@ -266,7 +258,33 @@ public class Utils {
 		}
 		return convertStringToDocument(xmlString);
 	}
-	
+
+	/**
+	 * Validate signature (Message or Assertion).
+	 * 
+	 * @param xml The element we should validate
+	 * @param cert The pubic cert
+	 * @param fingerprint The fingerprint of the public cert
+	 * @return True if the sign is valid, false otherwise.
+	 */
+	public static boolean validateSign(Node signatureElement, Certificate cert, String ...fingerprint) 
+			throws Exception{
+		boolean res = false;
+		DOMValidateContext ctx = new DOMValidateContext(cert.getPublicKey(), signatureElement);
+		XMLSignatureFactory sigF = XMLSignatureFactory.getInstance("DOM");		
+		try {
+			XMLSignature xmlSignature = sigF.unmarshalXMLSignature(ctx);
+			res = xmlSignature.validate(ctx);
+		} catch (MarshalException e) {
+			log.error("Cannot locate Signature Node " + e.getMessage(), e);
+			throw e;
+		}catch (NullPointerException e) {
+			log.error("Context can't be validated", e);
+			throw e;
+		}		
+		return res;
+	}
+
 
 	/**
 	 * Function to load a String into a Document
@@ -311,7 +329,7 @@ public class Utils {
 			return null;
 		}
 	}
-	
+
 
 
 }

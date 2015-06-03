@@ -1,24 +1,17 @@
 package com.onelogin.saml;
 
-import java.lang.reflect.Method;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
 import javax.xml.crypto.dsig.XMLSignature;
-import javax.xml.crypto.dsig.XMLSignatureFactory;
-import javax.xml.crypto.dsig.dom.DOMValidateContext;
-import javax.xml.namespace.NamespaceContext;
-import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
@@ -40,10 +33,8 @@ public class Response {
 	 */
 	private Document document;
 
-	private NodeList assertions;
 	private Element rootElement;
 	private final AccountSettings accountSettings;
-	private final Certificate certificate;
 	private String response;
 	private String currentUrl;
 	private StringBuffer error;
@@ -55,8 +46,6 @@ public class Response {
 	public Response(AccountSettings accountSettings) throws CertificateException {
 		error = new StringBuffer();
 		this.accountSettings = accountSettings;		
-		certificate = new Certificate();
-		certificate.loadCertificate(this.accountSettings.getCertificate());
 	}
 
 	public Response(AccountSettings accountSettings, String response) throws Exception {
@@ -98,10 +87,10 @@ public class Response {
 				throw new Exception("SAML Response must contain 1 Assertion.");
 			}
 
-			NodeList nodes = document.getElementsByTagName("Signature");
+			NodeList signNodes = document.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
 			ArrayList<String> signedElements = new ArrayList<String>();
-			for (int i = 0; i < nodes.getLength(); i++) {
-				signedElements.add(nodes.item(i).getParentNode().getLocalName());
+			for (int i = 0; i < signNodes.getLength(); i++) {
+				signedElements.add(signNodes.item(i).getParentNode().getLocalName());
 			}
 			if (!signedElements.isEmpty()) {
 				if(!this.validateSignedElements(signedElements)){
@@ -208,24 +197,17 @@ public class Response {
 				throw new Exception("A valid SubjectConfirmation was not found on this Response");
 			}
 
-			
-			// ------------ working validations until here!
-			//TODO: more validations
+			if(signedElements.isEmpty()){
+				throw new Exception("No Signature found. SAML Response rejected");
+			}else{
+				Certificate cert = this.accountSettings.getCert();
 
-
-
-
-
-			//		if (setIdAttributeExists()) {
-			//			tagIdAttributes(xmlDoc);
-			//		}
-
-			X509Certificate cert = certificate.getX509Cert();		
-			DOMValidateContext ctx = new DOMValidateContext(cert.getPublicKey(), nodes.item(0));		
-			XMLSignatureFactory sigF = XMLSignatureFactory.getInstance("DOM");		
-			XMLSignature xmlSignature = sigF.unmarshalXMLSignature(ctx);		
-
-			return xmlSignature.validate(ctx);
+				// Only validates the first signed element
+				if (!Utils.validateSign(signNodes.item(0), cert)) {
+					throw new Exception("Signature validation failed. SAML Response rejected");
+				}
+			}
+			return true;
 		}catch (Error e) {
 			error.append(e.getMessage());
 			return false;
@@ -245,15 +227,15 @@ public class Response {
 	}
 
 	public String getAttribute(String name) {
-		HashMap attributes = getAttributes();
+		HashMap<String, ArrayList<String>> attributes = getAttributes();
 		if (!attributes.isEmpty()) {
 			return attributes.get(name).toString();
 		}
 		return null;
 	}
 
-	public HashMap getAttributes() {
-		HashMap<String, ArrayList> attributes = new HashMap<String, ArrayList>();
+	public HashMap<String, ArrayList<String>> getAttributes() {
+		HashMap<String, ArrayList<String>> attributes = new HashMap<String, ArrayList<String>>();
 		NodeList nodes = document.getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:assertion", "Attribute");
 
 		if (nodes.getLength() != 0) {
@@ -433,21 +415,6 @@ public class Response {
 			}
 		}
 		return true;
-	}
-
-
-
-	private boolean setIdAttributeExists() {
-		for (Method method : Element.class.getDeclaredMethods()) {
-			if (method.getName().equals("setIdAttribute")) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private void tagIdAttributes(Document xmlDoc) {
-		throw new UnsupportedOperationException("Not supported yet."); 
 	}
 
 	public void setDestinationUrl(String urld){
