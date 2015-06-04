@@ -84,7 +84,15 @@ public class Response {
 	public boolean isValid(String... requestId){
 		try{
 			Calendar now = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-
+			
+			if(this.document == null){
+				throw new Exception("SAML Response is not loaded");
+			}
+			
+			if(this.currentUrl == null || this.currentUrl.isEmpty()){
+				throw new Exception("The URL of the current host was not established");
+			}
+			
 			rootElement = document.getDocumentElement();
 			rootElement.normalize();
 
