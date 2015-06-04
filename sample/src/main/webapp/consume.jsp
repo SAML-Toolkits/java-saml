@@ -25,9 +25,9 @@
   AccountSettings accountSettings = new AccountSettings();
   accountSettings.setCertificate(certificateS);
 
-  Response samlResponse = new Response(accountSettings);
-  samlResponse.loadXmlFromBase64(request.getParameter("SAMLResponse"));
-  samlResponse.setDestinationUrl(request.getRequestURL().toString());
+  Response samlResponse = new Response(accountSettings,
+                                      request.getParameter("SAMLResponse"),
+                                      request.getRequestURL().toString());
 
   if (samlResponse.isValid()) {
 
