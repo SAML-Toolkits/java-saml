@@ -1,4 +1,19 @@
-This example was developed to show how Java Toolkit works.
+# OneLogin's SAML Java SAML
+
+Updating from 1.0-SNAPSHOT to 1.1
+---------------------------------
+
+Version 1.1 adds many improvements on security. It is a recommended update for all Java SAML users.
+
+
+Overview
+--------
+
+The Java SAML library is for implementing the client side of a SAML authorization, i.e. it provides a means for managing authorization initialization and confirmation requests from identity providers.
+
+SAML authorization is a two step process and you are expected to implement support for both.
+
+We created a example project that uses the latest version of this library to show how Java Toolkit works.
 
 Project Structure
 -----------------
