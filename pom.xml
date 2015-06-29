@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.onelogin</groupId>
   <artifactId>java-saml</artifactId>
-  <version>1.1</version>
+  <version>1.1.1</version>
   
   <properties>
     <slf4jVersion>1.7.12</slf4jVersion>
