@@ -22,12 +22,12 @@ import org.apache.commons.codec.binary.Base64;
 
 public class AuthRequest {
 
-	private final String id;
-	private final String issueInstant;
-	private final AppSettings appSettings;
-	private AccountSettings accountSettings;
-	public static final int base64 = 1;
-	private Deflater deflater;
+	protected final String id;
+	protected final String issueInstant;
+	protected final AppSettings appSettings;
+	protected AccountSettings accountSettings;
+	protected static final int base64 = 1;
+	protected Deflater deflater;
 
 	public AuthRequest(AppSettings appSettings, AccountSettings accSettings){
 		this.appSettings = appSettings;
@@ -82,7 +82,7 @@ public class AuthRequest {
 		return result;
 	}
 
-	private String encodeSAMLRequest(byte[] pSAMLRequest) throws RuntimeException {
+	protected String encodeSAMLRequest(byte[] pSAMLRequest) throws RuntimeException {
 
 		Base64 base64Encoder = new Base64();
 
