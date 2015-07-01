@@ -478,8 +478,9 @@ public class Response {
 			if(nodeList.getLength() > 0){
 				Node assertionReferenceNode=nodeList.item(0);
 				String id = assertionReferenceNode.getAttributes().getNamedItem("URI").getNodeValue().substring(1);
-				nameQuery = "/samlp:Response[@ID='"+ id +"']" + assertionXpath;
-			}else{ 
+//				nameQuery = "/samlp:Response[@ID='"+ id +"']" + assertionXpath;
+				nameQuery = "/samlp:Response[@ID='"+ id +"']/saml:Assertion" + assertionXpath;
+			}else{
 				nameQuery = "/samlp:Response/saml:Assertion" + assertionXpath;
 			}
 		}
