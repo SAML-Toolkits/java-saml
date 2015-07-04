@@ -1,9 +1,9 @@
 # OneLogin's SAML Java SAML
 
-Updating from 1.0-SNAPSHOT to 1.1
+Updating from 1.0-SNAPSHOT to 1.1.2
 ---------------------------------
 
-Version 1.1 adds many improvements on security. It is a recommended update for all Java SAML users.
+Version 1.1.2 adds many improvements on security. It is a recommended update for all Java SAML users.
 
 
 Overview

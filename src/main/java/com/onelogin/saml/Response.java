@@ -147,21 +147,21 @@ public class Response {
 				throw new Exception("There is an EncryptedAttribute in the Response and this SP not support them");
 			}
 
+			// Check Audience
+			Set<String> validAudiences = this.getAudiences();
+
+			if (!validAudiences.isEmpty() && !this.audienceUrl.equals(currentUrl)) {
+				throw new Exception( this.audienceUrl + " is not a valid audience for this Response");	
+			}
+			
 			// Check destination
 			if(rootElement.hasAttribute("Destination")){
 				String destinationUrl = rootElement.getAttribute("Destination");
 				if (destinationUrl != null) {
-					if(!destinationUrl.equals(currentUrl)){
+					if(!destinationUrl.isEmpty() && !destinationUrl.equals(currentUrl)){
 						throw new Exception("The response was received at " + currentUrl + " instead of " + destinationUrl);
 					}
 				}
-			}
-
-			// Check Audience
-			Set<String> validAudiences = this.getAudiences();
-
-			if (validAudiences.isEmpty() || !this.audienceUrl.equals(currentUrl)) {
-				throw new Exception( this.audienceUrl + " is not a valid audience for this Response");	
 			}
 
 			// Check the issuers
@@ -196,7 +196,7 @@ public class Response {
 					if(subjectConfirmationDataNodes.item(c).getLocalName().equals("SubjectConfirmationData")){
 
 						Node recipient = subjectConfirmationDataNodes.item(c).getAttributes().getNamedItem("Recipient");					
-						if(recipient != null && !recipient.getNodeValue().equals(currentUrl)){
+						if(recipient != null && !recipient.getNodeValue().isEmpty() && !recipient.getNodeValue().equals(currentUrl)){
 							validSubjectConfirmation = false;
 						}
 
@@ -314,13 +314,17 @@ public class Response {
 		NodeList entries = this.queryAssertion("/saml:Conditions/saml:AudienceRestriction/saml:Audience");
 
 		if(entries.getLength() > 0){
-			this.audienceUrl = entries.item(0).getChildNodes().item(0).getNodeValue();
+			if(entries.item(0)!= null && entries.item(0).getChildNodes().getLength() > 0){
+				this.audienceUrl = entries.item(0).getChildNodes().item(0).getNodeValue();
+			}
 		}
 
 		for(int i=0; i < entries.getLength(); i++) {
-			String value = entries.item(i).getTextContent().trim();
-			if (value != null && !value.isEmpty()) {
-				audiences.add(value);
+			if(entries.item(i) != null){
+				String value = entries.item(i).getTextContent();
+				if (value != null && !value.trim().isEmpty()) {
+					audiences.add(value.trim());
+				}
 			}
 		}
 		return audiences;
