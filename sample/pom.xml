@@ -8,7 +8,8 @@
   <name>java-saml Sample Webapp</name>
   
   <properties>
-    <jettyVersion>9.1.0.RC2</jettyVersion>
+    <jettyVersion>9.0.4.v20130815</jettyVersion>
+    <slf4jVersion>1.7.12</slf4jVersion>
   </properties>
   
   <dependencies>
@@ -16,12 +17,22 @@
       <groupId>com.onelogin</groupId>
       <artifactId>java-saml</artifactId>
       <version>1.1</version>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/../target/java-saml-toolkit.jar</systemPath>
     </dependency>
+
     <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-servlet</artifactId>
-      <version>${jettyVersion}</version>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.9</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>${slf4jVersion}</version>
+    </dependency>
+
   </dependencies>
   
   <build>
@@ -40,7 +51,7 @@
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-maven-plugin</artifactId>
       <version>${jettyVersion}</version>
-    </plugin>    
+    </plugin>
   </plugins>
   </build>
 </project>
