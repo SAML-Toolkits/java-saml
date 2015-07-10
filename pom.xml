@@ -4,12 +4,12 @@
   <groupId>com.onelogin</groupId>
   <artifactId>java-saml</artifactId>
   <version>1.1.2</version>
-  
+
   <properties>
     <slf4jVersion>1.7.12</slf4jVersion>
     <junitVersion>4.12</junitVersion>
   </properties>
-  
+
   <dependencies>
    <dependency>
       <groupId>junit</groupId>
@@ -24,16 +24,11 @@
     </dependency>
     <dependency>
 		<groupId>org.slf4j</groupId>
-		<artifactId>slf4j-api</artifactId>
-		<version>${slf4jVersion}</version>
-    </dependency>
-    <dependency>
-		<groupId>org.slf4j</groupId>
 		<artifactId>slf4j-simple</artifactId>
 		<version>${slf4jVersion}</version>
 	</dependency>
   </dependencies>
-  
+
   <build>
     <finalName>java-saml-toolkit</finalName>
     <plugins>
