@@ -193,7 +193,7 @@ public class Response {
 
 				NodeList subjectConfirmationDataNodes = scn.getChildNodes();			
 				for(int c = 0; c < subjectConfirmationDataNodes.getLength(); c++){				
-					if(subjectConfirmationDataNodes.item(c).getLocalName().equals("SubjectConfirmationData")){
+					if(subjectConfirmationDataNodes.item(c).getLocalName() != null && subjectConfirmationDataNodes.item(c).getLocalName().equals("SubjectConfirmationData")){
 
 						Node recipient = subjectConfirmationDataNodes.item(c).getAttributes().getNamedItem("Recipient");					
 						if(recipient != null && !recipient.getNodeValue().isEmpty() && !recipient.getNodeValue().equals(currentUrl)){
