@@ -150,9 +150,9 @@ public class Response {
 			// Check Audience
 			Set<String> validAudiences = this.getAudiences();
 
-			if (!validAudiences.isEmpty() && !this.audienceUrl.equals(currentUrl)) {
-				throw new Exception( this.audienceUrl + " is not a valid audience for this Response");	
-			}
+			//if (!validAudiences.isEmpty() && !this.audienceUrl.equals(currentUrl)) {
+			//	throw new Exception( this.audienceUrl + " is not a valid audience for this Response");	
+			//}
 			
 			// Check destination
 			if(rootElement.hasAttribute("Destination")){
