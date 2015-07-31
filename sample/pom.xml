@@ -15,7 +15,7 @@
     <dependency>
       <groupId>com.onelogin</groupId>
       <artifactId>java-saml</artifactId>
-      <version>1.1</version>
+      <version>1.1.2</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
