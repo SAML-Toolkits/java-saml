@@ -61,7 +61,7 @@ public class AuthRequest {
 
 		writer.writeStartElement("samlp", "NameIDPolicy", "urn:oasis:names:tc:SAML:2.0:protocol");
 
-		writer.writeAttribute("Format", "urn:oasis:names:tc:SAML:2.0:nameid-format:unspecified");
+		writer.writeAttribute("Format", "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
 		writer.writeAttribute("AllowCreate", "true");
 		writer.writeEndElement();
 
