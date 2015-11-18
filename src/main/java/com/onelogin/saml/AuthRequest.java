@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 import java.util.Map;
 import java.util.UUID;
 import java.util.zip.Deflater;
@@ -34,6 +35,7 @@ public class AuthRequest {
 		this.accountSettings = accSettings;
 		id="_"+UUID.randomUUID().toString();
 		SimpleDateFormat simpleDf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		simpleDf.setTimeZone(TimeZone.getTimeZone("UTC"));
 		issueInstant = simpleDf.format(new Date());
 	}
 
