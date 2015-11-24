@@ -1,0 +1,38 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.onelogin</groupId>
+	<artifactId>java-saml-jspsample</artifactId>
+	<packaging>war</packaging>
+	<version>2.0.0</version>
+    <name>Onelogin java-saml Sample Webapp</name>
+
+	<properties>
+		<jdk.version>1.7</jdk.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.onelogin</groupId>
+			<artifactId>java-saml</artifactId>
+			<version>2.0.0</version>
+		</dependency>
+	</dependencies>
+	<build>
+		<finalName>java-saml-jspsample</finalName>
+		<!-- Set JDK Compiler Level -->
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>${jdk.version}</source>
+					<target>${jdk.version}</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+
+</project>
