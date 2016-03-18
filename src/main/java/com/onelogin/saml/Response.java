@@ -138,7 +138,7 @@ public class Response {
 
 			// Validate Assertion timestamps
 			if (!this.validateTimestamps()) {
-				throw new Exception("Timing issues (please check your clock settings)");
+				throw new Exception("Timing issues. Possible reasons include: SAML expired, service's clock setting is not UTC.");
 			}
 
 			// EncryptedAttributes are not supported
