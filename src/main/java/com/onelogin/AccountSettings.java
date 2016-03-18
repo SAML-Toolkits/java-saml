@@ -31,12 +31,19 @@ public class AccountSettings {
 	 * @param certificate an base64 encoded string.
 	 */
  	public void loadCertificate(String certificate) throws CertificateException {
-		CertificateFactory fty = CertificateFactory.getInstance("X.509");
-		ByteArrayInputStream bais = new ByteArrayInputStream(Base64.decodeBase64(certificate.getBytes()));
-		this.idp_cert = fty.generateCertificate(bais);
+		loadCertificate(certificate, false);
 	}
 	
-
+	public void loadCertificate(String certificate, boolean isBase64) throws CertificateException {
+        CertificateFactory fty = CertificateFactory.getInstance("X.509");
+        byte[] cert = certificate.getBytes();
+        if (isBase64) {
+            cert = Base64.decodeBase64(cert);
+        }
+        ByteArrayInputStream bais = new ByteArrayInputStream(cert);
+        this.idp_cert = fty.generateCertificate(bais);
+    }
+    
 	public Certificate getIdpCert() throws CertificateException {
 		if(this.idp_cert == null){
 			loadCertificate(this.certificate);
