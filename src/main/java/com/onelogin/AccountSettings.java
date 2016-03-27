@@ -31,7 +31,7 @@ public class AccountSettings {
 	 * @param certificate an base64 encoded string.
 	 */
  	public void loadCertificate(String certificate) throws CertificateException {
-		loadCertificate(certificate, false);
+		loadCertificate(certificate, true);
 	}
 	
 	public void loadCertificate(String certificate, boolean isBase64) throws CertificateException {
