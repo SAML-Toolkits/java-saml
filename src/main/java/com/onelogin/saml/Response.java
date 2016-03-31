@@ -76,7 +76,7 @@ public class Response {
 		this.response = new String(decodedB);
 		this.document = Utils.loadXML(this.response);
 		if(this.document == null){
-			throw new Exception("SAML Response could not be processed");
+			throw new Exception("SAML Response could not be processed, invalid or empty SAML");
 		}
 	}
 
@@ -138,7 +138,7 @@ public class Response {
 
 			// Validate Assertion timestamps
 			if (!this.validateTimestamps()) {
-				throw new Exception("Timing issues (please check your clock settings)");
+				throw new Exception("Timing issues. Possible reasons include: SAML expired, service's clock setting is not UTC.");
 			}
 
 			// EncryptedAttributes are not supported
@@ -253,8 +253,10 @@ public class Response {
 
 	public String getAttribute(String name) {
 		HashMap<String, ArrayList<String>> attributes = getAttributes();
+
 		if (!attributes.isEmpty()) {
-			return attributes.get(name).toString();
+			ArrayList<String> attrVal = attributes.get(name);
+            return attrVal == null || attrVal.size() == 0 ? null : attrVal.get(0).toString();
 		}
 		return null;
 	}
