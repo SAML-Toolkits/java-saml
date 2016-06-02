@@ -35,12 +35,12 @@ public class SettingBuilderTest {
 
 		assertEquals(setting.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:2.0:nameid-format:unspecified");
 
-		assertEquals(setting.getIdpEntityId(), "");
+		assertEquals(setting.getIdpEntityId(), "http://idp.example.com/");
 		assertEquals(setting.getIdpSingleSignOnServiceUrl().toString(),
-				"http://pitbulk.no-ip.org/simplesaml/saml2/idp/SSOService.php");
+				"http://idp.example.com/SSOService.php");
 		assertEquals(setting.getIdpSingleSignOnServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
 		assertEquals(setting.getIdpSingleLogoutServiceUrl().toString(),
-				"http://pitbulk.no-ip.org/simplesaml/saml2/idp/logout.php");
+				"http://idp.example.com/SingleLogoutService.php");
 		assertEquals(setting.getIdpSingleLogoutServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
 		assertEquals(setting.getIdpx509cert(), Util.loadCert(Util.getFileAsString("certs/certificate1")));
 
