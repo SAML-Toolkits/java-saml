@@ -236,7 +236,7 @@ public class Utils {
 			throws Exception {
 
 		try {
-			String schemaFullPath = "schemas" + File.separatorChar + schemaName;
+			String schemaFullPath = "schemas" + "/" + schemaName;
 			log.debug("schemaFullPath: " +schemaFullPath);
 			ClassLoader classLoader = Utils.class.getClassLoader();
 			URL schemaFile = classLoader.getResource(schemaFullPath);
