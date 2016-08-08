@@ -1,5 +1,8 @@
 # OneLogin's SAML Java SAML
 
+Note: There is a new [2.0.0](https://github.com/onelogin/java-saml/tree/v2.0.0) with a lot of security improvements and new supported features. Soon it will be available at Maven Central Repository. (This new version is not compatible with 1.1.2)
+
+
 Updating from 1.0-SNAPSHOT to 1.1.2
 ---------------------------------
 
