@@ -1,5 +1,6 @@
 package com.onelogin.saml2.logout;
 
+import java.io.IOException;
 import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
@@ -92,27 +93,31 @@ public class LogoutResponse {
 		this.settings = settings;
 		this.request = request;
 		
-		currentUrl = request.getRequestURL().toString();
-
-		String samlLogoutResponse = request.getParameter("SAMLResponse");
+		String samlLogoutResponse = null;
+		if (request != null) {
+			currentUrl = request.getRequestURL().toString();
+			samlLogoutResponse = request.getParameter("SAMLResponse");
+		}
 
 		if (samlLogoutResponse != null && !samlLogoutResponse.isEmpty()) {	
 			logoutResponseString = Util.base64decodedInflated(samlLogoutResponse);
 			logoutResponseDocument = Util.loadXML(logoutResponseString);
-		}  
+		}
 	}
 
 	/**
 	 * @return the deflated, base64 encoded, unsigned Logout Response.
+	 *
+	 * @throws IOException 
 	 */
-	public String getEncodedLogoutResponse() {
+	public String getEncodedLogoutResponse() throws IOException {
 		return Util.deflatedBase64encoded(getLogoutResponseXml());
 	}
 
 	/**
 	 * @return the plain XML Logout Response
 	 */
-	private String getLogoutResponseXml() {
+	protected String getLogoutResponseXml() {
 		return logoutResponseString;
 	}
 
@@ -134,12 +139,14 @@ public class LogoutResponse {
 				throw new Exception("SAML Logout Response is not loaded");
 			}
 
-			if (this.currentUrl == null || this.currentUrl.isEmpty()) {
-				throw new Exception("The URL of the current host was not established");
-			}
-
+			/* No possible right now
 			if (request == null) {
 				throw new Exception("The HttpServletRequest of the current host was not established");
+			}
+			*/
+
+			if (this.currentUrl == null || this.currentUrl.isEmpty()) {
+				throw new Exception("The URL of the current host was not established");
 			}
 
 			String signature = request.getParameter("Signature");

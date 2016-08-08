@@ -11,7 +11,7 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 public class XMLErrorAccumulatorHandler extends DefaultHandler {
-
+	// TODO Not only SAXException, errorXML --> error
 	private final Logger LOG = LoggerFactory.getLogger(XMLErrorAccumulatorHandler.class);
 	private final List<Exception> errorXML = new ArrayList<Exception>();
 

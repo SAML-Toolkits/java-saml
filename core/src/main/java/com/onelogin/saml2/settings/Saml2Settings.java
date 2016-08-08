@@ -1,12 +1,8 @@
 package com.onelogin.saml2.settings;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -38,7 +34,6 @@ public class Saml2Settings {
 	// Toolkit settings
 	private boolean strict = false;
 	private boolean debug = false;
-	private boolean spValidationOnly = false;
 	
 	// SP
 	private String spEntityId = "";
@@ -57,7 +52,7 @@ public class Saml2Settings {
 	private URL idpSingleLogoutServiceUrl = null;
 	private String idpSingleLogoutServiceBinding = Constants.BINDING_HTTP_REDIRECT;
 	private X509Certificate idpx509cert = null;
-	private String idpCertFingerprint = "";
+	private String idpCertFingerprint = null;
 	private String idpCertFingerprintAlgorithm = "sha1";
 
 	// Security
@@ -68,8 +63,9 @@ public class Saml2Settings {
 	private Boolean wantMessagesSigned = false;
 	private Boolean wantAssertionsSigned = false;
 	private Boolean wantAssertionsEncrypted = false;
+	private Boolean wantNameId = true;
 	private Boolean wantNameIdEncrypted = false;
-	private List<String> signMetadata = new ArrayList<String>();
+	private Boolean signMetadata = false;
 	private List<String> requestedAuthnContext = new ArrayList<String>();
 	private String requestedAuthnContextComparison = "exact";
 	private Boolean wantXMLValidation = true;
@@ -244,10 +240,17 @@ public class Saml2Settings {
 	/**
 	 * @return the wantAssertionsEncrypted setting value
 	 */
-	public Boolean getWantAssertionsEncryptedd() {
+	public Boolean getWantAssertionsEncrypted() {
 		return wantAssertionsEncrypted;
 	}
 
+	/**
+	 * @return the wantNameId setting value
+	 */
+	public Boolean getWantNameId() {
+		return wantNameId;
+	}
+	
 	/**
 	 * @return the wantNameIdEncrypted setting value
 	 */
@@ -258,7 +261,7 @@ public class Saml2Settings {
 	/**
 	 * @return the signMetadata setting value
 	 */
-	public List<String> getSignMetadata() {
+	public Boolean getSignMetadata() {
 		return signMetadata;
 	}
 
@@ -312,13 +315,6 @@ public class Saml2Settings {
 	}
 	
 	/**
-	 * @return if only the SP settings should be checked
-	 */
-	public Boolean getSpValidationOnly() {
-		return this.spValidationOnly;
-	}
-
-	/**
 	 * Set the strict setting value
 	 * 
 	 * @param strict
@@ -334,7 +330,7 @@ public class Saml2Settings {
 	 * @param debug
 	 *            the debug mode to be set
 	 */
-	protected final void setDebug(boolean debug) {
+	public void setDebug(boolean debug) {
 		this.debug = debug;
 	}
 
@@ -399,19 +395,6 @@ public class Saml2Settings {
 	}
 
 	/**
-	 * Set the spX509cert setting value provided as a string
-	 *
-	 * @param spX509cert
-	 *            the spX509cert value to be set in String format
-	 *
-	 * @throws UnsupportedEncodingException
-	 * @throws CertificateException
-	 */
-	protected final void setSpX509cert(String spX509cert) throws CertificateException, UnsupportedEncodingException {
-		this.spX509cert = Util.loadCert(spX509cert);
-	}
-
-	/**
 	 * Set the spX509cert setting value provided as X509Certificate object
 	 *
 	 * @param spX509cert
@@ -419,19 +402,6 @@ public class Saml2Settings {
 	 */
 	protected final void setSpX509cert(X509Certificate spX509cert) {
 		this.spX509cert = spX509cert;
-	}
-
-	/**
-	 * Set the spPrivateKey setting value provided as a string
-	 *
-	 * @param spPrivateKey
-	 *            the spPrivateKey value to be set in String format
-	 *
-	 * @throws GeneralSecurityException
-	 * @throws IOException 
-	 */
-	protected final void setSpPrivateKey(String spPrivateKey) throws GeneralSecurityException, IOException {
-		this.spPrivateKey = Util.loadPrivateKey(spPrivateKey);
 	}
 
 	/**
@@ -492,19 +462,6 @@ public class Saml2Settings {
 	 */
 	protected final void setIdpSingleLogoutServiceBinding(String idpSingleLogoutServiceBinding) {
 		this.idpSingleLogoutServiceBinding = idpSingleLogoutServiceBinding;
-	}
-
-	/**
-	 * Set the idpX509cert setting value provided as a string
-	 *
-	 * @param idpX509cert
-	 *            the X509cert value to be set in string format
-	 *
-	 * @throws UnsupportedEncodingException
-	 * @throws CertificateException
-	 */
-	protected final void setIdpx509cert(String idpX509cert) throws CertificateException, UnsupportedEncodingException {
-		this.idpx509cert = Util.loadCert(idpX509cert);
 	}
 
 	/**
@@ -608,6 +565,16 @@ public class Saml2Settings {
 	}
 
 	/**
+	 * Set the wantNameId setting value
+	 *
+	 * @param wantNameId
+	 *            the wantNameId value to be set. Based on it the SP expects a NameID
+	 */
+	public void setWantNameId(Boolean wantNameId) {
+		this.wantNameId = wantNameId;
+	}
+
+	/**
 	 * Set the wantNameIdEncrypted setting value
 	 *
 	 * @param wantNameIdEncrypted
@@ -621,9 +588,9 @@ public class Saml2Settings {
 	 * Set the signMetadata setting value
 	 *
 	 * @param signMetadata
-	 *            the signMetadata value to be set. Based on it the SP will sign or not the metadata with the provided PrivateKey/Certificate
+	 *            the signMetadata value to be set. Based on it the SP will sign or not the metadata with the SP PrivateKey/Certificate
 	 */
-	public void setSignMetadata(List<String> signMetadata) {
+	public void setSignMetadata(Boolean signMetadata) {
 		this.signMetadata = signMetadata;
 	}
 
@@ -676,7 +643,7 @@ public class Saml2Settings {
 	protected final void setContacts(List<Contact> contacts) {
 		this.contacts = contacts;
 	}
-	
+
 	/**
 	 * Set the organization info that will be published on the Service Provider metadata
 	 *
@@ -688,16 +655,6 @@ public class Saml2Settings {
 	}
 
 	/**
-	 * Set the "SP validation only" requirement
-	 *
-	 * @param spValidationOnly
-	 *            if true only the SP settings will be validated
-	 */
-	public void setSpValidationOnly(Boolean spValidationOnly) {
-		this.spValidationOnly = spValidationOnly;
-	}
-	
-	/**
 	 * Checks the settings .
 	 * 
 	 * @return errors found on the settings data
@@ -705,7 +662,7 @@ public class Saml2Settings {
 	public List<String> checkSettings() {
 		List<String> errors = new ArrayList<String>(this.checkSPSettings());
 		errors.addAll(this.checkIdPSettings());
-		
+
 		return errors;
 	}
 	
@@ -717,28 +674,26 @@ public class Saml2Settings {
 	public List<String> checkIdPSettings() {
 		List<String> errors = new ArrayList<String>();
 		String errorMsg;
-		
+
 		if (!checkRequired(getIdpEntityId())) {
 			errorMsg = "idp_entityId_not_found";
 			errors.add(errorMsg);
 			LOGGER.error(errorMsg);
 		}
-		
+
 		if (!checkRequired(this.getIdpSingleSignOnServiceUrl())) {
 			errorMsg = "idp_sso_url_invalid";
 			errors.add(errorMsg);
 			LOGGER.error(errorMsg);
 		}
-		
-		if ((this.getWantAssertionsSigned() == true ||
-			  this.getWantMessagesSigned() == true)  
-			  && (this.getIdpx509cert() == null && this.getIdpCertFingerprint() == null)) {
+
+		if (this.getIdpx509cert() == null && !checkRequired(this.getIdpCertFingerprint())) {
 			errorMsg = "idp_cert_or_fingerprint_not_found_and_required";
 			errors.add(errorMsg);
 			LOGGER.error(errorMsg);			
 		}
 
-		if (this.getNameIdEncrypted() == true && this.getIdpCertFingerprint() == null) {
+		if (this.getNameIdEncrypted() == true && this.getIdpx509cert() == null) {
 			errorMsg = "idp_cert_not_found_and_required";
 			errors.add(errorMsg);
 			LOGGER.error(errorMsg);
@@ -761,17 +716,17 @@ public class Saml2Settings {
 			errors.add(errorMsg);
 			LOGGER.error(errorMsg);
 		}
-		
+
 		if (!checkRequired(getSpAssertionConsumerServiceUrl())) {
 			errorMsg = "sp_acs_not_found";
 			errors.add(errorMsg);
 			LOGGER.error(errorMsg);
 		}
-		
+
 		if ((this.getAuthnRequestsSigned() == true ||
 			  this.getLogoutRequestSigned() == true ||
 			  this.getLogoutResponseSigned() == true ||
-			  this.getWantAssertionsEncryptedd() == true ||
+			  this.getWantAssertionsEncrypted() == true ||
 			  this.getWantNameIdEncrypted() == true)
 			  && this.checkSPCerts() == false) {
 			errorMsg = "sp_cert_not_found_and_required";
@@ -781,20 +736,23 @@ public class Saml2Settings {
 
 		List<Contact> contacts = this.getContacts();
 		if (!contacts.isEmpty()) {
+/*			
 			List<String> validTypes = new ArrayList<String>();
 			validTypes.add("technical");
 			validTypes.add("support");
 			validTypes.add("administrative");
 			validTypes.add("billing");
 			validTypes.add("other");
-			
+*/
 			for (Contact contact : contacts) {
+/*
 				if (!validTypes.contains(contact.getContactType())) {
 					errorMsg = "contact_type_invalid";
 					errors.add(errorMsg);
 					LOGGER.error(errorMsg);
 				}
-				
+*/
+
 				if (contact.getEmailAddress().isEmpty() || contact.getGivenName().isEmpty()) {
 					errorMsg = "contact_not_enought_data";
 					errors.add(errorMsg);
@@ -802,14 +760,14 @@ public class Saml2Settings {
 				}
 			}
 		}
-		
+
 		Organization org = this.getOrganization();
 		if (org != null && (org.getOrgDisplayName().isEmpty() || org.getOrgName().isEmpty() || org.getOrgUrl().isEmpty())) {
 			errorMsg = "organization_not_enought_data";
 			errors.add(errorMsg);
 			LOGGER.error(errorMsg);
 		}
-		
+
 		return errors;
 	}
 
@@ -821,7 +779,7 @@ public class Saml2Settings {
 	public Boolean checkSPCerts() {
 		X509Certificate cert = getSPcert();
 		PrivateKey key = getSPkey();
-		
+
 		return (cert != null && key != null);
 	}
 	
@@ -854,26 +812,28 @@ public class Saml2Settings {
 	 *
 	 * @return the SP metadata (xml)
 	 *
-	 * @throws CertificateEncodingException 
+	 * @throws CertificateEncodingException
 	 */	
 	public String getSPMetadata() throws CertificateEncodingException {
 		Metadata metadataObj = new Metadata(this);
 		String metadataString = metadataObj.getMetadataString();
-		
+
 		// Check if must be signed
-		List<String> signMetadata = this.getSignMetadata();
-		if (!signMetadata.isEmpty()) {
+		Boolean signMetadata = this.getSignMetadata();
+		if (signMetadata) {
 			// TODO Extend this in order to be able to read not only SP privateKey/certificate
-			metadataString =  metadataObj.signMetadata(
-					metadataString,
-					this.getSPkey(),
-					this.getSPcert(),
-					this.getSignatureAlgorithm()
-			);
+			try {
+				metadataString =  Metadata.signMetadata(
+						metadataString,
+						this.getSPkey(),
+						this.getSPcert(),
+						this.getSignatureAlgorithm()
+				);
+			} catch (Exception e) {				
+				LOGGER.debug("Error executing signMetadata: " + e.getMessage(), e);
+			}
 		}
-		
-		
-		
+
 		return metadataString;
 	}
 	
@@ -888,40 +848,43 @@ public class Saml2Settings {
 	 */
 	public static List<String> validateMetadata(String metadataString) throws Exception {
 
+		metadataString = metadataString.replace("<?xml version=\"1.0\"?>", "");
 
 		Document metadataDocument = Util.loadXML(metadataString);
-		
+
 		List<String> errors = new ArrayList<String>();
-		
+
 		if (!Util.validateXML(metadataDocument, SchemaFactory.SAML_SCHEMA_METADATA_2_0)) {
 			errors.add("Invalid SAML Metadata. Not match the saml-schema-metadata-2.0.xsd");
 		} else {
 			Element rootElement = metadataDocument.getDocumentElement();
-			if (rootElement.getTagName() != "md:EntityDescriptor") {
+			if (!rootElement.getLocalName().equals("EntityDescriptor")) {
 				errors.add("noEntityDescriptor_xml");
 			} else {
-				if (rootElement.getElementsByTagName("md:SPSSODescriptor").getLength() != 1) {
+				if (rootElement.getElementsByTagNameNS(Constants.NS_MD, "SPSSODescriptor").getLength() != 1) {
 					errors.add("onlySPSSODescriptor_allowed_xml");
 				} else {
 					String validUntil = null;
 					String cacheDuration = null;
-					
+
 					if (rootElement.hasAttribute("cacheDuration")) {
 						cacheDuration = rootElement.getAttribute("cacheDuration");
 					}
-					
+
 					if (rootElement.hasAttribute("validUntil")) {
 						validUntil = rootElement.getAttribute("validUntil");
 					}
-					
+
 					long expireTime = Util.getExpireTime(cacheDuration, validUntil);
-					
-					if (Util.getCurrentTimeStamp() > expireTime) {
+
+					if (expireTime != 0 && Util.getCurrentTimeStamp() > expireTime) {
 						errors.add("expired_xml");
 					}
 				}
 			}
 		}
+		// TODO Validate Sign if required with Util.validateMetadataSign
+		
 		return errors;
 	}
 }

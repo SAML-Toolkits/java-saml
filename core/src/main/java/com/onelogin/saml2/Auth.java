@@ -6,7 +6,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,7 +72,7 @@ public class Auth {
 	/**
      * SessionNotOnOrAfter. When the user is logged, this stored it from the AuthnStatement of the SAML Response
 	 */
-	private Calendar sessionExpiration;
+	private DateTime sessionExpiration;
 
 	/**
      * User attributes data.
@@ -107,6 +107,19 @@ public class Auth {
 	/**
 	 * Initializes the SP SAML instance.
 	 *
+	 * @param filename
+	 * 				String Filename with the settings
+	 *
+	 * @throws IOException
+	 * @throws SettingsException 
+	 */
+	public Auth(String filename) throws IOException, SettingsException {
+		this(new SettingsBuilder().fromFile(filename).build(), null, null);
+	}
+	
+	/**
+	 * Initializes the SP SAML instance.
+	 *
 	 * @param request
 	 * 				HttpServletRequest object to be processed
 	 * @param response
@@ -119,6 +132,23 @@ public class Auth {
 		this(new SettingsBuilder().fromFile("onelogin.saml.properties").build(), request, response);
 	}
 
+	/**
+	 * Initializes the SP SAML instance.
+	 *
+	 * @param filename
+	 *				String Filename with the settings
+	 * @param request
+	 * 				HttpServletRequest object to be processed
+	 * @param response
+	 * 				HttpServletResponse object to be used
+	 *
+	 * @throws SettingsException 
+	 * @throws IOException
+	 */
+	public Auth(String filename, HttpServletRequest request, HttpServletResponse response) throws SettingsException, IOException {
+		this(new SettingsBuilder().fromFile(filename).build(), request, response);
+	}
+	
 	/**
 	 * Initializes the SP SAML instance.
 	 *
@@ -167,13 +197,14 @@ public class Auth {
      *				When true the AuthNReuqest will set the ForceAuthn='true'
 	 * @param isPassive 
      *				When true the AuthNReuqest will set the IsPassive='true'
-     *
+	 * @param setNameIdPolicy
+	 *            When true the AuthNReuqest will set a nameIdPolicy
 	 * @throws IOException
 	 */
-	public void login(String returnTo, Boolean forceAuthn, Boolean isPassive) throws IOException {
+	public void login(String returnTo, Boolean forceAuthn, Boolean isPassive, Boolean setNameIdPolicy) throws IOException {
 		Map<String, String> parameters = new HashMap<String, String>();
 
-		AuthnRequest authnRequest = new AuthnRequest(settings, forceAuthn, isPassive);
+		AuthnRequest authnRequest = new AuthnRequest(settings, forceAuthn, isPassive, setNameIdPolicy);
 
 		String samlRequest = authnRequest.getEncodedAuthnRequest();
 		parameters.put("SAMLRequest", samlRequest);
@@ -206,7 +237,19 @@ public class Auth {
 	 * @throws IOException
 	 */
 	public void login() throws IOException {
-		login(null ,false, false);
+		login(null ,false, false, true);
+	}
+
+	/**
+	 * Initiates the SSO process.
+	 *
+	 * @param returnTo 
+     *				The target URL the user should be returned to after login.
+     *
+	 * @throws IOException
+	 */
+	public void login(String returnTo) throws IOException {
+		login(returnTo ,false, false, true);
 	}
 
 	/**
@@ -260,6 +303,20 @@ public class Auth {
 	public void logout() throws IOException, XMLEntityException {		
 		logout(null, null, null);
 	}
+
+	/**
+	 * Initiates the SLO process.
+	 *
+	 * @param returnTo 
+     *				The target URL the user should be returned to after logout. 
+	 *
+	 * @throws IOException
+	 * @throws XMLEntityException
+	 */
+	public void logout(String returnTo) throws IOException, XMLEntityException {		
+		logout(returnTo, null, null);
+	}
+
 
 	/**
      * @return The url of the Single Sign On Service
@@ -343,7 +400,7 @@ public class Auth {
 				errorReason = logoutResponse.getError();				
 			} else {
 				String status = logoutResponse.getStatus();				
-				if (!status.equals(Constants.STATUS_SUCCESS)) {
+				if (status == null || !status.equals(Constants.STATUS_SUCCESS)) {
 					errors.add("logout_not_success");
 					LOGGER.error("processSLO error. logout_not_success");
 					LOGGER.debug(" --> " + samlResponseParameter);
@@ -378,7 +435,7 @@ public class Auth {
 				parameters.put("SAMLResponse", samlLogoutResponse);
 
 				String relayState = request.getParameter("RelayState");
-				if (relayState != null && ! relayState.isEmpty()) {
+				if (relayState != null) {
 					parameters.put("RelayState", relayState);
 				}
 
@@ -419,10 +476,10 @@ public class Auth {
 	}
 
 	/**
-	 * @return the set of the names of the SAML attributes.
+	 * @return the list of the names of the SAML attributes.
 	 */
-	public final Collection<String> getAttributesName() {
-		return attributes.keySet();
+	public final List<String> getAttributesName() {
+		return new ArrayList<String>(attributes.keySet());
 	}
 
 	/**
@@ -461,13 +518,13 @@ public class Auth {
     /**
      * @return the SessionNotOnOrAfter of the assertion
      */
-	public final Calendar getSessionExpiration()
+	public final DateTime getSessionExpiration()
 	{
 	    return sessionExpiration;
 	}
 
 	/** 
-     * @return an array with the errors, the array is empty when the settings is ok
+     * @return an array with the errors, the array is empty when the validation was successful
      */
     public List<String> getErrors()
     {
@@ -511,38 +568,7 @@ public class Auth {
 	 */
     public String buildRequestSignature(String samlRequest, String relayState, String signAlgorithm)
     {
-	 String signature = "";
-
-	 if (!settings.checkSPCerts()) {
-		 String errorMsg = "Trying to sign the SAML Request but can't load the SP certs";
-		 LOGGER.error("buildRequestSignature error." + errorMsg);
-		 throw new IllegalArgumentException(errorMsg);
-	 }
-
-	 PrivateKey key = settings.getSPkey();
-
-	 String msg = "SAMLRequest=" + Util.urlEncoder(samlRequest);
-	 msg += "&RelayState=" + Util.urlEncoder(relayState);
-	 msg += "&SigAlg=" + Util.urlEncoder(signAlgorithm);
-
-	 try {
-		 signature = Util.base64encoder(Util.sign(msg, key, signAlgorithm));
-	 } catch (InvalidKeyException e) {
-		 LOGGER.error("buildRequestSignature error." + e.getMessage());
-	 } catch (NoSuchAlgorithmException e) {
-		 LOGGER.error("buildRequestSignature error." + e.getMessage());
-	 } catch (SignatureException e) {
-		 LOGGER.error("buildRequestSignature error." + e.getMessage());
-	 }
-
-	 if (signature.isEmpty()) {
-		 String errorMsg = "There was a problem when calculating the Signature of the SAMLRequest";
-		 LOGGER.error("buildRequestSignature error. " + errorMsg);
-		 throw new IllegalArgumentException(errorMsg);
-	 }
-
-	 LOGGER.debug("buildRequestSignature success. --> " + signature);
-	 return signature;
+    	return buildSignature(samlRequest, relayState, signAlgorithm, "SAMLRequest");
     }
 
 	/**
@@ -559,37 +585,45 @@ public class Auth {
 	 */
 	public String buildResponseSignature(String samlResponse, String relayState, String signAlgorithm)
 	{
-	 String signature = "";
+		return buildSignature(samlResponse, relayState, signAlgorithm, "SAMLResponse");
+	}
+	
+	private String buildSignature(String samlMessage, String relayState, String signAlgorithm, String type)
+	{
+		 String signature = "";
+		 
+		 if (!settings.checkSPCerts()) {
+			 String errorMsg = "Trying to sign the " + type + " but can't load the SP certs";
+			 LOGGER.error("buildSignature error. " + errorMsg);
+			 throw new IllegalArgumentException(errorMsg);
+		 }
 
-	 if (!settings.checkSPCerts()) {
-		 String errorMsg = "Trying to sign the SAML Response but can't load the SP certs";
-		 LOGGER.error("buildResponseSignature error. " + errorMsg);
-		 throw new IllegalArgumentException(errorMsg);
-	 }
+		 PrivateKey key = settings.getSPkey();
+		 
+		 String msg = type + "=" + Util.urlEncoder(samlMessage);
+		 if (relayState != null) {
+			 msg += "&RelayState=" + Util.urlEncoder(relayState);
+		 }
+		 
+		 if (signAlgorithm == null || signAlgorithm.isEmpty()) {
+			 signAlgorithm = Constants.RSA_SHA1;
+		 }
+		 
+		 msg += "&SigAlg=" + Util.urlEncoder(signAlgorithm);
 
-	 PrivateKey key = settings.getSPkey();
+		 try {
+			signature = Util.base64encoder(Util.sign(msg, key, signAlgorithm));
+		} catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
+			LOGGER.error("buildSignature error." + e.getMessage());
+		}
 
-	 String msg = "SAMLResponse=" + Util.urlEncoder(samlResponse);
-	 msg += "&RelayState=" + Util.urlEncoder(relayState);
-	 msg += "&SigAlg=" + Util.urlEncoder(signAlgorithm);
+		 if (signature.isEmpty()) {
+			 String errorMsg = "There was a problem when calculating the Signature of the " + type;
+			 LOGGER.error("buildSignature error. " + errorMsg);
+			 throw new IllegalArgumentException(errorMsg);
+		 }
 
-	 try {
-		 signature = Util.base64encoder(Util.sign(msg, key, signAlgorithm));
-	 } catch (InvalidKeyException e) {
-		 LOGGER.error("buildResponseSignature error. " + e.getMessage());
-	 } catch (NoSuchAlgorithmException e) {
-		 LOGGER.error("buildResponseSignature error. " + e.getMessage());
-	 } catch (SignatureException e) {
-		 LOGGER.error("buildResponseSignature error." + e.getMessage());
-	 }
-
-	 if (signature.isEmpty()) {
-		 String errorMsg = "There was a problem when calculating the Signature of the SAMLResponse";
-		 LOGGER.error("buildResponseSignature error. " + errorMsg);
-		 throw new IllegalArgumentException(errorMsg);
-	 }
-
-	 LOGGER.debug("buildResponseSignature success. --> " + signature);
-	 return signature;
+		 LOGGER.debug("buildResponseSignature success. --> " + signature);
+		 return signature;
 	}
 }

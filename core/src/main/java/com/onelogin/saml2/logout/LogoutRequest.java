@@ -1,5 +1,6 @@
 package com.onelogin.saml2.logout;
 
+import java.io.IOException;
 import java.net.URL;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
@@ -8,12 +9,12 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.lang3.text.StrSubstitutor;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -149,15 +150,17 @@ public class LogoutRequest {
 
 	/**
 	 * @return the deflated base64 encoded unsigned Logout Request
+	 *
+	 * @throws IOException 
 	 */
-	public String getEncodedLogoutRequest() {
+	public String getEncodedLogoutRequest() throws IOException {
 		return Util.deflatedBase64encoded(getLogoutRequestXml());
 	}
 
 	/**
 	 * @return the plain XML Logout Request
 	 */
-	private String getLogoutRequestXml() {
+	protected String getLogoutRequestXml() {
 		return logoutRequestString;
 	}
 
@@ -238,16 +241,16 @@ public class LogoutRequest {
 		error = null;
 
 		try {
-			if (this.logoutRequestString == null) {
-				throw new Exception("SAML Logout request is not loaded");
-			}
-
-			if (this.currentUrl == null || this.currentUrl.isEmpty()) {
-				throw new Exception("The URL of the current host was not established");
+			if (this.logoutRequestString == null || logoutRequestString.isEmpty()) {
+				throw new Exception("SAML Logout Request is not loaded");
 			}
 
 			if (this.request == null) {
 				throw new Exception("The HttpServletRequest of the current host was not established");
+			}
+			
+			if (this.currentUrl == null || this.currentUrl.isEmpty()) {
+				throw new Exception("The URL of the current host was not established");
 			}
 
 			String signature = request.getParameter("Signature");
@@ -266,11 +269,10 @@ public class LogoutRequest {
 
 				// Check NotOnOrAfter
 				if (rootElement.hasAttribute("NotOnOrAfter")) {
-					Calendar now = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 					String notOnOrAfter = rootElement.getAttribute("NotOnOrAfter");
-					Calendar notOnOrAfterDate = Util.parseDateTime(notOnOrAfter);
-					if (now.equals(notOnOrAfterDate) || now.after(notOnOrAfterDate)) {
-						 throw new Exception("Timing issues (please check your clock settings)");
+					DateTime notOnOrAfterDate = Util.parseDateTime(notOnOrAfter);
+					if (notOnOrAfterDate.isEqualNow() || notOnOrAfterDate.isBeforeNow()) {
+						throw new Exception("Timing issues (please check your clock settings)");
 					}
 				}
 
@@ -290,38 +292,38 @@ public class LogoutRequest {
 
 				// Check the issuer
 				String issuer = getIssuer(logoutRequestDocument);
-				if (issuer.isEmpty() || !issuer.equals(settings.getIdpEntityId())) {
+				if (issuer != null && (issuer.isEmpty() || !issuer.equals(settings.getIdpEntityId()))) {
 					throw new Exception("Invalid issuer in the Logout Request");
 				}
 
                 if (settings.getWantMessagesSigned() && (signature == null || signature.isEmpty())) {
                     throw new Exception("The Message of the Logout Request is not signed and the SP requires it");
                 }
+			}
+                
+			if (signature != null && !signature.isEmpty()) {
+				X509Certificate cert = settings.getIdpx509cert();
+				if (cert == null) {
+					throw new Exception("In order to validate the sign on the Logout Request, the x509cert of the IdP is required");
+				}
 
-    			if (signature != null && !signature.isEmpty()) {
-    				X509Certificate cert = settings.getIdpx509cert();
-    				if (cert == null) {
-    					throw new Exception("In order to validate the sign on the Logout Request, the x509cert of the IdP is required");
-    				}
+				String signAlg = request.getParameter("SigAlg");
+				if (signAlg == null || signAlg.isEmpty()) {
+					signAlg = Constants.RSA_SHA1;
+				}
+				String relayState = request.getParameter("RelayState");
 
-    				String signAlg = request.getParameter("SigAlg");
-    				if (signAlg == null || signAlg.isEmpty()) {
-    					signAlg = Constants.RSA_SHA1;
-    				}
-    				String relayState = request.getParameter("RelayState");
+				String signedQuery = "SAMLRequest=" + Util.urlEncoder(request.getParameter("SAMLRequest"));
 
-    				String signedQuery = "SAMLRequest=" + Util.urlEncoder(request.getParameter("SAMLRequest"));
+				if (relayState != null && !relayState.isEmpty()) {
+					signedQuery += "&RelayState=" + Util.urlEncoder(relayState);
+				}
 
-    				if (relayState != null && !relayState.isEmpty()) {
-    					signedQuery += "&RelayState=" + Util.urlEncoder(relayState);
-    				}
+				signedQuery += "&SigAlg=" + Util.urlEncoder(signAlg);
 
-    				signedQuery += "&SigAlg=" + Util.urlEncoder(signAlg);
-
-    				if (!Util.validateBinarySignature(signedQuery, Util.base64decoder(signature), cert, signAlg)) {
-    					throw new Exception("Signature validation failed. Logout Request rejected");
-    				}
-    			}
+				if (!Util.validateBinarySignature(signedQuery, Util.base64decoder(signature), cert, signAlg)) {
+					throw new Exception("Signature validation failed. Logout Request rejected");
+				}
 			}
 			
 			LOGGER.debug("LogoutRequest validated --> " + logoutRequestString);
@@ -343,9 +345,13 @@ public class LogoutRequest {
      * @return the ID of the Logout Request.
      */
 	public static String getId(Document samlLogoutRequestDocument) {
-		Element rootElement = samlLogoutRequestDocument.getDocumentElement();
-		rootElement.normalize();
-		return rootElement.getAttribute("ID");
+		String id = null;
+		try {
+			Element rootElement = samlLogoutRequestDocument.getDocumentElement();
+			rootElement.normalize();
+			id = rootElement.getAttribute("ID");
+		} catch (Exception e) {}
+		return id;
 	}
 
     /**
@@ -377,7 +383,7 @@ public class LogoutRequest {
 	 * @throws Exception
      */
 	public static Map<String, String> getNameIdData(Document samlLogoutRequestDocument, PrivateKey key) throws IllegalArgumentException, Exception {
-		NodeList encryptedIDNodes = Util.query(samlLogoutRequestDocument, "/saml:Subject/saml:EncryptedID/xenc:EncryptedData");
+		NodeList encryptedIDNodes = Util.query(samlLogoutRequestDocument, "/samlp:LogoutRequest/saml:EncryptedID");
 		NodeList nameIdNodes;
 		Element nameIdElem;
 		
@@ -385,13 +391,17 @@ public class LogoutRequest {
 			if (key == null) {
 				throw new IllegalArgumentException("Key is required in order to decrypt the NameID");
 			}
-			
+
 			Element encryptedData = (Element) encryptedIDNodes.item(0);
-			Util.decryptElement(encryptedData, key);			
-			nameIdNodes = Util.query(samlLogoutRequestDocument, "/saml:Subject/saml:EncryptedID/saml:NameID");
+			Util.decryptElement(encryptedData, key);
+			nameIdNodes = Util.query(samlLogoutRequestDocument, "/samlp:LogoutRequest/saml:NameID");
+
+			if (nameIdNodes == null || nameIdNodes.getLength() == 0) {
+				throw new Exception("Not able to decrypt the EncryptedID and get a NameID");
+			}
 		} 
 		else {
-			nameIdNodes = Util.query(samlLogoutRequestDocument, "/saml:Subject/saml:NameID");
+			nameIdNodes = Util.query(samlLogoutRequestDocument, "/samlp:LogoutRequest/saml:NameID");
 		}
 
 		if (nameIdNodes != null && nameIdNodes.getLength() > 0) {

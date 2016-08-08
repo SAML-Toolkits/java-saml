@@ -1,18 +1,21 @@
 package com.onelogin.saml2.authn;
 
+import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
-import org.apache.commons.codec.binary.Base64;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -20,12 +23,14 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.model.SamlResponseStatus;
 import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.SchemaFactory;
 import com.onelogin.saml2.util.Util;
+
 
 /**
  * SamlResponse class of OneLogin's Java Toolkit.
@@ -86,20 +91,11 @@ public class SamlResponse {
 	 */
 	public SamlResponse(Saml2Settings settings, HttpServletRequest request) throws Exception {
 		this.settings = settings;
-		currentUrl = request.getRequestURL().toString();
-		loadXmlFromBase64(request.getParameter("SAMLResponse"));
-	}
 
-	/**
-	 * Constructor that only initiates the settings
-	 *
-	 * @param settings
-	 *              Saml2Settings object. Setting data
-	 *
-	 * @see com.onelogin.saml2.authn.SamlResponse#SamlResponse(Saml2Settings, HttpServletRequest)
-	 */
-	private SamlResponse(Saml2Settings settings) {
-		this.settings = settings;
+		if (request != null) {			
+			currentUrl = request.getRequestURL().toString();
+			loadXmlFromBase64(request.getParameter("SAMLResponse"));
+		}
 	}
 
 	/**
@@ -111,7 +107,7 @@ public class SamlResponse {
 	 * @throws Exception 
 	 */
 	public void loadXmlFromBase64(String responseStr) throws Exception {
-		samlResponseString = new String(Base64.decodeBase64(responseStr));
+		samlResponseString = new String(Util.base64decoder(responseStr));
 		samlResponseDocument = Util.loadXML(samlResponseString);
 
 		if (samlResponseDocument == null) {
@@ -138,8 +134,6 @@ public class SamlResponse {
 		error = null;
 
 		try {
-			Calendar now = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-
 			if (samlResponseDocument == null) {
 				throw new Exception("SAML Response is not loaded");
 			}
@@ -161,47 +155,45 @@ public class SamlResponse {
 				throw new Exception("Missing ID attribute on SAML Response.");
 			}
 
-			this.checkStatus(Constants.STATUS_SUCCESS);
+			this.checkStatus();
 
 			if (!this.validateNumAssertions()) {
 				throw new IllegalArgumentException("SAML Response must contain 1 Assertion.");
 			}
 
-			NodeList signNodes = query("//ds:Signature", null);
-			ArrayList<String> signedElements = new ArrayList<String>();
-			for (int i = 0; i < signNodes.getLength(); i++) {
-				signedElements.add(signNodes.item(i).getParentNode().getLocalName());
-			}
-			if (!signedElements.isEmpty()) {
-				if (!this.validateSignedElements(signedElements)) {
-					throw new Exception("Found an unexpected Signature Element. SAML Response rejected");
-				}
-			}
+			ArrayList<String> signedElements = processSignedElements();
 
 			if (settings.isStrict()) {
 				if (settings.getWantXMLValidation()) {
 					if (!Util.validateXML(samlResponseDocument, SchemaFactory.SAML_SCHEMA_PROTOCOL_2_0)) {
 						throw new Exception("Invalid SAML Response. Not match the saml-schema-protocol-2.0.xsd");
 					}
+
+					// If encrypted, check also the decrypted document
+					if (encrypted) {
+						if (!Util.validateXML(decryptedDocument, SchemaFactory.SAML_SCHEMA_PROTOCOL_2_0)) {
+							throw new Exception("Invalid decrypted SAML Response. Not match the saml-schema-protocol-2.0.xsd");
+						}
+					}
 				}
 
+				String responseInResponseTo = rootElement.getAttribute("InResponseTo");
 				// Check if the InResponseTo of the Response matches the ID of the AuthNRequest (requestId) if provided
 				if (requestId != null && !requestId.isEmpty() && rootElement.hasAttribute("InResponseTo")) {
-					String responseInResponseTo = rootElement.getAttribute("InResponseTo");
 					if (!responseInResponseTo.equals(requestId)) {
 						throw new Exception("The InResponseTo of the Response: " + responseInResponseTo
 								+ ", does not match the ID of the AuthNRequest sent by the SP: " + requestId);
 					}
 				}
 
-				if (!this.encrypted && settings.getWantAssertionsEncryptedd()) {
-					throw new Exception("The assertion of the Response is not encrypted and the SP require it");
+				if (!this.encrypted && settings.getWantAssertionsEncrypted()) {
+					throw new Exception("The assertion of the Response is not encrypted and the SP requires it");
 				}
 
 				if (settings.getWantNameIdEncrypted()) {
 					NodeList encryptedNameIdNodes = this.queryAssertion("/saml:Subject/saml:EncryptedID/xenc:EncryptedData");
 					if (encryptedNameIdNodes.getLength() == 0) {
-						throw new Exception("The NameID of the Response is not encrypted and the SP require it");
+						throw new Exception("The NameID of the Response is not encrypted and the SP requires it");
 					}
 				}
 
@@ -216,12 +208,6 @@ public class SamlResponse {
 					throw new Exception("There is an EncryptedAttribute in the Response and this SP not support them");
 				}
 
-				// Check Audience
-				List<String> validAudiences = this.getAudiences();				
-				if (!validAudiences.isEmpty() && !validAudiences.contains(settings.getSpEntityId())) {
-				 throw new Exception( settings.getSpEntityId() + " is not a valid audience for this Response");
-				}
-
 				// Check destination
 				if (rootElement.hasAttribute("Destination")) {
 					String destinationUrl = rootElement.getAttribute("Destination");
@@ -233,6 +219,12 @@ public class SamlResponse {
 					}
 				}
 
+				// Check Audience
+				List<String> validAudiences = this.getAudiences();				
+				if (!validAudiences.isEmpty() && !validAudiences.contains(settings.getSpEntityId())) {
+				 throw new Exception( settings.getSpEntityId() + " is not a valid audience for this Response");
+				}
+				
 				// Check the issuers
 				List<String> issuers = this.getIssuers();
 				for (int i = 0; i < issuers.size(); i++) {
@@ -243,9 +235,9 @@ public class SamlResponse {
 				}
 
 				// Check the session Expiration
-				Calendar sessionExpiration = this.getSessionNotOnOrAfter();
+				DateTime sessionExpiration = this.getSessionNotOnOrAfter();
 				if (sessionExpiration != null) {
-					if (now.equals(sessionExpiration) || now.after(sessionExpiration)) {
+					if (sessionExpiration.isEqualNow() || sessionExpiration.isBeforeNow()) {
 						throw new Exception("The attributes have expired, based on the SessionNotOnOrAfter of the AttributeStatement of this Response");
 					}
 				}
@@ -271,19 +263,24 @@ public class SamlResponse {
 								continue;
 							}
 
-							Node notOnOrAfter = subjectConfirmationDataNodes.item(c).getAttributes()
-									.getNamedItem("NotOnOrAfter");
+							Node inResponseTo = subjectConfirmationDataNodes.item(c).getAttributes().getNamedItem("InResponseTo");
+							if (inResponseTo != null && !inResponseTo.getNodeValue().equals(responseInResponseTo)) {
+								continue;
+							}
+
+							
+							Node notOnOrAfter = subjectConfirmationDataNodes.item(c).getAttributes().getNamedItem("NotOnOrAfter");
 							if (notOnOrAfter != null) {
-								Calendar noa = Util.parseDateTime(notOnOrAfter.getNodeValue());
-								if (now.equals(noa) || now.after(noa)) {
+								DateTime noa = Util.parseDateTime(notOnOrAfter.getNodeValue());
+								if (noa.isEqualNow() || noa.isBeforeNow()) {
 									continue;
 								}
 							}
 
 							Node notBefore = subjectConfirmationDataNodes.item(c).getAttributes().getNamedItem("NotBefore");
 							if (notBefore != null) {
-								Calendar nb = Util.parseDateTime(notBefore.getNodeValue());
-								if (now.before(nb)) {
+								DateTime nb = Util.parseDateTime(notBefore.getNodeValue());
+								if (nb.isAfterNow()) {
 									continue;
 								}
 							}
@@ -329,12 +326,7 @@ public class SamlResponse {
 
 			LOGGER.debug("SAMLResponse validated --> " + samlResponseString);
 			return true;
-		} catch (Error e) {
-			error = e.getMessage();
-			LOGGER.debug("SAMLResponse invalid --> " + samlResponseString);
-			LOGGER.error(error);
-			return false;
-		} catch (Exception e) {
+		} catch (Error | Exception e) {
 			error = e.getMessage();
 			LOGGER.debug("SAMLResponse invalid --> " + samlResponseString);
 			LOGGER.error(error);
@@ -359,37 +351,47 @@ public class SamlResponse {
 	 * @throws Exception 
      */
 	public HashMap<String,String> getNameIdData() throws Exception {
+		HashMap<String,String> nameIdData = new HashMap<String, String>();
+
 		NodeList encryptedIDNodes = this.queryAssertion("/saml:Subject/saml:EncryptedID/xenc:EncryptedData");
 		NodeList nameIdNodes;
 		Element nameIdElem;
 		if (encryptedIDNodes.getLength() > 0) {
 			Element encryptedData = (Element) encryptedIDNodes.item(0);
 			PrivateKey key = settings.getSPkey();
-			Util.decryptElement(encryptedData, key);			
-			nameIdNodes = this.queryAssertion("/saml:Subject/saml:EncryptedID/saml:NameID");
-		} 
-		else {
+			if (key == null) {
+				throw new IllegalArgumentException("Key is required in order to decrypt the NameID");
+			}
+
+			Util.decryptElement(encryptedData, key);
+			nameIdNodes = this.queryAssertion("/saml:Subject/saml:EncryptedID/saml:NameID|/saml:Subject/saml:NameID");
+
+			if (nameIdNodes == null || nameIdNodes.getLength() == 0) {
+				throw new Exception("Not able to decrypt the EncryptedID and get a NameID");
+			}
+		} else {
 			nameIdNodes = this.queryAssertion("/saml:Subject/saml:NameID");
 		}
 
 		if (nameIdNodes != null && nameIdNodes.getLength() > 0) {
 			nameIdElem = (Element) nameIdNodes.item(0);
+			
+			if (nameIdElem != null) {
+				nameIdData.put("Value", nameIdElem.getTextContent());
+
+				if (nameIdElem.hasAttribute("Format")) {
+					nameIdData.put("Format", nameIdElem.getAttribute("Format"));
+				}
+				if (nameIdElem.hasAttribute("SPNameQualifier")) {
+					nameIdData.put("SPNameQualifier", nameIdElem.getAttribute("SPNameQualifier"));
+				}
+				if (nameIdElem.hasAttribute("NameQualifier")) {
+					nameIdData.put("NameQualifier", nameIdElem.getAttribute("NameQualifier"));
+				}
+			}
 		} else {
-			throw new Exception("No name id found in Document.");
-		}
-
-		HashMap<String,String> nameIdData = new HashMap<String, String>();
-		if (nameIdElem != null) {
-			nameIdData.put("Value", nameIdElem.getTextContent());
-
-			if (nameIdElem.hasAttribute("Format")) {
-				nameIdData.put("Format", nameIdElem.getAttribute("Format"));
-			}
-			if (nameIdElem.hasAttribute("SPNameQualifier")) {
-				nameIdData.put("SPNameQualifier", nameIdElem.getAttribute("SPNameQualifier"));
-			}
-			if (nameIdElem.hasAttribute("NameQualifier")) {
-				nameIdData.put("NameQualifier", nameIdElem.getAttribute("NameQualifier"));
+			if (settings.getWantNameId()) {
+				throw new Exception("No name id found in Document.");
 			}
 		}
 		return nameIdData;
@@ -404,8 +406,12 @@ public class SamlResponse {
      */
 	public String getNameId() throws Exception {
 		HashMap<String,String> nameIdData = getNameIdData();
-		LOGGER.debug("SAMLResponse has NameID --> " + nameIdData.get("Value"));
-		return nameIdData.get("Value");
+		String nameID = null;
+		if (!nameIdData.isEmpty()) {
+			LOGGER.debug("SAMLResponse has NameID --> " + nameIdData.get("Value"));
+			nameID = nameIdData.get("Value");
+		}
+		return nameID;
 	}
 
 	/**
@@ -424,43 +430,39 @@ public class SamlResponse {
 			for (int i = 0; i < nodes.getLength(); i++) {
 				NamedNodeMap attrName = nodes.item(i).getAttributes();
 				String attName = attrName.getNamedItem("Name").getNodeValue();
-				NodeList children = nodes.item(i).getChildNodes();
+				NodeList childrens = nodes.item(i).getChildNodes();
 
 				List<String> attrValues = new ArrayList<String>();
-				for (int j = 0; j < children.getLength(); j++) {
-					attrValues.add(children.item(j).getTextContent());
+				for (int j = 0; j < childrens.getLength(); j++) {
+					if ("AttributeValue".equals(childrens.item(j).getLocalName())) {
+						attrValues.add(childrens.item(j).getTextContent());
+					}
 				}
 				attributes.put(attName, attrValues);
 			}
+			LOGGER.debug("SAMLResponse has attributes: " + attributes.toString());
 		} else {
 			LOGGER.debug("SAMLResponse has no attributes");
-			return null;
 		}
-
-		LOGGER.debug("SAMLResponse has attributes: " + attributes.toString());
 		return attributes;
 	}
 
 	/**
-	 * Checks if the Status is success
+	 * Checks the Status
 	 *
-	 * @throws Exception
-	 * @throws $statusExceptionMsg
+	 * @throws IllegalArgumentException
 	 *             If status is not success
 	 */
-	private SamlResponseStatus checkStatus(String statusToCheck) throws IllegalArgumentException {
+	public void checkStatus() {
 		SamlResponseStatus responseStatus = getStatus(samlResponseDocument);
-		if (responseStatus.is(statusToCheck)) {
+		if (!responseStatus.is(Constants.STATUS_SUCCESS)) {
 			String statusExceptionMsg = "The status code of the Response was not Success, was "
-					+ responseStatus.getStausCode();
+					+ responseStatus.getStatusCode();
 			if (responseStatus.getStatusMessage() != null) {
 				statusExceptionMsg += " -> " + responseStatus.getStatusMessage();
 			}
 			throw new IllegalArgumentException(statusExceptionMsg);
 		}
-
-		return responseStatus;
-
 	}
 
 	/**
@@ -496,7 +498,7 @@ public class SamlResponse {
 			NodeList messageEntry = Util.query(dom, statusExpr + "/samlp:StatusMessage",
 					(Element) statusEntry.item(0));
 			if (messageEntry.getLength() > 0) {
-				status.setStatusMessage(messageEntry.item(0).getNodeValue());
+				status.setStatusMessage(messageEntry.item(0).getTextContent());
 			}
 			return status;
 		} catch (XPathExpressionException e) {
@@ -537,15 +539,21 @@ public class SamlResponse {
 	 */
 	public List<String> getIssuers() throws XPathExpressionException {
 		List<String> issuers = new ArrayList<String>();
-
+		String value;
 		NodeList responseIssuer = Util.query(samlResponseDocument, "/samlp:Response/saml:Issuer");
 		if (responseIssuer.getLength() == 1) {
-			issuers.add(responseIssuer.item(0).getTextContent());
+			value = responseIssuer.item(0).getTextContent();
+			if (!issuers.contains(value)) {
+				issuers.add(value);
+			}
 		}
 
 		NodeList assertionIssuer = this.queryAssertion("/saml:Issuer");
 		if (assertionIssuer.getLength() == 1) {
-			issuers.add(assertionIssuer.item(0).getTextContent());
+			value = assertionIssuer.item(0).getTextContent();
+			if (!issuers.contains(value)) {
+				issuers.add(value);
+			}
 		}
 
 		return issuers;
@@ -559,7 +567,7 @@ public class SamlResponse {
 	 *
 	 * @throws XPathExpressionException
 	 */
-	public Calendar getSessionNotOnOrAfter() throws XPathExpressionException {
+	public DateTime getSessionNotOnOrAfter() throws XPathExpressionException {
 		String notOnOrAfter = null;
 		NodeList entries = this.queryAssertion("/saml:AuthnStatement[@SessionNotOnOrAfter]");
 		if (entries.getLength() > 0) {
@@ -595,21 +603,82 @@ public class SamlResponse {
 	 *
 	 * @throws IllegalArgumentException
 	 */
-	private Boolean validateNumAssertions() throws IllegalArgumentException {
+	public Boolean validateNumAssertions() throws IllegalArgumentException {
 		NodeList encryptedAssertionNodes = samlResponseDocument.getElementsByTagNameNS(Constants.NS_SAML, "EncryptedAssertion");
 		NodeList assertionNodes = samlResponseDocument.getElementsByTagNameNS(Constants.NS_SAML, "Assertion");
-		int n = assertionNodes.getLength();
-		int m = encryptedAssertionNodes.getLength();
 
-		return (n + m == 1);
+		return (assertionNodes.getLength() + encryptedAssertionNodes.getLength() == 1);
+	}
+
+    /**
+     * Verifies the signature nodes:
+     * - Checks that are Response or Assertion
+     * - Check that IDs and reference URI are unique and consistent.
+     *
+     * @return array Signed element tags
+     * @throws Exception 
+     */
+	public ArrayList<String> processSignedElements() throws Exception {
+		ArrayList<String> signedElements = new ArrayList<String>();
+		ArrayList<String> verifiedSeis = new ArrayList<String>();
+		ArrayList<String> verifiedIds = new ArrayList<String>();
+
+		NodeList signNodes = query("//ds:Signature", null);
+		for (int i = 0; i < signNodes.getLength(); i++) {
+			Node signNode = signNodes.item(i);
+			String signedElement = signNode.getParentNode().getLocalName();
+			
+			if (!signedElement.equals("Response") && !signedElement.equals("Assertion")) {
+				throw new Exception("Invalid Signature Element " + signedElement + " SAML Response rejected");
+			}
+			
+			// Check that reference URI matches the parent ID and no duplicate References or IDs
+			Node idNode = signNode.getParentNode().getAttributes().getNamedItem("ID");
+			if (idNode == null || idNode.getNodeValue() == null || idNode.getNodeValue().isEmpty()) {
+				throw new Exception("Signed Element must contain an ID. SAML Response rejected");
+			}
+			
+			String idValue = idNode.getNodeValue();			
+			if (verifiedIds.contains(idValue)) {
+				throw new Exception("Duplicated ID. SAML Response rejected");
+			}
+			verifiedIds.add(idValue);
+			
+			NodeList refNodes = Util.query(null, ".//ds:Reference", signNode);
+			if (refNodes.getLength() > 0) {
+				Node refNode = refNodes.item(0);
+				Node seiNode = refNode.getAttributes().getNamedItem("URI");
+				if (seiNode != null && seiNode.getNodeValue() != null && !seiNode.getNodeValue().isEmpty()) {
+					String sei = seiNode.getNodeValue().substring(1);
+					if (!sei.equals(idValue)) {
+						throw new Exception("Found an invalid Signed Element. SAML Response rejected");
+					}
+					
+					if (verifiedSeis.contains(sei)) {
+						throw new Exception("Duplicated Reference URI. SAML Response rejected");
+					}
+					verifiedSeis.add(sei);
+				}
+			}
+
+			signedElements.add(signedElement);
+		}
+		if (!signedElements.isEmpty()) {
+			if (!validateSignedElements(signedElements)) {
+				throw new Exception("Found an unexpected Signature Element. SAML Response rejected");
+			}
+		}
+		return signedElements;
 	}
 
 	/**
 	 * Verifies that the document has the expected signed nodes.
 	 *
+	 * @param signedElements
+	 *				the elements to be validated
 	 * @return true if is valid
 	 */
-	private boolean validateSignedElements(ArrayList<String> signedElements) {
+	public static boolean validateSignedElements(ArrayList<String> signedElements) {
 		if (signedElements.size() > 2) {
 			return false;
 		}
@@ -636,25 +705,24 @@ public class SamlResponse {
 	 *
 	 * @return true if still valid
 	 */
-	private boolean validateTimestamps() {
+	public boolean validateTimestamps() {
 		NodeList timestampNodes = samlResponseDocument.getElementsByTagNameNS("*", "Conditions");
 		if (timestampNodes.getLength() != 0) {
 			for (int i = 0; i < timestampNodes.getLength(); i++) {
 				NamedNodeMap attrName = timestampNodes.item(i).getAttributes();
 				Node nbAttribute = attrName.getNamedItem("NotBefore");
 				Node naAttribute = attrName.getNamedItem("NotOnOrAfter");
-				Calendar now = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-				// validate NotOnOrAfter using UTC
+				// validate NotOnOrAfter
 				if (naAttribute != null) {
-					final Calendar notOnOrAfterDate = Util.parseDateTime(naAttribute.getNodeValue());
-					if (now.equals(notOnOrAfterDate) || now.after(notOnOrAfterDate)) {
+					final DateTime notOnOrAfterDate = Util.parseDateTime(naAttribute.getNodeValue());
+					if (notOnOrAfterDate.isEqualNow() || notOnOrAfterDate.isBeforeNow()) {
 						return false;
 					}
 				}
-				// validate NotBefore using UTC
+				// validate NotBefore
 				if (nbAttribute != null) {
-					final Calendar notBeforeDate = Util.parseDateTime(nbAttribute.getNodeValue());
-					if (now.before(notBeforeDate)) {
+					final DateTime notBeforeDate = Util.parseDateTime(nbAttribute.getNodeValue());
+					if (notBeforeDate.isAfterNow()) {
 						return false;
 					}
 				}
@@ -682,7 +750,7 @@ public class SamlResponse {
 		if (error != null) {
 			return error.toString();
 		}
-		return "";
+		return null;
 	}
 
 	/**
@@ -692,42 +760,64 @@ public class SamlResponse {
 	 *				Xpath Expression
 	 *
 	 * @return the queried node
+	 * @throws XPathExpressionException 
 	 *
-	 * @throws XPathExpressionException
 	 */
 	private NodeList queryAssertion(String assertionXpath) throws XPathExpressionException {
-		String assertionExpr;
+        String assertionExpr;
 
-		if (encrypted) {
-			assertionExpr = "/saml:EncryptedAssertion/saml:Assertion";
-        } else {
-			assertionExpr = "/saml:Assertion";
+        assertionExpr = "/saml:Assertion";
+
+        String signatureExpr = "ds:Signature/ds:SignedInfo/ds:Reference";
+
+        String nameQuery = "";
+        String signedAssertionQuery = "/samlp:Response" + assertionExpr + "/" + signatureExpr;
+        NodeList nodeList = query(signedAssertionQuery, null);
+        if (nodeList.getLength() == 0 ) {
+        	// let see if the whole response signed?
+            String signedMessageQuery = "/samlp:Response/" + signatureExpr;
+            nodeList = query(signedMessageQuery, null);
+            if (nodeList.getLength() > 0) {
+                Node responseReferenceNode = nodeList.item(0);
+                String responseId = responseReferenceNode.getAttributes().getNamedItem("URI").getNodeValue();
+                if (responseId != null && !responseId.isEmpty()) {
+                    responseId = responseId.substring(1);
+                } else {
+                    responseId = responseReferenceNode.getParentNode().getParentNode().getParentNode().getAttributes().getNamedItem("ID").getNodeValue();
+                }
+                nameQuery = "/samlp:Response[@ID='" + responseId + "']";
+            } else {
+                // On this case there is no element signed, the query will work but
+                // the response validation will throw and error.
+            	nameQuery = "/samlp:Response";
+            	
+            	// If we want to change this behaviour, uncomment this block.
+            	// but test should be updated then.
+            	
+            	// Trick in order to return empty NodeList (not instanciable)
+            	/*
+            	XPath xpath = XPathFactory.newInstance().newXPath();
+            	NodeList noresult = null;
+				try {
+					noresult = (NodeList) xpath.evaluate("/noresult", Util.convertStringToDocument("<null></null>"), XPathConstants.NODESET);
+				} catch (ParserConfigurationException | SAXException | IOException e) {}
+            	return noresult;
+            	*/
+            }
+            nameQuery += assertionExpr;
+        } else {  // there is a signed assertion
+        	Node assertionReferenceNode = nodeList.item(0);
+            String assertionId = assertionReferenceNode.getAttributes().getNamedItem("URI").getNodeValue();
+            if (assertionId != null && !assertionId.isEmpty()) {
+                assertionId = assertionId.substring(1);
+            } else {
+                assertionId = assertionReferenceNode.getParentNode().getParentNode().getParentNode().getAttributes().getNamedItem("ID").getNodeValue();
+            }
+            nameQuery = "/samlp:Response/" + assertionExpr + "[@ID='" + assertionId + "']";
         }
+        nameQuery += assertionXpath;
 
-		String signatureExpr = "ds:Signature/ds:SignedInfo/ds:Reference";
-
-		String nameQuery = "";
-		String signedAssertionQuery = "/samlp:Response" + assertionExpr + "/" + signatureExpr;
-		NodeList nodeList = query(signedAssertionQuery, null);
-		if (nodeList.getLength() > 0) { // is the assertion signed
-			Node assertionReferenceNode = nodeList.item(0);
-			String assertionId = assertionReferenceNode.getAttributes().getNamedItem("URI").getNodeValue().substring(1);
-			nameQuery = "/samlp:Response/" + assertionExpr + "[@ID='" + assertionId + "']";
-		} else { // is the whole response signed?
-			String signedMessageQuery = "/samlp:Response/" + signatureExpr;
-			nodeList = query(signedMessageQuery, null);
-			if (nodeList.getLength() > 0) {
-				Node assertionReferenceNode = nodeList.item(0);
-				String id = assertionReferenceNode.getAttributes().getNamedItem("URI").getNodeValue().substring(1);
-				nameQuery = "/samlp:Response[@ID='" + id + "']/";
-			} else {
-				nameQuery = "/samlp:Response/";
-			}
-			nameQuery += assertionExpr;
-		}
-		nameQuery += assertionXpath;
-
-		return query(nameQuery, null);
+        return query(nameQuery, null);
 	}
 
 	/**
@@ -773,10 +863,10 @@ public class SamlResponse {
 		Element encryptedData = (Element) encryptedDataNodes.item(0);
 		Util.decryptElement(encryptedData, key);
 
-		// If we need to Remove the saml:EncryptedAssertion Node
-		//	 NodeList AssertionDataNodes = Util.query(dom, "/samlp:Response/saml:EncryptedAssertion/saml:Assertion");
-		//	 Node assertionNode = AssertionDataNodes.item(0);
-		//	 assertionNode.getParentNode().getParentNode().replaceChild(assertionNode, assertionNode.getParentNode());
+		// We need to Remove the saml:EncryptedAssertion Node
+		NodeList AssertionDataNodes = Util.query(dom, "/samlp:Response/saml:EncryptedAssertion/saml:Assertion");
+		Node assertionNode = AssertionDataNodes.item(0);
+		assertionNode.getParentNode().getParentNode().replaceChild(assertionNode, assertionNode.getParentNode());
 
 		// In order to avoid Signature Validation errors we need to rebuild the dom.
 		// https://groups.google.com/forum/#!topic/opensaml-users/gpXvwaZ53NA

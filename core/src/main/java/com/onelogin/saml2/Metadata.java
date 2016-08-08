@@ -6,17 +6,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.xpath.XPathExpressionException;
+
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.security.PrivateKey;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.text.StrSubstitutor;
+import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
-import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.model.Contact;
 import com.onelogin.saml2.model.Organization;
@@ -144,7 +146,7 @@ public class Metadata {
 		template.append("${sls}<md:NameIDFormat>${spNameIDFormat}</md:NameIDFormat>");
 		template.append("<md:AssertionConsumerService Binding=\"${spAssertionConsumerServiceBinding}\"");
 		template.append(" Location=\"${spAssertionConsumerServiceUrl}\"");
-		template.append(" index=\"1\" />");
+		template.append(" index=\"1\"/>");
 		template.append("</md:SPSSODescriptor>${strOrganization}${strContacts}");
 		template.append("</md:EntityDescriptor>");
 
@@ -241,7 +243,7 @@ public class Metadata {
 		StringBuilder slsXml = new StringBuilder();
 		
 		if (spSingleLogoutServiceUrl != null) {
-			slsXml.append("<md:SingleLogoutService Binding= \""+spSingleLogoutServiceBinding+"\"");
+			slsXml.append("<md:SingleLogoutService Binding=\""+spSingleLogoutServiceBinding+"\"");
 			slsXml.append(" Location=\""+spSingleLogoutServiceUrl.toString()+"\"/>");
 		}
 		return slsXml.toString();
@@ -267,17 +269,14 @@ public class Metadata {
 	 * 				Signature Algorithm
      *
      * @return string Signed Metadata
+     * @throws XMLSecurityException
+     * @throws XPathExpressionException
      */
-    public static String signMetadata(String metadata, PrivateKey key, X509Certificate cert, String signAlgorithm)
+    public static String signMetadata(String metadata, PrivateKey key, X509Certificate cert, String signAlgorithm) throws XPathExpressionException, XMLSecurityException
     {
-    	try {
-	    	Document metadataDoc = Util.loadXML(metadata);
-	    	String signedMetadata = Util.addSign(metadataDoc, key, cert, signAlgorithm);
-	    	LOGGER.debug("Signed metadata --> " + signedMetadata);
-	        return signedMetadata;
-    	} catch (XMLEntityException e){
-	    	LOGGER.error("Error loading the Metadata XML when trying to Sign it: " + e.getMessage());
-	    	return metadata;
-	    }
+    	Document metadataDoc = Util.loadXML(metadata);
+    	String signedMetadata = Util.addSign(metadataDoc, key, cert, signAlgorithm);
+    	LOGGER.debug("Signed metadata --> " + signedMetadata);
+        return signedMetadata;
     }
 }

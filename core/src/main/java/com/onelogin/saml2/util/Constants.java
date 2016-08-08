@@ -5,7 +5,7 @@ package com.onelogin.saml2.util;
  *
  * A class that contains several constants related to the SAML protocol
  */ 
-public class Constants {
+public final class Constants {
 	// Value added to the current time in time condition validations
 	public static Integer ALOWED_CLOCK_DRIFT = 180; // 3 min in seconds
 
@@ -63,13 +63,24 @@ public class Constants {
 	public static String STATUS_PARTIAL_LOGOUT = "urn:oasis:names:tc:SAML:2.0:status:PartialLogout";
 	public static String STATUS_PROXY_COUNT_EXCEEDED = "urn:oasis:names:tc:SAML:2.0:status:ProxyCountExceeded";
 
-    // Sign & Crypt
+	// Canonization
+	public static String C14N = "http://www.w3.org/TR/2001/REC-xml-c14n-20010315";
+	public static String C14N_WC = "http://www.w3.org/TR/2001/REC-xml-c14n-20010315#WithComments";
+	public static String C14N11 = "http://www.w3.org/2006/12/xml-c14n11";
+	public static String C14N11_WC = "http://www.w3.org/2006/12/xml-c14n11#WithComments";
+	public static String C14NEXC = "http://www.w3.org/2001/10/xml-exc-c14n#";
+	public static String C14NEXC_WC = "http://www.w3.org/2001/10/xml-exc-c14n#WithComments";
+	
+    // Sign & Crypt   
+	// https://www.w3.org/TR/xmlenc-core/#sec-Alg-MessageDigest
+	// https://www.w3.org/TR/xmlsec-algorithms/#signature-method-uris
+	// https://tools.ietf.org/html/rfc6931
 	public static String SHA1 = "http://www.w3.org/2000/09/xmldsig#sha1";
 	public static String SHA256 = "http://www.w3.org/2001/04/xmlenc#sha256";
-	public static String SHA384 = "http://www.w3.org/2001/04/xmlencsha384";
+	public static String SHA384 = "http://www.w3.org/2001/04/xmldsig-more#sha384";
 	public static String SHA512 = "http://www.w3.org/2001/04/xmlenc#sha512";
 
-	public static String DSA_SHA1 = "http://www.w3.org/2000/09/xmld/sig#dsa-sha1";
+	public static String DSA_SHA1 = "http://www.w3.org/2000/09/xmldsig#dsa-sha1";
 	public static String RSA_SHA1 = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
 	public static String RSA_SHA256 = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
 	public static String RSA_SHA384 = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha384";
@@ -81,5 +92,7 @@ public class Constants {
 	public static String AES256_CBC = "http://www.w3.org/2001/04/xmlenc#aes256-cbc";
 	public static String RSA_1_5 = "http://www.w3.org/2001/04/xmlenc#rsa-1_5";
 	public static String RSA_OAEP_MGF1P = "http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p";
+	
+	public static String ENVSIG = "http://www.w3.org/2000/09/xmldsig#enveloped-signature";
 	
 }

@@ -5,9 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -77,6 +75,7 @@ public class SettingsBuilder {
 	public final static String SECURITY_WANT_MESSAGES_SIGNED = "onelogin.saml2.security.want_messages_signed";
 	public final static String SECURITY_WANT_ASSERTIONS_SIGNED = "onelogin.saml2.security.want_assertions_signed";
 	public final static String SECURITY_WANT_ASSERTIONS_ENCRYPTED = "onelogin.saml2.security.want_assertions_encrypted";
+	public final static String SECURITY_WANT_NAMEID = "onelogin.saml2.security.want_nameid";
 	public final static String SECURITY_WANT_NAMEID_ENCRYPTED = "onelogin.saml2.security.want_nameid_encrypted";
 	public final static String SECURITY_SIGN_METADATA = "onelogin.saml2.security.sign_metadata";
 	public final static String SECURITY_REQUESTED_AUTHNCONTEXT = "onelogin.saml2.security.requested_authncontext";
@@ -142,12 +141,15 @@ public class SettingsBuilder {
 
 	/**
 	 * Builds the Saml2Settings object. Read the Properties object and set all the SAML settings
-
+	 * 
+	 * @param spValidationOnly
+	 *            indicates if the IdP settings should be checked or not
+	 *
 	 * @return the Saml2Settings object with all the SAML settings loaded
 	 *
 	 * @throws IOException 
 	 */
-	public Saml2Settings build() throws IOException{
+	public Saml2Settings build() throws IOException {
 
 		saml2Setting = new Saml2Settings();
 		
@@ -167,14 +169,9 @@ public class SettingsBuilder {
 
 		saml2Setting.setOrganization(loadOrganization());
 
-		saml2Setting.checkSPSettings();
-		if (!saml2Setting.getSpValidationOnly()) {
-			saml2Setting.checkIdPSettings();
-		}
-
 		return saml2Setting;
 	}
-
+	
 	/**
 	 * Loads the IdP settings from the properties file
 	 */
@@ -208,7 +205,7 @@ public class SettingsBuilder {
 			saml2Setting.setIdpCertFingerprint(idpCertFingerprint);
 
 		String idpCertFingerprintAlgorithm = loadStringProperty(CERTFINGERPRINT_ALGORITHM_PROPERTY_KEY);
-		if (idpCertFingerprintAlgorithm != null)
+		if (idpCertFingerprintAlgorithm != null && !idpCertFingerprintAlgorithm.isEmpty())
 			saml2Setting.setIdpCertFingerprintAlgorithm(idpCertFingerprintAlgorithm);
 	}
 
@@ -240,6 +237,14 @@ public class SettingsBuilder {
 		if (wantAssertionsSigned != null)
 			saml2Setting.setWantAssertionsSigned(wantAssertionsSigned);
 
+		Boolean wantAssertionsEncrypted = loadBooleanProperty(SECURITY_WANT_ASSERTIONS_ENCRYPTED);
+		if (wantAssertionsEncrypted != null)
+			saml2Setting.setWantAssertionsEncrypted(wantAssertionsEncrypted);
+
+		Boolean wantNameId = loadBooleanProperty(SECURITY_WANT_NAMEID);
+		if (wantNameId != null)
+			saml2Setting.setWantNameId(wantNameId);
+
 		Boolean wantNameIdEncrypted = loadBooleanProperty(SECURITY_WANT_NAMEID_ENCRYPTED);
 		if (wantNameIdEncrypted != null)
 			saml2Setting.setWantNameIdEncrypted(wantNameIdEncrypted);
@@ -248,7 +253,7 @@ public class SettingsBuilder {
 		if (wantXMLValidation != null)
 			saml2Setting.setWantXMLValidation(wantXMLValidation);
 
-		List<String> signMetadata = loadListProperty(SECURITY_SIGN_METADATA);
+		Boolean signMetadata = loadBooleanProperty(SECURITY_SIGN_METADATA);
 		if (signMetadata != null)
 			saml2Setting.setSignMetadata(signMetadata);
 
@@ -257,13 +262,12 @@ public class SettingsBuilder {
 			saml2Setting.setRequestedAuthnContext(requestedAuthnContext);
 
 		String requestedAuthnContextComparison = loadStringProperty(SECURITY_REQUESTED_AUTHNCONTEXTCOMPARISON);
-		if (requestedAuthnContextComparison != null)
+		if (requestedAuthnContextComparison != null && !requestedAuthnContextComparison.isEmpty())
 			saml2Setting.setRequestedAuthnContextComparison(requestedAuthnContextComparison);
 
 		String signatureAlgorithm = loadStringProperty(SECURITY_SIGNATURE_ALGORITHM);
-		if (signatureAlgorithm != null)
+		if (signatureAlgorithm != null && !signatureAlgorithm.isEmpty())
 			saml2Setting.setSignatureAlgorithm(signatureAlgorithm);
-
 	}
 
 	/**
@@ -276,7 +280,7 @@ public class SettingsBuilder {
 		String orgDisplayName = loadStringProperty(ORGANIZATION_DISPLAYNAME);
 		URL orgUrl = loadURLProperty(ORGANIZATION_URL);
 
-		if (orgName != null || orgDisplayName != null || orgUrl != null) {
+		if ((orgName != null && !orgName.isEmpty()) || (orgDisplayName != null && !orgDisplayName.isEmpty()) || (orgUrl != null)) {
 			orgResult = new Organization(orgName, orgDisplayName, orgUrl);
 		}
 
@@ -287,13 +291,12 @@ public class SettingsBuilder {
 	 * Loads the contacts settings from the properties file
 	 */
 	private List<Contact> loadContacts() {
-
 		List<Contact> contacts = new LinkedList<Contact>();
 
 		String technicalGn = loadStringProperty(CONTACT_TECHNICAL_GIVEN_NAME);
 		String technicalEmailAddress = loadStringProperty(CONTACT_TECHNICAL_EMAIL_ADDRESS);
 
-		if (technicalGn != null || technicalEmailAddress != null) {
+		if ((technicalGn != null && !technicalGn.isEmpty()) || (technicalEmailAddress != null && !technicalEmailAddress.isEmpty())) {
 			Contact technical = new Contact("technical", technicalGn, technicalEmailAddress);
 			contacts.add(technical);
 		}
@@ -301,7 +304,7 @@ public class SettingsBuilder {
 		String supportGn = loadStringProperty(CONTACT_SUPPORT_GIVEN_NAME);
 		String supportEmailAddress = loadStringProperty(CONTACT_SUPPORT_EMAIL_ADDRESS);
 
-		if (supportGn != null || supportEmailAddress != null) {
+		if ((supportGn != null && !supportGn.isEmpty()) || (supportEmailAddress != null && !supportEmailAddress.isEmpty())) {
 			Contact support = new Contact("support", supportGn, supportEmailAddress);
 			contacts.add(support);
 		}
@@ -334,7 +337,7 @@ public class SettingsBuilder {
 			saml2Setting.setSpSingleLogoutServiceBinding(spSingleLogoutServiceBinding);
 
 		String spNameIDFormat = loadStringProperty(SP_NAMEIDFORMAT_PROPERTY_KEY);
-		if (spNameIDFormat != null)
+		if (spNameIDFormat != null && !spNameIDFormat.isEmpty())
 			saml2Setting.setSpNameIDFormat(spNameIDFormat);
 
 		X509Certificate spX509cert = loadCertificateFromProp(SP_X509CERT_PROPERTY_KEY);
@@ -389,8 +392,12 @@ public class SettingsBuilder {
 	 */
 	private List<String> loadListProperty(String propertyKey) {
 		String arrayPropValue = prop.getProperty(propertyKey);
-		if (arrayPropValue != null) {
-			return Arrays.asList(arrayPropValue.trim().split(","));
+		if (arrayPropValue != null && !arrayPropValue.isEmpty()) {
+			String [] values = arrayPropValue.trim().split(",");
+			for (int i = 0; i < values.length; i++) {
+				values[i] = values[i].trim();
+			}
+			return Arrays.asList(values);
 		} else {
 			return null;
 		}
@@ -454,6 +461,7 @@ public class SettingsBuilder {
 	 *
 	 * @return the X509Certificate object
 	 */
+	/*
 	protected X509Certificate loadCertificateFromFile(String filename) {
 		String certString = null;
 
@@ -478,6 +486,7 @@ public class SettingsBuilder {
 			return null;
 		}
 	}
+	*/
 
 	/**
 	 * Loads a property of the type PrivateKey from the Properties object
@@ -495,11 +504,8 @@ public class SettingsBuilder {
 		} else {
 			try {
 				return Util.loadPrivateKey(keyString);
-			} catch (GeneralSecurityException e) {
+			} catch (Exception e) {
 				LOGGER.error("Error loading privatekey from properties.", e);
-				return null;
-			} catch (IOException e) {
-				LOGGER.debug("Error loading privatekey from properties.", e);
 				return null;
 			}
 		}
@@ -513,6 +519,7 @@ public class SettingsBuilder {
 	 *
 	 * @return the PrivateKey object
 	 */
+	/*
 	protected PrivateKey loadPrivateKeyFromFile(String filename) {
 		String keyString = null;
 		
@@ -536,4 +543,5 @@ public class SettingsBuilder {
 			return null;
 		}
 	}
+	*/
 }

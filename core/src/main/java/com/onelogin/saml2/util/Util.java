@@ -23,21 +23,19 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Key;
 import java.security.PrivateKey;
-//import java.security.Provider;
-//import java.security.Security;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.TimeZone;
 import java.util.UUID;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
@@ -46,13 +44,10 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-//import javax.xml.crypto.dsig.dom.DOMValidateContext;
-//import javax.xml.crypto.dsig.XMLSignatureFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.validation.Schema;
@@ -65,16 +60,19 @@ import javax.xml.xpath.XPathFactory;
 import javax.xml.XMLConstants;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xml.security.encryption.EncryptedData;
 import org.apache.xml.security.encryption.EncryptedKey;
 import org.apache.xml.security.encryption.XMLCipher;
+import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.keys.KeyInfo;
 import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.transforms.Transforms;
 import org.apache.xml.security.utils.XMLUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
+import org.joda.time.chrono.ISOChronology;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISOPeriodFormat;
@@ -88,56 +86,44 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 
-import com.onelogin.saml2.exception.SettingsException;
 import com.onelogin.saml2.exception.XMLEntityException;
-import com.onelogin.saml2.settings.SettingsBuilder;
+
 
 /**
  * Util class of OneLogin's Java Toolkit.
  *
  * A class that contains several auxiliary methods related to the SAML protocol
- */ 
-public abstract class Util {
+ */
+public final class Util {
 	/**
      * Private property to construct a logger for this class.
      */
 	private static final Logger LOGGER = LoggerFactory.getLogger(Util.class);
 	
-	private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
-    private static final String DURATION_REG_EX = "#^(-?)P(?:(?:(?:(\\d+)Y)?(?:(\\d+)M)?(?:(\\d+)D)?(?:T(?:(\\d+)H)?(?:(\\d+)M)?(?:(\\d+)S)?)?)|(?:(\\d+)W))$#D";
-
+	private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withChronology(ISOChronology.getInstanceUTC());
+	private static final DateTimeFormatter DATE_TIME_FORMAT_MILLS = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withChronology(ISOChronology.getInstanceUTC());
+	
 	/**
 	 * This function load an XML string in a save way. Prevent XEE/XXE Attacks
 	 *
 	 * @param xml
-	 * 				The XML string to be loaded.
+	 * 				String. The XML string to be loaded.
 	 *
 	 * @return The result of load the XML at the Document or null if any error occurs
-	 *
-     *
-	 * @throws XMLEntityException
 	 */
-	public static Document loadXML(String xml) throws XMLEntityException {
+	public static Document loadXML(String xml) {
 		try {
 			if (xml.contains("<!ENTITY")) {
 				throw new XMLEntityException("Detected use of ENTITY in XML, disabled to prevent XXE/XEE attacks");
 			}
-
 			return convertStringToDocument(xml);
-		} catch (ParserConfigurationException e) {
-			LOGGER.debug("Load XML error due ParserConfigurationException.", e);
-		} catch (SAXParseException e) {
-			LOGGER.debug("Load XML error due SAXParseException.", e);		
-		} catch (SAXException e) {
-			LOGGER.debug("Load XML error due SAXException.", e);
-		} catch (IOException e) {
-			LOGGER.debug("Load XML error due IOException.", e);
 		} catch (XMLEntityException e) {
 			LOGGER.debug("Load XML error due XMLEntityException.", e);
+		} catch (Exception e) {
+			LOGGER.debug("Load XML error: " + e.getMessage(), e);
 		}
-		
+
 		return null;		
 	}
 
@@ -162,14 +148,17 @@ public abstract class Util {
 
 			public String getNamespaceURI(String prefix) {
 				String result = null;
-				if (prefix.equals("samlp") || prefix.equals("samlp2"))
+				if (prefix.equals("samlp") || prefix.equals("samlp2")) {
 					result = Constants.NS_SAMLP;
-				else if (prefix.equals("saml") || prefix.equals("saml2"))
+				} else if (prefix.equals("saml") || prefix.equals("saml2")) {
 					result = Constants.NS_SAML;
-				else if (prefix.equals("ds"))
+				} else if (prefix.equals("ds")) {
 					result = Constants.NS_DS;
-				else if (prefix.equals("xenc"))
+				} else if (prefix.equals("xenc")) {
 					result = Constants.NS_XENC;
+				} else if (prefix.equals("md")) {
+					result = Constants.NS_MD;
+				}
 				return result;
 			}
 
@@ -183,10 +172,11 @@ public abstract class Util {
 			}
 		});
 
-		if (context == null)
+		if (context == null) {
 			nodeList = (NodeList) xpath.evaluate(query, dom, XPathConstants.NODESET);
-		else
+		} else {
 			nodeList = (NodeList) xpath.evaluate(query, context, XPathConstants.NODESET);
+		}
 		return nodeList;
 	}
 
@@ -227,6 +217,9 @@ public abstract class Util {
 
 			Schema schema = SchemaFactory.loadFromUrl(schemaUrl);
 			Validator validator = schema.newValidator();
+			// Prevent XXE attacks
+			validator.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+			validator.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
 
 			XMLErrorAccumulatorHandler errorAcumulator = new XMLErrorAccumulatorHandler();
 			validator.setErrorHandler(errorAcumulator);
@@ -307,7 +300,7 @@ public abstract class Util {
 				elem.setIdAttributeNode(attr, true);
 			}
 		} catch (XPathExpressionException e) {
-			LOGGER.error("Error executing loadXML: " + e.getMessage(), e);
+			return null;
 		}
 
 		return doc;
@@ -355,21 +348,21 @@ public abstract class Util {
 	 *              True if we want to include head and footer
 	 *
 	 * @return X509Certificate $x509 Formated cert
-	 *
-	 * @throws CertificateException
 	 */
-	private static String formatCert(String cert, Boolean heads) {
+	public static String formatCert(String cert, Boolean heads) {
 		String x509cert = StringUtils.EMPTY;
 
-		x509cert = cert.replace("\\x0D", "").replace("\r", "").replace("\n", "").replace(" ", "");
-		if (!(StringUtils.isEmpty(x509cert) && x509cert != null)) {
-			x509cert = x509cert.replace("-----BEGINCERTIFICATE-----", "").replace("-----ENDCERTIFICATE-----", "");
-		}
+		if (cert != null) {		
+			x509cert = cert.replace("\\x0D", "").replace("\r", "").replace("\n", "").replace(" ", "");
 
-		if (heads) {
-			x509cert = "-----BEGIN CERTIFICATE-----\n" + chunkString(x509cert, 64) + "\n-----END CERTIFICATE-----";
+			if (!StringUtils.isEmpty(x509cert)) {
+				x509cert = x509cert.replace("-----BEGINCERTIFICATE-----", "").replace("-----ENDCERTIFICATE-----", "");
+			
+				if (heads) {
+					x509cert = "-----BEGIN CERTIFICATE-----\n" + chunkString(x509cert, 64) + "-----END CERTIFICATE-----";
+				}
+			}
 		}
-
 		return x509cert;
 	}
 
@@ -386,25 +379,27 @@ public abstract class Util {
 	public static String formatPrivateKey(String key, boolean heads) {
 		String xKey = StringUtils.EMPTY;
 
-		xKey = key.replace("\\x0D", "").replace("\r", "").replace("\n", "").replace(" ", "");
-
-		if (!(StringUtils.isEmpty(xKey) && xKey != null)) {
-			if (xKey.startsWith("-----BEGINPRIVATEKEY-----")) {
-				xKey = xKey.replace("-----BEGINPRIVATEKEY-----", "").replace("-----ENDPRIVATEKEY-----", "");
-
-				if (heads) {
-					xKey = "-----BEGIN PRIVATE KEY-----\n" + chunkString(xKey, 64) + "\n-----END PRIVATE KEY-----";
-				}
-			} else if (xKey.startsWith("-----BEGINRSAPRIVATEKEY-----")) {
-
-				xKey = xKey.replace("-----BEGINRSAPRIVATEKEY-----", "").replace("-----ENDRSAPRIVATEKEY-----", "");
-
-				if (heads) {
-					xKey = "-----BEGIN RSA PRIVATE KEY-----\n" + chunkString(xKey, 64) + "\n-----END RSA PRIVATE KEY-----";
+		if (key != null) {
+			xKey = key.replace("\\x0D", "").replace("\r", "").replace("\n", "").replace(" ", "");
+	
+			if (!StringUtils.isEmpty(xKey)) {
+				if (xKey.startsWith("-----BEGINPRIVATEKEY-----")) {
+					xKey = xKey.replace("-----BEGINPRIVATEKEY-----", "").replace("-----ENDPRIVATEKEY-----", "");
+	
+					if (heads) {
+						xKey = "-----BEGIN PRIVATE KEY-----\n" + chunkString(xKey, 64) + "-----END PRIVATE KEY-----";
+					}
+				} else {
+	
+					xKey = xKey.replace("-----BEGINRSAPRIVATEKEY-----", "").replace("-----ENDRSAPRIVATEKEY-----", "");
+	
+					if (heads) {
+						xKey = "-----BEGIN RSA PRIVATE KEY-----\n" + chunkString(xKey, 64) + "-----END RSA PRIVATE KEY-----";
+					}
 				}
 			}
 		}
-
+			
 		return xKey;
 	}	
 
@@ -430,6 +425,7 @@ public abstract class Util {
 		return newStr;
 	}
 
+	
 	/**
 	 * Load X.509 certificate
 	 *
@@ -437,14 +433,20 @@ public abstract class Util {
 	 * 				 certificate in string format
 	 *
 	 * @return Loaded Certificate. X509Certificate object
+	 * @throws UnsupportedEncodingException 
+	 * @throws CertificateException 
 	 *
-	 * @throws CertificateException
-	 * @throws UnsupportedEncodingException
 	 */
 	public static X509Certificate loadCert(String certString) throws CertificateException, UnsupportedEncodingException {
 		certString = formatCert(certString, true);
-		X509Certificate cert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(
+		X509Certificate cert;
+		
+		try {
+			cert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(
 				new ByteArrayInputStream(certString.getBytes("utf-8")));
+		} catch (IllegalArgumentException e){
+			cert = null;
+		}
 		return cert;
 	}
 
@@ -462,18 +464,20 @@ public abstract class Util {
 	public static PrivateKey loadPrivateKey(String keyString) throws GeneralSecurityException, IOException {
 		org.apache.xml.security.Init.init();
 
-		/*
-		Security.addProvider(
-		         new org.bouncycastle.jce.provider.BouncyCastleProvider()
-		);
-		*/
-
 		keyString = formatPrivateKey(keyString, false);
-		keyString = chunkString(keyString, 64);
-		byte[] encoded = Base64.decodeBase64(keyString);
+		keyString = chunkString(keyString, 64);		
 		KeyFactory kf = KeyFactory.getInstance("RSA");
-	    PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
-	    PrivateKey privKey = (PrivateKey) kf.generatePrivate(keySpec);
+		
+		PrivateKey privKey = null;
+		try {
+			byte[] encoded = Base64.decodeBase64(keyString);
+			PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
+			privKey = (PrivateKey) kf.generatePrivate(keySpec);
+		}
+		catch(Exception e) {
+			LOGGER.debug("Private Key not loaded: "+ e.getMessage(), e);
+			throw e;
+		}
 
 		return privKey;
 	}
@@ -489,43 +493,25 @@ public abstract class Util {
 	 * @return the formated fingerprint
 	 */
 	public static String calculateX509Fingerprint(X509Certificate x509cert, String alg) {
-		String data = StringUtils.EMPTY;
-		String decodedString = StringUtils.EMPTY;
-
-		if (alg == null || alg.isEmpty()) {
-			alg = "SHA-1";
-		}
+		String fingerprint = StringUtils.EMPTY;
 
 		try {
-			String pemString = convertToPem(x509cert);
-			List<String> lines = Arrays.asList(pemString.split("\n"));
-			for (String line : lines) {
-				// Remove '\r' from end of line if present.
-				line.trim();
-				if (line == "-----BEGIN CERTIFICATE-----") {
-					// Delete junk from before the certificate.
-					data = StringUtils.EMPTY;
-				} else if (line == "-----END CERTIFICATE-----") {
-					// Ignore data after the certificate.
-					break;
-				} else if ((line == "-----BEGIN PUBLIC KEY-----")
-						|| (line == "-----BEGIN RSA PRIVATE KEY-----")) {
-					// This isn't an X509 certificate.
-					return null;
-				} else {
-					// Append the current line to the certificate data
-					data += line;
-				}
+			byte[] dataBytes = x509cert.getEncoded();
+			if (alg == null || alg.isEmpty() || alg.equals("SHA-1")|| alg.equals("sha1")) {
+				fingerprint = DigestUtils.sha1Hex(dataBytes);
+			} else if (alg.equals("SHA-256") || alg .equals("sha256")) {
+				fingerprint = DigestUtils.sha256Hex(dataBytes);
+			} else if (alg.equals("SHA-384") || alg .equals("sha384")) {
+				fingerprint = DigestUtils.sha384Hex(dataBytes);
+			} else if (alg.equals("SHA-512") || alg.equals("sha512")) {
+				fingerprint = DigestUtils.sha512Hex(dataBytes);
+			} else {
+				LOGGER.debug("Error executing calculateX509Fingerprint. alg " + alg + " not supported");
 			}
-			byte[] dataBytes = data.getBytes("UTF8");
-			MessageDigest crypt = MessageDigest.getInstance("SHA-1");
-			crypt.reset();
-			crypt.update(dataBytes);
-			decodedString = new String(crypt.digest());
 		} catch (Exception e) {
 			LOGGER.debug("Error executing calculateX509Fingerprint: "+ e.getMessage(), e);
 		}
-		return decodedString.toLowerCase();
+		return fingerprint.toLowerCase();
 	}
 
 	/**
@@ -548,7 +534,7 @@ public abstract class Util {
 	 *
 	 * @return the formated PEM string
 	 */
-	private static String convertToPem(X509Certificate certificate) {
+	public static String convertToPem(X509Certificate certificate) {
 		String pemCert = "";
 		try {
 			Base64 encoder = new Base64(64);
@@ -560,238 +546,9 @@ public abstract class Util {
 			pemCert = cert_begin + pemCertPre + end_cert;
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOGGER.debug("Error converting certificate on PEM format: "+ e.getMessage(), e);
 		}
 		return pemCert;
-	}	
-
-	/**
-	 * Signs the Document using the specified signature algorithm with the private key and the public certificate.
-	 *
-	 * @param document
-	 * 				 The document to be signed
-	 * @param key
-	 * 				 The private key
-	 * @param certificate
-	 * 				 The public certificate
-	 * @param signAlgorithm
-	 * 				 Signature Algorithm
-	 * 
-	 * @return the signed document in string format
-	 */
-	public static String addSign(Document document, PrivateKey key, X509Certificate certificate, String signAlgorithm) {
-		try {
-			org.apache.xml.security.Init.init();
-
-			// Check arguments.
-			if (document == null)
-				throw new IllegalArgumentException("document");
-
-			if (document.getDocumentElement() == null)
-				throw new Exception("The Xml Document has no root element.");
-
-			if (key == null)
-				throw new IllegalArgumentException("Key");
-
-			if (signAlgorithm == null || signAlgorithm.isEmpty()) {
-				signAlgorithm = XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA1;
-			}
-			signAlgorithm = XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA1;
-
-			// document.normalizeDocument();
-
-			String c14nMethod = "http://www.w3.org/TR/2001/REC-xml-c14n-20010315#WithComments";
-
-			// Signature object
-			XMLSignature sig = new XMLSignature(document, null, signAlgorithm, c14nMethod);
-
-			// Including the signature into the document before sign, because
-			// this is an envelop signature
-			Element root = document.getDocumentElement();
-			document.setXmlStandalone(false);
-			root.insertBefore(sig.getElement(), root.getFirstChild());
-
-			String reference = root.getAttribute("ID");
-			if (!reference.isEmpty()) {
-				reference = "#" + reference; 
-			}
-
-			// Create the transform for the document
-			Transforms transforms = new Transforms(document);
-			transforms.addTransform(Transforms.TRANSFORM_ENVELOPED_SIGNATURE);
-			//transforms.addTransform(Transforms.TRANSFORM_C14N_OMIT_COMMENTS);
-			transforms.addTransform(Transforms.TRANSFORM_C14N_WITH_COMMENTS);
-			sig.addDocument(reference, transforms,
-					org.apache.xml.security.utils.Constants.ALGO_ID_DIGEST_SHA1);
-
-			// Add the certification info
-			sig.addKeyInfo(certificate);			
-			// sig.addKeyInfo(certificate.getPublicKey());
-
-			// Sign the document
-			sig.sign(key);
-
-		} catch (Exception e) {
-			LOGGER.debug("Error executing addSign: " + e.getMessage(), e);
-		}
-
-		return convertDocumentToString(document, true);
-	}
-
-	/**
-	 * Validates signed binary data (Used to validate GET Signature).
-	 *
-	 * @param signedQuery
-	 * 				 The element we should validate
-	 * @param signature
-	 * 				 The signature that will be validate
-	 * @param cert
-	 * 				 The public certificate
-	 * @param signAlg
-	 * 				 Signature Algorithm
-	 * 
-	 * @return the signed document in string format
-	 *
-	 * @throws NoSuchAlgorithmException
-	 * @throws NoSuchProviderException 
-	 * @throws InvalidKeyException 
-	 * @throws SignatureException 
-	 */
-	public static Boolean validateBinarySignature(String signedQuery, byte[] signature, X509Certificate cert, String signAlg) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException {
-		org.apache.xml.security.Init.init();
-
-		// Provider provider = new org.bouncycastle.jce.provider.BouncyCastleProvider();
-		// Security.addProvider(provider);
-
-		String convertedSigAlg = signatureAlgConversion(signAlg);
-
-		Signature sig = Signature.getInstance(convertedSigAlg); //, provider);
-		sig.initVerify(cert.getPublicKey());
-		sig.update(signedQuery.getBytes());
-		return sig.verify(signature);
-	}
-
-	/**
-	 * Generates a nameID.
-	 *
-	 * @param value
-	 * 				 The value
-	 * @param spnq
-	 * 				 SP Name Qualifier
-	 * @param format
-	 * 				 SP Format
-	 * @param cert
-	 * 				 IdP Public certificate to encrypt the nameID
-	 *
-	 * @return Xml contained in the document.
-	 */
-	public static String generateNameId(String value, String spnq, String format, X509Certificate cert) {
-		String res = null;
-		try {
-		  	DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		  	dbf.setNamespaceAware(true);
-			Document doc = dbf.newDocumentBuilder().newDocument();
-			Element nameId = doc.createElement("saml:NameID");
-			nameId.setAttribute("SPNameQualifier", spnq);
-			nameId.setAttribute("Format", format);
-			nameId.appendChild(doc.createTextNode(value));
-			doc.appendChild(nameId);
-
-			if (cert != null) {
-				// We generate a symmetric key
-				Key symmetricKey = GenerateSymmetricKey();
-
-				// cipher for encrypt the data
-				XMLCipher xmlCipher = XMLCipher.getInstance(XMLCipher.AES_128);
-				xmlCipher.init(XMLCipher.ENCRYPT_MODE, symmetricKey);
-
-				// cipher for encrypt the symmetric key
-				XMLCipher keyCipher = XMLCipher.getInstance(XMLCipher.RSA_v1dot5);
-				keyCipher.init(XMLCipher.WRAP_MODE, cert.getPublicKey());
-
-				// encrypt the symmetric key
-				EncryptedKey encryptedKey = keyCipher.encryptKey(doc, symmetricKey);				
-
-				// Add keyinfo inside the encrypted data
-				EncryptedData encryptedData = xmlCipher.getEncryptedData();
-				KeyInfo keyInfo = new KeyInfo(doc);
-				keyInfo.add(encryptedKey);
-				encryptedData.setKeyInfo(keyInfo);
-
-				// Encrypt the actual data
-				xmlCipher.doFinal(doc, nameId, false);
-
-				// Building the result
-				res = "<saml:EncryptedID>" + convertDocumentToString(doc) + "</saml:EncryptedID>";
-			} else {
-				res = convertDocumentToString(doc);
-			}
-		} catch (Exception e) {
-			LOGGER.error("Error executing generateNameId: " + e.getMessage(), e);
-		}
-		return res;
-	}
-
-	/**
-	 * Method to generate a symmetric key for encryption
-	 * 
-	 * @return the symmetric key
-	 *
-	 * @throws Exception
-	 */
-	private static SecretKey GenerateSymmetricKey() throws Exception {
-		KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-		keyGenerator.init(128);
-		return keyGenerator.generateKey();
-	}
-
-	/**
-	 * Generates a unique string (used for example as ID of assertions)
-	 *
-	 * @return A unique string
-	 */
-	public static String generateUniqueID() {
-		String uniqueIdSha1 = StringUtils.EMPTY;
-		String uniqueId = StringUtils.EMPTY;
-
-		try {
-			Random r = new Random();
-			Integer n = r.nextInt();
-
-			String id = uniqid(n.toString(), true);
-
-			MessageDigest crypt = MessageDigest.getInstance("SHA-1");
-			crypt.reset();
-			crypt.update(id.getBytes());
-			uniqueIdSha1 = new BigInteger(1, crypt.digest()).toString(16);
-
-			uniqueId = "ONELOGIN_" + uniqueIdSha1;
-		} catch (Exception e) {
-			LOGGER.error("Error executing generateUniqueID: " + e.getMessage(), e);
-		}
-		return uniqueId;
-	}	
-
-	/**
-	 * Generates random UUID
-	 * 
-	 * @param prefix
-	 *
-	 * @param more_entropy
-	 * 
-	 * @return the random UUID
-	 */
-	public static String uniqid(String prefix, Boolean more_entropy) {
-		if (prefix != null && StringUtils.isEmpty(prefix))
-			prefix = StringUtils.EMPTY;
-
-		if (!more_entropy) {
-			return (String) (prefix + UUID.randomUUID().toString()).substring(
-					0, 13);
-		} else {
-			return (String) (prefix + UUID.randomUUID().toString() + UUID
-					.randomUUID().toString()).substring(0, 23);
-		}
 	}	
 
 	/**
@@ -821,13 +578,33 @@ public abstract class Util {
 				} else {
 					target += "&";
 				}
-				target += parameter.getKey() + "=" + Util.urlEncoder(parameter.getValue());
+				target += parameter.getKey();
+				if (!parameter.getValue().isEmpty()) {
+					target += "=" + Util.urlEncoder(parameter.getValue());
+				}
 			}
 		}
-
 		response.sendRedirect(target);
 	}
 
+	/**
+	 * Redirect to location url
+	 * 
+	 * @param response
+	 * 				HttpServletResponse object to be used
+	 * @param location
+	 * 				target location url
+	 *
+	 * @throws IOException
+	 *
+	 * @see javax.servlet.http.HttpServletResponse#sendRedirect(String)
+	 */
+	public static void sendRedirect(HttpServletResponse response, String location) throws IOException {
+		Map<String, String> parameters  =new HashMap<String, String>();
+		sendRedirect(response, location, parameters);
+	}
+	
+	
 	/**
 	 * Returns the protocol + the current host + the port (if different than
 	 * common ports).
@@ -840,7 +617,7 @@ public abstract class Util {
 	public static String getSelfURLhost(HttpServletRequest request) {
 		String hostUrl = StringUtils.EMPTY;
 		final int serverPort = request.getServerPort();
-		if ((serverPort == 80) || (serverPort == 443)) {
+		if ((serverPort == 80) || (serverPort == 443) || serverPort == 0) {
 			hostUrl = String.format("%s://%s", request.getScheme(), request.getServerName());
 		} else {
 			hostUrl = String.format("%s://%s:%s", request.getScheme(), request.getServerName(), serverPort);
@@ -879,7 +656,19 @@ public abstract class Util {
 	 * @return current context + current view + query
 	 */
 	public static String getSelfURL(HttpServletRequest request) {
-		return request.getRequestURI() + '?' + request.getQueryString();
+		String url = Util.getSelfURLhost(request);
+
+		String requestUri = request.getRequestURI();
+		String queryString = request.getQueryString();
+
+		if (null != requestUri && !requestUri.isEmpty()) {		
+			url += requestUri;
+		}
+
+		if (null != queryString && !queryString.isEmpty()) {		
+			url += '?' + queryString;
+		}
+		return url;
 	}
 
 	/**
@@ -891,7 +680,7 @@ public abstract class Util {
 	 * @return current host + current view
 	 */
 	public static String getSelfURLNoQuery(HttpServletRequest request) {
-		return getSelfURLhost(request) + request.getRequestURL().toString();
+		return request.getRequestURL().toString();
 	}
 
 	/**
@@ -903,7 +692,12 @@ public abstract class Util {
 	 * @return the current routed url
 	 */
 	public static String getSelfRoutedURLNoQuery(HttpServletRequest request) {
-		return getSelfURLhost(request) + request.getRequestURI().toString();
+		String url = getSelfURLhost(request);
+		String requestUri = request.getRequestURI();
+		if (null != requestUri && !requestUri.isEmpty()) {		
+			url += requestUri;
+		}
+		return url;
 	}
 
 	/**
@@ -976,20 +770,17 @@ public abstract class Util {
 	 *				String input
 	 *
 	 * @return the deflated and base64 encoded string
+	 * @throws IOException 
 	 */
-	public static String deflatedBase64encoded(String input) {
-		try {
-			// Deflater
-			ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
-			Deflater deflater = new Deflater(Deflater.DEFLATED, true);
-			DeflaterOutputStream deflaterStream = new DeflaterOutputStream(bytesOut, deflater);
-			deflaterStream.write(input.getBytes(Charset.forName("UTF-8")));
-			deflaterStream.finish();
-			// Base64 encoder
-			return new String(Base64.encodeBase64(bytesOut.toByteArray()));
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+	public static String deflatedBase64encoded(String input) throws IOException {
+		// Deflater
+		ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
+		Deflater deflater = new Deflater(Deflater.DEFLATED, true);
+		DeflaterOutputStream deflaterStream = new DeflaterOutputStream(bytesOut, deflater);
+		deflaterStream.write(input.getBytes(Charset.forName("UTF-8")));
+		deflaterStream.finish();
+		// Base64 encoder
+		return new String(Base64.encodeBase64(bytesOut.toByteArray()));
 	}
 
 	/**
@@ -1022,7 +813,7 @@ public abstract class Util {
 	 * @param input
 	 * 				 Stream input
 	 *
-	 * @return the base64 decoded string
+	 * @return the base64 decoded bytes
 	 */
 	public static byte[] base64decoder(byte [] input) {		
 		return Base64.decodeBase64(input);
@@ -1034,7 +825,7 @@ public abstract class Util {
 	 * @param input
 	 * 				 String input
 	 *
-	 * @return the base64 decoded string
+	 * @return the base64 decoded bytes
 	 */
 	public static byte[] base64decoder(String input) {		
 		return base64decoder(input.getBytes());
@@ -1102,7 +893,7 @@ public abstract class Util {
 		org.apache.xml.security.Init.init();
 
         if (signAlgorithm == null) {
-       	 signAlgorithm = Constants.RSA_SHA1;
+        	signAlgorithm = Constants.RSA_SHA1;
         }
 
         Signature instance = Signature.getInstance(signatureAlgConversion(signAlgorithm));
@@ -1124,7 +915,9 @@ public abstract class Util {
 	public static String signatureAlgConversion(String sign) {
 		String convertedSignatureAlg = "";
 
-		if (sign.equals(Constants.DSA_SHA1)) {
+		if (sign == null) {
+			convertedSignatureAlg = "SHA1withRSA";
+		} else if (sign.equals(Constants.DSA_SHA1)) {
 			convertedSignatureAlg = "SHA1withDSA";
 		} else if (sign.equals(Constants.RSA_SHA256)) {
 			convertedSignatureAlg = "SHA256withRSA";
@@ -1139,10 +932,81 @@ public abstract class Util {
 		return convertedSignatureAlg;
 	}
 
+    /**
+     * Validate signature (Message or Assertion).
+     *
+     * @param doc
+     *               The document we should validate
+     * @param cert
+     *               The public certificate
+     * @param fingerprint
+     *               The fingerprint of the public certificate
+     * @param alg
+     *               The signature algorithm method
+     *
+     * @return True if the sign is valid, false otherwise.
+     */
+    public static Boolean validateSign(Document doc, X509Certificate cert, String fingerprint, String alg) {
+        NodeList signNodesToValidate;
+		try {
+			signNodesToValidate = query(doc, "/samlp:Response/ds:Signature");
+			if (signNodesToValidate.getLength() == 0) {
+				signNodesToValidate = query(doc, "/samlp:Response/saml:Assertion/ds:Signature");
+			}
+
+			if (signNodesToValidate.getLength() == 1) {
+				return validateSignNode(signNodesToValidate.item(0), cert, fingerprint, alg);
+			}
+		} catch (XPathExpressionException e) {}
+		return false;
+    }
+
+    /**
+     * Validate signature (Metadata).
+     *
+     * @param doc
+     *               The document we should validate
+     * @param cert
+     *               The public certificate
+     * @param fingerprint
+     *               The fingerprint of the public certificate
+     * @param alg
+     *               The signature algorithm method
+     *
+     * @return True if the sign is valid, false otherwise.
+     */
+    public static Boolean validateMetadataSign(Document doc, X509Certificate cert, String fingerprint, String alg) {
+        NodeList signNodesToValidate;
+		try {
+			signNodesToValidate = query(doc, "/md:EntitiesDescriptor/ds:Signature");
+
+			if (signNodesToValidate.getLength() == 0) {
+				signNodesToValidate = query(doc, "/md:EntityDescriptor/ds:Signature");
+				
+				if (signNodesToValidate.getLength() == 0) {
+					signNodesToValidate = query(doc, "/md:EntityDescriptor/md:SPSSODescriptor/ds:Signature|/md:EntityDescriptor/IDPSSODescriptor/ds:Signature");
+				}
+			}
+
+			if (signNodesToValidate.getLength() > 0) {
+				for (int i = 0; i < signNodesToValidate.getLength(); i++) {
+					Node signNode =  signNodesToValidate.item(0);
+					if (!validateSignNode(signNode, cert, fingerprint, alg)) {
+						return false;
+					}
+				}
+				return true;
+			}
+		} catch (XPathExpressionException e) {
+			String er = e.getMessage(); 
+		}
+		return false;
+    }
+    
 	/**
-	 * Validate signature (Message or Assertion).
+	 * Validate signature of the Node.
 	 *
-	 * @param doc
+	 * @param signNode
 	 * 				 The document we should validate
 	 * @param cert
 	 * 				 The public certificate
@@ -1153,48 +1017,16 @@ public abstract class Util {
 	 *
 	 * @return True if the sign is valid, false otherwise.
 	 */
-	public static Boolean validateSign(Document doc, X509Certificate cert, String fingerprint, String alg) {
+	public static Boolean validateSignNode(Node signNode, X509Certificate cert, String fingerprint, String alg) {
 		Boolean res = false;
 		try {
 			org.apache.xml.security.Init.init();
 
-			NodeList signNodesToValidate = query(doc, "//ds:Signature", null);
-
-			// Validate the first signature
-			Node sigNode = signNodesToValidate.item(0);
-
-			// Check if Reference URI is empty
-			NodeList referenceNodes = query(doc, "//ds:Reference", sigNode);
-			if (referenceNodes.getLength() > 0) {
-				Element refEl = (Element) referenceNodes.item(0);
-				if (refEl.hasAttribute("URI") && refEl.getAttribute("URI") == "") {
-					Element parent = (Element) referenceNodes.item(0).getParentNode();
-					refEl.setAttribute("URI", "#" + parent.getAttribute("ID"));
-				}
-			}			
-
-			Element sigElement = (Element) sigNode;
+			Element sigElement = (Element) signNode;
 			XMLSignature signature = new XMLSignature(sigElement, "");
 
 			if (cert != null) {
 				res = signature.checkSignatureValue(cert);
-
-				/*
-					// Another alternative
-					
-					DOMValidateContext ctx = new DOMValidateContext(cert.getPublicKey(), sigNode);
-	
-					// Workaound http://stackoverflow.com/questions/22196091/javax-xml-crypto-urireferenceexception-cannot-resolve-element-with-id-saml
-					NodeList idAttributes = (NodeList) query(doc, "//*[@ID]", null);
-					for (int i = 0; i < idAttributes.getLength(); i++) {
-					    ctx.setIdAttributeNS((Element) idAttributes.item(i), null, "ID");
-					}
-					
-					XMLSignatureFactory sigF = XMLSignatureFactory.getInstance("DOM"); 
-					
-					javax.xml.crypto.dsig.XMLSignature xmlSignature = sigF.unmarshalXMLSignature(ctx);
-					res = xmlSignature.validate(ctx);
-				 */			 
 			} else {
 				KeyInfo keyInfo = signature.getKeyInfo();
 				if (keyInfo != null && keyInfo.containsX509Data()) {
@@ -1205,7 +1037,7 @@ public abstract class Util {
 				}
 			}
 		} catch (Exception e) {
-			LOGGER.debug("Error executing validateSign: " + e.getMessage(), e);
+			LOGGER.debug("Error executing validateSignNode: " + e.getMessage(), e);
 		}
 		return res;
 	}
@@ -1257,8 +1089,307 @@ public abstract class Util {
 	}
 
 	/**
+	 * Signs the Document using the specified signature algorithm with the private key and the public certificate.
+	 *
+	 * @param document
+	 * 				 The document to be signed
+	 * @param key
+	 * 				 The private key
+	 * @param certificate
+	 * 				 The public certificate
+	 * @param signAlgorithm
+	 * 				 Signature Algorithm
+	 * 
+	 * @return the signed document in string format
+	 * 
+	 * @throws XMLSecurityException
+	 * @throws XPathExpressionException
+	 */
+	public static String addSign(Document document, PrivateKey key, X509Certificate certificate, String signAlgorithm) throws XMLSecurityException, XPathExpressionException {
+		org.apache.xml.security.Init.init();
+
+		// Check arguments.
+		if (document == null) {
+			throw new IllegalArgumentException("Provided document was null");
+		}
+
+		if (document.getDocumentElement() == null) {
+			throw new IllegalArgumentException("The Xml Document has no root element.");
+		}
+
+		if (key == null) {
+			throw new IllegalArgumentException("Provided key was null");
+		}
+		
+		if (certificate == null) {
+			throw new IllegalArgumentException("Provided certificate was null");
+		}
+
+		if (signAlgorithm == null || signAlgorithm.isEmpty()) {
+			signAlgorithm = Constants.RSA_SHA1;
+		}
+
+		// document.normalizeDocument();
+
+		String c14nMethod = Constants.C14N_WC;
+
+		// Signature object
+		XMLSignature sig = new XMLSignature(document, null, signAlgorithm, c14nMethod);
+
+		// Including the signature into the document before sign, because
+		// this is an envelop signature
+		Element root = document.getDocumentElement();
+		document.setXmlStandalone(false);		
+
+		// If Issuer, locate Signature after Issuer, Otherwise as first child.
+		NodeList issuerNodes = Util.query(document, "//saml:Issuer", null);
+		if (issuerNodes.getLength() > 0) {
+			Node issuer =  issuerNodes.item(0);
+			root.insertBefore(sig.getElement(), issuer.getNextSibling());
+		} else {
+			root.insertBefore(sig.getElement(), root.getFirstChild());
+		}
+
+		String id = root.getAttribute("ID");
+
+		String reference = id;
+		if (!id.isEmpty()) {
+			root.setIdAttributeNS(null, "ID", true);
+			reference = "#" + id;
+		}
+
+		// Create the transform for the document
+		Transforms transforms = new Transforms(document);
+		transforms.addTransform(Constants.ENVSIG);
+		//transforms.addTransform(Transforms.TRANSFORM_C14N_OMIT_COMMENTS);
+		transforms.addTransform(c14nMethod);
+		sig.addDocument(reference, transforms, Constants.SHA1);
+
+		// Add the certification info
+		sig.addKeyInfo(certificate);			
+
+		// Sign the document
+		sig.sign(key);
+
+		return convertDocumentToString(document, true);
+	}
+
+	/**
+	 * Signs a Node using the specified signature algorithm with the private key and the public certificate.
+	 *
+	 * @param node
+	 * 				 The Node to be signed
+	 * @param key
+	 * 				 The private key
+	 * @param certificate
+	 * 				 The public certificate
+	 * @param signAlgorithm
+	 * 				 Signature Algorithm
+	 * 
+	 * @return the signed document in string format
+	 *
+	 * @throws ParserConfigurationException
+	 * @throws XMLSecurityException
+	 * @throws XPathExpressionException
+	 */
+	public static String addSign(Node node, PrivateKey key, X509Certificate certificate, String signAlgorithm) throws ParserConfigurationException, XPathExpressionException, XMLSecurityException {
+		// Check arguments.
+		if (node == null) {
+			throw new IllegalArgumentException("Provided node was null");
+		}
+
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+	  	dbf.setNamespaceAware(true);
+		Document doc = dbf.newDocumentBuilder().newDocument();
+		Node newNode = doc.importNode(node, true);
+		doc.appendChild(newNode);
+
+		return addSign(doc, key, certificate, signAlgorithm);
+	}	
+	
+	/**
+	 * Validates signed binary data (Used to validate GET Signature).
+	 *
+	 * @param signedQuery
+	 * 				 The element we should validate
+	 * @param signature
+	 * 				 The signature that will be validate
+	 * @param cert
+	 * 				 The public certificate
+	 * @param signAlg
+	 * 				 Signature Algorithm
+	 * 
+	 * @return the signed document in string format
+	 *
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchProviderException 
+	 * @throws InvalidKeyException 
+	 * @throws SignatureException 
+	 */
+	public static Boolean validateBinarySignature(String signedQuery, byte[] signature, X509Certificate cert, String signAlg) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException {
+		Boolean valid = false;
+		try {
+			org.apache.xml.security.Init.init();
+
+			String convertedSigAlg = signatureAlgConversion(signAlg);
+
+			Signature sig = Signature.getInstance(convertedSigAlg); //, provider);
+			sig.initVerify(cert.getPublicKey());
+			sig.update(signedQuery.getBytes());
+			
+			valid = sig.verify(signature);
+		} catch (Exception e) {
+			LOGGER.debug("Error executing validateSign: " + e.getMessage(), e);
+		}
+		return valid;
+	}
+
+	/**
+	 * Generates a nameID.
+	 *
+	 * @param value
+	 * 				 The value
+	 * @param spnq
+	 * 				 SP Name Qualifier
+	 * @param format
+	 * 				 SP Format
+	 * @param cert
+	 * 				 IdP Public certificate to encrypt the nameID
+	 *
+	 * @return Xml contained in the document.
+	 */
+	public static String generateNameId(String value, String spnq, String format, X509Certificate cert) {
+		String res = null;
+		try {
+		  	DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		  	dbf.setNamespaceAware(true);
+			Document doc = dbf.newDocumentBuilder().newDocument();
+			Element nameId = doc.createElement("saml:NameID");
+			if (spnq != null && !spnq.isEmpty()) {
+				nameId.setAttribute("SPNameQualifier", spnq);
+			}
+			if (format != null && !format.isEmpty()) {
+			nameId.setAttribute("Format", format);
+			}
+			nameId.appendChild(doc.createTextNode(value));
+			doc.appendChild(nameId);
+
+			if (cert != null) {
+				// We generate a symmetric key
+				Key symmetricKey = generateSymmetricKey();
+
+				// cipher for encrypt the data
+				XMLCipher xmlCipher = XMLCipher.getInstance(Constants.AES128_CBC);
+				xmlCipher.init(XMLCipher.ENCRYPT_MODE, symmetricKey);
+
+				// cipher for encrypt the symmetric key
+				XMLCipher keyCipher = XMLCipher.getInstance(Constants.RSA_1_5);
+				keyCipher.init(XMLCipher.WRAP_MODE, cert.getPublicKey());
+
+				// encrypt the symmetric key
+				EncryptedKey encryptedKey = keyCipher.encryptKey(doc, symmetricKey);				
+
+				// Add keyinfo inside the encrypted data
+				EncryptedData encryptedData = xmlCipher.getEncryptedData();
+				KeyInfo keyInfo = new KeyInfo(doc);
+				keyInfo.add(encryptedKey);
+				encryptedData.setKeyInfo(keyInfo);
+
+				// Encrypt the actual data
+				xmlCipher.doFinal(doc, nameId, false);
+
+				// Building the result
+				res = "<saml:EncryptedID>" + convertDocumentToString(doc) + "</saml:EncryptedID>";
+			} else {
+				res = convertDocumentToString(doc);
+			}
+		} catch (Exception e) {
+			LOGGER.error("Error executing generateNameId: " + e.getMessage(), e);
+		}
+		return res;
+	}
+
+	/**
+	 * Generates a nameID.
+	 *
+	 * @param value
+	 * 				 The value
+	 * @param spnq
+	 * 				 SP Name Qualifier
+	 * @param format
+	 * 				 SP Format
+	 *
+	 * @return Xml contained in the document.
+	 */
+	public static String generateNameId(String value, String spnq, String format) {
+		return generateNameId(value, spnq, format, null);
+	}
+	
+	/**
+	 * Method to generate a symmetric key for encryption
+	 * 
+	 * @return the symmetric key
+	 *
+	 * @throws Exception
+	 */
+	private static SecretKey generateSymmetricKey() throws Exception {
+		KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+		keyGenerator.init(128);
+		return keyGenerator.generateKey();
+	}
+
+	/**
+	 * Generates a unique string (used for example as ID of assertions)
+	 *
+	 * @return A unique string
+	 */
+	public static String generateUniqueID() {
+		String uniqueIdSha1 = StringUtils.EMPTY;
+		String uniqueId = StringUtils.EMPTY;
+
+		try {
+			Random r = new Random();
+			Integer n = r.nextInt();
+
+			String id = uniqid(n.toString(), true);
+
+			MessageDigest crypt = MessageDigest.getInstance("SHA-1");
+			crypt.reset();
+			crypt.update(id.getBytes());
+			uniqueIdSha1 = new BigInteger(1, crypt.digest()).toString(16);
+
+			uniqueId = "ONELOGIN_" + uniqueIdSha1;
+		} catch (Exception e) {
+			LOGGER.error("Error executing generateUniqueID: " + e.getMessage(), e);
+		}
+		return uniqueId;
+	}	
+
+	/**
+	 * Generates random UUID
+	 * 
+	 * @param prefix
+	 *
+	 * @param more_entropy
+	 * 
+	 * @return the random UUID
+	 */
+	public static String uniqid(String prefix, Boolean more_entropy) {
+		if (prefix != null && StringUtils.isEmpty(prefix)) {
+			prefix = StringUtils.EMPTY;
+		}
+
+		if (!more_entropy) {
+			return (String) (prefix + UUID.randomUUID().toString()).substring(
+					0, 13);
+		} else {
+			return (String) (prefix + UUID.randomUUID().toString() + UUID
+					.randomUUID().toString()).substring(0, 23);
+		}
+	}
+	
+	/**
 	 * Interprets a ISO8601 duration value relative to a current time timestamp.
-	 * parseDuration(duration,Calendar.getInstance());
 	 *
 	 * @param duration
 	 *            The duration, as a string.
@@ -1268,7 +1399,8 @@ public abstract class Util {
 	 * @throws IllegalArgumentException
 	 */
 	public static long parseDuration(String duration) throws IllegalArgumentException {
-		return parseDuration(duration, Calendar.getInstance().getTimeInMillis() / 1000);
+		TimeZone timeZone = TimeZone.getTimeZone("UTC");
+		return parseDuration(duration, Calendar.getInstance(timeZone).getTimeInMillis() / 1000);
 	}
 
 	/**
@@ -1284,17 +1416,13 @@ public abstract class Util {
 	 * @throws IllegalArgumentException
 	 */
 	public static long parseDuration(String durationString, long timestamp) throws IllegalArgumentException {
-	
-		if (durationString.matches(DURATION_REG_EX)) {
-			throw new IllegalArgumentException("Invalid ISO 8601 duration: " + durationString);
-		}
 		boolean haveMinus = false;
 	
 		if (durationString.startsWith("-")) {
 			durationString = durationString.substring(1);
 			haveMinus = true;
 		}
-	
+
 		PeriodFormatter periodFormatter = ISOPeriodFormat.standard();
 		Period period = periodFormatter.parsePeriod(durationString);
 		DateTime dt = new DateTime(timestamp * 1000);
@@ -1334,8 +1462,9 @@ public abstract class Util {
 			}
 	
 			if (validUntil != null && !StringUtils.isEmpty(validUntil)) {
-				long validUntilTimeInt = DATE_TIME_FORMAT.parseDateTime(validUntil).getMillis() / 1000 ;
-				if (expireTime > validUntilTimeInt) {
+				DateTime date = Util.parseDateTime(validUntil);
+				long validUntilTimeInt = date.getMillis() / 1000;
+				if (expireTime == 0 || expireTime > validUntilTimeInt) {
 					expireTime = validUntilTimeInt;
 				}
 			}
@@ -1344,7 +1473,33 @@ public abstract class Util {
 		}
 		return expireTime;
 	}
-	  
+
+	/**
+	 * Compare 2 dates and return the the earliest
+	 *
+	 * @param cacheDuration
+	 * 				 The duration, as a string.
+	 * @param validUntil
+	 * 				 The valid until date, as a timestamp
+	 *
+	 * @return the expiration time (timestamp format).
+	 */
+	public static long getExpireTime(String cacheDuration, long validUntil) {
+		long expireTime = 0;
+		try {
+			if (cacheDuration != null && !StringUtils.isEmpty(cacheDuration)) {
+				expireTime = parseDuration(cacheDuration);
+			}	
+			
+			if (expireTime == 0 || expireTime > validUntil) {
+				expireTime = validUntil;
+			}
+		} catch (Exception e) {
+			LOGGER.error("Error executing getExpireTime: " + e.getMessage(), e);
+		}
+		return expireTime;
+	}
+	
 	/**
 	 * Create string form time In Millis with format yyyy-MM-ddTHH:mm:ssZ
 	 *
@@ -1357,15 +1512,37 @@ public abstract class Util {
 	}
 
 	/**
-	 * Create calendar form string with format yyyy-MM-ddTHH:mm:ssZ
+	 * Create string form time In Millis with format yyyy-MM-ddTHH:mm:ssZ
+	 *
+	 * @param timeInMillis
+	 * @param millis
+	 *
+	 * @return string with format yyyy-MM-ddTHH:mm:ssZ
+	 */
+	public static String formatDateTime(long timeInMillis, boolean millis) {
+		if (millis) {
+			return DATE_TIME_FORMAT_MILLS.print(timeInMillis);
+		} else {
+			return formatDateTime(timeInMillis);
+		}
+	}
+
+	/**
+	 * Create calendar form string with format yyyy-MM-ddTHH:mm:ssZ // yyyy-MM-ddTHH:mm:ss.SSSZ
 	 *
 	 * @param dateTime
-	 * 				 string with format yyyy-MM-ddTHH:mm:ssZ
+	 * 				 string with format yyyy-MM-ddTHH:mm:ssZ // yyyy-MM-ddTHH:mm:ss.SSSZ
 	 *
-	 * @return calendar
+	 * @return datetime
 	 */
-	public static Calendar parseDateTime(String dateTime) {
-		return DATE_TIME_FORMAT.parseDateTime(dateTime).toGregorianCalendar();
+	public static DateTime parseDateTime(String dateTime) {
+		DateTime parsedData = null;
+		try {
+			parsedData = DATE_TIME_FORMAT.parseDateTime(dateTime);
+		} catch(Exception e) {
+			return DATE_TIME_FORMAT_MILLS.parseDateTime(dateTime);
+		}
+		return parsedData;
 	}
 
 }
