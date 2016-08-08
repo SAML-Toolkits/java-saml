@@ -37,3 +37,6 @@ Known issues while testing:
  * [ECLEmma coverage plugin incompatible with PowerMock](http://stackoverflow.com/questions/23363212/powermock-eclemma-coverage-issue)
   
  * When using @PrepareForTest and PowerMockito the breakpoints not does [not stop when debugging](http://stackoverflow.com/questions/35140575/powermockito-junit-and-eclemma-debugging-dosent-work). The solution is define Rules.
+
+ * Java7+ enforces bytecode verification and with Powermock you can experience a [java.lang.VerifyError](http://www.notonlyanecmplace.com/java-7-enforces-bytecode-verification/).
+   At Java8 bytecode verification is mandatory and there is no option to disable it :(
