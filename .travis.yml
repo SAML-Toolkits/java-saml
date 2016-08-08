@@ -1,0 +1,11 @@
+language: java
+jdk:
+  - openjdk7
+  - oraclejdk7
+before_install
+install: true
+script:
+  - cd 
+  - mvn clean deploy
+after_success:
+  - mvn clean test jacoco:report coveralls:report
