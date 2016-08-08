@@ -1,5 +1,7 @@
 # OneLogin's SAML Java Toolkit
 
+[![Coverage Status](https://coveralls.io/repos/github/onelogin/java-saml/badge.svg?branch=v2.0.0)](https://coveralls.io/github/onelogin/java-saml?branch=v2.0.0)
+
 Version 2.0.0
 
 Not ready yet, it lacks documentation and not officially distributed.
