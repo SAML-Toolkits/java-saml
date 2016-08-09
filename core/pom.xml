@@ -9,7 +9,7 @@
 
 	<packaging>jar</packaging>
 	<name>Onelogin java-saml Toolkit Core</name>
-	<artifactId>java-saml-tookit-core</artifactId>
+	<artifactId>java-saml</artifactId>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
