@@ -30,7 +30,6 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -71,8 +70,8 @@ import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.transforms.Transforms;
 import org.apache.xml.security.utils.XMLUtils;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
-import org.joda.time.chrono.ISOChronology;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISOPeriodFormat;
@@ -100,10 +99,10 @@ public final class Util {
      * Private property to construct a logger for this class.
      */
 	private static final Logger LOGGER = LoggerFactory.getLogger(Util.class);
-	
-	private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withChronology(ISOChronology.getInstanceUTC());
-	private static final DateTimeFormatter DATE_TIME_FORMAT_MILLS = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withChronology(ISOChronology.getInstanceUTC());
-	
+
+    private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(DateTimeZone.UTC);
+	private static final DateTimeFormatter DATE_TIME_FORMAT_MILLS = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(DateTimeZone.UTC);
+
 	/**
 	 * This function load an XML string in a save way. Prevent XEE/XXE Attacks
 	 *
@@ -1399,7 +1398,7 @@ public final class Util {
 	 * @throws IllegalArgumentException
 	 */
 	public static long parseDuration(String duration) throws IllegalArgumentException {
-		TimeZone timeZone = TimeZone.getTimeZone("UTC");
+		TimeZone timeZone = DateTimeZone.UTC.toTimeZone();
 		return parseDuration(duration, Calendar.getInstance(timeZone).getTimeInMillis() / 1000);
 	}
 
@@ -1427,6 +1426,7 @@ public final class Util {
 		Period period = periodFormatter.parsePeriod(durationString);
 
 		DateTime dt = new DateTime(timestamp * 1000);
+		dt.toDateTime(DateTimeZone.UTC);
 	
 		DateTime result = null;
 		if (haveMinus) {
@@ -1441,8 +1441,9 @@ public final class Util {
 	 * @return the unix timestamp that matches the current time.
 	 */
 	public static Long getCurrentTimeStamp() {
-		Date currentDate = new Date();
-		return currentDate.getTime() / 1000;
+		DateTime currentDate = new DateTime();
+		currentDate.toDateTime(DateTimeZone.UTC);
+		return currentDate.getMillis() / 1000;
 	}
 
 	/**
@@ -1463,8 +1464,8 @@ public final class Util {
 			}
 	
 			if (validUntil != null && !StringUtils.isEmpty(validUntil)) {
-				DateTime date = Util.parseDateTime(validUntil);
-				long validUntilTimeInt = date.getMillis() / 1000;
+				DateTime dt = Util.parseDateTime(validUntil);
+				long validUntilTimeInt = dt.getMillis() / 1000;
 				if (expireTime == 0 || expireTime > validUntilTimeInt) {
 					expireTime = validUntilTimeInt;
 				}
