@@ -1425,6 +1425,7 @@ public final class Util {
 
 		PeriodFormatter periodFormatter = ISOPeriodFormat.standard();
 		Period period = periodFormatter.parsePeriod(durationString);
+
 		DateTime dt = new DateTime(timestamp * 1000);
 	
 		DateTime result = null;
@@ -1433,7 +1434,7 @@ public final class Util {
 		} else {
 			result = dt.plus(period);
 		}
-		return result.toGregorianCalendar().getTimeInMillis() / 1000;
+		return result.getMillis() / 1000;
 	}
 	  
 	/**

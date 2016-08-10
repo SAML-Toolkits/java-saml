@@ -1993,7 +1993,7 @@ public class UtilsTest {
 		Date currentDate = new Date();
 		Long dt = currentDate.getTime() / 1000;
 		Long dt2 = Util.getCurrentTimeStamp();
-	    assertTrue(dt2 - dt == 0 || dt2 - dt == 1);
+	    assertTrue(dt2 - dt <= 3);
 	}
 
 	/**
