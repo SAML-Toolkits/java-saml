@@ -32,6 +32,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.TimeZone;
@@ -1422,12 +1423,11 @@ public final class Util {
 			haveMinus = true;
 		}
 
-		PeriodFormatter periodFormatter = ISOPeriodFormat.standard();
+		PeriodFormatter periodFormatter = ISOPeriodFormat.standard().withLocale(new Locale("UTC"));
 		Period period = periodFormatter.parsePeriod(durationString);
 
-		DateTime dt = new DateTime(timestamp * 1000);
-		dt.toDateTime(DateTimeZone.UTC);
-	
+		DateTime dt = new DateTime(timestamp * 1000, DateTimeZone.UTC);
+
 		DateTime result = null;
 		if (haveMinus) {
 			result = dt.minus(period);
@@ -1441,8 +1441,7 @@ public final class Util {
 	 * @return the unix timestamp that matches the current time.
 	 */
 	public static Long getCurrentTimeStamp() {
-		DateTime currentDate = new DateTime();
-		currentDate.toDateTime(DateTimeZone.UTC);
+		DateTime currentDate = new DateTime(DateTimeZone.UTC);
 		return currentDate.getMillis() / 1000;
 	}
 
@@ -1538,6 +1537,7 @@ public final class Util {
 	 * @return datetime
 	 */
 	public static DateTime parseDateTime(String dateTime) {
+		
 		DateTime parsedData = null;
 		try {
 			parsedData = DATE_TIME_FORMAT.parseDateTime(dateTime);

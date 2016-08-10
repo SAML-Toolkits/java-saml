@@ -1940,14 +1940,11 @@ public class UtilsTest {
 	 * 
 	 * @see com.onelogin.saml2.util.Util#parseDuration
 	 */
-/* TODO 
- * 	
 	@Test(expected=IllegalArgumentException.class)
 	public void testParseDurationException() throws Exception {
 		long timestamp = 1393876825L;// 2014-03-03 21:00:25
 		long parsedDuration = Util.parseDuration("aaa", timestamp);
 	}
-*/
 	
 	/**
 	 * Tests the parseDuration method
@@ -1969,7 +1966,7 @@ public class UtilsTest {
 
 		String newDuration = "P1Y1M";
 		long parsedDuration4 = Util.parseDuration(newDuration, timestamp);
-		assertEquals(1428087625L, parsedDuration4);
+		assertEquals(1428091225L, parsedDuration4);
 
 		String negDuration = "-P14M";
 		long parsedDuration5 = Util.parseDuration(negDuration, timestamp);
