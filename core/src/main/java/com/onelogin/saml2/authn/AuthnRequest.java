@@ -186,4 +186,12 @@ public class AuthnRequest {
 		template.append("${nameIDPolicyStr}${requestedAuthnContextStr}</samlp:AuthnRequest>");
 		return template;
 	}
+
+	/**
+	 * @return the generated id of the AuthnRequest message
+	 */
+	public String getId()
+	{
+		return id;
+	}
 }

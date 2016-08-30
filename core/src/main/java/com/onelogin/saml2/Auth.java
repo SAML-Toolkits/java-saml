@@ -37,6 +37,8 @@ import com.onelogin.saml2.util.Util;
  * Defines the methods that you can invoke in your application in
  * order to add SAML support (initiates sso, initiates slo, processes a
  * SAML Response, a Logout Request or a Logout Response).
+ *
+ * This is stateful and not thread-safe, you should create a new instance for each request/response.
  */
 public class Auth {
 	/**
@@ -93,6 +95,16 @@ public class Auth {
      * Reason of the last error.
      */
 	private String errorReason;
+
+	/**
+	 * The id of the last AuthnRequest generated
+	 */
+	private String lastLoginRequestId;
+
+	/**
+	 * The id of the last LogoutRequest generated
+	 */
+	private String lastLogoutRequestId;
 
 	/**
 	 * Initializes the SP SAML instance.
@@ -191,14 +203,15 @@ public class Auth {
 	/**
 	 * Initiates the SSO process.
 	 *
-	 * @param returnTo 
-     *				The target URL the user should be returned to after login.
-	 * @param forceAuthn 
-     *				When true the AuthNReuqest will set the ForceAuthn='true'
-	 * @param isPassive 
-     *				When true the AuthNReuqest will set the IsPassive='true'
+	 * @param returnTo
+	 *				The target URL the user should be returned to after login.
+	 * @param forceAuthn
+	 *				When true the AuthNRequest will set the ForceAuthn='true'
+	 * @param isPassive
+	 *				When true the AuthNRequest will set the IsPassive='true'
 	 * @param setNameIdPolicy
-	 *            When true the AuthNReuqest will set a nameIdPolicy
+	 *            When true the AuthNRequest will set a nameIdPolicy
+	 * @return the representation of the AuthNRequest generated
 	 * @throws IOException
 	 */
 	public void login(String returnTo, Boolean forceAuthn, Boolean isPassive, Boolean setNameIdPolicy) throws IOException {
@@ -229,6 +242,7 @@ public class Auth {
 
 		LOGGER.debug("AuthNRequest sent to " + ssoUrl + " --> " + samlRequest);
 		Util.sendRedirect(response, ssoUrl, parameters);
+		lastLoginRequestId = authnRequest.getId();
 	}
 
 	/**
@@ -292,6 +306,7 @@ public class Auth {
 		String sloUrl = getSLOurl();
 		LOGGER.debug("Logout request sent to " + sloUrl + " --> " + samlLogoutRequest);
 		Util.sendRedirect(response, sloUrl, parameters);
+		lastLogoutRequestId = logoutRequest.getId();
 	}
 
 	/**
@@ -538,7 +553,23 @@ public class Auth {
     {
     	return errorReason;
     }
-     
+
+	/**
+	 * @return the id of the last AuthnRequest generated, null if none
+	 */
+	public String getLastLoginRequestId()
+	{
+		return lastLoginRequestId;
+	}
+
+	/**
+	 * @return the id of the last LogoutRequest generated, null if none
+	 */
+	public String getLastLogoutRequestId()
+	{
+		return lastLogoutRequestId;
+	}
+
     /**
      * @return the Saml2Settings object. The Settings data.
      */

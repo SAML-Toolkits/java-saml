@@ -1,9 +1,11 @@
 package com.onelogin.saml2.test;
 
 
+import static com.onelogin.saml2.util.Util.UNIQUE_ID_PREFIX;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -91,6 +93,8 @@ public class AuthTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("onelogin.saml.properties").build();
 		assertEquals(settings.getIdpEntityId(), auth.getSettings().getIdpEntityId());
 		assertEquals(settings.getSpEntityId(), auth.getSettings().getSpEntityId());
+		assertNull(auth.getLastLoginRequestId());
+		assertNull(auth.getLastLogoutRequestId());
 	}
 
 	/**
@@ -896,6 +900,7 @@ public class AuthTest {
 		Auth auth = new Auth(settings, request, response);
 		auth.login();
 		verify(response).sendRedirect(matches("https:\\/\\/pitbulk.no-ip.org\\/simplesaml\\/saml2\\/idp\\/SSOService.php\\?SAMLRequest=(.)*&RelayState=http%3A%2F%2Flocalhost%3A8080%2Finitial.jsp"));
+		assertThat(auth.getLastLoginRequestId(), startsWith(Util.UNIQUE_ID_PREFIX));
 	}
 
 	/**
@@ -1011,6 +1016,7 @@ public class AuthTest {
 		auth.logout();
 
 		verify(response).sendRedirect(matches("https:\\/\\/pitbulk.no-ip.org\\/simplesaml\\/saml2\\/idp\\/SingleLogoutService.php\\?SAMLRequest=(.)*&RelayState=http%3A%2F%2Flocalhost%3A8080%2Finitial.jsp"));
+		assertThat(auth.getLastLogoutRequestId(), startsWith(Util.UNIQUE_ID_PREFIX));
 	}
 
 	/**

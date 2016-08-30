@@ -599,4 +599,12 @@ public class LogoutRequest {
 	public String getError() {
 		return error;
 	}
+
+	/**
+	 * @return the generated id of the LogoutRequest message
+	 */
+	public String getId()
+	{
+		return id;
+	}
 }

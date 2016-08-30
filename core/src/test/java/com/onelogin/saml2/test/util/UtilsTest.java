@@ -1893,7 +1893,7 @@ public class UtilsTest {
 	public void testGenerateUniqueID() {
 		String s1 = Util.generateUniqueID();
 
-		assertThat(s1, containsString("ONELOGIN_"));
+		assertThat(s1, containsString(Util.UNIQUE_ID_PREFIX));
 		assertTrue(s1.length() > 40);
 		
 		String s2 = Util.generateUniqueID();
@@ -1923,10 +1923,10 @@ public class UtilsTest {
 		assertNotEquals(id_2, id_3);
 		assertNotEquals(id_2, id_4);
 
-		String id_5 = Util.uniqid("ONELOGIN_", false);
-		String id_6 = Util.uniqid("ONELOGIN_", true);
-		assertThat(id_5, containsString("ONELOGIN_"));
-		assertThat(id_6, containsString("ONELOGIN_"));
+		String id_5 = Util.uniqid(Util.UNIQUE_ID_PREFIX, false);
+		String id_6 = Util.uniqid(Util.UNIQUE_ID_PREFIX, true);
+		assertThat(id_5, containsString(Util.UNIQUE_ID_PREFIX));
+		assertThat(id_6, containsString(Util.UNIQUE_ID_PREFIX));
 		assertNotEquals(id_5, id_6);
 
 		String id_7 = Util.uniqid("", false);
