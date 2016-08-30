@@ -1345,46 +1345,9 @@ public final class Util {
 	 * @return A unique string
 	 */
 	public static String generateUniqueID() {
-		try {
-			Random r = new Random();
-			Integer n = r.nextInt();
-
-			String id = uniqid(n.toString(), true);
-
-			MessageDigest crypt = MessageDigest.getInstance("SHA-1");
-			crypt.reset();
-			crypt.update(id.getBytes());
-			final String uniqueIdSha1 = new BigInteger(1, crypt.digest()).toString(16);
-
-			return UNIQUE_ID_PREFIX + uniqueIdSha1;
-		} catch (Exception e) {
-			throw new RuntimeException("Error executing generateUniqueID: " + e.getMessage(), e);
-		}
+		return UNIQUE_ID_PREFIX + UUID.randomUUID();
 	}
 
-	/**
-	 * Generates random UUID
-	 * 
-	 * @param prefix
-	 *
-	 * @param more_entropy
-	 * 
-	 * @return the random UUID
-	 */
-	public static String uniqid(String prefix, Boolean more_entropy) {
-		if (prefix != null && StringUtils.isEmpty(prefix)) {
-			prefix = StringUtils.EMPTY;
-		}
-
-		if (!more_entropy) {
-			return (String) (prefix + UUID.randomUUID().toString()).substring(
-					0, 13);
-		} else {
-			return (String) (prefix + UUID.randomUUID().toString() + UUID
-					.randomUUID().toString()).substring(0, 23);
-		}
-	}
-	
 	/**
 	 * Interprets a ISO8601 duration value relative to a current time timestamp.
 	 *
