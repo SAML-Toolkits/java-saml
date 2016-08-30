@@ -97,14 +97,9 @@ public class Auth {
 	private String errorReason;
 
 	/**
-	 * The id of the last AuthnRequest generated
+	 * The id of the last request (Authn or Logout) generated
 	 */
-	private String lastLoginRequestId;
-
-	/**
-	 * The id of the last LogoutRequest generated
-	 */
-	private String lastLogoutRequestId;
+	private String lastRequestId;
 
 	/**
 	 * Initializes the SP SAML instance.
@@ -242,7 +237,7 @@ public class Auth {
 
 		LOGGER.debug("AuthNRequest sent to " + ssoUrl + " --> " + samlRequest);
 		Util.sendRedirect(response, ssoUrl, parameters);
-		lastLoginRequestId = authnRequest.getId();
+		lastRequestId = authnRequest.getId();
 	}
 
 	/**
@@ -306,7 +301,7 @@ public class Auth {
 		String sloUrl = getSLOurl();
 		LOGGER.debug("Logout request sent to " + sloUrl + " --> " + samlLogoutRequest);
 		Util.sendRedirect(response, sloUrl, parameters);
-		lastLogoutRequestId = logoutRequest.getId();
+		lastRequestId = logoutRequest.getId();
 	}
 
 	/**
@@ -555,19 +550,11 @@ public class Auth {
     }
 
 	/**
-	 * @return the id of the last AuthnRequest generated, null if none
+	 * @return the id of the last request generated (AuthnRequest or LogoutRequest), null if none
 	 */
-	public String getLastLoginRequestId()
+	public String getLastRequestId()
 	{
-		return lastLoginRequestId;
-	}
-
-	/**
-	 * @return the id of the last LogoutRequest generated, null if none
-	 */
-	public String getLastLogoutRequestId()
-	{
-		return lastLogoutRequestId;
+		return lastRequestId;
 	}
 
     /**

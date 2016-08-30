@@ -93,8 +93,7 @@ public class AuthTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("onelogin.saml.properties").build();
 		assertEquals(settings.getIdpEntityId(), auth.getSettings().getIdpEntityId());
 		assertEquals(settings.getSpEntityId(), auth.getSettings().getSpEntityId());
-		assertNull(auth.getLastLoginRequestId());
-		assertNull(auth.getLastLogoutRequestId());
+		assertNull(auth.getLastRequestId());
 	}
 
 	/**
@@ -900,7 +899,7 @@ public class AuthTest {
 		Auth auth = new Auth(settings, request, response);
 		auth.login();
 		verify(response).sendRedirect(matches("https:\\/\\/pitbulk.no-ip.org\\/simplesaml\\/saml2\\/idp\\/SSOService.php\\?SAMLRequest=(.)*&RelayState=http%3A%2F%2Flocalhost%3A8080%2Finitial.jsp"));
-		assertThat(auth.getLastLoginRequestId(), startsWith(Util.UNIQUE_ID_PREFIX));
+		assertThat(auth.getLastRequestId(), startsWith(Util.UNIQUE_ID_PREFIX));
 	}
 
 	/**
@@ -1016,7 +1015,7 @@ public class AuthTest {
 		auth.logout();
 
 		verify(response).sendRedirect(matches("https:\\/\\/pitbulk.no-ip.org\\/simplesaml\\/saml2\\/idp\\/SingleLogoutService.php\\?SAMLRequest=(.)*&RelayState=http%3A%2F%2Flocalhost%3A8080%2Finitial.jsp"));
-		assertThat(auth.getLastLogoutRequestId(), startsWith(Util.UNIQUE_ID_PREFIX));
+		assertThat(auth.getLastRequestId(), startsWith(Util.UNIQUE_ID_PREFIX));
 	}
 
 	/**
