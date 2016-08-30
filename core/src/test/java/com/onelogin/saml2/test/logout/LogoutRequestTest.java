@@ -81,6 +81,7 @@ public class LogoutRequestTest {
 		String logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 
 		assertThat(logoutRequestStr, containsString("<samlp:LogoutRequest"));
+		assertThat(logoutRequestStr, containsString("ID=\"" + logoutRequest.getId() + "\""));
 		assertThat(logoutRequestStr, not(containsString("<samlp:SessionIndex>")));
 	}
 

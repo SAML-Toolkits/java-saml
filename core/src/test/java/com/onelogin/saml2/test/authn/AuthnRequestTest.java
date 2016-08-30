@@ -241,6 +241,18 @@ public class AuthnRequestTest {
 		assertThat(authnRequestStr, containsString("<saml:AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:X509</saml:AuthnContextClassRef>"));
 	}
 
+	@Test
+	public void testAuthNId() throws Exception
+	{
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+
+		AuthnRequest authnRequest = new AuthnRequest(settings);
+		final String authnRequestStr = Util.base64decodedInflated(authnRequest.getEncodedAuthnRequest());
+
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, containsString("ID=\"" + authnRequest.getId() + "\""));
+	}
+
 	/**
 	 * Tests the AuthnRequest Constructor
 	 * The creation of a deflated SAML Request with and without Destination

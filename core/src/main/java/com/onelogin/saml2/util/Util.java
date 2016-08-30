@@ -103,6 +103,7 @@ public final class Util {
 
     private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(DateTimeZone.UTC);
 	private static final DateTimeFormatter DATE_TIME_FORMAT_MILLS = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(DateTimeZone.UTC);
+	public static final String UNIQUE_ID_PREFIX = "ONELOGIN_";
 
 	/**
 	 * This function load an XML string in a save way. Prevent XEE/XXE Attacks
@@ -1344,50 +1345,9 @@ public final class Util {
 	 * @return A unique string
 	 */
 	public static String generateUniqueID() {
-		String uniqueIdSha1 = StringUtils.EMPTY;
-		String uniqueId = StringUtils.EMPTY;
-
-		try {
-			Random r = new Random();
-			Integer n = r.nextInt();
-
-			String id = uniqid(n.toString(), true);
-
-			MessageDigest crypt = MessageDigest.getInstance("SHA-1");
-			crypt.reset();
-			crypt.update(id.getBytes());
-			uniqueIdSha1 = new BigInteger(1, crypt.digest()).toString(16);
-
-			uniqueId = "ONELOGIN_" + uniqueIdSha1;
-		} catch (Exception e) {
-			LOGGER.error("Error executing generateUniqueID: " + e.getMessage(), e);
-		}
-		return uniqueId;
-	}	
-
-	/**
-	 * Generates random UUID
-	 * 
-	 * @param prefix
-	 *
-	 * @param more_entropy
-	 * 
-	 * @return the random UUID
-	 */
-	public static String uniqid(String prefix, Boolean more_entropy) {
-		if (prefix != null && StringUtils.isEmpty(prefix)) {
-			prefix = StringUtils.EMPTY;
-		}
-
-		if (!more_entropy) {
-			return (String) (prefix + UUID.randomUUID().toString()).substring(
-					0, 13);
-		} else {
-			return (String) (prefix + UUID.randomUUID().toString() + UUID
-					.randomUUID().toString()).substring(0, 23);
-		}
+		return UNIQUE_ID_PREFIX + UUID.randomUUID();
 	}
-	
+
 	/**
 	 * Interprets a ISO8601 duration value relative to a current time timestamp.
 	 *

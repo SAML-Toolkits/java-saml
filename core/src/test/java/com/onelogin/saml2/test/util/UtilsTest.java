@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -1893,7 +1894,7 @@ public class UtilsTest {
 	public void testGenerateUniqueID() {
 		String s1 = Util.generateUniqueID();
 
-		assertThat(s1, containsString("ONELOGIN_"));
+		assertThat(s1, startsWith(Util.UNIQUE_ID_PREFIX));
 		assertTrue(s1.length() > 40);
 		
 		String s2 = Util.generateUniqueID();
@@ -1901,36 +1902,6 @@ public class UtilsTest {
 		assertNotEquals(s1, s2);
 		assertNotEquals(s1, s3);
 		assertNotEquals(s2, s3);
-	}
-
-	/**
-	 * Tests the uniqid method
-	 * 
-	 * @see com.onelogin.saml2.util.Util#uniqid
-	 */
-	@Test
-	public void testUniqid() {
-		String id_1 = Util.uniqid(null, false);
-		String id_2 = Util.uniqid(null, false);
-		assertNotEquals(id_1, id_2);
-
-		String id_3 = Util.uniqid(null, true);
-		String id_4 = Util.uniqid(null, true);
-		assertNotEquals(id_3, id_4);
-
-		assertNotEquals(id_1, id_3);
-		assertNotEquals(id_1, id_4);
-		assertNotEquals(id_2, id_3);
-		assertNotEquals(id_2, id_4);
-
-		String id_5 = Util.uniqid("ONELOGIN_", false);
-		String id_6 = Util.uniqid("ONELOGIN_", true);
-		assertThat(id_5, containsString("ONELOGIN_"));
-		assertThat(id_6, containsString("ONELOGIN_"));
-		assertNotEquals(id_5, id_6);
-
-		String id_7 = Util.uniqid("", false);
-		assertNotEquals(id_6, id_7);
 	}
 
 	/**
