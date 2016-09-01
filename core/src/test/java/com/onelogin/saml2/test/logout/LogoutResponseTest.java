@@ -9,7 +9,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.support.membermodification.MemberMatcher.method;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -18,7 +17,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.junit.Test;
-import org.powermock.api.mockito.PowerMockito;
 
 import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.logout.LogoutResponse;
@@ -40,14 +38,17 @@ public class LogoutResponseTest {
 	public void testGetEncodedLogoutResponseSimulated() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
-		String logoutResponseString = Util.getFileAsString("data/logout_responses/logout_response.xml");
+		final String logoutResponseString = Util.getFileAsString("data/logout_responses/logout_response.xml");
 
 		HttpServletRequest request = mock(HttpServletRequest.class);
 		when(request.getRequestURL()).thenReturn(new StringBuffer( "/"));
 
-		LogoutResponse logoutResponseBuilder = PowerMockito.spy(new LogoutResponse(settings, request));
- 		PowerMockito.when(logoutResponseBuilder, method(LogoutResponse.class, "getLogoutResponseXml")).withNoArguments().thenReturn(
- 				logoutResponseString);
+		LogoutResponse logoutResponseBuilder = new LogoutResponse(settings, request) {
+			@Override
+			protected String getLogoutResponseXml() {
+				return logoutResponseString;
+			}
+		};
 
  		logoutResponseBuilder.build();
 
@@ -56,9 +57,12 @@ public class LogoutResponseTest {
 
 		assertEquals(logoutResponseStringBase64, expectedLogoutResponseStringBase64);
 
-		LogoutResponse logoutResponse = PowerMockito.spy(new LogoutResponse(settings, request));
- 		PowerMockito.when(logoutResponse, method(LogoutResponse.class, "getLogoutResponseXml")).withNoArguments().thenReturn(
- 				logoutResponseString);
+		LogoutResponse logoutResponse = new LogoutResponse(settings, request) {
+			@Override
+			protected String getLogoutResponseXml() {
+				return logoutResponseString;
+			}
+		};
  		logoutResponseStringBase64 = logoutResponse.getEncodedLogoutResponse();
  		assertEquals(logoutResponseStringBase64, expectedLogoutResponseStringBase64);
 	}

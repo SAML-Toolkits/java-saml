@@ -4,14 +4,11 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.powermock.api.mockito.PowerMockito.when;
-import static org.powermock.api.support.membermodification.MemberMatcher.method;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.powermock.api.mockito.PowerMockito;
 
 import com.onelogin.saml2.authn.AuthnRequest;
 import com.onelogin.saml2.settings.Saml2Settings;
@@ -31,11 +28,13 @@ public class AuthnRequestTest {
 	public void testGetEncodedAuthnRequestSimulated() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
-		String authnRequestString = Util.getFileAsString("data/requests/authn_request.xml");
-		AuthnRequest authnRequest = PowerMockito.spy(new AuthnRequest(settings));
-
-		when(authnRequest, method(AuthnRequest.class, "getAuthnRequestXml")).withNoArguments().thenReturn(
-				authnRequestString);
+		final String authnRequestString = Util.getFileAsString("data/requests/authn_request.xml");
+		AuthnRequest authnRequest = new AuthnRequest(settings) {
+			@Override
+			protected String getAuthnRequestXml() {
+				return authnRequestString;
+			}
+		};
 
 		String expectedAuthnRequestStringBase64 = Util.getFileAsString("data/requests/authn_request.xml.deflated.base64");
 		String authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();

@@ -9,7 +9,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.support.membermodification.MemberMatcher.method;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,10 +20,8 @@ import javax.xml.xpath.XPathExpressionException;
 
 import java.security.PrivateKey;
 
-import org.powermock.api.mockito.PowerMockito;
 import org.w3c.dom.Document;
 
-import org.junit.Rule;
 import org.junit.Test;
 
 import com.onelogin.saml2.exception.XMLEntityException;
@@ -46,10 +43,13 @@ public class LogoutRequestTest {
 	public void testGetEncodedLogoutRequestSimulated() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
-		String logoutRequestString = Util.getFileAsString("data/logout_requests/logout_request.xml");
-		LogoutRequest logoutRequest = PowerMockito.spy(new LogoutRequest(settings));
- 		PowerMockito.when(logoutRequest, method(LogoutRequest.class, "getLogoutRequestXml")).withNoArguments().thenReturn(
-				logoutRequestString);
+		final String logoutRequestString = Util.getFileAsString("data/logout_requests/logout_request.xml");
+		LogoutRequest logoutRequest = new LogoutRequest(settings) {
+			@Override
+			protected String getLogoutRequestXml() {
+				return logoutRequestString;
+			}
+		};
 
 		String expectedLogoutRequestStringBase64 = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
 		String logoutRequestStringBase64 = logoutRequest.getEncodedLogoutRequest();

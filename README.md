@@ -33,7 +33,3 @@ Make sure maven & your IDE uses this java version.
 
 At the Package Explorer, select the jsp-sample project, 2nd bottom of the mouse and Run As > Run Server
 Select a Tomcat Server in order to deploy the server.
-
-### Unit Tests
-
-The unit tests use PowerMock but do not run with the PowerMock javaagents enabled. This means you will not be able to mock out static methods, but other PowerMock features will work.
