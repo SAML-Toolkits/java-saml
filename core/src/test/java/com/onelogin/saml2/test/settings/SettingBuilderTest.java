@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 
 import com.onelogin.saml2.exception.SettingsException;
 import com.onelogin.saml2.model.Contact;
@@ -27,7 +26,6 @@ import com.onelogin.saml2.util.Util;
 /**
  * Tests the com.onelogin.saml2.settings.SettingsBuilder class
  */
-@PrepareForTest({SettingsBuilder.class})
 public class SettingBuilderTest {
 
 	/**

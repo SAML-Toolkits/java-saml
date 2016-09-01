@@ -21,13 +21,11 @@ import javax.xml.xpath.XPathExpressionException;
 
 import java.security.PrivateKey;
 
+import org.powermock.api.mockito.PowerMockito;
 import org.w3c.dom.Document;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.rule.PowerMockRule;
 
 import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.logout.LogoutRequest;
@@ -35,11 +33,7 @@ import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
 import com.onelogin.saml2.util.Util;
 
-@PrepareForTest({LogoutRequest.class})
 public class LogoutRequestTest {
-
-	@Rule
-	public PowerMockRule rule = new PowerMockRule();
 
 	/**
 	 * Tests the constructor and the getEncodedLogoutRequest method of LogoutRequest

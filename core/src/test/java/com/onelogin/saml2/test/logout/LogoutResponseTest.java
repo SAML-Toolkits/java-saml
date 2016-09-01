@@ -17,11 +17,8 @@ import java.net.URISyntaxException;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.xpath.XPathExpressionException;
 
-import org.junit.Rule;
 import org.junit.Test;
 import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.rule.PowerMockRule;
 
 import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.logout.LogoutResponse;
@@ -30,11 +27,7 @@ import com.onelogin.saml2.settings.SettingsBuilder;
 import com.onelogin.saml2.util.Util;
 import com.onelogin.saml2.util.Constants;
 
-@PrepareForTest({LogoutResponse.class})
 public class LogoutResponseTest {
-
-	@Rule
-	public PowerMockRule rule = new PowerMockRule();
 
 	/**
 	 * Tests the constructor, the build and the getEncodedLogoutResponse method of LogoutResponse

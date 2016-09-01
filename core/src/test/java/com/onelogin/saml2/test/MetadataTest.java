@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
 import java.util.Calendar;
 
-import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.w3c.dom.Document;
 import org.junit.Test;
 
@@ -25,7 +24,6 @@ import com.onelogin.saml2.util.Util;
 /**
  * Tests the com.onelogin.saml2.Metadata class
  */
-@PrepareForTest({Metadata.class})
 public class MetadataTest {
 	/**
 	 * Tests the constructor method of Metadata

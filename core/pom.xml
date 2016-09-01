@@ -30,18 +30,6 @@
 			<version>1.6.2</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.powermock</groupId>
-			<artifactId>powermock-module-javaagent</artifactId>
-			<version>1.6.0</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.powermock</groupId>
-			<artifactId>powermock-module-junit4-rule-agent</artifactId>
-			<version>1.6.4</version>
-			<scope>test</scope>
-		</dependency>
 
 		<!-- for log -->
 		<dependency>
@@ -111,7 +99,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.12</version>
 				<configuration>
-					<argLine>-XX:-UseSplitVerifier ${jacoco.agent.argLine}</argLine>
+					<argLine>${jacoco.agent.argLine}</argLine>
 				</configuration>
 			</plugin>
 		</plugins>
