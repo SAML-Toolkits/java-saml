@@ -1,7 +1,6 @@
 package com.onelogin.saml2.test.model;
 
 import org.junit.Test;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -13,7 +12,6 @@ import com.onelogin.saml2.model.SamlResponseStatus;
 /**
  * Tests the com.onelogin.saml2.model.SamlResponseStatus class
  */
-@PrepareForTest({SamlResponseStatus.class})
 public class SamlResponseStatusTest {
 
 	/**

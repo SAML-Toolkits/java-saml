@@ -4,7 +4,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.junit.Test;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -15,7 +14,6 @@ import com.onelogin.saml2.model.Organization;
 /**
  * Tests the com.onelogin.saml2.model.Organization class
  */
-@PrepareForTest({Organization.class})
 public class OrganizationTest {
 
 	/**

@@ -32,11 +32,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 
 import com.onelogin.saml2.Auth;
-import com.onelogin.saml2.authn.SamlResponse;
 import com.onelogin.saml2.exception.SettingsException;
 import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.settings.Saml2Settings;
@@ -44,37 +41,7 @@ import com.onelogin.saml2.settings.SettingsBuilder;
 import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.Util;
 
-/*
- * Known issues while testing
- * 
- * ECLEmma coverage plugin incompatible with PowerMock
- * http://stackoverflow.com/questions/23363212/powermock-eclemma-coverage-issue
- *
- * import org.junit.runner.RunWith;
- * import org.powermock.modules.junit4.PowerMockRunner; 
- * @RunWith(PowerMockRunner.class)
- * 
- */
-@PrepareForTest({Auth.class})
 public class AuthTest {
-
-	/*
-	 * When using @PrepareForTest and PowerMockito the breakpoints when debugging 
-	 * does not work. Define Rules!
-	 * (http://stackoverflow.com/questions/35140575/powermockito-junit-and-eclemma-debugging-dosent-work)
-	 * 
-	 * https://github.com/jayway/powermock/wiki/PowerMockRule
-	 * 
-	 * import org.junit.Rule;
-	 * import org.powermock.modules.junit4.rule.PowerMockRule;
-	 * @Rule
-	 * public PowerMockRule rule = new PowerMockRule();
-	 * 
-	 */
-	
-	//import org.powermock.modules.junit4.rule.PowerMockRule;
-	//@Rule
-	//public PowerMockRule rule = new PowerMockRule();
 
 	/**
 	 * Tests the constructor of Auth
@@ -527,7 +494,7 @@ public class AuthTest {
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getErrors().isEmpty());
 		auth.processSLO();
-		verify(response).sendRedirect(matches("http:\\/\\/idp.example.com\\/simplesaml\\/saml2\\/idp\\/SingleLogoutService.php\\?SAMLResponse=(.)*&SigAlg=http%3A%2F%2Fwww.w3.org%2F2001%2F04%2Fxmldsig-more%23rsa-sha512&RelayState=http%3A%2F%2Flocalhost%3A8080%2Fexpected.jsp&Signature=(.)*"));
+		verify(response).sendRedirect(matches("http:\\/\\/idp.example.com\\/simplesaml\\/saml2\\/idp\\/SingleLogoutService.php\\?SAMLResponse=(.)*&RelayState=http%3A%2F%2Flocalhost%3A8080%2Fexpected.jsp&SigAlg=http%3A%2F%2Fwww.w3.org%2F2001%2F04%2Fxmldsig-more%23rsa-sha512&Signature=(.)*"));
 		verify(session, times(1)).invalidate();
 		assertTrue(auth.getErrors().isEmpty());
 	}

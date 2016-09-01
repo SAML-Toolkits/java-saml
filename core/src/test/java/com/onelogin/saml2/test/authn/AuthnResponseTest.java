@@ -18,8 +18,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.rule.PowerMockRule;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -31,12 +29,8 @@ import com.onelogin.saml2.settings.SettingsBuilder;
 import com.onelogin.saml2.util.Util;
 import com.onelogin.saml2.util.Constants;
 
-@PrepareForTest({SamlResponse.class})
 public class AuthnResponseTest {
-	
-	@Rule
-	public PowerMockRule rule = new PowerMockRule();
-	
+
 	/**
 	 * Tests the constructor of SamlResponse
 	 *

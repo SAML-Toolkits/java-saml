@@ -4,37 +4,18 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.when;
-import static org.powermock.api.support.membermodification.MemberMatcher.method;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.junit.Rule;
 import org.junit.Test;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-//import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.modules.junit4.rule.PowerMockRule;
 
 import com.onelogin.saml2.authn.AuthnRequest;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
 import com.onelogin.saml2.util.Util;
 
-@PrepareForTest({AuthnRequest.class})
 public class AuthnRequestTest {
-
-	 @Rule
-	 public PowerMockRule rule = new PowerMockRule();
 
 	/**
 	 * Tests the getEncodedAuthnRequest method of AuthnRequest
@@ -47,11 +28,13 @@ public class AuthnRequestTest {
 	public void testGetEncodedAuthnRequestSimulated() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
-		String authnRequestString = Util.getFileAsString("data/requests/authn_request.xml");
-		AuthnRequest authnRequest = PowerMockito.spy(new AuthnRequest(settings));
-
-		when(authnRequest, method(AuthnRequest.class, "getAuthnRequestXml")).withNoArguments().thenReturn(
-				authnRequestString);
+		final String authnRequestString = Util.getFileAsString("data/requests/authn_request.xml");
+		AuthnRequest authnRequest = new AuthnRequest(settings) {
+			@Override
+			protected String getAuthnRequestXml() {
+				return authnRequestString;
+			}
+		};
 
 		String expectedAuthnRequestStringBase64 = Util.getFileAsString("data/requests/authn_request.xml.deflated.base64");
 		String authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();

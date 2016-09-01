@@ -46,7 +46,6 @@ import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.signature.XMLSignatureException;
 import org.joda.time.DateTime;
 import org.junit.Test;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -61,7 +60,6 @@ import com.onelogin.saml2.util.Util;
 /**
  * Tests the com.onelogin.saml2.util.Util class
  */
-@PrepareForTest({Util.class})
 public class UtilsTest {
 
 	/**

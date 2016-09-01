@@ -13,7 +13,6 @@ import java.util.Calendar;
 import java.util.List;
 
 import org.junit.Test;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.w3c.dom.Document;
 
 import com.onelogin.saml2.Metadata;
@@ -25,7 +24,6 @@ import com.onelogin.saml2.util.Util;
 /**
  * Tests the com.onelogin.saml2.settings.Saml2Settings class
  */
-@PrepareForTest({Saml2Settings.class})
 public class Saml2SettingsTest {
 
 	/**

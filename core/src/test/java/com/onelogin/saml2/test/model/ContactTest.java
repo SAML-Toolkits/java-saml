@@ -1,7 +1,6 @@
 package com.onelogin.saml2.test.model;
 
 import org.junit.Test;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 
 import static org.junit.Assert.assertEquals;
 
@@ -10,7 +9,6 @@ import com.onelogin.saml2.model.Contact;
 /**
  * Tests the com.onelogin.saml2.model.Contact class
  */
-@PrepareForTest({Contact.class})
 public class ContactTest {
 
 	/**
