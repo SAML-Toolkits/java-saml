@@ -8,6 +8,7 @@ import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -440,7 +441,7 @@ public class Auth {
 				logoutResponseBuilder.build(inResponseTo);
 				String samlLogoutResponse = logoutResponseBuilder.getEncodedLogoutResponse();
 
-				Map<String, String> parameters = new HashMap<String, String>();
+				Map<String, String> parameters = new LinkedHashMap<String, String>();
 
 				parameters.put("SAMLResponse", samlLogoutResponse);
 
