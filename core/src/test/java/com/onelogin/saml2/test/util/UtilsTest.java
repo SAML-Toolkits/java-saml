@@ -32,6 +32,7 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +45,6 @@ import javax.xml.xpath.XPathExpressionException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.signature.XMLSignatureException;
-import org.joda.time.DateTime;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -1945,7 +1945,7 @@ public class UtilsTest {
 			String invalidDuration = "PT1Y";
 			Util.parseDuration(invalidDuration);
 		} catch (IllegalArgumentException anIllegalArgumentException) {
-			assertThat(anIllegalArgumentException.getMessage(), is("Invalid format: \"PT1Y\" is malformed at \"1Y\""));
+			assertThat(anIllegalArgumentException.getMessage(), containsString("PT1Y"));
 		}
 	}
 
@@ -2019,13 +2019,13 @@ public class UtilsTest {
 	public void testParseDateTime() {
 		long time = 1386650371L;
 		String datetime = "2013-12-10T04:39:31Z";
-		DateTime parsedTime = Util.parseDateTime(datetime);
-		assertEquals(time, parsedTime.getMillis() / 1000);
+		Instant parsedTime = Util.parseDateTime(datetime);
+		assertEquals(time, parsedTime.getEpochSecond());
 		
 		// Now test if toolkit supports miliseconds
 		String datetime2 = "2013-12-10T04:39:31.120Z";
-		DateTime parsedTime2 = Util.parseDateTime(datetime2);
-		assertEquals(time, parsedTime2.getMillis() / 1000);
+		Instant parsedTime2 = Util.parseDateTime(datetime2);
+		assertEquals(time, parsedTime2.getEpochSecond());
 	}
 	
 	/**

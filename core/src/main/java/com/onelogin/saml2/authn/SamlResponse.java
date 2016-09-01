@@ -1,21 +1,16 @@
 package com.onelogin.saml2.authn;
 
-import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -23,7 +18,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.model.SamlResponseStatus;
@@ -235,9 +229,9 @@ public class SamlResponse {
 				}
 
 				// Check the session Expiration
-				DateTime sessionExpiration = this.getSessionNotOnOrAfter();
+				Instant sessionExpiration = this.getSessionNotOnOrAfter();
 				if (sessionExpiration != null) {
-					if (sessionExpiration.isEqualNow() || sessionExpiration.isBeforeNow()) {
+					if (!sessionExpiration.isAfter(Instant.now())) {
 						throw new Exception("The attributes have expired, based on the SessionNotOnOrAfter of the AttributeStatement of this Response");
 					}
 				}
@@ -271,16 +265,16 @@ public class SamlResponse {
 							
 							Node notOnOrAfter = subjectConfirmationDataNodes.item(c).getAttributes().getNamedItem("NotOnOrAfter");
 							if (notOnOrAfter != null) {
-								DateTime noa = Util.parseDateTime(notOnOrAfter.getNodeValue());
-								if (noa.isEqualNow() || noa.isBeforeNow()) {
+								Instant noa = Util.parseDateTime(notOnOrAfter.getNodeValue());
+								if (!noa.isAfter(Instant.now())) {
 									continue;
 								}
 							}
 
 							Node notBefore = subjectConfirmationDataNodes.item(c).getAttributes().getNamedItem("NotBefore");
 							if (notBefore != null) {
-								DateTime nb = Util.parseDateTime(notBefore.getNodeValue());
-								if (nb.isAfterNow()) {
+								Instant nb = Util.parseDateTime(notBefore.getNodeValue());
+								if (nb.isAfter(Instant.now())) {
 									continue;
 								}
 							}
@@ -567,7 +561,7 @@ public class SamlResponse {
 	 *
 	 * @throws XPathExpressionException
 	 */
-	public DateTime getSessionNotOnOrAfter() throws XPathExpressionException {
+	public Instant getSessionNotOnOrAfter() throws XPathExpressionException {
 		String notOnOrAfter = null;
 		NodeList entries = this.queryAssertion("/saml:AuthnStatement[@SessionNotOnOrAfter]");
 		if (entries.getLength() > 0) {
@@ -714,15 +708,15 @@ public class SamlResponse {
 				Node naAttribute = attrName.getNamedItem("NotOnOrAfter");
 				// validate NotOnOrAfter
 				if (naAttribute != null) {
-					final DateTime notOnOrAfterDate = Util.parseDateTime(naAttribute.getNodeValue());
-					if (notOnOrAfterDate.isEqualNow() || notOnOrAfterDate.isBeforeNow()) {
+					final Instant notOnOrAfterDate = Util.parseDateTime(naAttribute.getNodeValue());
+					if (!notOnOrAfterDate.isAfter(Instant.now())) {
 						return false;
 					}
 				}
 				// validate NotBefore
 				if (nbAttribute != null) {
-					final DateTime notBeforeDate = Util.parseDateTime(nbAttribute.getNodeValue());
-					if (notBeforeDate.isAfterNow()) {
+					final Instant notBeforeDate = Util.parseDateTime(nbAttribute.getNodeValue());
+					if (notBeforeDate.isAfter(Instant.now())) {
 						return false;
 					}
 				}

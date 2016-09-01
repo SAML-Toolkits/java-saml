@@ -839,7 +839,7 @@ public class AuthTest {
 		assertNull(auth2.getSessionExpiration());
 		auth2.processResponse();
 		assertTrue(auth2.isAuthenticated());
-		assertEquals(1692773821000L, auth2.getSessionExpiration().getMillis());
+		assertEquals(1692773821000L, auth2.getSessionExpiration().toEpochMilli());
 	}
 
 	/**

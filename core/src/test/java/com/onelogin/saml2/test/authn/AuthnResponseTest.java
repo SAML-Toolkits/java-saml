@@ -667,7 +667,7 @@ public class AuthnResponseTest {
 		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
 		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
 		SamlResponse samlResponse = new SamlResponse(settings, request);
-		assertEquals(1290203857000L, samlResponse.getSessionNotOnOrAfter().getMillis());
+		assertEquals(1290203857000L, samlResponse.getSessionNotOnOrAfter().toEpochMilli());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/response2.xml.base64");
 		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
@@ -677,7 +677,7 @@ public class AuthnResponseTest {
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
 		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
 		samlResponse = new SamlResponse(settings, request);
-		assertEquals(2696012228000L, samlResponse.getSessionNotOnOrAfter().getMillis());
+		assertEquals(2696012228000L, samlResponse.getSessionNotOnOrAfter().toEpochMilli());
 	}
 
 	/**
