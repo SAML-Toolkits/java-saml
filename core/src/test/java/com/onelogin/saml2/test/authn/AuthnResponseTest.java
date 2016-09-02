@@ -1086,7 +1086,6 @@ public class AuthnResponseTest {
 
 	@Test
 	public void testIsValidSubjectConfirmation_missingRecipient() throws Exception {
-		// having
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		settings.setWantAssertionsSigned(false);
 		settings.setWantMessagesSigned(true);
@@ -1105,11 +1104,25 @@ public class AuthnResponseTest {
 		settings.setWantMessagesSigned(true);
 
 		final String samlResponseEncoded = loadSignMessageAndEncode("data/responses/invalids/invalid_subjectconfirmation_no_notonorafter.xml");
-		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 
 		assertResponseValid(settings, samlResponseEncoded, false, true, null);
 		assertResponseValid(settings, samlResponseEncoded, true, false,
 				"A valid SubjectConfirmation was not found on this Response - SubjectConfirmationData doesn't contain a NotOnOrAfter attribute");
+	}
+
+	@Test
+	public void testIsValidSubjectConfirmation_multipleIssues() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		settings.setWantAssertionsSigned(false);
+		settings.setWantMessagesSigned(true);
+
+		final String samlResponseEncoded = loadSignMessageAndEncode("data/responses/invalids/invalid_subjectconfirmation_multiple_issues.xml");
+
+		assertResponseValid(settings, samlResponseEncoded, false, true, null);
+		assertResponseValid(settings, samlResponseEncoded, true, false,
+				"A valid SubjectConfirmation was not found on this Response - SubjectConfirmationData doesn't contain a NotOnOrAfter attribute [0], " +
+						"SubjectConfirmationData doesn't contain a Recipient [1], " +
+						"SubjectConfirmationData is no longer valid [2]");
 	}
 
 	/**

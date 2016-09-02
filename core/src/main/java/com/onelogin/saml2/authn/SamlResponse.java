@@ -1,6 +1,5 @@
 package com.onelogin.saml2.authn;
 
-import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -9,13 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 
-import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +18,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.model.SamlResponseStatus;
@@ -289,7 +282,7 @@ public class SamlResponse {
 
 	// Check SubjectConfirmation, at least one SubjectConfirmation must be valid
 	private void validateSubjectConfirmation(String responseInResponseTo) throws Exception {
-		final List<String> subjectConfirmationDataIssues = new ArrayList<>();
+		final List<SubjectConfirmationIssue> validationIssues = new ArrayList<>();
 		boolean validSubjectConfirmation = false;
 		NodeList subjectConfirmationNodes = this.queryAssertion("/saml:Subject/saml:SubjectConfirmation");
 		for (int i = 0; i < subjectConfirmationNodes.getLength(); i++) {
@@ -306,31 +299,31 @@ public class SamlResponse {
 
 					Node recipient = subjectConfirmationDataNodes.item(c).getAttributes().getNamedItem("Recipient");
 					if (recipient == null) {
-						subjectConfirmationDataIssues.add("SubjectConfirmationData doesn't contain a Recipient");
+						validationIssues.add(new SubjectConfirmationIssue(i, "SubjectConfirmationData doesn't contain a Recipient"));
 						continue;
 					}
 
 					if (!recipient.getNodeValue().equals(currentUrl)) {
-						subjectConfirmationDataIssues.add("SubjectConfirmationData doesn't match a valid Recipient");
+						validationIssues.add(new SubjectConfirmationIssue(i, "SubjectConfirmationData doesn't match a valid Recipient"));
 						continue;
 					}
 
 					Node inResponseTo = subjectConfirmationDataNodes.item(c).getAttributes().getNamedItem("InResponseTo");
 					if (inResponseTo != null && !inResponseTo.getNodeValue().equals(responseInResponseTo)) {
-						subjectConfirmationDataIssues.add("SubjectConfirmationData has an invalid InResponseTo value");
+						validationIssues.add(new SubjectConfirmationIssue(i, "SubjectConfirmationData has an invalid InResponseTo value"));
 						continue;
 					}
 
 
 					Node notOnOrAfter = subjectConfirmationDataNodes.item(c).getAttributes().getNamedItem("NotOnOrAfter");
 					if (notOnOrAfter == null) {
-						subjectConfirmationDataIssues.add("SubjectConfirmationData doesn't contain a NotOnOrAfter attribute");
+						validationIssues.add(new SubjectConfirmationIssue(i, "SubjectConfirmationData doesn't contain a NotOnOrAfter attribute"));
 						continue;
 					}
 
 					DateTime noa = Util.parseDateTime(notOnOrAfter.getNodeValue());
 					if (noa.isEqualNow() || noa.isBeforeNow()) {
-						subjectConfirmationDataIssues.add("SubjectConfirmationData is no longer valid");
+						validationIssues.add(new SubjectConfirmationIssue(i, "SubjectConfirmationData is no longer valid"));
 						continue;
 					}
 
@@ -338,7 +331,7 @@ public class SamlResponse {
 					if (notBefore != null) {
 						DateTime nb = Util.parseDateTime(notBefore.getNodeValue());
 						if (nb.isAfterNow()) {
-							subjectConfirmationDataIssues.add("SubjectConfirmationData is not yet valid");
+							validationIssues.add(new SubjectConfirmationIssue(i, "SubjectConfirmationData is not yet valid"));
 							continue;
 						}
 					}
@@ -346,10 +339,9 @@ public class SamlResponse {
 				}
 			}
 		}
+
 		if (!validSubjectConfirmation) {
-			String subjectConfirmationDataIssuesMsg = subjectConfirmationDataIssues.isEmpty() ? "" :
-					" - " + StringUtils.join(subjectConfirmationDataIssues, ", ");
-			throw new Exception("A valid SubjectConfirmation was not found on this Response" + subjectConfirmationDataIssuesMsg);
+			throw new Exception(SubjectConfirmationIssue.prettyPrint(validationIssues));
 		}
 	}
 
