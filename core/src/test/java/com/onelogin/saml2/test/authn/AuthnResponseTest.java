@@ -16,7 +16,6 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.junit.Rule;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -30,7 +29,6 @@ import com.onelogin.saml2.util.Util;
 import com.onelogin.saml2.util.Constants;
 
 public class AuthnResponseTest {
-
 	/**
 	 * Tests the constructor of SamlResponse
 	 *
@@ -68,9 +66,7 @@ public class AuthnResponseTest {
 	public void testEncryptedAssertionNokey() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 	}
 	
@@ -86,9 +82,7 @@ public class AuthnResponseTest {
 	public void testNamespaces() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/open_saml_response.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		HashMap<String, List<String>> attributes = samlResponse.getAttributes();
 
@@ -118,9 +112,7 @@ public class AuthnResponseTest {
 	public void testGetNameId() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		assertEquals("support@onelogin.com", samlResponse.getNameId());
 		samlResponseEncoded = Util.getFileAsString("data/responses/response_encrypted_nameid.xml.base64");
@@ -174,9 +166,7 @@ public class AuthnResponseTest {
 	public void testGetNameIdDataNoKey() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response_encrypted_nameid.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		String nameId = samlResponse.getNameId();
 	}
@@ -193,9 +183,7 @@ public class AuthnResponseTest {
 	public void testGetNameIdDataWrongEncryptedData() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/response_encrypted_subconfirm_as_nameid.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		String nameId = samlResponse.getNameId();
 	}
@@ -211,9 +199,7 @@ public class AuthnResponseTest {
 	public void testGetNameIdData() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		assertEquals("{Format=urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress, Value=support@onelogin.com}", samlResponse.getNameIdData().toString());
 		samlResponseEncoded = Util.getFileAsString("data/responses/response_encrypted_nameid.xml.base64");
@@ -254,9 +240,7 @@ public class AuthnResponseTest {
 		settings.setWantNameId(true);
 
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_nameid.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		HashMap<String,String> nameIdData = samlResponse.getNameIdData();
 	}
@@ -273,9 +257,7 @@ public class AuthnResponseTest {
 	public void testCheckStatus() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		samlResponse.checkStatus();
 
@@ -298,9 +280,7 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/status_code_responder.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		samlResponse.checkStatus();
 	}
@@ -318,9 +298,7 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/status_code_responder_and_msg.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		samlResponse.checkStatus();
 	}
@@ -338,9 +316,7 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_status.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		samlResponse.checkStatus();
 	}
@@ -358,9 +334,7 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_status_code.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		samlResponse.checkStatus();
 	}
@@ -411,9 +385,7 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 
 		List<String> expectedAudiences = new ArrayList<String>();
@@ -439,9 +411,7 @@ public class AuthnResponseTest {
 	public void testGetIssuers() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		List<String> expectedIssuers = new ArrayList<String>();
 		expectedIssuers.add("https://app.onelogin.com/saml/metadata/13590");
@@ -494,9 +464,7 @@ public class AuthnResponseTest {
 	public void testGetSessionIndex() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		assertEquals("_531c32d283bdff7e04e487bcdbc4dd8d", samlResponse.getSessionIndex());
 
@@ -517,9 +485,7 @@ public class AuthnResponseTest {
 	public void testGetAttributes() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		HashMap<String, List<String>> expectedAttributes = new HashMap<String, List<String>>();
 		List<String> attrValues = new ArrayList<String>();
@@ -553,9 +519,7 @@ public class AuthnResponseTest {
 	public void testOnlyRetrieveAssertionWithIDThatMatchesSignatureReference() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/wrapped_response_2.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 
 		String nameID = samlResponse.getNameId();
@@ -574,9 +538,7 @@ public class AuthnResponseTest {
 	public void testDoesNotAllowSignatureWrappingAttack() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response4.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 
 		assertEquals("test@onelogin.com", samlResponse.getNameId());		
@@ -595,9 +557,7 @@ public class AuthnResponseTest {
 	public void testDoesNotAllowSignatureWrappingAttack2() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.newattack.properties").build();
 		String samlResponseEncoded = Util.base64encoder(Util.getFileAsString("data/responses/invalids/attacks/encrypted_new_attack.xml"));
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		assertFalse(samlResponse.isValid());
@@ -663,9 +623,7 @@ public class AuthnResponseTest {
 	public void testGetSessionNotOnOrAfter() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		assertEquals(1290203857000L, samlResponse.getSessionNotOnOrAfter().getMillis());
 
@@ -691,9 +649,7 @@ public class AuthnResponseTest {
 	public void testValidateNumAssertions() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		assertTrue(samlResponse.validateNumAssertions());
 
@@ -714,9 +670,7 @@ public class AuthnResponseTest {
 	public void testValidateTimestamps() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		assertTrue(samlResponse.validateTimestamps());
 
@@ -798,9 +752,7 @@ public class AuthnResponseTest {
 	public void testValidateVersion() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_saml2.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		assertFalse(samlResponse.isValid());
 		assertEquals("Unsupported SAML Version.", samlResponse.getError());
@@ -818,9 +770,7 @@ public class AuthnResponseTest {
 	public void testValidateID() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_id.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		assertFalse(samlResponse.isValid());
 		assertEquals("Missing ID attribute on SAML Response.", samlResponse.getError());
@@ -838,9 +788,7 @@ public class AuthnResponseTest {
 	public void testIsInValidExpired() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/expired_response.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		settings.setStrict(false);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		assertTrue(samlResponse.isValid());
@@ -863,9 +811,7 @@ public class AuthnResponseTest {
 	public void testIsInValidNoKey() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_key.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		settings.setStrict(false);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		assertFalse(samlResponse.isValid());
@@ -884,9 +830,7 @@ public class AuthnResponseTest {
 	public void testIsInValidMultipleAssertions() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/multiple_assertions.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		assertFalse(samlResponse.isValid());
 		assertEquals("SAML Response must contain 1 Assertion.", samlResponse.getError());
@@ -904,9 +848,7 @@ public class AuthnResponseTest {
 	public void testIsInValidEncAttrs() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/encrypted_attrs.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		settings.setStrict(false);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		assertFalse(samlResponse.isValid());
@@ -930,9 +872,7 @@ public class AuthnResponseTest {
 	public void testIsValidWrongEncryptedID() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/response_encrypted_subconfirm_as_nameid.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		settings.setStrict(false);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		assertTrue(samlResponse.isValid());
@@ -1017,9 +957,7 @@ public class AuthnResponseTest {
 	public void testIsInValidAudience() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/invalid_audience.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		settings.setStrict(false);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		assertFalse(samlResponse.isValid());
@@ -1043,9 +981,7 @@ public class AuthnResponseTest {
 	public void testIsInValidIssuer() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/invalid_issuer_assertion.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		settings.setStrict(false);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		assertFalse(samlResponse.isValid());
@@ -1082,9 +1018,7 @@ public class AuthnResponseTest {
 	public void testIsInValidSessionIndex() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/invalid_sessionindex.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		settings.setStrict(false);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		assertFalse(samlResponse.isValid());
@@ -1096,90 +1030,100 @@ public class AuthnResponseTest {
 		assertEquals("The attributes have expired, based on the SessionNotOnOrAfter of the AttributeStatement of this Response", samlResponse.getError());
 	}
 
-	/**
-	 * Tests the isValid method of SamlResponse
-	 * Case: invalid SubjectConfirmation
-	 *
-	 * @throws Exception
-	 *
-	 * @see com.onelogin.saml2.authn.SamlResponse#isValid
-	 */
 	@Test
-	public void testIsInValidSubjectConfirmation() throws Exception {
-		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_subjectconfirmation_method.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
-		settings.setStrict(false);
-		SamlResponse samlResponse = new SamlResponse(settings, request);
-		assertFalse(samlResponse.isValid());
-		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
+	public void testIsValidSubjectConfirmation_noSubjectConfirmationMethod() throws Exception {
+		final Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		final String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_subjectconfirmation_method.xml.base64");
 
-		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, request);
-		assertFalse(samlResponse.isValid());
-		assertEquals("A valid SubjectConfirmation was not found on this Response", samlResponse.getError());
+		assertResponseValid(settings, samlResponseEncoded, false, false, "No Signature found. SAML Response rejected");
+		assertResponseValid(settings, samlResponseEncoded, true, false, "A valid SubjectConfirmation was not found on this Response");
+	}
 
-		settings.setStrict(false);
-		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_subjectconfirmation_data.xml.base64");
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		samlResponse = new SamlResponse(settings, request);
-		assertFalse(samlResponse.isValid());
-		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
+	@Test
+	public void testIsValidSubjectConfirmation_noSubjectConfirmationData() throws Exception {
+		final Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		final String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_subjectconfirmation_data.xml.base64");
 
-		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, request);
-		assertFalse(samlResponse.isValid());
-		assertEquals("A valid SubjectConfirmation was not found on this Response", samlResponse.getError());
+		assertResponseValid(settings, samlResponseEncoded, false, false, "No Signature found. SAML Response rejected");
+		assertResponseValid(settings, samlResponseEncoded, true, false, "A valid SubjectConfirmation was not found on this Response");
+	}
 
-		settings.setStrict(false);
-		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/invalid_subjectconfirmation_inresponse.xml.base64");
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		samlResponse = new SamlResponse(settings, request);
-		assertFalse(samlResponse.isValid());
-		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
+	@Test
+	public void testIsValidSubjectConfirmation_invalidInResponseTo() throws Exception {
+		final Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		final String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/invalid_subjectconfirmation_inresponse.xml.base64");
 
-		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, request);
-		assertFalse(samlResponse.isValid());
-		assertEquals("A valid SubjectConfirmation was not found on this Response", samlResponse.getError());
+		assertResponseValid(settings, samlResponseEncoded, false, false, "No Signature found. SAML Response rejected");
+		assertResponseValid(settings, samlResponseEncoded, true, false, "A valid SubjectConfirmation was not found on this Response: SubjectConfirmationData has an invalid InResponseTo value");
+	}
 
-		settings.setStrict(false);
-		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/invalid_subjectconfirmation_recipient.xml.base64");
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		samlResponse = new SamlResponse(settings, request);
-		assertFalse(samlResponse.isValid());
-		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
+	@Test
+	public void testIsValidSubjectConfirmation_invalidRecipient() throws Exception {
+		final Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		final String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/invalid_subjectconfirmation_recipient.xml.base64");
 
-		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, request);
-		assertFalse(samlResponse.isValid());
-		assertEquals("A valid SubjectConfirmation was not found on this Response", samlResponse.getError());
+		assertResponseValid(settings, samlResponseEncoded, false, false, "No Signature found. SAML Response rejected");
+		assertResponseValid(settings, samlResponseEncoded, true, false, "A valid SubjectConfirmation was not found on this Response: SubjectConfirmationData doesn't match a valid Recipient");
+	}
 
-		settings.setStrict(false);
-		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/invalid_subjectconfirmation_noa.xml.base64");
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		samlResponse = new SamlResponse(settings, request);
-		assertFalse(samlResponse.isValid());
-		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
+	@Test
+	public void testIsValidSubjectConfirmation_noLongerValid() throws Exception {
+		final Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		final String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/invalid_subjectconfirmation_noa.xml.base64");
 
-		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, request);
-		assertFalse(samlResponse.isValid());
-		assertEquals("A valid SubjectConfirmation was not found on this Response", samlResponse.getError());
+		assertResponseValid(settings, samlResponseEncoded, false, false, "No Signature found. SAML Response rejected");
+		assertResponseValid(settings, samlResponseEncoded, true, false, "A valid SubjectConfirmation was not found on this Response: SubjectConfirmationData is no longer valid");
+	}
 
-		settings.setStrict(false);
-		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/invalid_subjectconfirmation_nb.xml.base64");
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		samlResponse = new SamlResponse(settings, request);
-		assertFalse(samlResponse.isValid());
-		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
+	@Test
+	public void testIsValidSubjectConfirmation_notYetValid() throws Exception {
+		final Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		final String samlResponseEncoded = loadAndEncode("data/responses/invalids/invalid_subjectconfirmation_nb.xml");
 
-		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, request);
-		assertFalse(samlResponse.isValid());
-		assertEquals("A valid SubjectConfirmation was not found on this Response", samlResponse.getError());
+		assertResponseValid(settings, samlResponseEncoded, false, false, "No Signature found. SAML Response rejected");
+		assertResponseValid(settings, samlResponseEncoded, true, false, "A valid SubjectConfirmation was not found on this Response: SubjectConfirmationData is not yet valid");
+	}
+
+	@Test
+	public void testIsValidSubjectConfirmation_missingRecipient() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		settings.setWantAssertionsSigned(false);
+		settings.setWantMessagesSigned(true);
+
+		final String samlResponseEncoded = loadSignMessageAndEncode("data/responses/invalids/invalid_subjectconfirmation_no_recipient.xml");
+
+		assertResponseValid(settings, samlResponseEncoded, false, true, null);
+		assertResponseValid(settings, samlResponseEncoded, true, false,
+				"A valid SubjectConfirmation was not found on this Response: SubjectConfirmationData doesn't contain a Recipient");
+	}
+
+	@Test
+	public void testIsValidSubjectConfirmation_missingNotOnOrAfter() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		settings.setWantAssertionsSigned(false);
+		settings.setWantMessagesSigned(true);
+
+		final String samlResponseEncoded = loadSignMessageAndEncode("data/responses/invalids/invalid_subjectconfirmation_no_notonorafter.xml");
+
+		assertResponseValid(settings, samlResponseEncoded, false, true, null);
+		assertResponseValid(settings, samlResponseEncoded, true, false,
+				"A valid SubjectConfirmation was not found on this Response: SubjectConfirmationData doesn't contain a NotOnOrAfter attribute");
+	}
+
+	@Test
+	public void testIsValidSubjectConfirmation_multipleIssues() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		settings.setWantAssertionsSigned(false);
+		settings.setWantMessagesSigned(true);
+
+		final String samlResponseEncoded = loadSignMessageAndEncode("data/responses/invalids/invalid_subjectconfirmation_multiple_issues.xml");
+
+		assertResponseValid(settings, samlResponseEncoded, false, true, null);
+		assertResponseValid(settings, samlResponseEncoded, true, false,
+				"A valid SubjectConfirmation was not found on this Response: " +
+						"\n[0] SubjectConfirmationData doesn't contain a NotOnOrAfter attribute, " +
+						"\n[1] SubjectConfirmationData doesn't contain a Recipient, " +
+						"\n[2] SubjectConfirmationData is no longer valid");
 	}
 
 	/**
@@ -1194,9 +1138,7 @@ public class AuthnResponseTest {
 	public void testDatetimeWithMiliseconds() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/unsigned_response_with_miliseconds.xm.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		settings.setStrict(false);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		assertFalse(samlResponse.isValid());
@@ -1220,9 +1162,7 @@ public class AuthnResponseTest {
 	public void testIsInValidRequestId() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		settings.setStrict(false);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 
@@ -1249,9 +1189,7 @@ public class AuthnResponseTest {
 	public void testIsInValidSignIssues() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/unsigned_response.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		settings.setStrict(false);
 
 		settings.setWantAssertionsSigned(false);
@@ -1317,9 +1255,7 @@ public class AuthnResponseTest {
 	public void testIsInValidEncIssues() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/unsigned_response.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		settings.setStrict(false);
 
 		settings.setWantAssertionsEncrypted(false);
@@ -1385,9 +1321,7 @@ public class AuthnResponseTest {
 	public void testIsInValidCert() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.invalididpcertstring.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		assertFalse(samlResponse.isValid());
 		assertEquals("Signature validation failed. SAML Response rejected", samlResponse.getError());
@@ -1405,9 +1339,7 @@ public class AuthnResponseTest {
 	public void testNamespaceIsValid() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response_namespaces.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 
 		settings.setStrict(false);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
@@ -1430,9 +1362,7 @@ public class AuthnResponseTest {
 	public void testADFSValid() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.adfs.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response_adfs1.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 
 		settings.setStrict(false);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
@@ -1455,9 +1385,7 @@ public class AuthnResponseTest {
 	public void testIsValid() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 
 		settings.setStrict(false);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
@@ -1480,9 +1408,7 @@ public class AuthnResponseTest {
 	public void testIsValid2() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.mywithnocert.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 
 		settings.setStrict(false);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
@@ -1508,9 +1434,7 @@ public class AuthnResponseTest {
 		settings.setWantAssertionsSigned(false);
 		settings.setWantMessagesSigned(false);
 		String samlResponseEncoded = Util.getFileAsString("data/responses/double_signed_encrypted_assertion.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 
 		settings.setStrict(false);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
@@ -1566,9 +1490,7 @@ public class AuthnResponseTest {
 		settings.setWantAssertionsSigned(false);
 		settings.setWantMessagesSigned(false);
 		String samlResponseEncoded = Util.getFileAsString("data/responses/signed_message_response.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 
 		settings.setStrict(false);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
@@ -1612,9 +1534,7 @@ public class AuthnResponseTest {
 	public void testProcessSignedElementsInvalidSignElement() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/signed_message_response.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		assertTrue(!samlResponse.processSignedElements().isEmpty());
@@ -1647,9 +1567,7 @@ public class AuthnResponseTest {
 	public void testProcessSignedElementsInvalidSignElem() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/wrong_signed_element.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		samlResponse.processSignedElements();
@@ -1667,9 +1585,7 @@ public class AuthnResponseTest {
 	public void testProcessSignedElementsInvalidSignElem2() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/wrong_signed_element2.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		samlResponse.processSignedElements();
@@ -1687,9 +1603,7 @@ public class AuthnResponseTest {
 	public void testProcessSignedElementsNoId() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_assertion_id.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		samlResponse.processSignedElements();
@@ -1707,9 +1621,7 @@ public class AuthnResponseTest {
 	public void testProcessSignedElementsDuplicateRef() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/duplicate_reference_uri.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		samlResponse.processSignedElements();
@@ -1729,9 +1641,7 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		settings.setStrict(true);
 		String samlResponseEncoded = Util.getFileAsString("data/responses/unsigned_response.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		assertFalse(samlResponse.isValid());
@@ -1901,9 +1811,7 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		settings.setStrict(true);
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response4.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
 		SamlResponse samlResponse = new SamlResponse(settings, request);
 		assertNull(samlResponse.getError());
 		samlResponse.isValid();
@@ -1926,5 +1834,37 @@ public class AuthnResponseTest {
 		assertNull(samlResponse.getError());
 		samlResponse.isValid();
 		assertNull(samlResponse.getError());
+	}
+
+	private String loadAndEncode(String path) throws Exception
+	{
+		return Util.base64encoder(Util.getFileAsString(path));
+	}
+
+	private String loadSignMessageAndEncode(String path) throws Exception
+	{
+		String samlResponse = Util.getFileAsString(path);
+		final String signed = Util.addSign(Util.convertStringToDocument(samlResponse),
+				Util.loadPrivateKey(Util.getFileAsString("data/customPath/certs/sp.pem")),
+				Util.loadCert(Util.getFileAsString("data/customPath/certs/sp.crt")), Constants.RSA_SHA1);
+		return Util.base64encoder(signed);
+	}
+
+	private HttpServletRequest mockRequestWithSamlResponse(String samlResponseEncoded)
+	{
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
+		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		return request;
+	}
+
+	private void assertResponseValid(Saml2Settings settings, String samlResponseEncoded, boolean strict, boolean expectedValid, String expectedError) throws Exception
+	{
+		HttpServletRequest request = mockRequestWithSamlResponse(samlResponseEncoded);
+		settings.setStrict(strict);
+		final SamlResponse samlResponse = new SamlResponse(settings, request);
+
+		assertEquals(expectedValid, samlResponse.isValid());
+		assertEquals(expectedError, samlResponse.getError());
 	}
 }

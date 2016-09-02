@@ -1,6 +1,5 @@
 package com.onelogin.saml2.authn;
 
-import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -9,12 +8,9 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 
+import com.onelogin.saml2.model.SubjectConfirmationIssue;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +19,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.model.SamlResponseStatus;
@@ -242,55 +237,7 @@ public class SamlResponse {
 					}
 				}
 
-				// Check SubjectConfirmation, at least one SubjectConfirmation must be valid
-				boolean validSubjectConfirmation = false;
-				NodeList subjectConfirmationNodes = this.queryAssertion("/saml:Subject/saml:SubjectConfirmation");
-				for (int i = 0; i < subjectConfirmationNodes.getLength(); i++) {
-					Node scn = subjectConfirmationNodes.item(i);
-
-					Node method = scn.getAttributes().getNamedItem("Method");
-					if (method != null && !method.getNodeValue().equals(Constants.CM_BEARER)) {
-						continue;
-					}
-
-					NodeList subjectConfirmationDataNodes = scn.getChildNodes();
-					for (int c = 0; c < subjectConfirmationDataNodes.getLength(); c++) {
-						if (subjectConfirmationDataNodes.item(c).getLocalName() != null && subjectConfirmationDataNodes.item(c).getLocalName().equals("SubjectConfirmationData")) {
-
-							Node recipient = subjectConfirmationDataNodes.item(c).getAttributes().getNamedItem("Recipient");
-							if (recipient != null && !recipient.getNodeValue().isEmpty()
-									&& !recipient.getNodeValue().equals(currentUrl)) {
-								continue;
-							}
-
-							Node inResponseTo = subjectConfirmationDataNodes.item(c).getAttributes().getNamedItem("InResponseTo");
-							if (inResponseTo != null && !inResponseTo.getNodeValue().equals(responseInResponseTo)) {
-								continue;
-							}
-
-							
-							Node notOnOrAfter = subjectConfirmationDataNodes.item(c).getAttributes().getNamedItem("NotOnOrAfter");
-							if (notOnOrAfter != null) {
-								DateTime noa = Util.parseDateTime(notOnOrAfter.getNodeValue());
-								if (noa.isEqualNow() || noa.isBeforeNow()) {
-									continue;
-								}
-							}
-
-							Node notBefore = subjectConfirmationDataNodes.item(c).getAttributes().getNamedItem("NotBefore");
-							if (notBefore != null) {
-								DateTime nb = Util.parseDateTime(notBefore.getNodeValue());
-								if (nb.isAfterNow()) {
-									continue;
-								}
-							}
-							validSubjectConfirmation = true;
-						}
-					}
-				}
-				if (!validSubjectConfirmation) {
-					throw new Exception("A valid SubjectConfirmation was not found on this Response");
-				}
+				validateSubjectConfirmation(responseInResponseTo);
 
                 if (settings.getWantAssertionsSigned() && !signedElements.contains("Assertion")) {
                     throw new Exception("The Assertion of the Response is not signed and the SP requires it");
@@ -331,6 +278,71 @@ public class SamlResponse {
 			LOGGER.debug("SAMLResponse invalid --> " + samlResponseString);
 			LOGGER.error(error);
 			return false;
+		}
+	}
+
+	// Check SubjectConfirmation, at least one SubjectConfirmation must be valid
+	private void validateSubjectConfirmation(String responseInResponseTo) throws Exception {
+		final List<SubjectConfirmationIssue> validationIssues = new ArrayList<>();
+		boolean validSubjectConfirmation = false;
+		NodeList subjectConfirmationNodes = this.queryAssertion("/saml:Subject/saml:SubjectConfirmation");
+		for (int i = 0; i < subjectConfirmationNodes.getLength(); i++) {
+			Node scn = subjectConfirmationNodes.item(i);
+
+			Node method = scn.getAttributes().getNamedItem("Method");
+			if (method != null && !method.getNodeValue().equals(Constants.CM_BEARER)) {
+				continue;
+			}
+
+			NodeList subjectConfirmationDataNodes = scn.getChildNodes();
+			for (int c = 0; c < subjectConfirmationDataNodes.getLength(); c++) {
+				if (subjectConfirmationDataNodes.item(c).getLocalName() != null && subjectConfirmationDataNodes.item(c).getLocalName().equals("SubjectConfirmationData")) {
+
+					Node recipient = subjectConfirmationDataNodes.item(c).getAttributes().getNamedItem("Recipient");
+					if (recipient == null) {
+						validationIssues.add(new SubjectConfirmationIssue(i, "SubjectConfirmationData doesn't contain a Recipient"));
+						continue;
+					}
+
+					if (!recipient.getNodeValue().equals(currentUrl)) {
+						validationIssues.add(new SubjectConfirmationIssue(i, "SubjectConfirmationData doesn't match a valid Recipient"));
+						continue;
+					}
+
+					Node inResponseTo = subjectConfirmationDataNodes.item(c).getAttributes().getNamedItem("InResponseTo");
+					if (inResponseTo != null && !inResponseTo.getNodeValue().equals(responseInResponseTo)) {
+						validationIssues.add(new SubjectConfirmationIssue(i, "SubjectConfirmationData has an invalid InResponseTo value"));
+						continue;
+					}
+
+
+					Node notOnOrAfter = subjectConfirmationDataNodes.item(c).getAttributes().getNamedItem("NotOnOrAfter");
+					if (notOnOrAfter == null) {
+						validationIssues.add(new SubjectConfirmationIssue(i, "SubjectConfirmationData doesn't contain a NotOnOrAfter attribute"));
+						continue;
+					}
+
+					DateTime noa = Util.parseDateTime(notOnOrAfter.getNodeValue());
+					if (noa.isEqualNow() || noa.isBeforeNow()) {
+						validationIssues.add(new SubjectConfirmationIssue(i, "SubjectConfirmationData is no longer valid"));
+						continue;
+					}
+
+					Node notBefore = subjectConfirmationDataNodes.item(c).getAttributes().getNamedItem("NotBefore");
+					if (notBefore != null) {
+						DateTime nb = Util.parseDateTime(notBefore.getNodeValue());
+						if (nb.isAfterNow()) {
+							validationIssues.add(new SubjectConfirmationIssue(i, "SubjectConfirmationData is not yet valid"));
+							continue;
+						}
+					}
+					validSubjectConfirmation = true;
+				}
+			}
+		}
+
+		if (!validSubjectConfirmation) {
+			throw new Exception(SubjectConfirmationIssue.prettyPrintIssues(validationIssues));
 		}
 	}
 
