@@ -10,6 +10,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.xpath.XPathExpressionException;
 
+import com.onelogin.saml2.model.SubjectConfirmationIssue;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -341,7 +342,7 @@ public class SamlResponse {
 		}
 
 		if (!validSubjectConfirmation) {
-			throw new Exception(SubjectConfirmationIssue.prettyPrint(validationIssues));
+			throw new Exception(SubjectConfirmationIssue.prettyPrintIssues(validationIssues));
 		}
 	}
 

@@ -1054,7 +1054,7 @@ public class AuthnResponseTest {
 		final String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/invalid_subjectconfirmation_inresponse.xml.base64");
 
 		assertResponseValid(settings, samlResponseEncoded, false, false, "No Signature found. SAML Response rejected");
-		assertResponseValid(settings, samlResponseEncoded, true, false, "A valid SubjectConfirmation was not found on this Response - SubjectConfirmationData has an invalid InResponseTo value");
+		assertResponseValid(settings, samlResponseEncoded, true, false, "A valid SubjectConfirmation was not found on this Response: SubjectConfirmationData has an invalid InResponseTo value");
 	}
 
 	@Test
@@ -1063,7 +1063,7 @@ public class AuthnResponseTest {
 		final String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/invalid_subjectconfirmation_recipient.xml.base64");
 
 		assertResponseValid(settings, samlResponseEncoded, false, false, "No Signature found. SAML Response rejected");
-		assertResponseValid(settings, samlResponseEncoded, true, false, "A valid SubjectConfirmation was not found on this Response - SubjectConfirmationData doesn't match a valid Recipient");
+		assertResponseValid(settings, samlResponseEncoded, true, false, "A valid SubjectConfirmation was not found on this Response: SubjectConfirmationData doesn't match a valid Recipient");
 	}
 
 	@Test
@@ -1072,7 +1072,7 @@ public class AuthnResponseTest {
 		final String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/invalid_subjectconfirmation_noa.xml.base64");
 
 		assertResponseValid(settings, samlResponseEncoded, false, false, "No Signature found. SAML Response rejected");
-		assertResponseValid(settings, samlResponseEncoded, true, false, "A valid SubjectConfirmation was not found on this Response - SubjectConfirmationData is no longer valid");
+		assertResponseValid(settings, samlResponseEncoded, true, false, "A valid SubjectConfirmation was not found on this Response: SubjectConfirmationData is no longer valid");
 	}
 
 	@Test
@@ -1081,7 +1081,7 @@ public class AuthnResponseTest {
 		final String samlResponseEncoded = loadAndEncode("data/responses/invalids/invalid_subjectconfirmation_nb.xml");
 
 		assertResponseValid(settings, samlResponseEncoded, false, false, "No Signature found. SAML Response rejected");
-		assertResponseValid(settings, samlResponseEncoded, true, false, "A valid SubjectConfirmation was not found on this Response - SubjectConfirmationData is not yet valid");
+		assertResponseValid(settings, samlResponseEncoded, true, false, "A valid SubjectConfirmation was not found on this Response: SubjectConfirmationData is not yet valid");
 	}
 
 	@Test
@@ -1094,7 +1094,7 @@ public class AuthnResponseTest {
 
 		assertResponseValid(settings, samlResponseEncoded, false, true, null);
 		assertResponseValid(settings, samlResponseEncoded, true, false,
-				"A valid SubjectConfirmation was not found on this Response - SubjectConfirmationData doesn't contain a Recipient");
+				"A valid SubjectConfirmation was not found on this Response: SubjectConfirmationData doesn't contain a Recipient");
 	}
 
 	@Test
@@ -1107,7 +1107,7 @@ public class AuthnResponseTest {
 
 		assertResponseValid(settings, samlResponseEncoded, false, true, null);
 		assertResponseValid(settings, samlResponseEncoded, true, false,
-				"A valid SubjectConfirmation was not found on this Response - SubjectConfirmationData doesn't contain a NotOnOrAfter attribute");
+				"A valid SubjectConfirmation was not found on this Response: SubjectConfirmationData doesn't contain a NotOnOrAfter attribute");
 	}
 
 	@Test
@@ -1120,9 +1120,10 @@ public class AuthnResponseTest {
 
 		assertResponseValid(settings, samlResponseEncoded, false, true, null);
 		assertResponseValid(settings, samlResponseEncoded, true, false,
-				"A valid SubjectConfirmation was not found on this Response - SubjectConfirmationData doesn't contain a NotOnOrAfter attribute [0], " +
-						"SubjectConfirmationData doesn't contain a Recipient [1], " +
-						"SubjectConfirmationData is no longer valid [2]");
+				"A valid SubjectConfirmation was not found on this Response: " +
+						"\n[0] SubjectConfirmationData doesn't contain a NotOnOrAfter attribute, " +
+						"\n[1] SubjectConfirmationData doesn't contain a Recipient, " +
+						"\n[2] SubjectConfirmationData is no longer valid");
 	}
 
 	/**
