@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.xml.xpath.XPathExpressionException;
 
 import com.onelogin.saml2.model.SubjectConfirmationIssue;
+import org.apache.commons.lang3.ObjectUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -172,13 +173,16 @@ public class SamlResponse {
 					}
 				}
 
-				String responseInResponseTo = rootElement.getAttribute("InResponseTo");
+				String responseInResponseTo = rootElement.hasAttribute("InResponseTo") ? rootElement.getAttribute("InResponseTo") : null;
+				if (requestId == null && responseInResponseTo != null && settings.isRejectUnsolicitedResponsesWithInResponseTo()) {
+					throw new Exception("The Response has an InResponseTo attribute: " + responseInResponseTo +
+							" while no InResponseTo was expected");
+				}
+
 				// Check if the InResponseTo of the Response matches the ID of the AuthNRequest (requestId) if provided
-				if (requestId != null && !requestId.isEmpty() && rootElement.hasAttribute("InResponseTo")) {
-					if (!responseInResponseTo.equals(requestId)) {
+				if (requestId != null && !ObjectUtils.equals(responseInResponseTo, requestId)) {
 						throw new Exception("The InResponseTo of the Response: " + responseInResponseTo
 								+ ", does not match the ID of the AuthNRequest sent by the SP: " + requestId);
-					}
 				}
 
 				if (!this.encrypted && settings.getWantAssertionsEncrypted()) {
@@ -310,8 +314,9 @@ public class SamlResponse {
 					}
 
 					Node inResponseTo = subjectConfirmationDataNodes.item(c).getAttributes().getNamedItem("InResponseTo");
-					if (inResponseTo != null && !inResponseTo.getNodeValue().equals(responseInResponseTo)) {
-						validationIssues.add(new SubjectConfirmationIssue(i, "SubjectConfirmationData has an invalid InResponseTo value"));
+					if (inResponseTo == null && responseInResponseTo != null ||
+							inResponseTo != null && !inResponseTo.getNodeValue().equals(responseInResponseTo)) {
+						validationIssues.add(new SubjectConfirmationIssue(i, "SubjectConfirmationData has an invalid InResponseTo value"));;
 						continue;
 					}
 

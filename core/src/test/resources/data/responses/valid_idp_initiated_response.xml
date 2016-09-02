@@ -9,15 +9,15 @@
         <saml:Subject>
             <saml:NameID SPNameQualifier="hello.com" Format="urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress">someone@example.com</saml:NameID>
             <saml:SubjectConfirmation Method="urn:oasis:names:tc:SAML:2.0:cm:bearer">
-                <saml:SubjectConfirmationData Recipient="http://localhost:8080/java-saml-jspsample/acs.jsp"/>
+                <saml:SubjectConfirmationData NotOnOrAfter="2020-06-17T14:59:14Z" Recipient="http://localhost:8080/java-saml-jspsample/acs.jsp"/>
             </saml:SubjectConfirmation>
         </saml:Subject>
-        <saml:Conditions NotBefore="2010-06-17T14:53:44Z" NotOnOrAfter="2121-06-17T14:59:14Z">
+        <saml:Conditions NotBefore="2010-06-17T14:53:44Z" NotOnOrAfter="2021-06-17T14:59:14Z">
             <saml:AudienceRestriction>
                 <saml:Audience>http://localhost:8080/java-saml-jspsample/metadata.jsp</saml:Audience>
             </saml:AudienceRestriction>
         </saml:Conditions>
-        <saml:AuthnStatement AuthnInstant="2011-06-17T14:54:07Z" SessionNotOnOrAfter="2121-06-17T22:54:14Z" SessionIndex="_51be37965feb5579d803141076936dc2e9d1d98ebf">
+        <saml:AuthnStatement AuthnInstant="2011-06-17T14:54:07Z" SessionNotOnOrAfter="2021-06-17T22:54:14Z" SessionIndex="_51be37965feb5579d803141076936dc2e9d1d98ebf">
             <saml:AuthnContext>
                 <saml:AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:Password</saml:AuthnContextClassRef>
             </saml:AuthnContext>

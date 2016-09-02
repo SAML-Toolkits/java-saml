@@ -1058,6 +1058,19 @@ public class AuthnResponseTest {
 	}
 
 	@Test
+	public void testIsValidSubjectConfirmation_unmatchedInResponseTo() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		settings.setWantAssertionsSigned(false);
+		settings.setWantMessagesSigned(true);
+
+		final String samlResponseEncoded = loadSignMessageAndEncode("data/responses/invalids/invalid_unpaired_inresponsesto.xml");
+
+		assertResponseValid(settings, samlResponseEncoded, true, false,
+				"A valid SubjectConfirmation was not found on this Response - SubjectConfirmationData has an invalid InResponseTo value");
+		assertResponseValid(settings, samlResponseEncoded, false, true, null);
+	}
+
+	@Test
 	public void testIsValidSubjectConfirmation_invalidRecipient() throws Exception {
 		final Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		final String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/invalid_subjectconfirmation_recipient.xml.base64");
@@ -1175,6 +1188,34 @@ public class AuthnResponseTest {
 
 		assertFalse(samlResponse.isValid("invalidRequestId"));
 		assertThat(samlResponse.getError(), containsString("The InResponseTo of the Response"));		
+	}
+
+	@Test
+	public void testUnexpectedRequestId() throws Exception {
+		Saml2Settings acceptingUnexpectedInResponseTo = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		Saml2Settings rejectingUnexpectedInResponseTo = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		rejectingUnexpectedInResponseTo.setRejectUnsolicitedResponsesWithInResponseTo(true);
+
+		final String samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
+
+		assertResponseValid(acceptingUnexpectedInResponseTo, samlResponseEncoded, true, true, null);
+		assertResponseValid(rejectingUnexpectedInResponseTo, samlResponseEncoded, true, false,
+				"The Response has an InResponseTo attribute: ONELOGIN_5fe9d6e499b2f0913206aab3f7191729049bb807 while no InResponseTo was expected");
+	}
+
+	@Test
+	public void testMissingExpectedRequestId() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		settings.setWantMessagesSigned(true);
+		settings.setWantAssertionsSigned(false);
+		settings.setStrict(true);
+
+		// message with no InResponseTo
+		final String samlResponseEncoded = loadSignMessageAndEncode("data/responses/valid_idp_initiated_response.xml");
+
+		final SamlResponse samlResponse = new SamlResponse(settings, mockRequestWithSamlResponse(samlResponseEncoded));
+		assertFalse(samlResponse.isValid("expected-id"));
+		assertEquals(samlResponse.getError(), "The InResponseTo of the Response: null, does not match the ID of the AuthNRequest sent by the SP: expected-id");
 	}
 
 	/**
