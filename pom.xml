@@ -44,7 +44,8 @@
 									<version>3.2.5</version>
 								</requireMavenVersion>
 								<requireJavaVersion>
-									<version>1.7</version>
+									<!-- enforce =1.7 so that we compile against the right JRE -->
+									<version>[1.7,1.8)</version>
 								</requireJavaVersion>
 							</rules>
 						</configuration>
