@@ -1066,7 +1066,7 @@ public class AuthnResponseTest {
 		final String samlResponseEncoded = loadSignMessageAndEncode("data/responses/invalids/invalid_unpaired_inresponsesto.xml");
 
 		assertResponseValid(settings, samlResponseEncoded, true, false,
-				"A valid SubjectConfirmation was not found on this Response - SubjectConfirmationData has an invalid InResponseTo value");
+				"A valid SubjectConfirmation was not found on this Response: SubjectConfirmationData has an invalid InResponseTo value");
 		assertResponseValid(settings, samlResponseEncoded, false, true, null);
 	}
 
