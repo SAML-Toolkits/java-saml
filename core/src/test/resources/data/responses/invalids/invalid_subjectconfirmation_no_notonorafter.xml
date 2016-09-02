@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" ID="pfxc32aed67-820f-4296-0c20-205a10dd5787" Version="2.0" IssueInstant="2011-06-17T14:54:14Z" Destination="http://localhost:8080/java-saml-jspsample/acs.jsp" InResponseTo="_57bcbf70-7b1f-012e-c821-782bcb13bb38">
+<samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" ID="pfxc32aed67-820f-4296-0c20-205a10dd5787" Version="2.0" IssueInstant="2011-06-17T14:54:14Z" Destination="http://localhost:8080/java-saml-jspsample/acs.jsp">
     <saml:Issuer>https://pitbulk.no-ip.org/simplesaml/saml2/idp/metadata.php</saml:Issuer>
     <samlp:Status>
         <samlp:StatusCode Value="urn:oasis:names:tc:SAML:2.0:status:Success"/>

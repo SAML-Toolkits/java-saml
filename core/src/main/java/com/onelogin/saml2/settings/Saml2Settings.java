@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.onelogin.saml2.authn.SamlResponse;
+import com.onelogin.saml2.logout.LogoutResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -70,6 +72,7 @@ public class Saml2Settings {
 	private String requestedAuthnContextComparison = "exact";
 	private Boolean wantXMLValidation = true;
 	private String signatureAlgorithm = Constants.RSA_SHA1;
+	private boolean rejectUnsolicitedResponsesWithInResponseTo = false;
 
 	// Misc
 	private List<Contact> contacts = new LinkedList<Contact>();
@@ -632,6 +635,28 @@ public class Saml2Settings {
 	 */
 	public void setSignatureAlgorithm(String signatureAlgorithm) {
 		this.signatureAlgorithm = signatureAlgorithm;
+	}
+
+	/**
+	 * Controls if unsolicited Responses are rejected if they contain an InResponseTo value.
+	 *
+	 * If false using a validate method {@link SamlResponse#isValid(String)} with a null argument will
+	 * accept messages with any (or none) InResponseTo value.
+	 *
+	 * If true using these methods with a null argument will only accept messages with no InRespoonseTo value,
+	 * and reject messages where the value is set.
+	 *
+	 * In all cases using validate with a specified request ID will only accept responses that have the same
+	 * InResponseTo id set.
+	 *
+	 * @param rejectUnsolicitedResponsesWithInResponseTo whether to strictly check the InResponseTo attribute
+	 */
+	public void setRejectUnsolicitedResponsesWithInResponseTo(boolean rejectUnsolicitedResponsesWithInResponseTo) {
+		this.rejectUnsolicitedResponsesWithInResponseTo = rejectUnsolicitedResponsesWithInResponseTo;
+	}
+
+	public boolean isRejectUnsolicitedResponsesWithInResponseTo() {
+		return rejectUnsolicitedResponsesWithInResponseTo;
 	}
 
 	/**
