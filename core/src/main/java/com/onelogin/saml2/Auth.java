@@ -356,7 +356,7 @@ public class Auth {
 		String samlResponseParameter = request.getParameter("SAMLResponse");
 
 		if (samlResponseParameter != null) {
-			SamlResponse samlResponse = new SamlResponse(settings, request);
+			SamlResponse samlResponse = new SamlResponse(settings, request.getRequestURL().toString(), samlResponseParameter);
 
 			if (samlResponse.isValid(requestId)) {
 				nameid = samlResponse.getNameId();
