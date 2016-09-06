@@ -36,8 +36,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
@@ -741,232 +739,17 @@ public class UtilsTest {
 	}
 
 	/**
-	 * Tests the sendRedirect method
-	 * Use Case: Check relative and absolute urls
-	 * 
-	 * @throws IOException
-	 *
-	 * @see com.onelogin.saml2.util.Util#sendRedirect
-	 */
-	@Test
-	public void testSendRedirectRelative() throws IOException {
-		HttpServletRequest request_1 = mock(HttpServletRequest.class);
-		HttpServletResponse response_1 = mock(HttpServletResponse.class);
-	    // mock the getRequestURI() response
-	    when(request_1.getRequestURI()).thenReturn("/initial.jsp");
-	    Util.sendRedirect(response_1, "http://example.com/expectedurl.jsp");
-	    // verify if a sendRedirect() was performed with the expected value
-	    verify(response_1).sendRedirect("http://example.com/expectedurl.jsp");
-
-		HttpServletRequest request_2 = mock(HttpServletRequest.class);
-		HttpServletResponse response_2 = mock(HttpServletResponse.class);	    
-		when(request_2.getRequestURI()).thenReturn("/initial.jsp");
-	    Util.sendRedirect(response_2, "/expectedurl.jsp");
-	    verify(response_2).sendRedirect("/expectedurl.jsp");
-	}
-
-	/**
-	 * Tests the sendRedirect method
-	 * Use Case: Support https and http
-	 *
-	 * @throws IOException
-	 *
-	 * @see com.onelogin.saml2.util.Util#sendRedirect
-	 */
-	@Test
-	public void testSendRedirectProtocol() throws IOException {
-		HttpServletRequest request_1 = mock(HttpServletRequest.class);
-		HttpServletResponse response_1 = mock(HttpServletResponse.class);
-	    when(request_1.getRequestURI()).thenReturn("/initial.jsp");
-	    Util.sendRedirect(response_1, "http://example.com/expectedurl.jsp");
-	    verify(response_1).sendRedirect("http://example.com/expectedurl.jsp");
-
-		HttpServletRequest request_2 = mock(HttpServletRequest.class);
-		HttpServletResponse response_2 = mock(HttpServletResponse.class);	    
-		when(request_2.getRequestURI()).thenReturn("/initial.jsp");
-	    Util.sendRedirect(response_2, "https://example.com/expectedurl.jsp");
-	    verify(response_2).sendRedirect("https://example.com/expectedurl.jsp");
-	}
-
-	/**
-	 * Tests the sendRedirect method
-	 * Use Case: Support parameters
-	 *
-	 * @throws IOException
-	 *
-	 * @see com.onelogin.saml2.util.Util#sendRedirect
-	 */
-	@Test
-	public void testSendRedirectParams() throws IOException {
-		Map<String, String> parameters = new HashMap<String, String>();
-		HttpServletRequest request_1 = mock(HttpServletRequest.class);
-		HttpServletResponse response_1 = mock(HttpServletResponse.class);
-	    when(request_1.getRequestURI()).thenReturn("/initial.jsp");
-	    Util.sendRedirect(response_1, "http://example.com/expectedurl.jsp", parameters);
-	    verify(response_1).sendRedirect("http://example.com/expectedurl.jsp");		
-
-		parameters.put("test", "true");		
-		HttpServletRequest request_2 = mock(HttpServletRequest.class);
-		HttpServletResponse response_2 = mock(HttpServletResponse.class);
-	    when(request_2.getRequestURI()).thenReturn("/initial.jsp");
-	    Util.sendRedirect(response_2, "http://example.com/expectedurl.jsp", parameters);
-	    verify(response_2).sendRedirect("http://example.com/expectedurl.jsp?test=true");
-
-		parameters.put("value1", "a");
-		HttpServletRequest request_3 = mock(HttpServletRequest.class);
-		HttpServletResponse response_3 = mock(HttpServletResponse.class);	    
-		when(request_3.getRequestURI()).thenReturn("/initial.jsp");
-	    Util.sendRedirect(response_3, "http://example.com/expectedurl.jsp", parameters);
-	    verify(response_3).sendRedirect("http://example.com/expectedurl.jsp?test=true&value1=a");
-
-	    parameters.put("novalue", "");
-	    HttpServletRequest request_4 = mock(HttpServletRequest.class);
-		HttpServletResponse response_4 = mock(HttpServletResponse.class);	    
-		when(request_4.getRequestURI()).thenReturn("/initial.jsp");
-	    Util.sendRedirect(response_4, "http://example.com/expectedurl.jsp", parameters);
-	    verify(response_4).sendRedirect("http://example.com/expectedurl.jsp?novalue&test=true&value1=a");
-
-	    Map<String, String> parameters_2 = new HashMap<String, String>();
-	    parameters_2.put("novalue", "");
-	    HttpServletRequest request_5 = mock(HttpServletRequest.class);
-		HttpServletResponse response_5 = mock(HttpServletResponse.class);	    
-		when(request_5.getRequestURI()).thenReturn("/initial.jsp");
-	    Util.sendRedirect(response_5, "http://example.com/expectedurl.jsp", parameters_2);
-	    verify(response_5).sendRedirect("http://example.com/expectedurl.jsp?novalue");
-	}
-	
-	/**
-	 * Tests the getSelfURLhost method
-	 *
-	 * @see com.onelogin.saml2.util.Util#getSelfURLhost
-	 */
-	@Test
-	public void testGetSelfURLhost() {
-		HttpServletRequest request_1 = mock(HttpServletRequest.class);
-		when(request_1.getScheme()).thenReturn("http");
-		when(request_1.getServerName()).thenReturn("example.com");
-		when(request_1.getServerPort()).thenReturn(80);
-		assertEquals("http://example.com", Util.getSelfURLhost(request_1));
-
-		when(request_1.getServerPort()).thenReturn(81);
-		assertEquals("http://example.com:81", Util.getSelfURLhost(request_1));
-
-		when(request_1.getScheme()).thenReturn("https");
-		when(request_1.getServerPort()).thenReturn(443);
-		assertEquals("https://example.com", Util.getSelfURLhost(request_1));
-
-		when(request_1.getServerPort()).thenReturn(444);
-		assertEquals("https://example.com:444", Util.getSelfURLhost(request_1));		
-	}
-	
-	/**
-	 * Tests the getSelfHost method
-	 *
-	 * @see com.onelogin.saml2.util.Util#getSelfHost
-	 */
-	@Test
-	public void testGetSelfHost() {
-		HttpServletRequest request_1 = mock(HttpServletRequest.class);
-		when(request_1.getServerName()).thenReturn("example.com");
-		assertEquals("example.com", Util.getSelfHost(request_1));
-	}
-	
-	/**
-	 * Tests the isHTTPS method
-	 *
-	 * @see com.onelogin.saml2.util.Util#isHTTPS
-	 */
-	@Test
-	public void testIsHTTPS() {
-		HttpServletRequest request_1 = mock(HttpServletRequest.class);
-		when(request_1.isSecure()).thenReturn(false);
-		assertEquals(false, Util.isHTTPS(request_1));		
-
-		when(request_1.isSecure()).thenReturn(true);
-		assertEquals(true, Util.isHTTPS(request_1));
-	}
-	
-	/**
-	 * Tests the getSelfURL method
-	 *
-	 * @see com.onelogin.saml2.util.Util#getSelfURL
-	 */
-	@Test
-	public void testGetSelfURL() {
-		HttpServletRequest request_1 = mock(HttpServletRequest.class);
-		when(request_1.getScheme()).thenReturn("http");
-		when(request_1.getServerName()).thenReturn("example.com");		
-		when(request_1.getRequestURI()).thenReturn("/test");
-		when(request_1.getQueryString()).thenReturn("novalue&test=true&value1=a");
-		assertEquals("http://example.com/test?novalue&test=true&value1=a", Util.getSelfURL(request_1));
-
-		when(request_1.getRequestURI()).thenReturn("/");
-		assertEquals("http://example.com/?novalue&test=true&value1=a", Util.getSelfURL(request_1));
-
-		when(request_1.getRequestURI()).thenReturn("");
-		assertEquals("http://example.com?novalue&test=true&value1=a", Util.getSelfURL(request_1));
-
-		when(request_1.getRequestURI()).thenReturn(null);
-		assertEquals("http://example.com?novalue&test=true&value1=a", Util.getSelfURL(request_1));		
-
-		HttpServletRequest request_2 = mock(HttpServletRequest.class);
-		when(request_2.getScheme()).thenReturn("http");
-		when(request_2.getServerName()).thenReturn("example.com");
-		when(request_2.getRequestURI()).thenReturn("/test");
-		assertEquals("http://example.com/test", Util.getSelfURL(request_2));
-
-		when(request_2.getQueryString()).thenReturn("");
-		assertEquals("http://example.com/test", Util.getSelfURL(request_2));
-
-		when(request_2.getQueryString()).thenReturn(null);
-		assertEquals("http://example.com/test", Util.getSelfURL(request_2));
-	}
-
-	/**
-	 * Tests the getSelfURLNoQuery method
-	 *
-	 * @see com.onelogin.saml2.util.Util#getSelfURLNoQuery
-	 */
-	@Test
-	public void testGetSelfURLNoQuery() {
-		HttpServletRequest request_1 = mock(HttpServletRequest.class);
-		StringBuffer url = new StringBuffer("http://example.com/test");
-		when(request_1.getRequestURL()).thenReturn(url);
-		assertEquals("http://example.com/test", Util.getSelfURLNoQuery(request_1));
-	}
-	
-	/**
-	 * Tests the getSelfRoutedURLNoQuery method
-	 *
-	 * @see com.onelogin.saml2.util.Util#getSelfRoutedURLNoQuery
-	 */
-	@Test
-	public void testGetSelfRoutedURLNoQuery() {
-		HttpServletRequest request_1 = mock(HttpServletRequest.class);
-		when(request_1.getScheme()).thenReturn("http");
-		when(request_1.getServerName()).thenReturn("example.com");
-		when(request_1.getRequestURI()).thenReturn("/test");
-		assertEquals("http://example.com/test", Util.getSelfRoutedURLNoQuery(request_1));
-		
-		when(request_1.getRequestURI()).thenReturn("");
-		assertEquals("http://example.com", Util.getSelfRoutedURLNoQuery(request_1));
-
-		when(request_1.getRequestURI()).thenReturn(null);
-		assertEquals("http://example.com", Util.getSelfRoutedURLNoQuery(request_1));
-	}
-	
-	/**
 	 * Tests the loadResource method
 	 *
 	 * @throws URISyntaxException
 	 * @throws FileNotFoundException
 	 *
-	 * @see com.onelogin.saml2.util.Util#loadResource
+	 * @see com.onelogin.saml2.util.Util#getFileAsString
 	 */
 	@Test
-	public void testLoadResourceSuccess() throws FileNotFoundException, URISyntaxException {
-		Path path = Util.loadResource("config/config.certfile.properties");
-		assertNotNull(path);
+	public void testgetFileAsStringSuccess() throws Exception {
+		String string = Util.getFileAsString("config/config.certfile.properties");
+		assertNotNull(string);
 	}
 
 	/**
@@ -975,12 +758,12 @@ public class UtilsTest {
 	 * @throws URISyntaxException
 	 * @throws FileNotFoundException
 	 *
-	 * @see com.onelogin.saml2.util.Util#loadResource
+	 * @see com.onelogin.saml2.util.Util#getFileAsString
 	 */
 	@Test(expected=FileNotFoundException.class)
-	public void testLoadResourceFail() throws FileNotFoundException, URISyntaxException {
-		Path path = Util.loadResource("invalid_path");
-		assertNull(path);
+	public void testLoadResourceFail() throws Exception {
+		String string = Util.getFileAsString("invalid_path");
+		assertNull(string);
 	}	
 	
 	/**

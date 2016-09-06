@@ -7,11 +7,24 @@
 	</parent>
 
 	<packaging>jar</packaging>
-	<name>OneLogin java-saml Toolkit Core</name>
-	<artifactId>java-saml-core</artifactId>
+	<name>OneLogin java-saml Toolkit</name>
+	<artifactId>java-saml</artifactId>
 
 	<dependencies>
+		<dependency>
+			<groupId>com.onelogin</groupId>
+			<artifactId>java-saml-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- for test -->
+		<dependency>
+			<groupId>com.onelogin</groupId>
+			<artifactId>java-saml-core</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -32,6 +45,14 @@
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+		<!-- httprequest and httpresponse -->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.5</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- date and time library for Java -->
@@ -73,17 +94,6 @@
 						<id>prepare-agent</id>
 						<goals>
 							<goal>prepare-agent</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>test-jar</goal>
 						</goals>
 					</execution>
 				</executions>

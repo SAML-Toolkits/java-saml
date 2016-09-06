@@ -1,4 +1,4 @@
-package com.onelogin.saml2;
+package com.onelogin.saml2.settings;
 
 import java.net.URL;
 import java.util.Calendar;
@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
-import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.model.Contact;
 import com.onelogin.saml2.model.Organization;
 import com.onelogin.saml2.util.Util;
