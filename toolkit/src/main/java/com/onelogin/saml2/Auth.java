@@ -12,8 +12,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -23,10 +23,12 @@ import org.slf4j.LoggerFactory;
 
 import com.onelogin.saml2.authn.AuthnRequest;
 import com.onelogin.saml2.authn.SamlResponse;
-import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.exception.SettingsException;
+import com.onelogin.saml2.exception.XMLEntityException;
+import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.logout.LogoutRequest;
 import com.onelogin.saml2.logout.LogoutResponse;
+import com.onelogin.saml2.servlet.ServletUtils;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
 import com.onelogin.saml2.util.Constants;
@@ -231,7 +233,7 @@ public class Auth {
 
 		String relayState;
 		if (returnTo == null) {
-			relayState = Util.getSelfRoutedURLNoQuery(request);
+			relayState = ServletUtils.getSelfRoutedURLNoQuery(request);
 		} else {
 			relayState = returnTo;
 		}
@@ -248,7 +250,7 @@ public class Auth {
 		String ssoUrl = getSSOurl();
 
 		LOGGER.debug("AuthNRequest sent to " + ssoUrl + " --> " + samlRequest);
-		Util.sendRedirect(response, ssoUrl, parameters);
+		ServletUtils.sendRedirect(response, ssoUrl, parameters);
 		lastRequestId = authnRequest.getId();
 	}
 
@@ -295,7 +297,7 @@ public class Auth {
 
 		String relayState;
 		if (returnTo == null || returnTo.isEmpty()) {
-			relayState = Util.getSelfRoutedURLNoQuery(request);
+			relayState = ServletUtils.getSelfRoutedURLNoQuery(request);
 		} else {
 			relayState = returnTo;
 		}
@@ -312,7 +314,7 @@ public class Auth {
 
 		String sloUrl = getSLOurl();
 		LOGGER.debug("Logout request sent to " + sloUrl + " --> " + samlLogoutRequest);
-		Util.sendRedirect(response, sloUrl, parameters);
+		ServletUtils.sendRedirect(response, sloUrl, parameters);
 		lastRequestId = logoutRequest.getId();
 	}
 
@@ -364,10 +366,11 @@ public class Auth {
      */
 	public void processResponse(String requestId) throws Exception {
 		authenticated = false;
-		String samlResponseParameter = request.getParameter("SAMLResponse");
+		final HttpRequest httpRequest = ServletUtils.makeHttpRequest(this.request);
+		final String samlResponseParameter = httpRequest.getParameter("SAMLResponse");
 
 		if (samlResponseParameter != null) {
-			SamlResponse samlResponse = new SamlResponse(settings, request);
+			SamlResponse samlResponse = new SamlResponse(settings, httpRequest);
 
 			if (samlResponse.isValid(requestId)) {
 				nameid = samlResponse.getNameId();
@@ -473,7 +476,7 @@ public class Auth {
 
 				String sloUrl = getSLOurl();
 				LOGGER.debug("Logout response sent to " + sloUrl + " --> " + samlLogoutResponse);
-				Util.sendRedirect(response, sloUrl, parameters);				
+				ServletUtils.sendRedirect(response, sloUrl, parameters);
 			}
 		} else {
 			errors.add("invalid_binding");

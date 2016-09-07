@@ -7,10 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.xml.xpath.XPathExpressionException;
 
-import com.onelogin.saml2.model.SubjectConfirmationIssue;
 import org.apache.commons.lang3.ObjectUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Instant;
@@ -22,8 +20,10 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.onelogin.saml2.settings.Saml2Settings;
+import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.model.SamlResponseStatus;
+import com.onelogin.saml2.model.SubjectConfirmationIssue;
+import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.SchemaFactory;
 import com.onelogin.saml2.util.Util;
@@ -82,15 +82,15 @@ public class SamlResponse {
 	 * @param settings
 	 *              Saml2Settings object. Setting data
 	 * @param request
-     *				HttpServletRequest object to be processed (Contains GET and POST parameters, session, ...).
+	 *				the HttpRequest object to be processed (Contains GET and POST parameters, request URL, ...).
      *
-	 * @throws Exception 
+	 * @throws Exception
 	 */
-	public SamlResponse(Saml2Settings settings, HttpServletRequest request) throws Exception {
+	public SamlResponse(Saml2Settings settings, HttpRequest request) throws Exception {
 		this.settings = settings;
 
-		if (request != null) {			
-			currentUrl = request.getRequestURL().toString();
+		if (request != null) {
+			currentUrl = request.getRequestURL();
 			loadXmlFromBase64(request.getParameter("SAMLResponse"));
 		}
 	}

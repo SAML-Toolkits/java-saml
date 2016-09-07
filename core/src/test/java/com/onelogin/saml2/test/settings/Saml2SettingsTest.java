@@ -15,7 +15,7 @@ import java.util.List;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
-import com.onelogin.saml2.Metadata;
+import com.onelogin.saml2.settings.Metadata;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
 import com.onelogin.saml2.util.SchemaFactory;

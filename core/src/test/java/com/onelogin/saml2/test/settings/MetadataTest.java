@@ -1,4 +1,4 @@
-package com.onelogin.saml2.test;
+package com.onelogin.saml2.test.settings;
 
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -17,7 +17,7 @@ import org.junit.Test;
 
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
-import com.onelogin.saml2.Metadata;
+import com.onelogin.saml2.settings.Metadata;
 import com.onelogin.saml2.util.SchemaFactory;
 import com.onelogin.saml2.util.Util;
 
@@ -30,7 +30,7 @@ public class MetadataTest {
 	 *
 	 * @throws Exception
 	 * 
-	 * @see com.onelogin.saml2.Metadata
+	 * @see Metadata
 	 */
 	@Test
 	public void testMetadata() throws Exception {
@@ -63,7 +63,7 @@ public class MetadataTest {
 	 * @throws IOException 
 	 * @throws CertificateEncodingException 
 	 *
-	 * @see com.onelogin.saml2.Metadata
+	 * @see Metadata
 	 */
 	@Test
 	public void testMetadataExpiration() throws IOException, CertificateEncodingException {
@@ -94,7 +94,7 @@ public class MetadataTest {
 	 * @throws IOException
 	 * @throws CertificateEncodingException
 	 *
-	 * @see com.onelogin.saml2.Metadata.toContactsXml
+	 * @see Metadata.toContactsXml
 	 */
 	@Test
 	public void testToContactsXml() throws IOException, CertificateEncodingException {
@@ -118,7 +118,7 @@ public class MetadataTest {
 	 * @throws IOException
 	 * @throws CertificateEncodingException
 	 *
-	 * @see com.onelogin.saml2.Metadata.toOrganizationXml
+	 * @see Metadata.toOrganizationXml
 	 */
 	@Test
 	public void testToOrganizationXml() throws IOException, CertificateEncodingException {
@@ -142,7 +142,7 @@ public class MetadataTest {
 	 * @throws IOException
 	 * @throws CertificateEncodingException
 	 *
-	 * @see com.onelogin.saml2.Metadata.toSLSXml
+	 * @see Metadata.toSLSXml
 	 */
 	@Test
 	public void testToSLSXml() throws IOException, CertificateEncodingException {
@@ -167,7 +167,7 @@ public class MetadataTest {
 	 * @throws IOException
 	 * @throws CertificateEncodingException
 	 *
-	 * @see com.onelogin.saml2.Metadata.toX509KeyDescriptorsXML
+	 * @see Metadata.toX509KeyDescriptorsXML
 	 */
 	@Test
 	public void testToX509KeyDescriptorsXML() throws IOException, CertificateEncodingException {
