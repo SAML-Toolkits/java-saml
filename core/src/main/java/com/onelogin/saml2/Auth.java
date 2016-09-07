@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
+import org.joda.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +65,7 @@ public class Auth {
 
 	/**
      * NameID.
-     */	
+     */
 	private String nameid;
 
 	/**
@@ -76,6 +77,16 @@ public class Auth {
      * SessionNotOnOrAfter. When the user is logged, this stored it from the AuthnStatement of the SAML Response
 	 */
 	private DateTime sessionExpiration;
+
+	/**
+	 * The ID of the last assertion processed
+	 */
+	private String lastAssertionId;
+
+	/**
+	 * The NotOnOrAfter values of the last assertion processed
+	 */
+	private List<Instant> lastAssertionNotOnOrAfter;
 
 	/**
      * User attributes data.
@@ -364,6 +375,8 @@ public class Auth {
 				attributes = samlResponse.getAttributes();
 				sessionIndex = samlResponse.getSessionIndex();
 				sessionExpiration = samlResponse.getSessionNotOnOrAfter();
+				lastAssertionId = samlResponse.getAssertionId();
+				lastAssertionNotOnOrAfter = samlResponse.getAssertionNotOnOrAfter();
 				LOGGER.debug("processResponse success --> " + samlResponseParameter);
 			} else {
 				errors.add("invalid_response");
@@ -534,9 +547,23 @@ public class Auth {
 	    return sessionExpiration;
 	}
 
-	/** 
-     * @return an array with the errors, the array is empty when the validation was successful
-     */
+	/**
+	 * @return The ID of the last assertion processed
+	 */
+	public String getLastAssertionId() {
+		return lastAssertionId;
+	}
+
+	/**
+	 * @return The NotOnOrAfter values of the last assertion processed
+	 */
+	public List<Instant> getLastAssertionNotOnOrAfter() {
+		return lastAssertionNotOnOrAfter;
+	}
+
+	/**
+	 * @return an array with the errors, the array is empty when the validation was successful
+	 */
     public List<String> getErrors()
     {
         return errors;

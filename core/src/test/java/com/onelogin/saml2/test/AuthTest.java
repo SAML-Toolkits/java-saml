@@ -1,11 +1,11 @@
 package com.onelogin.saml2.test;
 
 
-import static com.onelogin.saml2.util.Util.UNIQUE_ID_PREFIX;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -21,9 +21,7 @@ import static org.mockito.Mockito.times;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.security.cert.CertificateEncodingException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -31,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.joda.time.Instant;
 import org.junit.Test;
 
 import com.onelogin.saml2.Auth;
@@ -232,8 +231,8 @@ public class AuthTest {
 	 */
 	@Test
 	public void testIsDebugActive() throws IOException, SettingsException, URISyntaxException {
-		HttpServletRequest request = mock(HttpServletRequest.class);
 		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpServletRequest request = mock(HttpServletRequest.class);
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
 		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
 
@@ -809,6 +808,22 @@ public class AuthTest {
 		auth2.processResponse();
 		assertTrue(auth2.isAuthenticated());
 		assertEquals("_6273d77b8cde0c333ec79d22a9fa0003b9fe2d75cb", auth2.getSessionIndex());
+	}
+
+	@Test
+	public void testGetAssertionDetails() throws Exception {
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		String samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
+		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		Auth auth = new Auth(settings, request, response);
+		auth.processResponse();
+
+		assertThat(auth.getLastAssertionId(), is("pfxeac87197-11cb-ec12-c181-ae739b54debe"));
+		assertThat(auth.getLastAssertionNotOnOrAfter(), contains(new Instant("2023-08-23T06:57:01Z")));
 	}
 
 	/**
