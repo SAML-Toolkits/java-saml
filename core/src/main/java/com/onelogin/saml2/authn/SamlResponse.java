@@ -13,6 +13,7 @@ import javax.xml.xpath.XPathExpressionException;
 import com.onelogin.saml2.model.SubjectConfirmationIssue;
 import org.apache.commons.lang3.ObjectUtils;
 import org.joda.time.DateTime;
+import org.joda.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -612,6 +613,29 @@ public class SamlResponse {
         }
         return sessionIndex;
     }
+
+	/**
+	 * @return the ID of the assertion in the Response
+	 */
+	public String getAssertionId() throws XPathExpressionException {
+		validateNumAssertions();
+		final NodeList assertionNode = queryAssertion("");
+		return assertionNode.item(0).getAttributes().getNamedItem("ID").getNodeValue();
+	}
+
+	/**
+	 * @return a list of NotOnOrAfter values from SubjectConfirmationData nodes in this Response
+	 */
+	public List<Instant> getNotOnOrAfter() throws XPathExpressionException {
+		final NodeList notOnOrAfterNodes = queryAssertion("/saml:Subject/saml:SubjectConfirmation/saml:SubjectConfirmationData");
+		final ArrayList<Instant> notOnOrAfters = new ArrayList<>();
+		for (int i = 0; i < notOnOrAfterNodes.getLength(); i++) {
+			final Node notOnOrAfterAttribute = notOnOrAfterNodes.item(i).getAttributes().getNamedItem("NotOnOrAfter");
+			if (notOnOrAfterAttribute != null) {
+				notOnOrAfters.add(new Instant(notOnOrAfterAttribute.getNodeValue()));
+		}}
+		return notOnOrAfters;
+	}
 
 	/**
 	 * Verifies that the document only contains a single Assertion (encrypted or not).
