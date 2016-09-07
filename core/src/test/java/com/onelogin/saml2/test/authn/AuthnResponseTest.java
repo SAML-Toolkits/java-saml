@@ -3,9 +3,9 @@ package com.onelogin.saml2.test.authn;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -17,12 +17,13 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.onelogin.saml2.model.SamlResponseStatus;
 import com.onelogin.saml2.authn.SamlResponse;
+import com.onelogin.saml2.http.HttpRequest;
+import com.onelogin.saml2.model.SamlResponseStatus;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
-import com.onelogin.saml2.util.Util;
 import com.onelogin.saml2.util.Constants;
+import com.onelogin.saml2.util.Util;
 
 public class AuthnResponseTest {
 	private static final String ACS_URL = "http://localhost:8080/java-saml-jspsample/acs.jsp";
@@ -41,11 +42,11 @@ public class AuthnResponseTest {
 		final String requestURL = "/";
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
 
-		SamlResponse samlResponse = new SamlResponse(settings, requestURL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(requestURL, samlResponseEncoded));
 		assertTrue(samlResponse instanceof SamlResponse);
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
-		samlResponse = new SamlResponse(settings, requestURL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(requestURL, samlResponseEncoded));
 		assertTrue(samlResponse instanceof SamlResponse);
 	}
 
@@ -61,7 +62,7 @@ public class AuthnResponseTest {
 	public void testEncryptedAssertionNokey() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
-		new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 	}
 	
 	/**
@@ -76,7 +77,7 @@ public class AuthnResponseTest {
 	public void testNamespaces() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/open_saml_response.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		HashMap<String, List<String>> attributes = samlResponse.getAttributes();
 
 		assertFalse(attributes.isEmpty());
@@ -105,20 +106,20 @@ public class AuthnResponseTest {
 	public void testGetNameId() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertEquals("support@onelogin.com", samlResponse.getNameId());
 		samlResponseEncoded = Util.getFileAsString("data/responses/response_encrypted_nameid.xml.base64");
 
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertEquals("2de11defd199f8d5bb63f9b7deb265ba5c675c10", samlResponse.getNameId());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertEquals("_68392312d490db6d355555cfbbd8ec95d746516f60", samlResponse.getNameId());
 
 		settings.setWantNameId(false);
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_nameid.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertNull(samlResponse.getNameId());
 	}
 
@@ -136,7 +137,7 @@ public class AuthnResponseTest {
 
 		settings.setWantNameId(true);
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_nameid.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		String nameId = samlResponse.getNameId();
 	}
 
@@ -152,7 +153,7 @@ public class AuthnResponseTest {
 	public void testGetNameIdDataNoKey() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response_encrypted_nameid.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		String nameId = samlResponse.getNameId();
 	}
 
@@ -168,7 +169,7 @@ public class AuthnResponseTest {
 	public void testGetNameIdDataWrongEncryptedData() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/response_encrypted_subconfirm_as_nameid.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		String nameId = samlResponse.getNameId();
 	}
 
@@ -183,18 +184,18 @@ public class AuthnResponseTest {
 	public void testGetNameIdData() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertEquals("{Format=urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress, Value=support@onelogin.com}", samlResponse.getNameIdData().toString());
 		samlResponseEncoded = Util.getFileAsString("data/responses/response_encrypted_nameid.xml.base64");
 
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		String NameIdDataStr = samlResponse.getNameIdData().toString();
 		assertThat(NameIdDataStr, containsString("Format=urn:oasis:names:tc:SAML:2.0:nameid-format:unspecified"));
 		assertThat(NameIdDataStr, containsString("Value=2de11defd199f8d5bb63f9b7deb265ba5c675c10"));
 		assertThat(NameIdDataStr, containsString("SPNameQualifier=https://pitbulk.no-ip.org/newonelogin/demo1/metadata.php"));
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		NameIdDataStr = samlResponse.getNameIdData().toString();
 		assertThat(NameIdDataStr, containsString("Format=urn:oasis:names:tc:SAML:2.0:nameid-format:transient"));
 		assertThat(NameIdDataStr, containsString("Value=_68392312d490db6d355555cfbbd8ec95d746516f60"));
@@ -202,7 +203,7 @@ public class AuthnResponseTest {
 		
 		settings.setWantNameId(false);
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_nameid.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.getNameIdData().isEmpty());
 	}
 
@@ -220,7 +221,7 @@ public class AuthnResponseTest {
 		settings.setWantNameId(true);
 
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_nameid.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		HashMap<String, String> nameIdData = samlResponse.getNameIdData();
 	}
 
@@ -236,11 +237,11 @@ public class AuthnResponseTest {
 	public void testCheckStatus() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		samlResponse.checkStatus();
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		samlResponse.checkStatus();
 	}
 
@@ -257,7 +258,7 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/status_code_responder.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		samlResponse.checkStatus();
 	}
 
@@ -274,7 +275,7 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/status_code_responder_and_msg.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		samlResponse.checkStatus();
 	}
 
@@ -291,7 +292,7 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_status.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		samlResponse.checkStatus();
 	}
 
@@ -308,7 +309,7 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_status_code.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		samlResponse.checkStatus();
 	}
 
@@ -358,14 +359,14 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 
 		List<String> expectedAudiences = new ArrayList<String>();
 		expectedAudiences.add("{audience}");
 		assertEquals(expectedAudiences, samlResponse.getAudiences());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		expectedAudiences = new ArrayList<String>();
 		expectedAudiences.add("http://stuff.com/endpoints/metadata.php");
 		assertEquals(expectedAudiences, samlResponse.getAudiences());
@@ -382,7 +383,7 @@ public class AuthnResponseTest {
 	public void testGetIssuers() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		List<String> expectedIssuers = new ArrayList<String>();
 		expectedIssuers.add("https://app.onelogin.com/saml/metadata/13590");
 		assertEquals(expectedIssuers, samlResponse.getIssuers());
@@ -390,30 +391,30 @@ public class AuthnResponseTest {
 		expectedIssuers.remove(0);
 		expectedIssuers.add("http://idp.example.com/");
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertEquals(expectedIssuers, samlResponse.getIssuers());
 
 		expectedIssuers.remove(0);
 		expectedIssuers.add("https://pitbulk.no-ip.org/simplesaml/saml2/idp/metadata.php");
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/signed_message_encrypted_assertion.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertEquals(expectedIssuers, samlResponse.getIssuers());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/double_signed_encrypted_assertion.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertEquals(expectedIssuers, samlResponse.getIssuers());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/signed_encrypted_assertion.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertEquals(expectedIssuers, samlResponse.getIssuers());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/double_signed_response.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertEquals(expectedIssuers, samlResponse.getIssuers());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/signed_assertion_response.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertEquals(expectedIssuers, samlResponse.getIssuers());
 	}
 
@@ -428,11 +429,11 @@ public class AuthnResponseTest {
 	public void testGetSessionIndex() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertEquals("_531c32d283bdff7e04e487bcdbc4dd8d", samlResponse.getSessionIndex());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertEquals("_7164a9a9f97828bfdb8d0ebc004a05d2e7d873f70c", samlResponse.getSessionIndex());
 	}
 
@@ -447,7 +448,7 @@ public class AuthnResponseTest {
 	public void testGetAttributes() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		HashMap<String, List<String>> expectedAttributes = new HashMap<String, List<String>>();
 		List<String> attrValues = new ArrayList<String>();
 		attrValues.add("demo");
@@ -458,12 +459,12 @@ public class AuthnResponseTest {
 		assertEquals(expectedAttributes, samlResponse.getAttributes());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/response2.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.getAttributes().isEmpty());
 
 		// Encrypted Attributes are not supported
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/encrypted_attrs.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.getAttributes().isEmpty());
 	}
 
@@ -478,7 +479,7 @@ public class AuthnResponseTest {
 	public void testOnlyRetrieveAssertionWithIDThatMatchesSignatureReference() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/wrapped_response_2.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 
 		String nameID = samlResponse.getNameId();
 		assertFalse(samlResponse.isValid());
@@ -496,7 +497,7 @@ public class AuthnResponseTest {
 	public void testDoesNotAllowSignatureWrappingAttack() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response4.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 
 		assertEquals("test@onelogin.com", samlResponse.getNameId());		
 		assertFalse(samlResponse.isValid());
@@ -515,7 +516,7 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.newattack.properties").build();
 		String samlResponseEncoded = Util.base64encoder(Util.getFileAsString("data/responses/invalids/attacks/encrypted_new_attack.xml"));
 
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("Found an invalid Signed Element. SAML Response rejected", samlResponse.getError());
 	}
@@ -535,7 +536,7 @@ public class AuthnResponseTest {
 		final String requestURL = "https://example.com/endpoint";
 		String samlResponseEncoded = Util.base64encoder(Util.getFileAsString("data/responses/invalids/attacks/response_with_doubled_signed_assertion.xml"));
 
-		SamlResponse samlResponse = new SamlResponse(settings, requestURL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(requestURL, samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("SAML Response must contain 1 Assertion.", samlResponse.getError());
 		// should expose only the signed data
@@ -557,7 +558,7 @@ public class AuthnResponseTest {
 		final String requestURL = "https://example.com/endpoint";
 		String samlResponseEncoded = Util.base64encoder(Util.getFileAsString("data/responses/invalids/attacks/response_with_concealed_signed_assertion.xml"));
 
-		SamlResponse samlResponse = new SamlResponse(settings, requestURL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(requestURL, samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("SAML Response must contain 1 Assertion.", samlResponse.getError());
 		// should expose only the signed data
@@ -575,15 +576,15 @@ public class AuthnResponseTest {
 	public void testGetSessionNotOnOrAfter() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertEquals(1290203857000L, samlResponse.getSessionNotOnOrAfter().getMillis());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/response2.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertNull(samlResponse.getSessionNotOnOrAfter());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertEquals(2696012228000L, samlResponse.getSessionNotOnOrAfter().getMillis());
 	}
 
@@ -598,11 +599,11 @@ public class AuthnResponseTest {
 	public void testValidateNumAssertions() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.validateNumAssertions());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/multiple_assertions.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.validateNumAssertions());
 	}
 
@@ -617,27 +618,27 @@ public class AuthnResponseTest {
 	public void testValidateTimestamps() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.validateTimestamps());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.validateTimestamps());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/expired_response.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.validateTimestamps());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/not_after_failed.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.validateTimestamps());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/not_before_failed.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.validateTimestamps());
 		
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_time_condition.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.validateTimestamps());		
 	}
 
@@ -652,7 +653,7 @@ public class AuthnResponseTest {
 	@Test
 	public void testNullRequest() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		SamlResponse samlResponse = new SamlResponse(settings, null, null);
+		SamlResponse samlResponse = new SamlResponse(settings, null);
 		assertFalse(samlResponse.isValid());
 		assertEquals("SAML Response is not loaded", samlResponse.getError());
 	}
@@ -670,7 +671,7 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		final String requestURL = "";
 		String samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, requestURL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(requestURL, samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("The URL of the current host was not established", samlResponse.getError());
 
@@ -691,7 +692,7 @@ public class AuthnResponseTest {
 	public void testValidateVersion() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_saml2.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("Unsupported SAML Version.", samlResponse.getError());
 	}
@@ -708,7 +709,7 @@ public class AuthnResponseTest {
 	public void testValidateID() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_id.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("Missing ID attribute on SAML Response.", samlResponse.getError());
 	}
@@ -726,11 +727,11 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/expired_response.xml.base64");
 		settings.setStrict(false);
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 
 		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("Timing issues (please check your clock settings)", samlResponse.getError());
 	}
@@ -748,7 +749,7 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_key.xml.base64");
 		settings.setStrict(false);
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("Signature validation failed. SAML Response rejected", samlResponse.getError());
 	}
@@ -765,7 +766,7 @@ public class AuthnResponseTest {
 	public void testIsInValidMultipleAssertions() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/multiple_assertions.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("SAML Response must contain 1 Assertion.", samlResponse.getError());
 	}
@@ -783,12 +784,12 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/encrypted_attrs.xml.base64");
 		settings.setStrict(false);
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
 
 		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("There is an EncryptedAttribute in the Response and this SP not support them", samlResponse.getError());
 	}
@@ -806,7 +807,7 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/response_encrypted_subconfirm_as_nameid.xml.base64");
 		settings.setStrict(false);
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 		String nameId = samlResponse.getNameId();
 	}
@@ -826,21 +827,21 @@ public class AuthnResponseTest {
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/invalid_xml.xml.base64");
 		settings.setStrict(false);
 		settings.setWantXMLValidation(false);
-		SamlResponse samlResponse = new SamlResponse(settings, requestURL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(requestURL, samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 
 		settings.setWantXMLValidation(true);
-		samlResponse = new SamlResponse(settings, requestURL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(requestURL, samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 
 		settings.setStrict(true);
 		settings.setWantXMLValidation(false);
-		samlResponse = new SamlResponse(settings, requestURL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(requestURL, samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("http://localhost:8080/java-saml-jspsample/metadata.jsp is not a valid audience for this Response", samlResponse.getError());
 
 		settings.setWantXMLValidation(true);
-		samlResponse = new SamlResponse(settings, requestURL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(requestURL, samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("Invalid SAML Response. Not match the saml-schema-protocol-2.0.xsd", samlResponse.getError());
 	}
@@ -859,12 +860,12 @@ public class AuthnResponseTest {
 		final String requestURL = "/";
 		String samlResponseEncoded = Util.getFileAsString("data/responses/unsigned_response.xml.base64");
 		settings.setStrict(false);
-		SamlResponse samlResponse = new SamlResponse(settings, requestURL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(requestURL, samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
 
 		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, requestURL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(requestURL, samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertThat(samlResponse.getError(), containsString("The response was received at"));
 
@@ -886,12 +887,12 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/invalid_audience.xml.base64");
 		settings.setStrict(false);
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
 
 		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertThat(samlResponse.getError(), containsString("is not a valid audience for this Response"));
 	}
@@ -909,23 +910,23 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/invalid_issuer_assertion.xml.base64");
 		settings.setStrict(false);
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
 
 		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("Invalid issuer in the Assertion/Response", samlResponse.getError());
 
 		settings.setStrict(false);
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/invalid_issuer_message.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
 
 		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("Invalid issuer in the Assertion/Response", samlResponse.getError());
 		
@@ -944,12 +945,12 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/invalid_sessionindex.xml.base64");
 		settings.setStrict(false);
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
 
 		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("The attributes have expired, based on the SessionNotOnOrAfter of the AttributeStatement of this Response", samlResponse.getError());
 	}
@@ -958,7 +959,7 @@ public class AuthnResponseTest {
 	public void testIsValidSubjectConfirmation_noSubjectConfirmationMethod() throws Exception {
 		final Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		final String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_subjectconfirmation_method.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 
 		assertResponseValid(settings, samlResponseEncoded, false, false, "No Signature found. SAML Response rejected");
 		assertResponseValid(settings, samlResponseEncoded, true, false, "A valid SubjectConfirmation was not found on this Response");
@@ -1077,12 +1078,12 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/unsigned_response_with_miliseconds.xm.base64");
 		settings.setStrict(false);
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
 
 		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
 	}
@@ -1100,13 +1101,13 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
 		settings.setStrict(false);
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 
 		assertTrue(samlResponse.isValid());
 		assertTrue(samlResponse.isValid("invalidRequestId"));
 
 		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 
 		assertFalse(samlResponse.isValid("invalidRequestId"));
@@ -1136,7 +1137,7 @@ public class AuthnResponseTest {
 		// message with no InResponseTo
 		final String samlResponseEncoded = loadSignMessageAndEncode("data/responses/valid_idp_initiated_response.xml");
 
-		final SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		final SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid("expected-id"));
 		assertEquals(samlResponse.getError(), "The InResponseTo of the Response: null, does not match the ID of the AuthNRequest sent by the SP: expected-id");
 	}
@@ -1157,25 +1158,25 @@ public class AuthnResponseTest {
 
 		settings.setWantAssertionsSigned(false);
 		settings.setWantMessagesSigned(false);		
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
 
 		settings.setWantAssertionsSigned(true);
 		settings.setWantMessagesSigned(false);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
 
 		settings.setWantAssertionsSigned(false);
 		settings.setWantMessagesSigned(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
 
 		settings.setWantAssertionsSigned(true);
 		settings.setWantMessagesSigned(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
 
@@ -1183,25 +1184,25 @@ public class AuthnResponseTest {
 
 		settings.setWantAssertionsSigned(false);
 		settings.setWantMessagesSigned(false);		
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
 
 		settings.setWantAssertionsSigned(true);
 		settings.setWantMessagesSigned(false);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("The Assertion of the Response is not signed and the SP requires it", samlResponse.getError());
 
 		settings.setWantAssertionsSigned(false);
 		settings.setWantMessagesSigned(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("The Message of the Response is not signed and the SP requires it", samlResponse.getError());
 
 		settings.setWantAssertionsSigned(true);
 		settings.setWantMessagesSigned(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("The Assertion of the Response is not signed and the SP requires it", samlResponse.getError());
 	}
@@ -1222,25 +1223,25 @@ public class AuthnResponseTest {
 
 		settings.setWantAssertionsEncrypted(false);
 		settings.setWantNameIdEncrypted(false);
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
 
 		settings.setWantAssertionsEncrypted(true);
 		settings.setWantNameIdEncrypted(false);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
 
 		settings.setWantAssertionsEncrypted(false);
 		settings.setWantNameIdEncrypted(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
 
 		settings.setWantAssertionsEncrypted(true);
 		settings.setWantNameIdEncrypted(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
 
@@ -1248,25 +1249,25 @@ public class AuthnResponseTest {
 
 		settings.setWantAssertionsEncrypted(false);
 		settings.setWantNameIdEncrypted(false);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
 
 		settings.setWantAssertionsEncrypted(true);
 		settings.setWantNameIdEncrypted(false);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("The assertion of the Response is not encrypted and the SP requires it", samlResponse.getError());
 
 		settings.setWantAssertionsEncrypted(false);
 		settings.setWantNameIdEncrypted(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("The NameID of the Response is not encrypted and the SP requires it", samlResponse.getError());
 
 		settings.setWantAssertionsEncrypted(true);
 		settings.setWantNameIdEncrypted(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("The assertion of the Response is not encrypted and the SP requires it", samlResponse.getError());
 	}
@@ -1283,7 +1284,7 @@ public class AuthnResponseTest {
 	public void testIsInValidCert() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.invalididpcertstring.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("Signature validation failed. SAML Response rejected", samlResponse.getError());
 	}
@@ -1302,11 +1303,11 @@ public class AuthnResponseTest {
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response_namespaces.xml.base64");
 
 		settings.setStrict(false);
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 
 		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 	}
 
@@ -1324,11 +1325,11 @@ public class AuthnResponseTest {
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response_adfs1.xml.base64");
 
 		settings.setStrict(false);
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 
 		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 	}
 
@@ -1346,11 +1347,11 @@ public class AuthnResponseTest {
 		String samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
 
 		settings.setStrict(false);
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 
 		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 	}
 
@@ -1368,11 +1369,11 @@ public class AuthnResponseTest {
 		String samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
 
 		settings.setStrict(false);
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 
 		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 	}
 
@@ -1393,31 +1394,31 @@ public class AuthnResponseTest {
 		String samlResponseEncoded = Util.getFileAsString("data/responses/double_signed_encrypted_assertion.xml.base64");
 
 		settings.setStrict(false);
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 
 		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/signed_message_encrypted_assertion.xml.base64");
 
 		settings.setStrict(false);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 
 		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/signed_encrypted_assertion.xml.base64");
 
 		settings.setStrict(false);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 
 		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 	}
 
@@ -1437,31 +1438,31 @@ public class AuthnResponseTest {
 		String samlResponseEncoded = Util.getFileAsString("data/responses/signed_message_response.xml.base64");
 
 		settings.setStrict(false);
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 
 		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/signed_assertion_response.xml.base64");
 
 		settings.setStrict(false);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 
 		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/double_signed_response.xml.base64");
 
 		settings.setStrict(false);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 
 		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.isValid());		
 	}
 
@@ -1477,19 +1478,19 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/signed_message_response.xml.base64");
 
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(!samlResponse.processSignedElements().isEmpty());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/signed_assertion_response.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(!samlResponse.processSignedElements().isEmpty());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/double_signed_response.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(!samlResponse.processSignedElements().isEmpty());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/unsigned_response.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.processSignedElements().isEmpty());
 	}
 
@@ -1506,7 +1507,7 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/wrong_signed_element.xml.base64");
 
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		samlResponse.processSignedElements();
 	}
 
@@ -1523,7 +1524,7 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/wrong_signed_element2.xml.base64");
 
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		samlResponse.processSignedElements();
 	}
 	
@@ -1540,7 +1541,7 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_assertion_id.xml.base64");
 
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		samlResponse.processSignedElements();
 	}
 
@@ -1557,7 +1558,7 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/duplicate_reference_uri.xml.base64");
 
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		samlResponse.processSignedElements();
 	}
 	
@@ -1576,49 +1577,49 @@ public class AuthnResponseTest {
 		settings.setStrict(true);
 		String samlResponseEncoded = Util.getFileAsString("data/responses/unsigned_response.xml.base64");
 
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
 
 		settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/triple_signed_response.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("Duplicated ID. SAML Response rejected", samlResponse.getError());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/signed_assertion_response_with_2signatures.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("Duplicated ID. SAML Response rejected", samlResponse.getError());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/signed_message_response_with_2signatures.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("Duplicated ID. SAML Response rejected", samlResponse.getError());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/wrong_signed_element.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("Invalid Signature Element Subject SAML Response rejected", samlResponse.getError());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/wrong_signed_element2.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("Invalid Signature Element Subject SAML Response rejected", samlResponse.getError());
 		
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/duplicate_reference_uri.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("Found an invalid Signed Element. SAML Response rejected", samlResponse.getError());
 		
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_assertion_id.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("Signed Element must contain an ID. SAML Response rejected", samlResponse.getError());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/bad_reference.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("Found an invalid Signed Element. SAML Response rejected", samlResponse.getError());	
 	}
@@ -1709,11 +1710,11 @@ public class AuthnResponseTest {
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response_without_reference_uri.xml.base64");
 
 		settings.setStrict(false);
-		SamlResponse samlResponse = new SamlResponse(settings, requestURL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(requestURL, samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 
 		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, requestURL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(requestURL, samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 		
 		HashMap<String, List<String>> attributes = samlResponse.getAttributes();
@@ -1734,24 +1735,24 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		settings.setStrict(true);
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response4.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertNull(samlResponse.getError());
 		samlResponse.isValid();
 		assertThat(samlResponse.getError(), containsString("SAML Response must contain 1 Assertion."));
 
 		settings.setStrict(false);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		samlResponse.isValid();
 		assertThat(samlResponse.getError(), containsString("SAML Response must contain 1 Assertion."));
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertNull(samlResponse.getError());
 		samlResponse.isValid();
 		assertNull(samlResponse.getError());
 
 		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertNull(samlResponse.getError());
 		samlResponse.isValid();
 		assertNull(samlResponse.getError());
@@ -1774,9 +1775,17 @@ public class AuthnResponseTest {
 	private void assertResponseValid(Saml2Settings settings, String samlResponseEncoded, boolean strict, boolean expectedValid, String expectedError) throws Exception
 	{
 		settings.setStrict(strict);
-		final SamlResponse samlResponse = new SamlResponse(settings, ACS_URL, samlResponseEncoded);
+		final SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 
 		assertEquals(expectedValid, samlResponse.isValid());
 		assertEquals(expectedError, samlResponse.getError());
+	}
+
+	private static HttpRequest newHttpRequest(String samlResponseEncoded) {
+		return newHttpRequest(ACS_URL, samlResponseEncoded);
+	}
+
+	private static HttpRequest newHttpRequest(String requestURL, String samlResponseEncoded) {
+		return new HttpRequest(requestURL).addParameter("SAMLResponse", samlResponseEncoded);
 	}
 }

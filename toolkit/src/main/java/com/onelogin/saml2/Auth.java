@@ -12,8 +12,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -22,8 +22,9 @@ import org.slf4j.LoggerFactory;
 
 import com.onelogin.saml2.authn.AuthnRequest;
 import com.onelogin.saml2.authn.SamlResponse;
-import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.exception.SettingsException;
+import com.onelogin.saml2.exception.XMLEntityException;
+import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.logout.LogoutRequest;
 import com.onelogin.saml2.logout.LogoutResponse;
 import com.onelogin.saml2.servlet.ServletUtils;
@@ -354,10 +355,11 @@ public class Auth {
      */
 	public void processResponse(String requestId) throws Exception {
 		authenticated = false;
-		String samlResponseParameter = request.getParameter("SAMLResponse");
+		final HttpRequest httpRequest = ServletUtils.makeHttpRequest(this.request);
+		final String samlResponseParameter = httpRequest.getParameter("SAMLResponse");
 
 		if (samlResponseParameter != null) {
-			SamlResponse samlResponse = new SamlResponse(settings, request.getRequestURL().toString(), samlResponseParameter);
+			SamlResponse samlResponse = new SamlResponse(settings, httpRequest);
 
 			if (samlResponse.isValid(requestId)) {
 				nameid = samlResponse.getNameId();

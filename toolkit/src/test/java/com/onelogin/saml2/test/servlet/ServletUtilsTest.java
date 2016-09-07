@@ -1,18 +1,25 @@
 package com.onelogin.saml2.test.servlet;
 
-import com.onelogin.saml2.servlet.ServletUtils;
-import org.junit.Test;
+import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.junit.Test;
+
+import com.onelogin.saml2.http.HttpRequest;
+import com.onelogin.saml2.servlet.ServletUtils;
 
 public class ServletUtilsTest {
     /**
@@ -230,4 +237,17 @@ public class ServletUtilsTest {
         assertEquals("http://example.com", ServletUtils.getSelfRoutedURLNoQuery(request_1));
     }
 
+    @Test
+    public void testMakeHttpRequest() throws Exception {
+        final String url = "http://localhost:1234/a/b";
+        final Map<String, String[]> paramAsArray = singletonMap("name", new String[]{"a"});
+
+        final HttpServletRequest servletRequest = mock(HttpServletRequest.class);
+        when(servletRequest.getRequestURL()).thenReturn(new StringBuffer(url));
+        when(servletRequest.getParameterMap()).thenReturn(paramAsArray);
+
+        final HttpRequest httpRequest = ServletUtils.makeHttpRequest(servletRequest);
+        assertThat(httpRequest.getRequestURL(), equalTo(url));
+        assertThat(httpRequest.getParameters(), equalTo(singletonMap("name", singletonList("a"))));
+    }
 }

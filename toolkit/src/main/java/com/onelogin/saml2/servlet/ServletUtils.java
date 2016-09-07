@@ -1,15 +1,37 @@
 package com.onelogin.saml2.servlet;
 
-import com.onelogin.saml2.util.Util;
-import org.apache.commons.lang3.StringUtils;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.onelogin.saml2.http.HttpRequest;
+import com.onelogin.saml2.util.Util;
 
 public class ServletUtils {
+    /**
+     * Creates an HttpRequest from an HttpServletRequest.
+     *
+     * @param req the incoming HttpServletRequest
+     * @return a HttpRequest
+     */
+    public static HttpRequest makeHttpRequest(HttpServletRequest req) {
+        //noinspection unchecked
+        final Map<String, String[]> paramsAsArray = req.getParameterMap();
+        final Map<String, List<String>> paramsAsList = new HashMap<>();
+        for (Map.Entry<String, String[]> param : paramsAsArray.entrySet()) {
+            paramsAsList.put(param.getKey(), Arrays.asList(param.getValue()));
+        }
+
+        return new HttpRequest(req.getRequestURL().toString(), paramsAsList);
+    }
+
     /**
      * Returns the protocol + the current host + the port (if different than
      * common ports).
