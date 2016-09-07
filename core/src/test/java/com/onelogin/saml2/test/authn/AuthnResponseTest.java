@@ -2,6 +2,7 @@ package com.onelogin.saml2.test.authn;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.joda.time.Instant;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -435,6 +437,48 @@ public class AuthnResponseTest {
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertEquals("_7164a9a9f97828bfdb8d0ebc004a05d2e7d873f70c", samlResponse.getSessionIndex());
+	}
+
+	@Test
+	public void testGetAssertionDetails() throws Exception {
+		final SamlResponse samlResponse = new SamlResponse(
+				new SettingsBuilder().fromFile("config/config.my.properties").build(),
+				newHttpRequest(Util.getFileAsString("data/responses/response1.xml.base64"))
+		);
+		final List<Instant> notOnOrAfters = samlResponse.getAssertionNotOnOrAfter();
+
+		assertEquals("pfxa46574df-b3b0-a06a-23c8-636413198772", samlResponse.getAssertionId());
+		assertThat(notOnOrAfters, contains(new Instant("2010-11-18T22:02:37Z")));
+
+	}
+
+	@Test
+	public void testGetAssertionDetails_encrypted() throws Exception {
+		final SamlResponse samlResponse = new SamlResponse(
+				new SettingsBuilder().fromFile("config/config.my.properties").build(),
+				newHttpRequest(Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64"))
+		);
+		final List<Instant> notOnOrAfters = samlResponse.getAssertionNotOnOrAfter();
+
+		assertEquals("_519c2712648ee09a06d1f9a08e9e835715fea60267", samlResponse.getAssertionId());
+		assertThat(notOnOrAfters, contains(new Instant("2055-06-07T20:17:08Z")));
+
+	}
+
+	@Test
+	public void testGetAssertionDetails_multiple() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		settings.setWantAssertionsSigned(false);
+		settings.setWantMessagesSigned(true);
+
+		final SamlResponse samlResponse = new SamlResponse(
+				settings,
+				newHttpRequest(loadSignMessageAndEncode("data/responses/invalids/invalid_subjectconfirmation_multiple_issues.xml"))
+		);
+		final List<Instant> notOnOrAfters = samlResponse.getAssertionNotOnOrAfter();
+
+		assertEquals("pfx7841991c-c73f-4035-e2ee-c170c0e1d3e4", samlResponse.getAssertionId());
+		assertThat(notOnOrAfters, contains(new Instant("2120-06-17T14:53:44Z"), new Instant("2010-06-17T14:53:44Z")));
 	}
 
 	/**
