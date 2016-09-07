@@ -1,7 +1,6 @@
 package com.onelogin.saml2.test;
 
 
-import static com.onelogin.saml2.util.Util.UNIQUE_ID_PREFIX;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
@@ -22,9 +21,7 @@ import static org.mockito.Mockito.times;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.security.cert.CertificateEncodingException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -825,8 +822,8 @@ public class AuthTest {
 		Auth auth = new Auth(settings, request, response);
 		auth.processResponse();
 
-		assertThat(auth.getAssertionId(), is("pfxeac87197-11cb-ec12-c181-ae739b54debe"));
-		assertThat(auth.getAssertionNotOnOrAfter(), contains(new Instant("2023-08-23T06:57:01Z")));
+		assertThat(auth.getLastAssertionId(), is("pfxeac87197-11cb-ec12-c181-ae739b54debe"));
+		assertThat(auth.getLastAssertionNotOnOrAfter(), contains(new Instant("2023-08-23T06:57:01Z")));
 	}
 
 	/**

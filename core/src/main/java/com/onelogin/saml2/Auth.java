@@ -81,12 +81,12 @@ public class Auth {
 	/**
 	 * The ID of the last assertion processed
 	 */
-	private String assertionId;
+	private String lastAssertionId;
 
 	/**
 	 * The NotOnOrAfter values of the last assertion processed
 	 */
-	private List<Instant> assertionNotOnOrAfter;
+	private List<Instant> lastAssertionNotOnOrAfter;
 
 	/**
      * User attributes data.
@@ -375,8 +375,8 @@ public class Auth {
 				attributes = samlResponse.getAttributes();
 				sessionIndex = samlResponse.getSessionIndex();
 				sessionExpiration = samlResponse.getSessionNotOnOrAfter();
-				assertionId = samlResponse.getAssertionId();
-				assertionNotOnOrAfter = samlResponse.getNotOnOrAfter();
+				lastAssertionId = samlResponse.getAssertionId();
+				lastAssertionNotOnOrAfter = samlResponse.getAssertionNotOnOrAfter();
 				LOGGER.debug("processResponse success --> " + samlResponseParameter);
 			} else {
 				errors.add("invalid_response");
@@ -550,15 +550,15 @@ public class Auth {
 	/**
 	 * @return The ID of the last assertion processed
 	 */
-	public String getAssertionId() {
-		return assertionId;
+	public String getLastAssertionId() {
+		return lastAssertionId;
 	}
 
 	/**
 	 * @return The NotOnOrAfter values of the last assertion processed
 	 */
-	public List<Instant> getAssertionNotOnOrAfter() {
-		return assertionNotOnOrAfter;
+	public List<Instant> getLastAssertionNotOnOrAfter() {
+		return lastAssertionNotOnOrAfter;
 	}
 
 	/**

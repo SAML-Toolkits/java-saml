@@ -626,7 +626,7 @@ public class SamlResponse {
 	/**
 	 * @return a list of NotOnOrAfter values from SubjectConfirmationData nodes in this Response
 	 */
-	public List<Instant> getNotOnOrAfter() throws XPathExpressionException {
+	public List<Instant> getAssertionNotOnOrAfter() throws XPathExpressionException {
 		final NodeList notOnOrAfterNodes = queryAssertion("/saml:Subject/saml:SubjectConfirmation/saml:SubjectConfirmationData");
 		final ArrayList<Instant> notOnOrAfters = new ArrayList<>();
 		for (int i = 0; i < notOnOrAfterNodes.getLength(); i++) {
