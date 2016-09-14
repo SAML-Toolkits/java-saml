@@ -118,8 +118,9 @@
 			</plugin>
 		</plugins>
 	</build>
-
+<!--
 	<properties>
 		<jacoco.agent.argLine />
 	</properties>
+-->
 </project>
