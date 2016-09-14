@@ -62,6 +62,20 @@ public final class HttpRequest {
     }
 
     /**
+     * @param name  the query parameter name
+     * @return a new HttpRequest with the given query parameter removed
+     * @throws NullPointerException if any of the parameters is null
+     */
+    public HttpRequest removeParameter(String name) {
+        checkNotNull(name, "name");
+
+        final Map<String, List<String>> params = new HashMap<>(parameters);
+        params.remove(name);
+
+        return new HttpRequest(requestURL, params);
+    }
+    
+    /**
      * The URL the client used to make the request. Includes a protocol, server name, port number, and server path, but
      * not the query string parameters.
      *

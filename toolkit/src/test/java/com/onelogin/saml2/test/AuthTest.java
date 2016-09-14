@@ -22,6 +22,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -426,7 +427,8 @@ public class AuthTest {
 		when(request.getSession()).thenReturn(session);
 
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
-		when(request.getParameter("SAMLRequest")).thenReturn(samlRequestEncoded);
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLRequest", new String[]{samlRequestEncoded}));		
+		
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		Auth auth = new Auth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
@@ -454,7 +456,7 @@ public class AuthTest {
 		when(request.getSession()).thenReturn(session);
 
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
-		when(request.getParameter("SAMLRequest")).thenReturn(samlRequestEncoded);
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLRequest", new String[]{samlRequestEncoded}));		
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		Auth auth = new Auth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
@@ -480,10 +482,15 @@ public class AuthTest {
 		HttpSession session = mock(HttpSession.class);
 		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
 		when(request.getSession()).thenReturn(session);
-		when(request.getParameter("RelayState")).thenReturn("http://localhost:8080/expected.jsp");
-
+		String relayState = "http://localhost:8080/expected.jsp";
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
-		when(request.getParameter("SAMLRequest")).thenReturn(samlRequestEncoded);
+		Map<String, String[]> paramsAsArray = new HashMap<>();
+		paramsAsArray.put("SAMLRequest", new String[]{samlRequestEncoded});
+		paramsAsArray.put("RelayState", new String[]{relayState});
+		when(request.getParameterMap()).thenReturn(paramsAsArray);
+		when(request.getParameter("RelayState")).thenReturn(relayState);
+		
+		
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
 		settings.setWantMessagesSigned(false);
 		settings.setLogoutResponseSigned(true);
@@ -513,7 +520,7 @@ public class AuthTest {
 		when(request.getSession()).thenReturn(session);
 
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
-		when(request.getParameter("SAMLRequest")).thenReturn(samlRequestEncoded);
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLRequest", new String[]{samlRequestEncoded}));
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		settings.setStrict(true);
 		Auth auth = new Auth(settings, request, response);
@@ -543,7 +550,7 @@ public class AuthTest {
 		when(request.getSession()).thenReturn(session);
 
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		Auth auth = new Auth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
@@ -570,7 +577,7 @@ public class AuthTest {
 		when(request.getSession()).thenReturn(session);
 
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		Auth auth = new Auth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
@@ -597,7 +604,7 @@ public class AuthTest {
 		when(request.getSession()).thenReturn(session);
 
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		settings.setStrict(true);
 		Auth auth = new Auth(settings, request, response);
@@ -626,7 +633,7 @@ public class AuthTest {
 		when(request.getSession()).thenReturn(session);
 
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/invalids/status_code_responder.xml.base64");
-		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		Auth auth = new Auth(settings, request, response);
 		assertFalse(auth.isAuthenticated());

@@ -616,6 +616,8 @@ public class SamlResponse {
 
 	/**
 	 * @return the ID of the assertion in the Response
+	 * @throws XPathExpressionException
+	 *
 	 */
 	public String getAssertionId() throws XPathExpressionException {
 		validateNumAssertions();
@@ -625,6 +627,8 @@ public class SamlResponse {
 
 	/**
 	 * @return a list of NotOnOrAfter values from SubjectConfirmationData nodes in this Response
+	 * @throws XPathExpressionException
+	 *
 	 */
 	public List<Instant> getAssertionNotOnOrAfter() throws XPathExpressionException {
 		final NodeList notOnOrAfterNodes = queryAssertion("/saml:Subject/saml:SubjectConfirmation/saml:SubjectConfirmationData");

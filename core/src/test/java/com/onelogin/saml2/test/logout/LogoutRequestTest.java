@@ -7,15 +7,12 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.xml.xpath.XPathExpressionException;
 
 import java.security.PrivateKey;
@@ -24,8 +21,9 @@ import org.w3c.dom.Document;
 
 import org.junit.Test;
 
-import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.logout.LogoutRequest;
+import com.onelogin.saml2.http.HttpRequest;
+import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
 import com.onelogin.saml2.util.Util;
@@ -90,13 +88,11 @@ public class LogoutRequestTest {
 	@Test
 	public void testConstructorWithRequest() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		String samlRequest = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
 
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLRequest")).thenReturn(samlRequest);
-		when(request.getRequestURL()).thenReturn(new StringBuffer( "/"));
+		final String requestURL = "/";
+		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
 
-		LogoutRequest logoutRequest = new LogoutRequest(settings, request);
+		LogoutRequest logoutRequest = new LogoutRequest(settings, newHttpRequest(requestURL, samlRequestEncoded));
 
 		String logoutRequestStringBase64 = logoutRequest.getEncodedLogoutRequest();
 		String logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
@@ -414,17 +410,16 @@ public class LogoutRequestTest {
 	@Test
 	public void testIsInvalidIssuer() throws URISyntaxException, IOException, XMLEntityException {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		String samlRequest = Util.getFileAsString("data/logout_requests/invalids/invalid_issuer.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLRequest")).thenReturn(samlRequest);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
-
+		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/invalids/invalid_issuer.xml.base64");
+		final String requestURL = "http://stuff.com/endpoints/endpoints/sls.php";
+		HttpRequest httpRequest = newHttpRequest(requestURL, samlRequestEncoded);
+		
 		settings.setStrict(false);
-		LogoutRequest logoutRequest = new LogoutRequest(settings, request);
+		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertTrue(logoutRequest.isValid());
 
 		settings.setStrict(true);
-		logoutRequest = new LogoutRequest(settings, request);
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertFalse(logoutRequest.isValid());
 		assertEquals("Invalid issuer in the Logout Request", logoutRequest.getError());
 	}
@@ -442,27 +437,26 @@ public class LogoutRequestTest {
 	@Test
 	public void testIsInValidWrongXML() throws URISyntaxException, IOException, XMLEntityException {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		String samlRequest = Util.getFileAsString("data/logout_requests/invalids/invalid_xml.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLRequest")).thenReturn(samlRequest);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
-
+		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/invalids/invalid_xml.xml.base64");
+		final String requestURL = "http://stuff.com/endpoints/endpoints/sls.php";
+		HttpRequest httpRequest = newHttpRequest(requestURL, samlRequestEncoded);
+		
 		settings.setWantXMLValidation(true);
 		settings.setStrict(false);
-		LogoutRequest logoutRequest = new LogoutRequest(settings, request);
+		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertTrue(logoutRequest.isValid());
 
 		settings.setStrict(true);
-		logoutRequest = new LogoutRequest(settings, request);
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertFalse(logoutRequest.isValid());
 		assertEquals("Invalid SAML Logout Request. Not match the saml-schema-protocol-2.0.xsd", logoutRequest.getError());
 
 		settings.setWantXMLValidation(false);
-		logoutRequest = new LogoutRequest(settings, request);
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertTrue(logoutRequest.isValid());
 		
 		settings.setStrict(false);
-		logoutRequest = new LogoutRequest(settings, request);
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertTrue(logoutRequest.isValid());
 	}
 
@@ -479,17 +473,16 @@ public class LogoutRequestTest {
 	@Test
 	public void testIsInvalidDestination() throws URISyntaxException, IOException, XMLEntityException {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		String samlRequest = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLRequest")).thenReturn(samlRequest);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("/"));
+		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
+		final String requestURL = "/";
+		HttpRequest httpRequest = newHttpRequest(requestURL, samlRequestEncoded);
 
 		settings.setStrict(false);
-		LogoutRequest logoutRequest = new LogoutRequest(settings, request);
+		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertTrue(logoutRequest.isValid());
 
 		settings.setStrict(true);
-		logoutRequest = new LogoutRequest(settings, request);
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertFalse(logoutRequest.isValid());
 		assertThat(logoutRequest.getError(), containsString("The LogoutRequest was received at"));
 	}
@@ -507,17 +500,16 @@ public class LogoutRequestTest {
 	@Test
 	public void testIsInvalidNotOnOrAfter() throws URISyntaxException, IOException, XMLEntityException {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		String samlRequest = Util.getFileAsString("data/logout_requests/invalids/not_after_failed.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLRequest")).thenReturn(samlRequest);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
-
+		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/invalids/not_after_failed.xml.base64");
+		final String requestURL = "http://stuff.com/endpoints/endpoints/sls.php";
+		HttpRequest httpRequest = newHttpRequest(requestURL, samlRequestEncoded);
+		
 		settings.setStrict(false);
-		LogoutRequest logoutRequest = new LogoutRequest(settings, request);
+		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertTrue(logoutRequest.isValid());
 
 		settings.setStrict(true);
-		logoutRequest = new LogoutRequest(settings, request);
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertFalse(logoutRequest.isValid());
 		assertEquals("Timing issues (please check your clock settings)", logoutRequest.getError());
 	}
@@ -534,26 +526,27 @@ public class LogoutRequestTest {
 	@Test
 	public void testIsValid() throws URISyntaxException, IOException, XMLEntityException {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		String samlRequest = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLRequest")).thenReturn(samlRequest);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("/"));
+		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
+		String requestURL = "/";
+		HttpRequest httpRequest = newHttpRequest(requestURL, samlRequestEncoded);
 
 		settings.setStrict(true);
-		LogoutRequest logoutRequest = new LogoutRequest(settings, request);
+		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertFalse(logoutRequest.isValid());
 
 		settings.setStrict(false);
-		logoutRequest = new LogoutRequest(settings, request);
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertTrue(logoutRequest.isValid());
 
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
+		requestURL = "http://stuff.com/endpoints/endpoints/sls.php";
+		httpRequest = newHttpRequest(requestURL, samlRequestEncoded);
+
 		settings.setStrict(true);
-		logoutRequest = new LogoutRequest(settings, request);
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertTrue(logoutRequest.isValid());
 
 		settings.setStrict(false);
-		logoutRequest = new LogoutRequest(settings, request);
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertTrue(logoutRequest.isValid());
 	}
 
@@ -572,48 +565,53 @@ public class LogoutRequestTest {
 		settings.setStrict(false);
 		settings.setWantMessagesSigned(true);
 
-		String samlRequest = "lVLBitswEP0Vo7tjeWzJtki8LIRCYLvbNksPewmyPc6K2pJqyXQ/v1LSQlroQi/DMJr33rwZbZ2cJysezNms/gt+X9H55G2etBOXlx1ZFy2MdMoJLWd0wvfieP/xQcCGCrsYb3ozkRvI+wjpHC5eGU2Sw35HTg3lA8hqZFwWFcMKsStpxbEsxoLXeQN9OdY1VAgk+YqLC8gdCUQB7tyKB+281D6UaF6mtEiBPudcABcMXkiyD26Ulv6CevXeOpFlVvlunb5ttEmV3ZjlnGn8YTRO5qx0NuBs8kzpAd829tXeucmR5NH4J/203I8el6gFRUqbFPJnyEV51Wq30by4TLW0/9ZyarYTxt4sBsjUYLMZvRykl1Fxm90SXVkfwx4P++T4KSafVzmpUcVJ/sfSrQZJPphllv79W8WKGtLx0ir8IrVTqD1pT2MH3QAMSs4KTvui71jeFFiwirOmprwPkYW063+5uRq4urHiiC4e8hCX3J5wqAEGaPpw9XB5JmkBdeDqSlkz6CmUXdl0Qae5kv2F/1384wu3PwE=";
+		final String requestURL = "https://pitbulk.no-ip.org/newonelogin/demo1/index.php?sls";
+		String samlRequestEncoded = "lVLBitswEP0Vo7tjeWzJtki8LIRCYLvbNksPewmyPc6K2pJqyXQ/v1LSQlroQi/DMJr33rwZbZ2cJysezNms/gt+X9H55G2etBOXlx1ZFy2MdMoJLWd0wvfieP/xQcCGCrsYb3ozkRvI+wjpHC5eGU2Sw35HTg3lA8hqZFwWFcMKsStpxbEsxoLXeQN9OdY1VAgk+YqLC8gdCUQB7tyKB+281D6UaF6mtEiBPudcABcMXkiyD26Ulv6CevXeOpFlVvlunb5ttEmV3ZjlnGn8YTRO5qx0NuBs8kzpAd829tXeucmR5NH4J/203I8el6gFRUqbFPJnyEV51Wq30by4TLW0/9ZyarYTxt4sBsjUYLMZvRykl1Fxm90SXVkfwx4P++T4KSafVzmpUcVJ/sfSrQZJPphllv79W8WKGtLx0ir8IrVTqD1pT2MH3QAMSs4KTvui71jeFFiwirOmprwPkYW063+5uRq4urHiiC4e8hCX3J5wqAEGaPpw9XB5JmkBdeDqSlkz6CmUXdl0Qae5kv2F/1384wu3PwE=";
 		String relayState = "_1037fbc88ec82ce8e770b2bed1119747bb812a07e6";
 		String sigAlg = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
 		String signature = "XCwCyI5cs7WhiJlB5ktSlWxSBxv+6q2xT3c8L7dLV6NQG9LHWhN7gf8qNsahSXfCzA0Ey9dp5BQ0EdRvAk2DIzKmJY6e3hvAIEp1zglHNjzkgcQmZCcrkK9Czi2Y1WkjOwR/WgUTUWsGJAVqVvlRZuS3zk3nxMrLH6f7toyvuJc=";
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLRequest")).thenReturn(samlRequest);
-		when(request.getParameter("RelayState")).thenReturn(relayState);
-		when(request.getParameter("SigAlg")).thenReturn(sigAlg);
-		when(request.getParameter("Signature")).thenReturn(signature);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("https://pitbulk.no-ip.org/newonelogin/demo1/index.php?sls"));
 
-		LogoutRequest logoutRequest = new LogoutRequest(settings, request);
+		HttpRequest httpRequest = new HttpRequest(requestURL)
+						.addParameter("SAMLRequest", samlRequestEncoded)
+						.addParameter("RelayState", relayState)
+						.addParameter("SigAlg", sigAlg)
+						.addParameter("Signature", signature);
+
+		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertTrue(logoutRequest.isValid());
 
 		settings.setStrict(true);
-		logoutRequest = new LogoutRequest(settings, request);
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertTrue(logoutRequest.isValid());
 
 		settings.setStrict(false);
 		String signature2 = "vfWbbc47PkP3ejx4bjKsRX7lo9Ml1WRoE5J5owF/0mnyKHfSY6XbhO1wwjBV5vWdrUVX+xp6slHyAf4YoAsXFS0qhan6txDiZY4Oec6yE+l10iZbzvie06I4GPak4QrQ4gAyXOSzwCrRmJu4gnpeUxZ6IqKtdrKfAYRAcVf3333=";
-		when(request.getParameter("Signature")).thenReturn(signature2);
-		logoutRequest = new LogoutRequest(settings, request);
+		httpRequest = httpRequest.removeParameter("Signature")
+								 .addParameter("Signature", signature2);
+		
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertFalse(logoutRequest.isValid());
 		assertEquals("Signature validation failed. Logout Request rejected", logoutRequest.getError());
 
-		when(request.getParameter("Signature")).thenReturn(signature);
-		when(request.getParameter("SigAlg")).thenReturn(null);
-		logoutRequest = new LogoutRequest(settings, request);
+		httpRequest = httpRequest.removeParameter("Signature")
+								 .addParameter("Signature", signature)
+								 .removeParameter("SigAlg");
+		
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertTrue(logoutRequest.isValid());
 
-		when(request.getParameter("Signature")).thenReturn(null);
-		logoutRequest = new LogoutRequest(settings, request);
+		httpRequest = httpRequest.removeParameter("Signature");
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertTrue(logoutRequest.isValid());
 
 		settings.setStrict(true);
-		logoutRequest = new LogoutRequest(settings, request);
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertFalse(logoutRequest.isValid());
 		assertEquals("The Message of the Logout Request is not signed and the SP requires it", logoutRequest.getError());
 
-		when(request.getParameter("Signature")).thenReturn(signature);
+		httpRequest = httpRequest.addParameter("Signature", signature);
 		settings = new SettingsBuilder().fromFile("config/config.mywithnocert.properties").build();
-		logoutRequest = new LogoutRequest(settings, request);
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertFalse(logoutRequest.isValid());
 		assertEquals("In order to validate the sign on the Logout Request, the x509cert of the IdP is required", logoutRequest.getError());
 	}
@@ -630,11 +628,11 @@ public class LogoutRequestTest {
 	@Test
 	public void testIsValidNoLogoutRequest() throws IOException, XMLEntityException {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLRequest")).thenReturn("");
-		when(request.getRequestURL()).thenReturn(new StringBuffer("/"));
-
-		LogoutRequest logoutRequest = new LogoutRequest(settings, request);
+		String samlRequestEncoded = "";
+		final String requestURL = "/";
+		HttpRequest httpRequest = newHttpRequest(requestURL, samlRequestEncoded);
+		
+		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertFalse(logoutRequest.isValid());
 		assertEquals("SAML Logout Request is not loaded", logoutRequest.getError());
 	}
@@ -652,17 +650,16 @@ public class LogoutRequestTest {
 	@Test
 	public void testIsValidNoCurrentURL() throws IOException, XMLEntityException, URISyntaxException {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		String samlRequest = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLRequest")).thenReturn(samlRequest);
-		when(request.getRequestURL()).thenReturn(null);
-
-		LogoutRequest logoutRequest = new LogoutRequest(settings);
+		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
+		
+		LogoutRequest logoutRequest = new LogoutRequest(settings, null);
 		assertFalse(logoutRequest.isValid());
-		assertEquals("The HttpServletRequest of the current host was not established", logoutRequest.getError());
+		assertEquals("The HttpRequest of the current host was not established", logoutRequest.getError());
 
-		when(request.getRequestURL()).thenReturn(new StringBuffer(""));
-		logoutRequest = new LogoutRequest(settings, request);		
+		final String requestURL = "";
+		HttpRequest httpRequest = newHttpRequest(requestURL, samlRequestEncoded);
+		
+		logoutRequest = new LogoutRequest(settings, httpRequest);		
 		assertFalse(logoutRequest.isValid());
 		assertEquals("The URL of the current host was not established", logoutRequest.getError());
 	}
@@ -680,19 +677,23 @@ public class LogoutRequestTest {
 	public void testGetError() throws URISyntaxException, IOException, XMLEntityException {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		settings.setStrict(true);
-		String samlRequest = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		when(request.getParameter("SAMLRequest")).thenReturn(samlRequest);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("/"));
-		LogoutRequest logoutRequest = new LogoutRequest(settings, request);
+		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
+		final String requestURL = "/";
+		HttpRequest httpRequest = newHttpRequest(requestURL, samlRequestEncoded);
+
+		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertNull(logoutRequest.getError());
 		logoutRequest.isValid();
 		assertThat(logoutRequest.getError(), containsString("The LogoutRequest was received at"));
 
 		settings.setStrict(false);
-		logoutRequest = new LogoutRequest(settings, request);
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertNull(logoutRequest.getError());
 		logoutRequest.isValid();
 		assertNull(logoutRequest.getError());
+	}
+
+	private static HttpRequest newHttpRequest(String requestURL, String samlRequestEncoded) {
+		return new HttpRequest(requestURL).addParameter("SAMLRequest", samlRequestEncoded);
 	}
 }

@@ -740,14 +740,12 @@ public class UtilsTest {
 
 	/**
 	 * Tests the loadResource method
-	 *
-	 * @throws URISyntaxException
-	 * @throws FileNotFoundException
+	 * @throws IOException 
 	 *
 	 * @see com.onelogin.saml2.util.Util#getFileAsString
 	 */
 	@Test
-	public void testgetFileAsStringSuccess() throws Exception {
+	public void testgetFileAsStringSuccess() throws IOException {
 		String string = Util.getFileAsString("config/config.certfile.properties");
 		assertNotNull(string);
 	}
@@ -755,13 +753,12 @@ public class UtilsTest {
 	/**
 	 * Tests the loadResource method
 	 *
-	 * @throws URISyntaxException
-	 * @throws FileNotFoundException
+	 * @throws IOException
 	 *
 	 * @see com.onelogin.saml2.util.Util#getFileAsString
 	 */
 	@Test(expected=FileNotFoundException.class)
-	public void testLoadResourceFail() throws Exception {
+	public void testLoadResourceFail() throws IOException {
 		String string = Util.getFileAsString("invalid_path");
 		assertNull(string);
 	}	

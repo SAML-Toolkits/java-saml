@@ -4,7 +4,9 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,5 +55,24 @@ public class HttpRequestTest {
         assertThat(request.getParameters(), equalTo(singletonMap(name, singletonList(value))));
         assertThat(request.getParameters(name), equalTo(singletonList(value)));
         assertThat(request.getParameter(name), equalTo(value));
+    }
+
+    @Test
+    public void testRemoveParameter() throws Exception {
+        final String url = "some_url";
+        final String name = "name";
+        final String value = "value";
+
+        HttpRequest request = new HttpRequest(url).addParameter(name, value);
+        assertThat(request.getRequestURL(), equalTo(url));
+        assertThat(request.getParameters(), equalTo(singletonMap(name, singletonList(value))));
+        assertThat(request.getParameters(name), equalTo(singletonList(value)));
+        assertThat(request.getParameter(name), equalTo(value));
+        
+        request = request.removeParameter(name);
+        assertThat(request.getRequestURL(), equalTo(url));
+        assertTrue(request.getParameters().isEmpty());
+        assertTrue(request.getParameters(name).isEmpty());
+        assertNull(request.getParameter(name));
     }
 }

@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.lang3.text.StrSubstitutor;
@@ -22,6 +21,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.onelogin.saml2.exception.XMLEntityException;
+import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.util.Util;
 import com.onelogin.saml2.util.Constants;
@@ -54,9 +54,9 @@ public class LogoutRequest {
 	private final Saml2Settings settings;
 
 	/**
-     * HttpServletRequest object to be processed (Contains GET and POST parameters, session, ...).
+     * HttpRequest object to be processed (Contains GET and POST parameters, request URL, ...).
      */
-	private HttpServletRequest request;
+	private final HttpRequest request;
 
 	/**
      * NameID.
@@ -89,7 +89,7 @@ public class LogoutRequest {
 	 * @param settings
 	 *              OneLogin_Saml2_Settings
 	 * @param request
-     *              HttpServletRequest object to be processed (Contains GET and POST parameters, session, ...).
+     *              the HttpRequest object to be processed (Contains GET and POST parameters, request URL, ...).
 	 * @param nameId
 	 *              The NameID that will be set in the LogoutRequest.
 	 * @param sessionIndex
@@ -97,7 +97,7 @@ public class LogoutRequest {
 	 *
 	 * @throws XMLEntityException 
 	 */
-	public LogoutRequest(Saml2Settings settings, HttpServletRequest request, String nameId, String sessionIndex) throws XMLEntityException {
+	public LogoutRequest(Saml2Settings settings, HttpRequest request, String nameId, String sessionIndex) throws XMLEntityException {
 		this.settings = settings;
 		this.request = request;
 
@@ -140,11 +140,11 @@ public class LogoutRequest {
 	 * @param settings
 	 *            OneLogin_Saml2_Settings
 	 * @param request
-     *              HttpServletRequest object to be processed (Contains GET and POST parameters, session, ...).
+     *              the HttpRequest object to be processed (Contains GET and POST parameters, request URL, ...).
      *
 	 * @throws XMLEntityException 
 	 */
-	public LogoutRequest(Saml2Settings settings, HttpServletRequest request) throws XMLEntityException {
+	public LogoutRequest(Saml2Settings settings, HttpRequest request) throws XMLEntityException {
 		this(settings, request, null, null);
 	}
 
@@ -246,7 +246,7 @@ public class LogoutRequest {
 			}
 
 			if (this.request == null) {
-				throw new Exception("The HttpServletRequest of the current host was not established");
+				throw new Exception("The HttpRequest of the current host was not established");
 			}
 			
 			if (this.currentUrl == null || this.currentUrl.isEmpty()) {

@@ -7,7 +7,6 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.lang3.text.StrSubstitutor;
@@ -18,6 +17,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.onelogin.saml2.exception.XMLEntityException;
+import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.SchemaFactory;
@@ -55,9 +55,9 @@ public class LogoutResponse {
 	private final Saml2Settings settings;
 
 	/**
-     * HttpServletRequest object to be processed (Contains GET and POST parameters, session, ...).
+     * HttpRequest object to be processed (Contains GET and POST parameters, request URL, ...).
      */
-	private final HttpServletRequest request;
+	private final HttpRequest request;
 
 	/**
 	 * URL of the current host + current view
@@ -85,11 +85,11 @@ public class LogoutResponse {
 	 * @param settings
 	 *              OneLogin_Saml2_Settings
 	 * @param request
-     *              HttpServletRequest object to be processed (Contains GET and POST parameters, session, ...).
+     *              the HttpRequest object to be processed (Contains GET and POST parameters, request URL, ...).
      *
 	 * @throws XMLEntityException 
 	 */
-	public LogoutResponse(Saml2Settings settings, HttpServletRequest request) throws XMLEntityException {
+	public LogoutResponse(Saml2Settings settings, HttpRequest request) throws XMLEntityException {
 		this.settings = settings;
 		this.request = request;
 		
@@ -138,12 +138,6 @@ public class LogoutResponse {
 			if (this.logoutResponseDocument == null) {
 				throw new Exception("SAML Logout Response is not loaded");
 			}
-
-			/* No possible right now
-			if (request == null) {
-				throw new Exception("The HttpServletRequest of the current host was not established");
-			}
-			*/
 
 			if (this.currentUrl == null || this.currentUrl.isEmpty()) {
 				throw new Exception("The URL of the current host was not established");

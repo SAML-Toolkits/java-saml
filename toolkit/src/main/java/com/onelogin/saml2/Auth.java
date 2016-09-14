@@ -220,7 +220,7 @@ public class Auth {
 	 *				When true the AuthNRequest will set the IsPassive='true'
 	 * @param setNameIdPolicy
 	 *            When true the AuthNRequest will set a nameIdPolicy
-	 * @return the representation of the AuthNRequest generated
+	 * @returns the representation of the AuthNRequest generated
 	 * @throws IOException
 	 */
 	public void login(String returnTo, Boolean forceAuthn, Boolean isPassive, Boolean setNameIdPolicy) throws IOException {
@@ -415,11 +415,13 @@ public class Auth {
      * @throws Exception 
      */
 	public void processSLO(Boolean keepLocalSession, String requestId) throws Exception {
-		String samlRequestParameter = request.getParameter("SAMLRequest"); 
-		String samlResponseParameter = request.getParameter("SAMLResponse");
+		final HttpRequest httpRequest = ServletUtils.makeHttpRequest(this.request);
+		
+		final String samlRequestParameter = httpRequest.getParameter("SAMLRequest");
+		final String samlResponseParameter = httpRequest.getParameter("SAMLResponse");
 
 		if (samlResponseParameter != null) {
-			LogoutResponse logoutResponse = new LogoutResponse(settings, request);
+			LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
 			if (!logoutResponse.isValid(requestId)) {
 				errors.add("invalid_logout_response");
 				LOGGER.error("processSLO error. invalid_logout_response");
@@ -439,7 +441,7 @@ public class Auth {
 				}
 			}
 		} else if (samlRequestParameter != null) {
-			LogoutRequest logoutRequest = new LogoutRequest(settings, request);
+			LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
 
 			if (!logoutRequest.isValid()) {
 				errors.add("invalid_logout_request");
@@ -453,7 +455,7 @@ public class Auth {
 				}
 
 				String inResponseTo = logoutRequest.id;
-				LogoutResponse logoutResponseBuilder = new LogoutResponse(settings, request);
+				LogoutResponse logoutResponseBuilder = new LogoutResponse(settings, httpRequest);
 				logoutResponseBuilder.build(inResponseTo);
 				String samlLogoutResponse = logoutResponseBuilder.getEncodedLogoutResponse();
 
