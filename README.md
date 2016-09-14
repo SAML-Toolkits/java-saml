@@ -1,5 +1,6 @@
 # OneLogin's SAML Java Toolkit
 
+[![Build Status](https://travis-ci.org/onelogin/java-saml.svg?branch=servletless)](https://travis-ci.org/onelogin/java-saml)
 [![Coverage Status](https://coveralls.io/repos/github/onelogin/java-saml/badge.svg?branch=v2.0.0)](https://coveralls.io/github/onelogin/java-saml?branch=v2.0.0)
 
 Version 2.0.0
