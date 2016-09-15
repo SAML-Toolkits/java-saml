@@ -250,4 +250,16 @@ public class ServletUtilsTest {
         assertThat(httpRequest.getRequestURL(), equalTo(url));
         assertThat(httpRequest.getParameters(), equalTo(singletonMap("name", singletonList("a"))));
     }
+
+	@Test
+	public void sendRedirectToShouldHandleUrlsWithQueryParams() throws Exception {
+		// having
+		final HttpServletResponse response = mock(HttpServletResponse.class);
+
+		// when
+		ServletUtils.sendRedirect(response, "https://sso.connect.pingidentity.com/sso/idp/SSO.saml2?idpid=ffee-aabbb", singletonMap("SAMLRequest", "data"));
+
+		// then
+		verify(response).sendRedirect("https://sso.connect.pingidentity.com/sso/idp/SSO.saml2?idpid=ffee-aabbb&SAMLRequest=data");
+	}
 }
