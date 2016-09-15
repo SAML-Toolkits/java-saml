@@ -551,6 +551,80 @@ public final class Util {
 			LOGGER.debug("Error converting certificate on PEM format: "+ e.getMessage(), e);
 		}
 		return pemCert;
+	}	
+
+	/**
+	 * Redirect to location url
+	 * 
+	 * @param response
+	 * 				HttpServletResponse object to be used
+	 * @param location
+	 * 				target location url
+	 * @param parameters
+	 * 				GET parameters to be added
+	 *
+	 * @throws IOException
+	 *
+	 * @see javax.servlet.http.HttpServletResponse#sendRedirect(String)
+	 */
+	public static void sendRedirect(HttpServletResponse response, String location, Map<String, String> parameters) throws IOException {
+		String target = location;
+
+		if (!parameters.isEmpty()) {
+			boolean first = !location.contains("?");
+			for (Map.Entry<String, String> parameter : parameters.entrySet())
+			{
+				if (first) {
+					target += "?";
+					first = false;
+				} else {
+					target += "&";
+				}
+				target += parameter.getKey();
+				if (!parameter.getValue().isEmpty()) {
+					target += "=" + Util.urlEncoder(parameter.getValue());
+				}
+			}
+		}
+		response.sendRedirect(target);
+	}
+
+	/**
+	 * Redirect to location url
+	 * 
+	 * @param response
+	 * 				HttpServletResponse object to be used
+	 * @param location
+	 * 				target location url
+	 *
+	 * @throws IOException
+	 *
+	 * @see javax.servlet.http.HttpServletResponse#sendRedirect(String)
+	 */
+	public static void sendRedirect(HttpServletResponse response, String location) throws IOException {
+		Map<String, String> parameters  =new HashMap<String, String>();
+		sendRedirect(response, location, parameters);
+	}
+	
+	
+	/**
+	 * Returns the protocol + the current host + the port (if different than
+	 * common ports).
+	 *
+	 * @param request 
+	 * 				HttpServletRequest object to be processed
+	 *
+	 * @return the HOST URL
+	 */
+	public static String getSelfURLhost(HttpServletRequest request) {
+		String hostUrl = StringUtils.EMPTY;
+		final int serverPort = request.getServerPort();
+		if ((serverPort == 80) || (serverPort == 443) || serverPort == 0) {
+			hostUrl = String.format("%s://%s", request.getScheme(), request.getServerName());
+		} else {
+			hostUrl = String.format("%s://%s:%s", request.getScheme(), request.getServerName(), serverPort);
+		}
+		return hostUrl;
 	}
 
 	/**

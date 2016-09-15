@@ -7,8 +7,7 @@ Version 2.0.0
 
 Not ready yet, it lacks documentation and not officially distributed.
 
-Unit test compatible with java6 / java7 (java8 experiences an issue with PowerMock)
-Make sure maven & your IDE uses this java version.
+Compatible with java6 / java7 / java8.
 
 ## TODOs
 
