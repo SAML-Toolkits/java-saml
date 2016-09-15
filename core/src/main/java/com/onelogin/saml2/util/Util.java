@@ -570,7 +570,7 @@ public final class Util {
 		String target = location;
 
 		if (!parameters.isEmpty()) {
-			Boolean first = true;
+			boolean first = !location.contains("?");
 			for (Map.Entry<String, String> parameter : parameters.entrySet())
 			{
 				if (first) {

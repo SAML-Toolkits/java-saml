@@ -32,6 +32,7 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -2106,5 +2107,17 @@ public class UtilsTest {
 		assertEquals(1, assertionNodes_2.getLength());
 		Node assertion_2 = assertionNodes_2.item(0);
 		assertEquals("saml2:Assertion", assertion_2.getNodeName());
+	}
+
+	@Test
+	public void sendRedirectToShouldHandleUrlsWithQueryParams() throws Exception {
+		// having
+		final HttpServletResponse response = mock(HttpServletResponse.class);
+
+		// when
+		Util.sendRedirect(response, "https://sso.connect.pingidentity.com/sso/idp/SSO.saml2?idpid=ffee-aabbb", Collections.singletonMap("SAMLRequest", "data"));
+
+		// then
+		verify(response).sendRedirect("https://sso.connect.pingidentity.com/sso/idp/SSO.saml2?idpid=ffee-aabbb&SAMLRequest=data");
 	}
 }
