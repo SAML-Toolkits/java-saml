@@ -1,9 +1,12 @@
 package com.onelogin.saml2.util;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
@@ -42,8 +45,6 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.Inflater;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -627,100 +628,6 @@ public final class Util {
 	}
 
 	/**
-	 * @param request 
-	 * 				HttpServletRequest object to be processed
-	 *
-	 * @return the server name
-	 */
-	public static String getSelfHost(HttpServletRequest request) {
-		return request.getServerName();
-	}
-
-	/**
-	 * Check if under https or http protocol
-	 *
-	 * @param request
-	 * 				HttpServletRequest object to be processed
-	 *
-	 * @return false if https is not active
-	 */
-	public static boolean isHTTPS(HttpServletRequest request) {
-		return request.isSecure();
-	}
-
-	/**
-	 * Returns the URL of the current context + current view + query
-	 * 
-	 * @param request
-	 * 				HttpServletRequest object to be processed
-	 *
-	 * @return current context + current view + query
-	 */
-	public static String getSelfURL(HttpServletRequest request) {
-		String url = Util.getSelfURLhost(request);
-
-		String requestUri = request.getRequestURI();
-		String queryString = request.getQueryString();
-
-		if (null != requestUri && !requestUri.isEmpty()) {		
-			url += requestUri;
-		}
-
-		if (null != queryString && !queryString.isEmpty()) {		
-			url += '?' + queryString;
-		}
-		return url;
-	}
-
-	/**
-	 * Returns the URL of the current host + current view.
-	 *
-	 * @param request
-	 * 				HttpServletRequest object to be processed
-	 *
-	 * @return current host + current view
-	 */
-	public static String getSelfURLNoQuery(HttpServletRequest request) {
-		return request.getRequestURL().toString();
-	}
-
-	/**
-	 * Returns the routed URL of the current host + current view.
-	 *
-	 * @param request
-	 * 				HttpServletRequest object to be processed
-	 *
-	 * @return the current routed url
-	 */
-	public static String getSelfRoutedURLNoQuery(HttpServletRequest request) {
-		String url = getSelfURLhost(request);
-		String requestUri = request.getRequestURI();
-		if (null != requestUri && !requestUri.isEmpty()) {		
-			url += requestUri;
-		}
-		return url;
-	}
-
-	/**
-	 * Loads a resource
-	 *
-	 * @param path
-	 *				Path of the resource
-	 *
-	 * @return the loaded resource
-	 *
-	 * @throws URISyntaxException
-	 * @throws FileNotFoundException
-	 */
-	public static Path loadResource(String path) throws URISyntaxException, FileNotFoundException {
-		URL myTestURL = ClassLoader.getSystemResource(path);
-		if (myTestURL == null) {
-			throw new FileNotFoundException(path);
-		}
-		return Paths.get(myTestURL.toURI());
-	}
-
-	/**
 	 * Loads a resource located at a relative path
 	 *
 	 * @param relativeResourcePath
@@ -728,13 +635,30 @@ public final class Util {
 	 *
 	 * @return the loaded resource in String format
 	 *
-	 * @throws URISyntaxException
-	 * @throws IOException 
+	 * @throws IOException
 	 */
-	public static String getFileAsString(String relativeResourcePath) throws URISyntaxException, IOException {
-		Path filepath = loadResource(relativeResourcePath);
-		String fileAsString = new String(Files.readAllBytes(filepath));
-		return fileAsString;
+	public static String getFileAsString(String relativeResourcePath) throws IOException {
+		InputStream is = Util.class.getResourceAsStream("/" + relativeResourcePath);
+		if (is == null) {
+			throw new FileNotFoundException(relativeResourcePath);
+		}
+
+		try {
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            copyBytes(new BufferedInputStream(is), bytes);
+
+            return bytes.toString("utf-8");
+        } finally {
+            is.close();
+        }
+	}
+
+	private static void copyBytes(InputStream is, OutputStream bytes) throws IOException {
+		int res = is.read();
+		while (res != -1) {
+			bytes.write(res);
+			res = is.read();
+		}
 	}
 
 	/**

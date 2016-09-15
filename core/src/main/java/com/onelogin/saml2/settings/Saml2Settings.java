@@ -8,14 +8,11 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.onelogin.saml2.authn.SamlResponse;
-import com.onelogin.saml2.logout.LogoutResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.onelogin.saml2.Metadata;
 import com.onelogin.saml2.model.Contact;
 import com.onelogin.saml2.model.Organization;
 import com.onelogin.saml2.util.Constants;
@@ -640,7 +637,7 @@ public class Saml2Settings {
 	/**
 	 * Controls if unsolicited Responses are rejected if they contain an InResponseTo value.
 	 *
-	 * If false using a validate method {@link SamlResponse#isValid(String)} with a null argument will
+	 * If false using a validate method {@link com.onelogin.saml2.authn.SamlResponse#isValid(String)} with a null argument will
 	 * accept messages with any (or none) InResponseTo value.
 	 *
 	 * If true using these methods with a null argument will only accept messages with no InRespoonseTo value,
