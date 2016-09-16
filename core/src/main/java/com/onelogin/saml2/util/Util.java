@@ -96,6 +96,10 @@ public final class Util {
     private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(DateTimeZone.UTC);
 	private static final DateTimeFormatter DATE_TIME_FORMAT_MILLS = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(DateTimeZone.UTC);
 	public static final String UNIQUE_ID_PREFIX = "ONELOGIN_";
+	public static final String RESPONSE_SIGNATURE_XPATH = "/samlp:Response/ds:Signature";
+	public static final String ASSERTION_SIGNATURE_XPATH = "/samlp:Response/saml:Assertion/ds:Signature";
+
+	private static final Logger log = LoggerFactory.getLogger(Util.class);
 
 	/**
 	 * This function load an XML string in a save way. Prevent XEE/XXE Attacks
@@ -220,9 +224,13 @@ public final class Util {
 			Source xmlSource = new DOMSource(xmlDocument);
 			validator.validate(xmlSource);
 
-			return !errorAcumulator.hasError();
+			final boolean isValid = !errorAcumulator.hasError();
+			if (!isValid) {
+				LOGGER.warn("Errors found when validating SAML response with schema: " + errorAcumulator.getErrorXML());
+			}
+			return isValid;
 		} catch (Exception e) {
-			LOGGER.debug("Error executing validateXML: " + e.getMessage(), e);
+			LOGGER.warn("Error executing validateXML: " + e.getMessage(), e);
 			return false;
 		}
 	}
@@ -785,25 +793,44 @@ public final class Util {
      *               The fingerprint of the public certificate
      * @param alg
      *               The signature algorithm method
+     * @param wantAssertionSigned whether the caller requires assertions to be signed
+     * @param wantResponseSigned whether the caller requires responses to be signed
      *
-     * @return True if the sign is valid, false otherwise.
+     * @return True if the required signatures are present and the present signatures are valid, false otherwise.
      */
-    public static Boolean validateSign(Document doc, X509Certificate cert, String fingerprint, String alg) {
-        NodeList signNodesToValidate;
+    public static Boolean validateSign(Document doc, X509Certificate cert, String fingerprint, String alg,
+									   boolean wantResponseSigned, boolean wantAssertionSigned) {
 		try {
-			signNodesToValidate = query(doc, "/samlp:Response/ds:Signature");
-			if (signNodesToValidate.getLength() == 0) {
-				signNodesToValidate = query(doc, "/samlp:Response/saml:Assertion/ds:Signature");
-			}
+			boolean validResponseSignature = checkSignature(doc, cert, fingerprint, alg, wantResponseSigned, RESPONSE_SIGNATURE_XPATH);
+			boolean validAssertionSignature = checkSignature(doc, cert, fingerprint, alg, wantAssertionSigned, ASSERTION_SIGNATURE_XPATH);
 
-			if (signNodesToValidate.getLength() == 1) {
-				return validateSignNode(signNodesToValidate.item(0), cert, fingerprint, alg);
-			}
-		} catch (XPathExpressionException e) {}
+			return validResponseSignature && validAssertionSignature;
+		} catch (XPathExpressionException e) {
+			log.warn("Failed to find signature nodes", e);
+		}
 		return false;
     }
 
-    /**
+	private static boolean checkSignature(Document doc, X509Certificate cert, String fingerprint, String alg, boolean required, final String xpath) throws XPathExpressionException {
+		final NodeList responseSignature = query(doc, xpath);
+		final int signatureCount = responseSignature.getLength();
+		if (signatureCount > 1) {
+			log.warn("Unexpected number of signatures found matching " + xpath + ": " + signatureCount);
+			return false;
+		}
+
+		if (signatureCount == 0) {
+			if (required) {
+				log.warn("No signature matching " + xpath + ", found but was required");
+				return false;
+			}
+			return true;
+		}
+
+		return validateSignNode(responseSignature.item(0), cert, fingerprint, alg);
+	}
+
+	/**
      * Validate signature (Metadata).
      *
      * @param doc

@@ -609,6 +609,23 @@ public class AuthnResponseTest {
 		assertEquals("someone@example.org", samlResponse.getNameId());
 	}
 
+	@Test
+	public void testValidatesTheExpectedSignatures() throws Exception {
+		// having
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		settings.setWantAssertionsSigned(true);
+		settings.setWantMessagesSigned(true);
+
+		String samlResponseEncoded = Util.base64encoder(Util.getFileAsString("data/responses/invalids/attacks/response_with_spoofed_response_signature.xml"));
+
+		// when
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+
+		// then
+		assertFalse(samlResponse.isValid());
+		assertEquals("Unexpected number of Response signatures found. SAML Response rejected.", samlResponse.getError());
+	}
+
 	/**
 	 * Tests the getSessionNotOnOrAfter method of SamlResponse
 	 *
@@ -851,6 +868,7 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/response_encrypted_subconfirm_as_nameid.xml.base64");
 		settings.setStrict(false);
+		settings.setWantAssertionsSigned(false);
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.isValid());
 		String nameId = samlResponse.getNameId();
@@ -1630,17 +1648,17 @@ public class AuthnResponseTest {
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/triple_signed_response.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
-		assertEquals("Duplicated ID. SAML Response rejected", samlResponse.getError());
+		assertEquals("Unexpected number of Response signatures found. SAML Response rejected.", samlResponse.getError());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/signed_assertion_response_with_2signatures.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
-		assertEquals("Duplicated ID. SAML Response rejected", samlResponse.getError());
+		assertEquals("Unexpected number of Response signatures found. SAML Response rejected.", samlResponse.getError());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/signed_message_response_with_2signatures.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
-		assertEquals("Duplicated ID. SAML Response rejected", samlResponse.getError());
+		assertEquals("Unexpected number of Response signatures found. SAML Response rejected.", samlResponse.getError());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/wrong_signed_element.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));

@@ -271,7 +271,7 @@ public class SamlResponse {
 					}
 				}
 
-				if (!Util.validateSign(documentToValidate, cert, fingerprint, alg)) {
+				if (!Util.validateSign(documentToValidate, cert, fingerprint, alg, settings.getWantMessagesSigned(), settings.getWantAssertionsSigned())) {
 					throw new Exception("Signature validation failed. SAML Response rejected");
 				}
 			}
@@ -676,6 +676,22 @@ public class SamlResponse {
 			if (!signedElement.equals("Response") && !signedElement.equals("Assertion")) {
 				throw new Exception("Invalid Signature Element " + signedElement + " SAML Response rejected");
 			}
+
+			// check that the signed elements found here, are the ones that will be verified
+			// by com.onelogin.saml2.util.Util.validateSign()
+			if (signedElement.equals("Response")) {
+				final NodeList expectedSignatureNode = query(Util.RESPONSE_SIGNATURE_XPATH, null);
+				if (expectedSignatureNode.getLength() != 1 || signedElements.contains(signedElement)) {
+					throw new Exception("Unexpected number of Response signatures found. SAML Response rejected.");
+				}
+			}
+
+			if (signedElement.equals("Assertion")) {
+				final NodeList expectedSignatureNode = query(Util.ASSERTION_SIGNATURE_XPATH, null);
+				if (expectedSignatureNode.getLength() != 1 || signedElements.contains(signedElement)) {
+					throw new Exception("Unexpected number of Response signatures found. SAML Response rejected.");
+				}
+			}
 			
 			// Check that reference URI matches the parent ID and no duplicate References or IDs
 			Node idNode = signNode.getParentNode().getAttributes().getNamedItem("ID");
@@ -689,8 +705,8 @@ public class SamlResponse {
 			}
 			verifiedIds.add(idValue);
 			
-			NodeList refNodes = Util.query(null, ".//ds:Reference", signNode);
-			if (refNodes.getLength() > 0) {
+			NodeList refNodes = Util.query(null, "ds:SignedInfo/ds:Reference", signNode);
+			if (refNodes.getLength() == 1) {
 				Node refNode = refNodes.item(0);
 				Node seiNode = refNode.getAttributes().getNamedItem("URI");
 				if (seiNode != null && seiNode.getNodeValue() != null && !seiNode.getNodeValue().isEmpty()) {
@@ -704,6 +720,10 @@ public class SamlResponse {
 					}
 					verifiedSeis.add(sei);
 				}
+			} else {
+				// Signatures MUST contain a single <ds:Reference> containing a same-document reference to the ID
+				// attribute value of the root element of the assertion or protocol message being signed
+				throw new Exception("Unexpected number of Reference nodes found for signature. SAML Response rejected.");
 			}
 
 			signedElements.add(signedElement);
@@ -809,13 +829,10 @@ public class SamlResponse {
 	 *
 	 */
 	private NodeList queryAssertion(String assertionXpath) throws XPathExpressionException {
-        String assertionExpr;
+        final String assertionExpr = "/saml:Assertion";
+        final String signatureExpr = "ds:Signature/ds:SignedInfo/ds:Reference";
 
-        assertionExpr = "/saml:Assertion";
-
-        String signatureExpr = "ds:Signature/ds:SignedInfo/ds:Reference";
-
-        String nameQuery = "";
+        String nameQuery;
         String signedAssertionQuery = "/samlp:Response" + assertionExpr + "/" + signatureExpr;
         NodeList nodeList = query(signedAssertionQuery, null);
         if (nodeList.getLength() == 0 ) {
@@ -835,19 +852,6 @@ public class SamlResponse {
                 // On this case there is no element signed, the query will work but
                 // the response validation will throw and error.
             	nameQuery = "/samlp:Response";
-            	
-            	// If we want to change this behaviour, uncomment this block.
-            	// but test should be updated then.
-            	
-            	// Trick in order to return empty NodeList (not instanciable)
-            	/*
-            	XPath xpath = XPathFactory.newInstance().newXPath();
-            	NodeList noresult = null;
-				try {
-					noresult = (NodeList) xpath.evaluate("/noresult", Util.convertStringToDocument("<null></null>"), XPathConstants.NODESET);
-				} catch (ParserConfigurationException | SAXException | IOException e) {}
-            	return noresult;
-            	*/
             }
             nameQuery += assertionExpr;
         } else {  // there is a signed assertion
