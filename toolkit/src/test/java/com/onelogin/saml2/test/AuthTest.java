@@ -299,10 +299,10 @@ public class AuthTest {
 	 * @throws URISyntaxException
 	 * @throws SettingsException
 	 *
-	 * @see com.onelogin.saml2.Auth#getSLOurl
+	 * @see com.onelogin.saml2.Auth#getSLOResponseUrl
 	 */
 	@Test
-	public void testGetSLOResponseurl() throws URISyntaxException, IOException, SettingsException {
+	public void testGetSLOResponseUrl() throws URISyntaxException, IOException, SettingsException {
 		HttpServletRequest request = mock(HttpServletRequest.class);
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
@@ -312,6 +312,28 @@ public class AuthTest {
 
 		Auth auth = new Auth(settings, request, response);
 		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SingleLogoutServiceResponse.php", auth.getSLOResponseUrl());
+	}
+
+	/**
+	 * Tests the getSLOResponseUrl method of Auth. Verifies a null value will return the same output as getSLOurl()
+	 *
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 * @throws SettingsException
+	 *
+	 * @see com.onelogin.saml2.Auth#getSLOResponseUrl
+	 */
+	@Test
+	public void testGetSLOResponseUrlNull() throws URISyntaxException, IOException, SettingsException {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+
+		Auth auth = new Auth(settings, request, response);
+		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SingleLogoutService.php", auth.getSLOResponseUrl());
 	}
 
 	/**
