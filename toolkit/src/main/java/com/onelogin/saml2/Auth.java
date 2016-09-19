@@ -357,6 +357,17 @@ public class Auth {
 	}
 
 	/**
+ 	 * @return The url of the Single Logout Service Response.
+ 	 */
+	public String getSLOResponseUrl() {
+		if (settings.getIdpSingleLogoutServiceResponseUrl() == null) {
+			return settings.getIdpSingleLogoutServiceUrl().toString();
+		}
+
+		return settings.getIdpSingleLogoutServiceResponseUrl().toString();
+	}
+
+	/**
      * Process the SAML Response sent by the IdP.
      *
      * @param requestId
@@ -476,7 +487,7 @@ public class Auth {
 					parameters.put("Signature", signature);
 				}
 
-				String sloUrl = getSLOurl();
+				String sloUrl = getSLOResponseUrl();
 				LOGGER.debug("Logout response sent to " + sloUrl + " --> " + samlLogoutResponse);
 				ServletUtils.sendRedirect(response, sloUrl, parameters);
 			}

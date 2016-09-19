@@ -194,6 +194,7 @@ public class AuthTest {
 		assertEquals(settings.getOrganization(), auth.getSettings().getOrganization());
 		assertEquals(settings.getIdpSingleSignOnServiceUrl().toString(), auth.getSettings().getIdpSingleSignOnServiceUrl().toString());
 		assertEquals(settings.getIdpSingleLogoutServiceUrl().toString(), auth.getSettings().getIdpSingleLogoutServiceUrl().toString());
+		assertEquals(settings.getIdpSingleLogoutServiceResponseUrl().toString(), auth.getSettings().getIdpSingleLogoutServiceResponseUrl().toString());
 		assertEquals(settings.getIdpx509cert().hashCode(), auth.getSettings().getIdpx509cert().hashCode());
 		assertEquals(settings.getSpAssertionConsumerServiceUrl().toString(), auth.getSettings().getSpAssertionConsumerServiceUrl().toString());
 		assertEquals(settings.getSpSingleLogoutServiceUrl().toString(), auth.getSettings().getSpSingleLogoutServiceUrl().toString());
