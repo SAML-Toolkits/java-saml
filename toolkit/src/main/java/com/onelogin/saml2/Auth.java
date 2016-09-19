@@ -360,10 +360,6 @@ public class Auth {
  	 * @return The url of the Single Logout Service Response.
  	 */
 	public String getSLOResponseUrl() {
-		if (settings.getIdpSingleLogoutServiceResponseUrl() == null) {
-			return settings.getIdpSingleLogoutServiceUrl().toString();
-		}
-
 		return settings.getIdpSingleLogoutServiceResponseUrl().toString();
 	}
 
