@@ -730,7 +730,7 @@ public class AuthTest {
 		expectedErrors = new ArrayList<String>();
 		expectedErrors.add("invalid_response");
 		assertEquals(expectedErrors, auth2.getErrors());
-		assertThat(auth2.getLastErrorReason(), containsString("The response was received at"));		
+		assertThat(auth2.getLastErrorReason(), containsString("Invalid issuer in the Assertion/Response"));		
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
 		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));

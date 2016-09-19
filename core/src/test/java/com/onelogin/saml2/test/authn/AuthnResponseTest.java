@@ -9,6 +9,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -110,8 +111,8 @@ public class AuthnResponseTest {
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertEquals("support@onelogin.com", samlResponse.getNameId());
-		samlResponseEncoded = Util.getFileAsString("data/responses/response_encrypted_nameid.xml.base64");
 
+		samlResponseEncoded = Util.getFileAsString("data/responses/response_encrypted_nameid.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertEquals("2de11defd199f8d5bb63f9b7deb265ba5c675c10", samlResponse.getNameId());
 
@@ -144,7 +145,25 @@ public class AuthnResponseTest {
 	}
 
 	/**
-	 * Tests the getNameIdData method of SamlResponse
+	 * Tests the getNameId method of SamlResponse
+	 * Case: Wrong SPNameQualifier
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#getNameId
+	 */
+	@Test(expected=Exception.class)
+	public void testGetNameIdWrongSPNameQualifier() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+
+		settings.setWantNameId(true);
+		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/wrong_spnamequalifier.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		String nameId = samlResponse.getNameId();
+	}
+	
+	/**
+	 * Tests the getNameId method of SamlResponse
 	 * Case: Not able to get the NameIdData due no private key to decrypt
 	 *
 	 * @throws Exception
@@ -152,7 +171,7 @@ public class AuthnResponseTest {
 	 * @see com.onelogin.saml2.authn.SamlResponse#getNameId
 	 */
 	@Test(expected=IllegalArgumentException.class)
-	public void testGetNameIdDataNoKey() throws Exception {
+	public void testGetNameIdNoKey() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response_encrypted_nameid.xml.base64");
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
@@ -160,7 +179,23 @@ public class AuthnResponseTest {
 	}
 
 	/**
-	 * Tests the getNameIdData method of SamlResponse
+	 * Tests the getNameId method of SamlResponse
+	 * Case: The NameID value is empty 
+	 *
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.authn.SamlResponse#getNameId
+	 */
+	@Test(expected=Exception.class)
+	public void testGetNameIdEmptyNameIDValue() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/empty_nameid.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		String nameId = samlResponse.getNameId();
+	}
+
+	/**
+	 * Tests the getNameId method of SamlResponse
 	 * Case: Not able to get the NameIdData due no nameID inside the EncryptedID
 	 *
 	 * @throws Exception
@@ -168,7 +203,7 @@ public class AuthnResponseTest {
 	 * @see com.onelogin.saml2.authn.SamlResponse#getNameId
 	 */
 	@Test(expected=Exception.class)
-	public void testGetNameIdDataWrongEncryptedData() throws Exception {
+	public void testGetNameIdWrongEncryptedData() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/response_encrypted_subconfirm_as_nameid.xml.base64");
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
@@ -188,20 +223,20 @@ public class AuthnResponseTest {
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertEquals("{Format=urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress, Value=support@onelogin.com}", samlResponse.getNameIdData().toString());
-		samlResponseEncoded = Util.getFileAsString("data/responses/response_encrypted_nameid.xml.base64");
 
+		samlResponseEncoded = Util.getFileAsString("data/responses/response_encrypted_nameid.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		String NameIdDataStr = samlResponse.getNameIdData().toString();
 		assertThat(NameIdDataStr, containsString("Format=urn:oasis:names:tc:SAML:2.0:nameid-format:unspecified"));
 		assertThat(NameIdDataStr, containsString("Value=2de11defd199f8d5bb63f9b7deb265ba5c675c10"));
-		assertThat(NameIdDataStr, containsString("SPNameQualifier=https://pitbulk.no-ip.org/newonelogin/demo1/metadata.php"));
+		assertThat(NameIdDataStr, containsString("SPNameQualifier=http://localhost:8080/java-saml-jspsample/metadata.jsp"));
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		NameIdDataStr = samlResponse.getNameIdData().toString();
 		assertThat(NameIdDataStr, containsString("Format=urn:oasis:names:tc:SAML:2.0:nameid-format:transient"));
 		assertThat(NameIdDataStr, containsString("Value=_68392312d490db6d355555cfbbd8ec95d746516f60"));
-		assertThat(NameIdDataStr, containsString("SPNameQualifier=http://stuff.com/endpoints/metadata.php"));
+		assertThat(NameIdDataStr, containsString("SPNameQualifier=http://localhost:8080/java-saml-jspsample/metadata.jsp"));
 		
 		settings.setWantNameId(false);
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_nameid.xml.base64");
@@ -225,6 +260,80 @@ public class AuthnResponseTest {
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_nameid.xml.base64");
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		HashMap<String, String> nameIdData = samlResponse.getNameIdData();
+	}
+
+	/**
+	 * Tests the getNameIdData method of SamlResponse
+	 * Case: Wrong SPNameQualifier
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#getNameIdData
+	 */
+	@Test(expected=Exception.class)
+	public void testGetNameIdDataWrongSPNameQualifier() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+
+		settings.setWantNameId(true);
+		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/wrong_spnamequalifier.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		HashMap<String, String> nameIdData = samlResponse.getNameIdData();
+	}
+
+	/**
+	 * Tests the getNameIdData method of SamlResponse
+	 * Case: The NameID value is empty 
+	 *
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.authn.SamlResponse#getNameIdData
+	 */
+	@Test(expected=Exception.class)
+	public void testGetNameIdDataEmptyNameIDValue() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/empty_nameid.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		HashMap<String, String> nameIdData = samlResponse.getNameIdData();
+	}
+	
+	/**
+	 * Tests the checkOneCondition method of SamlResponse
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#checkOneCondition
+	 */
+	@Test
+	public void checkOneCondition() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+
+		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_conditions.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.checkOneCondition());
+		
+		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertTrue(samlResponse.checkOneCondition());
+	}
+
+	/**
+	 * Tests the checkOneAuthnStatement method of SamlResponse
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#checkOneAuthnStatement
+	 */
+	@Test
+	public void checkOneAuthNStatement() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+
+		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_authnstatement.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.checkOneAuthnStatement());
+		
+		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertTrue(samlResponse.checkOneAuthnStatement());
 	}
 
 	/**
@@ -370,7 +479,7 @@ public class AuthnResponseTest {
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		expectedAudiences = new ArrayList<String>();
-		expectedAudiences.add("http://stuff.com/endpoints/metadata.php");
+		expectedAudiences.add("http://localhost:8080/java-saml-jspsample/metadata.jsp");
 		assertEquals(expectedAudiences, samlResponse.getAudiences());
 	}
 
@@ -387,10 +496,6 @@ public class AuthnResponseTest {
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		List<String> expectedIssuers = new ArrayList<String>();
-		expectedIssuers.add("https://app.onelogin.com/saml/metadata/13590");
-		assertEquals(expectedIssuers, samlResponse.getIssuers());
-
-		expectedIssuers.remove(0);
 		expectedIssuers.add("http://idp.example.com/");
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
@@ -420,6 +525,38 @@ public class AuthnResponseTest {
 		assertEquals(expectedIssuers, samlResponse.getIssuers());
 	}
 
+	/**
+	 * Tests the getIssuers method of SamlResponse
+	 * Case: Issuer of the response not found
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#getIssuers
+	 */
+	@Test(expected=Exception.class)
+	public void testGetIssuersNoInResponse() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_issuer_response.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		List<String> issuers = samlResponse.getIssuers();
+	}
+
+	/**
+	 * Tests the getIssuers method of SamlResponse
+	 * Case: Issuer of the assertion not found
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#getIssuers
+	 */
+	@Test(expected=Exception.class)
+	public void testGetIssuersNoInAssertion() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_issuer_assertion.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		List<String> issuers = samlResponse.getIssuers();
+	}
+	
 	/**
 	 * Tests the getSessionIndex method of SamlResponse
 	 *
@@ -512,6 +649,23 @@ public class AuthnResponseTest {
 		assertTrue(samlResponse.getAttributes().isEmpty());
 	}
 
+	/**
+	 * Tests the getAttributes method of SamlResponse
+	 * Case: Duplicated names
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#getAttributes
+	 */
+	@Test(expected=Exception.class)
+	public void testGetAttributesDuplicatedNames() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/duplicated_attributes.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+
+		HashMap<String, List<String>> attributes = samlResponse.getAttributes();
+	}
+	
 	/**
 	 * Tests the isValid method of SamlResponse
 	 *
@@ -873,6 +1027,25 @@ public class AuthnResponseTest {
 		assertTrue(samlResponse.isValid());
 		String nameId = samlResponse.getNameId();
 	}
+
+	/**
+	 * Tests the isValid method of SamlResponse
+	 * Case: valid but contained wrong NameId
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#isValid
+	 */
+	@Test(expected=Exception.class)
+	public void testIsValidWrongSPNameQualifier() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/wrong_spnamequalifier.xml.base64");
+		settings.setStrict(false);
+		settings.setWantAssertionsSigned(false);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertTrue(samlResponse.isValid());
+		String nameId = samlResponse.getNameId();
+	}
 	
 	/**
 	 * Tests the isValid method of SamlResponse
@@ -934,6 +1107,65 @@ public class AuthnResponseTest {
 		samlResponse.setDestinationUrl(ACS_URL);
 		samlResponse.isValid();
 		assertThat(samlResponse.getError(), not(containsString("The response was received at")));
+	}
+
+	/**
+	 * Tests the isValid method of SamlResponse
+	 * Case: No Destination
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#isValid
+	 */
+	@Test
+	public void testIsInValidNoDestination() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		final String requestURL = "/";
+		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/empty_destination.xml.base64");
+		settings.setStrict(false);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(requestURL, samlResponseEncoded));
+		assertTrue(samlResponse.isValid());
+
+		settings.setStrict(true);
+		samlResponse = new SamlResponse(settings, newHttpRequest(requestURL, samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("The response has an empty Destination value", samlResponse.getError());
+	}
+	
+	/**
+	 * Tests the isValid method of SamlResponse
+	 * Case: invalid Conditions
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#isValid
+	 */
+	@Test
+	public void testIsInValidConditions() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_conditions.xml.base64");
+
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("The Assertion must include a Conditions element", samlResponse.getError());
+	}
+
+	/**
+	 * Tests the isValid method of SamlResponse
+	 * Case: invalid Conditions
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#isValid
+	 */
+	@Test
+	public void testIsInValidAuthStatement() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_authnstatement.xml.base64");
+
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("The Assertion must include an AuthnStatement element", samlResponse.getError());
 	}
 
 	/**

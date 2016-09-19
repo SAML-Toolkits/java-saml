@@ -199,22 +199,34 @@ public class SamlResponse {
 					}
 				}
 
+				// Validate Conditions element exists
+				if (!this.checkOneCondition()) {
+					throw new Exception("The Assertion must include a Conditions element");
+				}
+				
 				// Validate Assertion timestamps
 				if (!this.validateTimestamps()) {
 					throw new Exception("Timing issues (please check your clock settings)");
 				}
 
+				// Validate AuthnStatement element exists and is unique
+				if (!this.checkOneAuthnStatement()) {
+					throw new Exception("The Assertion must include an AuthnStatement element");
+				}
+				
 				// EncryptedAttributes are not supported
 				NodeList encryptedAttributeNodes = this.queryAssertion("/saml:AttributeStatement/saml:EncryptedAttribute");
 				if (encryptedAttributeNodes.getLength() > 0) {
 					throw new Exception("There is an EncryptedAttribute in the Response and this SP not support them");
 				}
-
+				
 				// Check destination
 				if (rootElement.hasAttribute("Destination")) {
 					String destinationUrl = rootElement.getAttribute("Destination");
 					if (destinationUrl != null) {
-						if (!destinationUrl.isEmpty() && !destinationUrl.equals(currentUrl)) {
+						if (destinationUrl.isEmpty()) {
+							throw new Exception("The response has an empty Destination value");
+						} else if (!destinationUrl.equals(currentUrl)) {
 							throw new Exception("The response was received at " + currentUrl + " instead of "
 									+ destinationUrl);
 						}
@@ -317,7 +329,6 @@ public class SamlResponse {
 						continue;
 					}
 
-
 					Node notOnOrAfter = subjectConfirmationDataNodes.item(c).getAttributes().getNamedItem("NotOnOrAfter");
 					if (notOnOrAfter == null) {
 						validationIssues.add(new SubjectConfirmationIssue(i, "SubjectConfirmationData doesn't contain a NotOnOrAfter attribute"));
@@ -370,7 +381,7 @@ public class SamlResponse {
 		NodeList encryptedIDNodes = this.queryAssertion("/saml:Subject/saml:EncryptedID/xenc:EncryptedData");
 		NodeList nameIdNodes;
 		Element nameIdElem;
-		if (encryptedIDNodes.getLength() > 0) {
+		if (encryptedIDNodes.getLength() == 1) {
 			Element encryptedData = (Element) encryptedIDNodes.item(0);
 			PrivateKey key = settings.getSPkey();
 			if (key == null) {
@@ -387,17 +398,28 @@ public class SamlResponse {
 			nameIdNodes = this.queryAssertion("/saml:Subject/saml:NameID");
 		}
 
-		if (nameIdNodes != null && nameIdNodes.getLength() > 0) {
+		if (nameIdNodes != null && nameIdNodes.getLength() == 1) {
 			nameIdElem = (Element) nameIdNodes.item(0);
 			
 			if (nameIdElem != null) {
-				nameIdData.put("Value", nameIdElem.getTextContent());
+				String value = nameIdElem.getTextContent();
+				if (value.isEmpty()) {
+					throw new Exception("An empty NameID value found");
+				}
+
+				nameIdData.put("Value", value);
 
 				if (nameIdElem.hasAttribute("Format")) {
 					nameIdData.put("Format", nameIdElem.getAttribute("Format"));
 				}
 				if (nameIdElem.hasAttribute("SPNameQualifier")) {
-					nameIdData.put("SPNameQualifier", nameIdElem.getAttribute("SPNameQualifier"));
+					String spId = settings.getSpEntityId();
+					String spNameQualifier = nameIdElem.getAttribute("SPNameQualifier");
+					if (!spNameQualifier.equals(settings.getSpEntityId())) {
+						throw new Exception("The SPNameQualifier value mistmatch the SP entityID value.");
+					} else {
+						nameIdData.put("SPNameQualifier", spNameQualifier);
+					}
 				}
 				if (nameIdElem.hasAttribute("NameQualifier")) {
 					nameIdData.put("NameQualifier", nameIdElem.getAttribute("NameQualifier"));
@@ -433,17 +455,24 @@ public class SamlResponse {
      *
      * @return the attributes of the SAML Assertion
      *
-	 * @throws XPathExpressionException 
+	 * @throws Exception 
      */	
-	public HashMap<String, List<String>> getAttributes() throws XPathExpressionException {
+	public HashMap<String, List<String>> getAttributes() throws Exception {
 		HashMap<String, List<String>> attributes = new HashMap<String, List<String>>();
 
 		NodeList nodes = this.queryAssertion("/saml:AttributeStatement/saml:Attribute");
-
+		List<String> processedNames = new ArrayList<String>();
+		
 		if (nodes.getLength() != 0) {
 			for (int i = 0; i < nodes.getLength(); i++) {
 				NamedNodeMap attrName = nodes.item(i).getAttributes();
 				String attName = attrName.getNamedItem("Name").getNodeValue();
+				if (processedNames.contains(attName)) {
+					throw new Exception("Found an Attribute element with duplicated Name");
+				} else {
+					processedNames.add(attName);
+				}
+				
 				NodeList childrens = nodes.item(i).getChildNodes();
 
 				List<String> attrValues = new ArrayList<String>();
@@ -495,14 +524,14 @@ public class SamlResponse {
 			String statusExpr = "/samlp:Response/samlp:Status";
 
 			NodeList statusEntry = Util.query(dom, statusExpr, null);
-			if (statusEntry.getLength() == 0) {
+			if (statusEntry.getLength() != 1) {
 				throw new IllegalArgumentException("Missing Status on response");
 			}
 			NodeList codeEntry;
 
 			codeEntry = Util.query(dom, statusExpr + "/samlp:StatusCode", (Element) statusEntry.item(0));
 
-			if (codeEntry.getLength() == 0) {
+			if (codeEntry.getLength() != 1) {
 				throw new IllegalArgumentException("Missing Status Code on response");
 			}
 
@@ -511,13 +540,45 @@ public class SamlResponse {
 
 			NodeList messageEntry = Util.query(dom, statusExpr + "/samlp:StatusMessage",
 					(Element) statusEntry.item(0));
-			if (messageEntry.getLength() > 0) {
+			if (messageEntry.getLength() == 1) {
 				status.setStatusMessage(messageEntry.item(0).getTextContent());
 			}
 			return status;
 		} catch (XPathExpressionException e) {
 			LOGGER.error("Unexpected error in query parser." +  e.getMessage());
 			throw new IllegalArgumentException();
+		}
+	}
+
+	/**
+	 * Checks that the samlp:Response/saml:Assertion/saml:Conditions element exists and is unique.
+	 *
+	 * @return true if the Conditions element exists and is unique
+	 *
+	 * @throws XPathExpressionException
+	 */
+	public Boolean checkOneCondition() throws XPathExpressionException {
+		NodeList entries = this.queryAssertion("/saml:Conditions");
+		if (entries.getLength() == 1) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Checks that the samlp:Response/saml:Assertion/saml:AuthnStatement element exists and is unique.
+	 *
+	 * @return true if the AuthnStatement element exists and is unique
+	 *
+	 * @throws XPathExpressionException
+	 */
+	public Boolean checkOneAuthnStatement() throws XPathExpressionException {
+		NodeList entries = this.queryAssertion("/saml:AuthnStatement");
+		if (entries.getLength() == 1) {
+			return true;
+		} else {
+			return false;
 		}
 	}
 
@@ -548,10 +609,9 @@ public class SamlResponse {
 	 * Gets the Issuers (from Response and Assertion).
 	 *
 	 * @return the issuers of the assertion/response
-	 *
-	 * @throws XPathExpressionException
+	 * @throws Exception
 	 */
-	public List<String> getIssuers() throws XPathExpressionException {
+	public List<String> getIssuers() throws Exception {
 		List<String> issuers = new ArrayList<String>();
 		String value;
 		NodeList responseIssuer = Util.query(samlResponseDocument, "/samlp:Response/saml:Issuer");
@@ -560,6 +620,8 @@ public class SamlResponse {
 			if (!issuers.contains(value)) {
 				issuers.add(value);
 			}
+		} else {
+			throw new Exception("Issuer of the Response not found.");
 		}
 
 		NodeList assertionIssuer = this.queryAssertion("/saml:Issuer");
@@ -568,6 +630,8 @@ public class SamlResponse {
 			if (!issuers.contains(value)) {
 				issuers.add(value);
 			}
+		} else {
+			throw new Exception("Issuer of the Assertion not found.");
 		}
 
 		return issuers;
@@ -616,7 +680,9 @@ public class SamlResponse {
 	 *
 	 */
 	public String getAssertionId() throws XPathExpressionException {
-		validateNumAssertions();
+		if (!validateNumAssertions()) {
+			throw new IllegalArgumentException("SAML Response must contain 1 Assertion.");
+		}
 		final NodeList assertionNode = queryAssertion("");
 		return assertionNode.item(0).getAttributes().getNamedItem("ID").getNodeValue();
 	}
@@ -648,7 +714,13 @@ public class SamlResponse {
 		NodeList encryptedAssertionNodes = samlResponseDocument.getElementsByTagNameNS(Constants.NS_SAML, "EncryptedAssertion");
 		NodeList assertionNodes = samlResponseDocument.getElementsByTagNameNS(Constants.NS_SAML, "Assertion");
 
-		return (assertionNodes.getLength() + encryptedAssertionNodes.getLength() == 1);
+		Boolean valid = assertionNodes.getLength() + encryptedAssertionNodes.getLength() == 1;
+
+		if (encrypted) {
+			valid = valid && decryptedDocument.getElementsByTagNameNS(Constants.NS_SAML, "Assertion").getLength() == 1;
+		}
+
+		return valid;
 	}
 
     /**
@@ -835,7 +907,7 @@ public class SamlResponse {
         	// let see if the whole response signed?
             String signedMessageQuery = "/samlp:Response/" + signatureExpr;
             nodeList = query(signedMessageQuery, null);
-            if (nodeList.getLength() > 0) {
+            if (nodeList.getLength() == 1) {
                 Node responseReferenceNode = nodeList.item(0);
                 String responseId = responseReferenceNode.getAttributes().getNamedItem("URI").getNodeValue();
                 if (responseId != null && !responseId.isEmpty()) {

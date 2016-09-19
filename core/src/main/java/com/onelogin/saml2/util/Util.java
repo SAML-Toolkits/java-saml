@@ -833,7 +833,7 @@ public final class Util {
 
 			if (signNodesToValidate.getLength() > 0) {
 				for (int i = 0; i < signNodesToValidate.getLength(); i++) {
-					Node signNode =  signNodesToValidate.item(0);
+					Node signNode =  signNodesToValidate.item(i);
 					if (!validateSignNode(signNode, cert, fingerprint, alg)) {
 						return false;
 					}

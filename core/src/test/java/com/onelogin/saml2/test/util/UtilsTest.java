@@ -1215,7 +1215,7 @@ public class UtilsTest {
 		Element encryptedData = (Element) EncryptedDataNodes.item(0);
 		assertEquals("xenc:EncryptedData", encryptedData.getNodeName());
 		Util.decryptElement(encryptedData, key);
-		assertEquals("saml:Assertion", EncryptedAssertionNodes.item(0).getFirstChild().getNextSibling().getNodeName());
+		assertEquals("saml:Assertion", EncryptedAssertionNodes.item(0).getFirstChild().getNodeName());
 	}
 
 	/**
@@ -1256,7 +1256,8 @@ public class UtilsTest {
 		Element encryptedData = (Element) EncryptedDataNodes.item(0);
 		assertEquals("xenc:EncryptedData", encryptedData.getNodeName());
 		Util.decryptElement(encryptedData, key);
-		assertNotEquals("saml:Assertion", EncryptedAssertionNodes.item(0).getFirstChild().getNextSibling().getNodeName());
+		assertEquals("xenc:EncryptedData", EncryptedAssertionNodes.item(0).getFirstChild().getNodeName());
+		assertNotEquals("saml:Assertion", EncryptedAssertionNodes.item(0).getFirstChild().getNodeName());
 	}
 
 	/**

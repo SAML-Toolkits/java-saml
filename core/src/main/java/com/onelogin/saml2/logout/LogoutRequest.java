@@ -387,7 +387,7 @@ public class LogoutRequest {
 		NodeList nameIdNodes;
 		Element nameIdElem;
 		
-		if (encryptedIDNodes.getLength() > 0) {
+		if (encryptedIDNodes.getLength() == 1) {
 			if (key == null) {
 				throw new IllegalArgumentException("Key is required in order to decrypt the NameID");
 			}
@@ -396,7 +396,7 @@ public class LogoutRequest {
 			Util.decryptElement(encryptedData, key);
 			nameIdNodes = Util.query(samlLogoutRequestDocument, "/samlp:LogoutRequest/saml:NameID");
 
-			if (nameIdNodes == null || nameIdNodes.getLength() == 0) {
+			if (nameIdNodes == null || nameIdNodes.getLength() != 1) {
 				throw new Exception("Not able to decrypt the EncryptedID and get a NameID");
 			}
 		} 
@@ -404,7 +404,7 @@ public class LogoutRequest {
 			nameIdNodes = Util.query(samlLogoutRequestDocument, "/samlp:LogoutRequest/saml:NameID");
 		}
 
-		if (nameIdNodes != null && nameIdNodes.getLength() > 0) {
+		if (nameIdNodes != null && nameIdNodes.getLength() == 1) {
 			nameIdElem = (Element) nameIdNodes.item(0);
 		} else {
 			throw new Exception("No name id found in Logout Request.");
