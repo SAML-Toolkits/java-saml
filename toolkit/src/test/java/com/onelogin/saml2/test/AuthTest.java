@@ -544,7 +544,7 @@ public class AuthTest {
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getErrors().isEmpty());
 		auth.processSLO();
-		verify(response).sendRedirect(matches("http:\\/\\/idp.example.com\\/simplesaml\\/saml2\\/idp\\/SingleLogoutService.php\\?SAMLResponse=(.)*&RelayState=http%3A%2F%2Flocalhost%3A8080%2Fexpected.jsp&SigAlg=http%3A%2F%2Fwww.w3.org%2F2001%2F04%2Fxmldsig-more%23rsa-sha512&Signature=(.)*"));
+		verify(response).sendRedirect(matches("http:\\/\\/idp.example.com\\/simplesaml\\/saml2\\/idp\\/SingleLogoutServiceResponse.php\\?SAMLResponse=(.)*&RelayState=http%3A%2F%2Flocalhost%3A8080%2Fexpected.jsp&SigAlg=http%3A%2F%2Fwww.w3.org%2F2001%2F04%2Fxmldsig-more%23rsa-sha512&Signature=(.)*"));
 		verify(session, times(1)).invalidate();
 		assertTrue(auth.getErrors().isEmpty());
 	}
