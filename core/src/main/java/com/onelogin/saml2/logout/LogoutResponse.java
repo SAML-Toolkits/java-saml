@@ -310,7 +310,7 @@ public class LogoutResponse {
 		valueMap.put("issueInstant", issueInstantString);
 
 		String destinationStr = "";
-		URL slo =  settings.getIdpSingleLogoutServiceUrl();
+		URL slo =  settings.getIdpSingleLogoutServiceResponseUrl();
 		if (slo != null) {
 			destinationStr = " Destination=\"" + slo.toString() + "\"";
 		}

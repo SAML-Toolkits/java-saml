@@ -49,6 +49,7 @@ public class Saml2Settings {
 	private URL idpSingleSignOnServiceUrl = null;
 	private String idpSingleSignOnServiceBinding = Constants.BINDING_HTTP_REDIRECT;
 	private URL idpSingleLogoutServiceUrl = null;
+	private URL idpSingleLogoutServiceResponseUrl = null;
 	private String idpSingleLogoutServiceBinding = Constants.BINDING_HTTP_REDIRECT;
 	private X509Certificate idpx509cert = null;
 	private String idpCertFingerprint = null;
@@ -165,6 +166,17 @@ public class Saml2Settings {
 	 */
 	public final URL getIdpSingleLogoutServiceUrl() {
 		return idpSingleLogoutServiceUrl;
+	}
+
+	/**
+	 * @return the idpSingleLogoutServiceResponseUrl setting value
+	 */
+	public final URL getIdpSingleLogoutServiceResponseUrl() {
+		if (idpSingleLogoutServiceResponseUrl == null) {
+			return getIdpSingleLogoutServiceUrl();
+		}
+
+		return idpSingleLogoutServiceResponseUrl;
 	}
 
 	/**
@@ -453,6 +465,17 @@ public class Saml2Settings {
 	protected final void setIdpSingleLogoutServiceUrl(URL idpSingleLogoutServiceUrl) {
 		this.idpSingleLogoutServiceUrl = idpSingleLogoutServiceUrl;
 	}
+
+	/**
+	 * Set the idpSingleLogoutServiceUrl setting value
+	 *
+	 * @param idpSingleLogoutServiceResponseUrl
+	 *            the idpSingleLogoutServiceUrl value to be set
+	 */
+	protected final void setIdpSingleLogoutServiceResponseUrl(URL idpSingleLogoutServiceResponseUrl) {
+			this.idpSingleLogoutServiceResponseUrl = idpSingleLogoutServiceResponseUrl;
+	}
+
 
 	/**
 	 * Set the idpSingleLogoutServiceBinding setting value
