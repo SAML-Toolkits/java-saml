@@ -160,6 +160,8 @@ public class SamlResponse {
 
 			ArrayList<String> signedElements = processSignedElements();
 
+			final boolean hasSignedAssertion = signedElements.contains("Assertion");
+			final boolean hasSignedResponse = signedElements.contains("Response");
 			if (settings.isStrict()) {
 				if (settings.getWantXMLValidation()) {
 					if (!Util.validateXML(samlResponseDocument, SchemaFactory.SAML_SCHEMA_PROTOCOL_2_0)) {
@@ -244,11 +246,11 @@ public class SamlResponse {
 
 				validateSubjectConfirmation(responseInResponseTo);
 
-                if (settings.getWantAssertionsSigned() && !signedElements.contains("Assertion")) {
+                if (settings.getWantAssertionsSigned() && !hasSignedAssertion) {
                     throw new Exception("The Assertion of the Response is not signed and the SP requires it");
                 }
 
-                if (settings.getWantMessagesSigned() && !signedElements.contains("Response")) {
+                if (settings.getWantMessagesSigned() && !hasSignedResponse) {
                     throw new Exception("The Message of the Response is not signed and the SP requires it");
                 }
 			}
@@ -260,18 +262,12 @@ public class SamlResponse {
 				String fingerprint = settings.getIdpCertFingerprint();
 				String alg = settings.getIdpCertFingerprintAlgorithm();
 
-				Document documentToValidate;
-				if (signedElements.contains("Response")) {
-					documentToValidate = samlResponseDocument;
-				} else {
-					if (encrypted) {
-						documentToValidate = decryptedDocument;
-					} else {
-						documentToValidate = samlResponseDocument;
-					}
+				if (hasSignedResponse && !Util.validateSign(samlResponseDocument, cert, fingerprint, alg, Util.RESPONSE_SIGNATURE_XPATH)) {
+					throw new Exception("Signature validation failed. SAML Response rejected");
 				}
 
-				if (!Util.validateSign(documentToValidate, cert, fingerprint, alg, settings.getWantMessagesSigned(), settings.getWantAssertionsSigned())) {
+				final Document documentToCheckAssertion = encrypted ? decryptedDocument : samlResponseDocument;
+				if (hasSignedAssertion && !Util.validateSign(documentToCheckAssertion, cert, fingerprint, alg, Util.ASSERTION_SIGNATURE_XPATH)) {
 					throw new Exception("Signature validation failed. SAML Response rejected");
 				}
 			}

@@ -1449,39 +1449,44 @@ public class AuthnResponseTest {
 	 * @see com.onelogin.saml2.authn.SamlResponse#isValid
 	 */
 	@Test
-	public void testIsValidEnc() throws Exception {
+	public void testIsValid_doubleSignedEncrypted() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
-		settings.setWantAssertionsSigned(false);
-		settings.setWantMessagesSigned(false);
+		settings.setWantAssertionsSigned(true);
+		settings.setWantMessagesSigned(true);
 		String samlResponseEncoded = Util.getFileAsString("data/responses/double_signed_encrypted_assertion.xml.base64");
 
-		settings.setStrict(false);
-		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
-		assertTrue(samlResponse.isValid());
+		assertResponseValid(settings, samlResponseEncoded, false, true, null);
+		assertResponseValid(settings, samlResponseEncoded, true, true, null);
+	}
 
-		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
-		assertTrue(samlResponse.isValid());
+	@Test
+	public void testIsValid_signedResponseEncryptedAssertion() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		settings.setWantAssertionsSigned(false);
+		settings.setWantMessagesSigned(true);
 
-		samlResponseEncoded = Util.getFileAsString("data/responses/signed_message_encrypted_assertion.xml.base64");
+		String samlResponseEncoded = Util.getFileAsString("data/responses/signed_message_encrypted_assertion.xml.base64");
 
-		settings.setStrict(false);
-		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
-		assertTrue(samlResponse.isValid());
+		assertResponseValid(settings, samlResponseEncoded, false, true, null);
+		assertResponseValid(settings, samlResponseEncoded, true, true, null);
+		settings.setWantAssertionsSigned(true);
+		assertResponseValid(settings, samlResponseEncoded, false, true, null);
+		assertResponseValid(settings, samlResponseEncoded, true, false, "The Assertion of the Response is not signed and the SP requires it");
+	}
 
-		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
-		assertTrue(samlResponse.isValid());
+	@Test
+	public void testIsValid_signedEncryptedAssertion() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		settings.setWantAssertionsSigned(true);
+		settings.setWantMessagesSigned(false);
 
-		samlResponseEncoded = Util.getFileAsString("data/responses/signed_encrypted_assertion.xml.base64");
+		String samlResponseEncoded = Util.getFileAsString("data/responses/signed_encrypted_assertion.xml.base64");
 
-		settings.setStrict(false);
-		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
-		assertTrue(samlResponse.isValid());
-
-		settings.setStrict(true);
-		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
-		assertTrue(samlResponse.isValid());
+		assertResponseValid(settings, samlResponseEncoded, false, true, null);
+		assertResponseValid(settings, samlResponseEncoded, true, true, null);
+		settings.setWantMessagesSigned(true);
+		assertResponseValid(settings, samlResponseEncoded, false, true, null);
+		assertResponseValid(settings, samlResponseEncoded, true, false, "The Message of the Response is not signed and the SP requires it");
 	}
 
 	/**

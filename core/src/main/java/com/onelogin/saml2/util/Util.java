@@ -782,52 +782,26 @@ public final class Util {
 		return convertedSignatureAlg;
 	}
 
-    /**
-     * Validate signature (Message or Assertion).
-     *
-     * @param doc
-     *               The document we should validate
-     * @param cert
-     *               The public certificate
-     * @param fingerprint
-     *               The fingerprint of the public certificate
-     * @param alg
-     *               The signature algorithm method
-     * @param wantAssertionSigned whether the caller requires assertions to be signed
-     * @param wantResponseSigned whether the caller requires responses to be signed
-     *
-     * @return True if the required signatures are present and the present signatures are valid, false otherwise.
-     */
-    public static Boolean validateSign(Document doc, X509Certificate cert, String fingerprint, String alg,
-									   boolean wantResponseSigned, boolean wantAssertionSigned) {
+	/**
+	 * Validate the signature pointed to by the xpath
+	 *
+	 * @param doc The document we should validate
+	 * @param cert The public certificate
+	 * @param fingerprint The fingerprint of the public certificate
+	 * @param alg The signature algorithm method
+	 * @param xpath the xpath of the ds:Signture node to validate
+	 *
+	 * @return True if the signature exists and is valid, false otherwise.
+	 */
+	public static boolean validateSign(final Document doc, final X509Certificate cert, final String fingerprint,
+									   final String alg, final String xpath) {
 		try {
-			boolean validResponseSignature = checkSignature(doc, cert, fingerprint, alg, wantResponseSigned, RESPONSE_SIGNATURE_XPATH);
-			boolean validAssertionSignature = checkSignature(doc, cert, fingerprint, alg, wantAssertionSigned, ASSERTION_SIGNATURE_XPATH);
-
-			return validResponseSignature && validAssertionSignature;
+			final NodeList signatures = query(doc, xpath);
+			return signatures.getLength() == 1 && validateSignNode(signatures.item(0), cert, fingerprint, alg);
 		} catch (XPathExpressionException e) {
 			log.warn("Failed to find signature nodes", e);
-		}
-		return false;
-    }
-
-	private static boolean checkSignature(Document doc, X509Certificate cert, String fingerprint, String alg, boolean required, final String xpath) throws XPathExpressionException {
-		final NodeList responseSignature = query(doc, xpath);
-		final int signatureCount = responseSignature.getLength();
-		if (signatureCount > 1) {
-			log.warn("Unexpected number of signatures found matching " + xpath + ": " + signatureCount);
 			return false;
 		}
-
-		if (signatureCount == 0) {
-			if (required) {
-				log.warn("No signature matching " + xpath + ", found but was required");
-				return false;
-			}
-			return true;
-		}
-
-		return validateSignNode(responseSignature.item(0), cert, fingerprint, alg);
 	}
 
 	/**
