@@ -291,6 +291,29 @@ public class AuthTest {
 		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SingleLogoutService.php", auth.getSLOurl());
 	}
 
+
+	/**
+	 * Tests the getSLOResponseUrl method of Auth
+	 *
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 * @throws SettingsException
+	 *
+	 * @see com.onelogin.saml2.Auth#getSLOurl
+	 */
+	@Test
+	public void testGetSLOResponseurl() throws URISyntaxException, IOException, SettingsException {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
+
+		Auth auth = new Auth(settings, request, response);
+		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SingleLogoutServiceResponse.php", auth.getSLOResponseUrl());
+	}
+
 	/**
 	 * Tests the processResponse method of Auth
 	 *
