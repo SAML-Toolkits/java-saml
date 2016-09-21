@@ -3,6 +3,7 @@ package com.onelogin.saml2.test.authn;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 
 import java.util.ArrayList;
@@ -36,10 +37,42 @@ public class AuthnRequestTest {
 			}
 		};
 
-		String expectedAuthnRequestStringBase64 = Util.getFileAsString("data/requests/authn_request.xml.deflated.base64");
-		String authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		String expectedAuthnRequestStringBase64Deflated = Util.getFileAsString("data/requests/authn_request.xml.deflated.base64");
+		String expectedAuthnRequestStringBase64 = Util.getFileAsString("data/requests/authn_request.xml.base64");
 
-		assertEquals(authnRequestStringBase64, expectedAuthnRequestStringBase64);
+		String authnRequestStringBase64Deflated = authnRequest.getEncodedAuthnRequest();
+		assertEquals(authnRequestStringBase64Deflated, expectedAuthnRequestStringBase64Deflated);
+
+		authnRequestStringBase64Deflated = authnRequest.getEncodedAuthnRequest(null);
+		assertEquals(authnRequestStringBase64Deflated, expectedAuthnRequestStringBase64Deflated);
+
+		authnRequestStringBase64Deflated = authnRequest.getEncodedAuthnRequest(true);
+		assertEquals(authnRequestStringBase64Deflated, expectedAuthnRequestStringBase64Deflated);
+
+		authnRequestStringBase64Deflated = authnRequest.getEncodedAuthnRequest(false);
+		assertNotEquals(authnRequestStringBase64Deflated, expectedAuthnRequestStringBase64Deflated);
+		assertEquals(authnRequestStringBase64Deflated,expectedAuthnRequestStringBase64);
+		
+		settings.setCompressRequest(true);		
+		authnRequest = new AuthnRequest(settings) {
+			@Override
+			protected String getAuthnRequestXml() {
+				return authnRequestString;
+			}
+		};
+		authnRequestStringBase64Deflated = authnRequest.getEncodedAuthnRequest(null);
+		assertEquals(authnRequestStringBase64Deflated, expectedAuthnRequestStringBase64Deflated);
+
+		settings.setCompressRequest(false);
+		authnRequest = new AuthnRequest(settings) {
+			@Override
+			protected String getAuthnRequestXml() {
+				return authnRequestString;
+			}
+		};
+		authnRequestStringBase64Deflated = authnRequest.getEncodedAuthnRequest(null);
+		assertNotEquals(authnRequestStringBase64Deflated, expectedAuthnRequestStringBase64Deflated);
+		assertEquals(authnRequestStringBase64Deflated, expectedAuthnRequestStringBase64);
 	}
 
 	/**

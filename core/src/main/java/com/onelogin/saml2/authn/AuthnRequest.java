@@ -38,6 +38,11 @@ public class AuthnRequest {
 	private final String id;
 
 	/**
+     * Settings data.
+     */
+	private final Saml2Settings settings;
+
+	/**
 	 * When true the AuthNRequest will set the ForceAuthn='true'
 	 */
 	private final boolean forceAuthn;
@@ -78,6 +83,7 @@ public class AuthnRequest {
 		this.id = Util.generateUniqueID();
 		issueInstant = Calendar.getInstance();
 		this.isPassive = isPassive;
+		this.settings = settings;
 		this.forceAuthn = forceAuthn;
 		this.setNameIdPolicy = setNameIdPolicy;
 
@@ -87,12 +93,33 @@ public class AuthnRequest {
 	}
 
 	/**
-	 * @return deflated, base64 encoded, unsigned AuthnRequest.
+	 * @return the base64 encoded unsigned AuthnRequest (deflated or not)
+	 *
+	 * @param deflated 
+     *				If deflated or not the encoded AuthnRequest
+     *
+	 * @throws IOException 
+	 */
+	public String getEncodedAuthnRequest(Boolean deflated) throws IOException {
+		String encodedAuthnRequest;
+		if (deflated == null) {
+			deflated = settings.isCompressRequestEnabled();
+		}
+		if (deflated) {
+			encodedAuthnRequest = Util.deflatedBase64encoded(getAuthnRequestXml());
+		} else {
+			encodedAuthnRequest = Util.base64encoder(getAuthnRequestXml());
+		}
+		return encodedAuthnRequest;
+	}
+	
+	/**
+	 * @return base64 encoded, unsigned AuthnRequest (deflated or not)
 	 * 
 	 * @throws IOException 
 	 */
 	public String getEncodedAuthnRequest() throws IOException {
-		return Util.deflatedBase64encoded(getAuthnRequestXml());
+		return getEncodedAuthnRequest(null);
 	}
 
 	/**

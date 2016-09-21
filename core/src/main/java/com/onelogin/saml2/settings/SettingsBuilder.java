@@ -85,6 +85,10 @@ public class SettingsBuilder {
 	public final static String SECURITY_SIGNATURE_ALGORITHM = "onelogin.saml2.security.signature_algorithm";
 	public final static String SECURITY_REJECT_UNSOLICITED_RESPONSES_WITH_INRESPONSETO = "onelogin.saml2.security.reject_unsolicited_responses_with_inresponseto";
 
+	// Compress
+	public final static String COMPRESS_REQUEST = "onelogin.saml2.compress.request";
+	public final static String COMPRESS_RESPONSE = "onelogin.saml2.compress.response";
+	
 	// Misc
 	public final static String CONTACT_TECHNICAL_GIVEN_NAME = "onelogin.saml2.contacts.technical.given_name";
 	public final static String CONTACT_TECHNICAL_EMAIL_ADDRESS = "onelogin.saml2.contacts.technical.email_address";
@@ -166,6 +170,7 @@ public class SettingsBuilder {
 		this.loadSpSetting();
 		this.loadIdpSetting();
 		this.loadSecuritySetting();
+		this.loadCompressSetting();
 		
 		saml2Setting.setContacts(loadContacts());
 
@@ -281,6 +286,21 @@ public class SettingsBuilder {
 		}
 	}
 
+	/**
+	 * Loads the compress settings from the properties file
+	 */
+	private void loadCompressSetting() {
+		Boolean compressRequest = loadBooleanProperty(COMPRESS_REQUEST);
+		if (compressRequest != null) {
+			saml2Setting.setCompressRequest(compressRequest);
+		}
+
+		Boolean compressResponse = loadBooleanProperty(COMPRESS_RESPONSE);
+		if (compressResponse != null) {
+			saml2Setting.setCompressResponse(compressResponse);
+		}		
+	}
+	
 	/**
 	 * Loads the organization settings from the properties file
 	 */

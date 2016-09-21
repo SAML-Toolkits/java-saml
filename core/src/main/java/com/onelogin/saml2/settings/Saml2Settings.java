@@ -72,6 +72,10 @@ public class Saml2Settings {
 	private String signatureAlgorithm = Constants.RSA_SHA1;
 	private boolean rejectUnsolicitedResponsesWithInResponseTo = false;
 
+	// Compress
+	private Boolean compressRequest = true;
+	private Boolean compressResponse = true;
+
 	// Misc
 	private List<Contact> contacts = new LinkedList<Contact>();
 	private Organization organization = null;
@@ -677,6 +681,40 @@ public class Saml2Settings {
 
 	public boolean isRejectUnsolicitedResponsesWithInResponseTo() {
 		return rejectUnsolicitedResponsesWithInResponseTo;
+	}
+
+	/**
+	 * Set the compressRequest setting value
+	 *
+	 * @param compressRequest
+	 *            the compressRequest value to be set.
+	 */
+	public void setCompressRequest(boolean compressRequest) {
+		this.compressRequest = compressRequest;
+	}
+
+	/**
+	 * @return the compressRequest setting value
+	 */
+	public boolean isCompressRequestEnabled() {
+		return compressRequest;
+	}
+
+	/**
+	 * Set the compressResponse setting value
+	 *
+	 * @param compressResponse
+	 *            the compressResponse value to be set.
+	 */
+	public void setCompressResponse(boolean compressResponse) {
+		this.compressResponse = compressResponse;
+	}
+
+	/**
+	 * @return the compressResponse setting value
+	 */
+	public boolean isCompressResponseEnabled() {
+		return compressResponse;
 	}
 
 	/**

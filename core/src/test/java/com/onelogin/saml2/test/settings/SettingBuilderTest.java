@@ -354,6 +354,33 @@ public class SettingBuilderTest {
 
 	/**
 	 * Tests SettingsBuilder constructor
+	 * Case: Compress
+	 *
+	 * @throws IOException 
+	 * @throws CertificateException 
+	 * @throws URISyntaxException 
+	 * @throws SettingsException 
+	 *
+	 * @see com.onelogin.saml2.settings.SettingsBuilder
+	 */
+	@Test
+	public void testCompression() throws IOException, CertificateException, URISyntaxException, SettingsException {
+		Saml2Settings setting = new SettingsBuilder().fromFile("config/config.min.properties").build();
+
+		assertTrue(setting.isCompressRequestEnabled());
+		assertTrue(setting.isCompressResponseEnabled());
+
+		setting = new SettingsBuilder().fromFile("config/config.compress.properties").build();
+		assertTrue(setting.isCompressRequestEnabled());
+		assertTrue(setting.isCompressResponseEnabled());
+
+		setting = new SettingsBuilder().fromFile("config/config.nocompress.properties").build();
+		assertFalse(setting.isCompressRequestEnabled());
+		assertFalse(setting.isCompressResponseEnabled());
+	}
+	
+	/**
+	 * Tests SettingsBuilder constructor
 	 * Case: settings config file with some empty values
 	 *
 	 * @throws IOException 

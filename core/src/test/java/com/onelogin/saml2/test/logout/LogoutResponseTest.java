@@ -6,6 +6,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -17,6 +18,7 @@ import org.junit.Test;
 
 import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.http.HttpRequest;
+import com.onelogin.saml2.logout.LogoutRequest;
 import com.onelogin.saml2.logout.LogoutResponse;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
@@ -48,10 +50,11 @@ public class LogoutResponseTest {
 
  		logoutResponseBuilder.build();
 
-		String expectedLogoutResponseStringBase64 = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
-		String logoutResponseStringBase64 = logoutResponseBuilder.getEncodedLogoutResponse();
-
-		assertEquals(logoutResponseStringBase64, expectedLogoutResponseStringBase64);
+		String expectedLogoutResponseStringBase64Deflated = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
+		String expectedLogoutResponseStringBase64 = Util.getFileAsString("data/logout_responses/logout_response.xml.base64");
+		
+		String logoutResponseStringBase64Deflated = logoutResponseBuilder.getEncodedLogoutResponse();
+		assertEquals(logoutResponseStringBase64Deflated, expectedLogoutResponseStringBase64Deflated);
 
 		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest) {
 			@Override
@@ -59,8 +62,39 @@ public class LogoutResponseTest {
 				return logoutResponseString;
 			}
 		};
- 		logoutResponseStringBase64 = logoutResponse.getEncodedLogoutResponse();
- 		assertEquals(logoutResponseStringBase64, expectedLogoutResponseStringBase64);
+		logoutResponseStringBase64Deflated = logoutResponse.getEncodedLogoutResponse();
+ 		assertEquals(logoutResponseStringBase64Deflated, expectedLogoutResponseStringBase64Deflated);
+
+ 		logoutResponseStringBase64Deflated = logoutResponse.getEncodedLogoutResponse(null);
+		assertEquals(logoutResponseStringBase64Deflated, expectedLogoutResponseStringBase64Deflated);
+
+		logoutResponseStringBase64Deflated = logoutResponse.getEncodedLogoutResponse(true);
+		assertEquals(logoutResponseStringBase64Deflated, expectedLogoutResponseStringBase64Deflated);
+
+		logoutResponseStringBase64Deflated = logoutResponse.getEncodedLogoutResponse(false);
+		assertNotEquals(logoutResponseStringBase64Deflated, expectedLogoutResponseStringBase64Deflated);
+		assertEquals(logoutResponseStringBase64Deflated,expectedLogoutResponseStringBase64);
+		
+		settings.setCompressResponse(true);
+		logoutResponse = new LogoutResponse(settings, httpRequest) {
+			@Override
+			protected String getLogoutResponseXml() {
+				return logoutResponseString;
+			}
+		};
+		logoutResponseStringBase64Deflated = logoutResponse.getEncodedLogoutResponse(null);
+		assertEquals(logoutResponseStringBase64Deflated, expectedLogoutResponseStringBase64Deflated);
+
+		settings.setCompressResponse(false);
+		logoutResponse = new LogoutResponse(settings, httpRequest) {
+			@Override
+			protected String getLogoutResponseXml() {
+				return logoutResponseString;
+			}
+		};
+		logoutResponseStringBase64Deflated = logoutResponse.getEncodedLogoutResponse(null);
+		assertNotEquals(logoutResponseStringBase64Deflated, expectedLogoutResponseStringBase64Deflated);
+		assertEquals(logoutResponseStringBase64Deflated, expectedLogoutResponseStringBase64);
 	}
 
 	/**

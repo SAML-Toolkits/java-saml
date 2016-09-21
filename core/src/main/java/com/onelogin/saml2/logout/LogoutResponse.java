@@ -106,12 +106,33 @@ public class LogoutResponse {
 	}
 
 	/**
-	 * @return the deflated, base64 encoded, unsigned Logout Response.
+	 * @return the base64 encoded unsigned Logout Response (deflated or not)
+	 *
+	 * @param deflated 
+     *				If deflated or not the encoded Logout Response
+     *
+	 * @throws IOException 
+	 */
+	public String getEncodedLogoutResponse(Boolean deflated) throws IOException {
+		String encodedLogoutResponse;
+		if (deflated == null) {
+			deflated = settings.isCompressResponseEnabled();
+		}
+		if (deflated) {
+			encodedLogoutResponse = Util.deflatedBase64encoded(getLogoutResponseXml());
+		} else {
+			encodedLogoutResponse = Util.base64encoder(getLogoutResponseXml());
+		}
+		return encodedLogoutResponse;
+	}
+	
+	/**
+	 * @return the base64 encoded, unsigned Logout Response (deflated or not)
 	 *
 	 * @throws IOException 
 	 */
 	public String getEncodedLogoutResponse() throws IOException {
-		return Util.deflatedBase64encoded(getLogoutResponseXml());
+		return getEncodedLogoutResponse(null);
 	}
 
 	/**
