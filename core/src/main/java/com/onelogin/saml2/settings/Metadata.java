@@ -1,6 +1,7 @@
 package com.onelogin.saml2.settings;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +22,8 @@ import org.w3c.dom.Document;
 
 import com.onelogin.saml2.model.Contact;
 import com.onelogin.saml2.model.Organization;
+import com.onelogin.saml2.model.AttributeConsumingService;
+import com.onelogin.saml2.model.RequestedAttribute;
 import com.onelogin.saml2.util.Util;
 
 /**
@@ -38,6 +41,11 @@ public class Metadata {
 	private static final int N_DAYS_VALID_UNTIL = 2;
 	private static final int SECONDS_CACHED = 604800; // 1 week
 
+	/**
+     * AttributeConsumingService 
+     */
+	private AttributeConsumingService attributeConsumingService = null;
+	
 	/**
      * Generated metadata in string format
      */
@@ -62,16 +70,20 @@ public class Metadata {
 	 * 				Metadata's valid time 
 	 * @param cacheDuration
 	 * 				Duration of the cache in seconds
+	 * @param attributeConsumingService
+	 * 				AttributeConsumingService of service provider
 	 * 
 	 * @throws CertificateEncodingException 
 	 */
-	public Metadata(Saml2Settings settings, Calendar validUntilTime, Integer cacheDuration) throws CertificateEncodingException {
+	public Metadata(Saml2Settings settings, Calendar validUntilTime, Integer cacheDuration, AttributeConsumingService attributeConsumingService) throws CertificateEncodingException {
 		if (validUntilTime == null) {
 			this.validUntilTime = Calendar.getInstance();
 			this.validUntilTime.add(Calendar.DAY_OF_YEAR, N_DAYS_VALID_UNTIL);
 		} else {
 			this.validUntilTime = validUntilTime;
 		}
+		
+		this.attributeConsumingService = attributeConsumingService;
 
 		if (cacheDuration == null) {
 			this.cacheDuration = SECONDS_CACHED;
@@ -86,6 +98,22 @@ public class Metadata {
     	metadataString = unsignedMetadataString;
 	}
 
+	/**
+	 * Constructs the Metadata object.
+	 * 
+	 * @param settings
+	 * 				Saml2Settings object. Setting data  
+	 * @param validUntilTime 
+	 * 				Metadata's valid time 
+	 * @param cacheDuration
+	 * 				Duration of the cache in seconds
+	 * 
+	 * @throws CertificateEncodingException 
+	 */
+	public Metadata(Saml2Settings settings, Calendar validUntilTime, Integer cacheDuration) throws CertificateEncodingException {
+		this(settings, validUntilTime, cacheDuration, null);
+	}
+		
 	/**
 	 * Constructs the Metadata object.
 	 *
@@ -121,6 +149,8 @@ public class Metadata {
 		valueMap.put("spAssertionConsumerServiceUrl", settings.getSpAssertionConsumerServiceUrl().toString());
 		valueMap.put("sls", toSLSXml(settings.getSpSingleLogoutServiceUrl(), settings.getSpSingleLogoutServiceBinding()).toString());
 
+		valueMap.put("strAttributeConsumingService", getAttributeConsumingServiceXml());
+		
 		valueMap.put("strKeyDescriptor", toX509KeyDescriptorsXML(settings.getSPcert()).toString());
 		valueMap.put("strContacts", toContactsXml(settings.getContacts()));
 		valueMap.put("strOrganization", toOrganizationXml(settings.getOrganization(), "en"));
@@ -146,12 +176,76 @@ public class Metadata {
 		template.append("<md:AssertionConsumerService Binding=\"${spAssertionConsumerServiceBinding}\"");
 		template.append(" Location=\"${spAssertionConsumerServiceUrl}\"");
 		template.append(" index=\"1\"/>");
+		template.append("${strAttributeConsumingService}");
 		template.append("</md:SPSSODescriptor>${strOrganization}${strContacts}");
 		template.append("</md:EntityDescriptor>");
 
 		return template;
 	}
 
+	/**
+	 * Generates the AttributeConsumingService section of the metadata's template
+	 *
+	 *
+	 * @return the AttributeConsumingService section of the metadata's template
+	 */
+	private String getAttributeConsumingServiceXml() {
+		StringBuilder attributeConsumingServiceXML = new StringBuilder();
+		if (attributeConsumingService != null) {
+			String serviceName = attributeConsumingService.getServiceName();
+			String serviceDescription = attributeConsumingService.getServiceDescription();
+			List<RequestedAttribute> requestedAttributes = attributeConsumingService.getRequestedAttributes();
+
+			attributeConsumingServiceXML.append("<md:AttributeConsumingService index=\"1\">");
+			if (serviceName != null && !serviceName.isEmpty()) {
+				attributeConsumingServiceXML.append("<md:ServiceName xml:lang=\"en\">" + serviceName + "</md:ServiceName>");
+			}
+			if (serviceDescription != null && !serviceDescription.isEmpty()) {
+				attributeConsumingServiceXML.append("<md:ServiceDescription xml:lang=\"en\">" + serviceDescription + "</md:ServiceDescription>");
+			}
+			if (requestedAttributes != null && !requestedAttributes.isEmpty()) {
+				for (RequestedAttribute requestedAttribute : requestedAttributes) {
+					String name = requestedAttribute.getName();
+					String friendlyName = requestedAttribute.getFriendlyName();
+					String nameFormat = requestedAttribute.getNameFormat();
+					Boolean isRequired = requestedAttribute.isRequired();
+					List<String> attrValues = requestedAttribute.getAttributeValues() ;
+
+					String contentStr = "<md:RequestedAttribute";					
+					
+					if (name != null && !name.isEmpty()) {
+						contentStr += " Name=\"" + name + "\"";
+					}
+
+					if (nameFormat != null && !nameFormat.isEmpty()) {
+						contentStr += " NameFormat=\"" + nameFormat + "\"";
+					}
+
+					if (friendlyName != null && !friendlyName.isEmpty()) {
+						contentStr += " FriendlyName=\"" + friendlyName + "\"";
+					}
+
+					if (isRequired != null) {
+						contentStr += " isRequired=\"" + isRequired.toString() + "\"";
+					}
+					
+					if (attrValues != null && !attrValues.isEmpty()) {
+						contentStr += ">";
+						for (String attrValue : attrValues) {
+							contentStr += "<saml:AttributeValue xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\">" + attrValue + "</saml:AttributeValue>";
+						}
+						attributeConsumingServiceXML.append(contentStr + "</md:RequestedAttribute>");
+					} else {
+						attributeConsumingServiceXML.append(contentStr + " />");
+					}
+				}
+			}
+			attributeConsumingServiceXML.append("</md:AttributeConsumingService>");
+		}
+		
+		return attributeConsumingServiceXML.toString();
+	}
+	
 	/**
 	 * Generates the contact section of the metadata's template
 	 *

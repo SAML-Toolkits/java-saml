@@ -10,13 +10,17 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import org.w3c.dom.Document;
 import org.junit.Test;
 
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
+import com.onelogin.saml2.model.AttributeConsumingService;
+import com.onelogin.saml2.model.RequestedAttribute;
 import com.onelogin.saml2.settings.Metadata;
 import com.onelogin.saml2.util.SchemaFactory;
 import com.onelogin.saml2.util.Util;
@@ -187,5 +191,92 @@ public class MetadataTest {
 
 		assertThat(metadataStr2, not(containsString(keyDescriptorSignStr)));
 		assertThat(metadataStr2, not(containsString(keyDescriptorEncStr)));
+	}
+	
+	/**
+	 * Tests the getAttributeConsumingServiceXml method of Metadata
+     *
+	 * @throws IOException
+	 * @throws CertificateEncodingException
+	 *
+	 * @see Metadata.getAttributeConsumingServiceXml
+	 */
+	@Test
+	public void testGetAttributeConsumingServiceXml() throws IOException, CertificateEncodingException {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
+		
+		AttributeConsumingService attributeConsumingService = new AttributeConsumingService("Test Service", "Test Service Desc");
+		RequestedAttribute requestedAttribute = new RequestedAttribute("Email", "Email", true, "urn:oasis:names:tc:SAML:2.0:attrname-format:uri", null);
+		RequestedAttribute requestedAttribute2 = new RequestedAttribute("FirstName", null, true, "urn:oasis:names:tc:SAML:2.0:attrname-format:uri", null);
+		RequestedAttribute requestedAttribute3 = new RequestedAttribute("LastName", null, true, "urn:oasis:names:tc:SAML:2.0:attrname-format:uri", null);
+		
+		attributeConsumingService.addRequestedAttribute(requestedAttribute);
+		attributeConsumingService.addRequestedAttribute(requestedAttribute2);
+		attributeConsumingService.addRequestedAttribute(requestedAttribute3);
+		
+		Metadata metadataObj = new Metadata(settings, null, null, attributeConsumingService);
+		String metadataStr = metadataObj.getMetadataString();
+		
+		String headerStr = "<md:AttributeConsumingService index=\"1\">";
+		String sNameStr = "<md:ServiceName xml:lang=\"en\">Test Service</md:ServiceName>";
+		String sDescStr = "<md:ServiceDescription xml:lang=\"en\">Test Service Desc</md:ServiceDescription>";
+		String reqAttr1Str = "<md:RequestedAttribute Name=\"Email\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:uri\" FriendlyName=\"Email\" isRequired=\"true\" />";
+		String reqAttr2Str = "<md:RequestedAttribute Name=\"FirstName\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:uri\" isRequired=\"true\" />";
+		String reqAttr3Str = "<md:RequestedAttribute Name=\"LastName\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:uri\" isRequired=\"true\" />";
+		String footerStr = "</md:AttributeConsumingService>";
+
+		assertThat(metadataStr, containsString(headerStr));
+		assertThat(metadataStr, containsString(sNameStr));
+		assertThat(metadataStr, containsString(sDescStr));
+		assertThat(metadataStr, containsString(reqAttr1Str));
+		assertThat(metadataStr, containsString(reqAttr2Str));
+		assertThat(metadataStr, containsString(reqAttr3Str));
+		assertThat(metadataStr, containsString(footerStr));
+	}
+
+	/**
+	 * Tests the getAttributeConsumingServiceXml method of Metadata
+     * Case: AttributeConsumingService Multiple AttributeValue 
+     *
+	 * @throws IOException
+	 * @throws CertificateEncodingException
+	 *
+	 * @see Metadata.getAttributeConsumingServiceXml
+	 */
+	@Test
+	public void testGetAttributeConsumingServiceXmlWithMultipleAttributeValue() throws IOException, CertificateEncodingException {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
+		
+		AttributeConsumingService attributeConsumingService = new AttributeConsumingService("Test Service", "Test Service Desc");
+		List<String> attrValues = new ArrayList<String>();
+		attrValues.add("userType");
+		attrValues.add("admin");		
+		RequestedAttribute requestedAttribute = new RequestedAttribute("userType", null, false, "urn:oasis:names:tc:SAML:2.0:attrname-format:basic", attrValues);
+		RequestedAttribute requestedAttribute2 = new RequestedAttribute("urn:oid:0.9.2342.19200300.100.1.1", "uid", true, "urn:oasis:names:tc:SAML:2.0:attrname-format:uri", null);
+
+		
+		attributeConsumingService.addRequestedAttribute(requestedAttribute);
+		attributeConsumingService.addRequestedAttribute(requestedAttribute2);
+		
+		Metadata metadataObj = new Metadata(settings, null, null, attributeConsumingService);
+		String metadataStr = metadataObj.getMetadataString();
+		
+		String headerStr = "<md:AttributeConsumingService index=\"1\">";
+		String sNameStr = "<md:ServiceName xml:lang=\"en\">Test Service</md:ServiceName>";
+		String sDescStr = "<md:ServiceDescription xml:lang=\"en\">Test Service Desc</md:ServiceDescription>";
+		String reqAttr1Str = "<md:RequestedAttribute Name=\"userType\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:basic\" isRequired=\"false\">";
+		String reqAttr1Atr1Str = "<saml:AttributeValue xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\">userType</saml:AttributeValue>";
+		String reqAttr1Attr2Str = "<saml:AttributeValue xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\">admin</saml:AttributeValue>";
+		String reqAttr2Str = "<md:RequestedAttribute Name=\"urn:oid:0.9.2342.19200300.100.1.1\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:uri\" FriendlyName=\"uid\" isRequired=\"true\" />";
+		String footerStr = "</md:AttributeConsumingService>";
+
+		assertThat(metadataStr, containsString(headerStr));
+		assertThat(metadataStr, containsString(sNameStr));
+		assertThat(metadataStr, containsString(sDescStr));
+		assertThat(metadataStr, containsString(reqAttr1Str));
+		assertThat(metadataStr, containsString(reqAttr1Atr1Str));
+		assertThat(metadataStr, containsString(reqAttr1Attr2Str));
+		assertThat(metadataStr, containsString(reqAttr2Str));
+		assertThat(metadataStr, containsString(footerStr));
 	}
 }
