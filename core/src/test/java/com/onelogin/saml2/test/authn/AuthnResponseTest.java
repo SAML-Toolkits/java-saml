@@ -1,24 +1,5 @@
 package com.onelogin.saml2.test.authn;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
-import org.joda.time.Instant;
-import org.junit.Test;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 import com.onelogin.saml2.authn.SamlResponse;
 import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.model.SamlResponseStatus;
@@ -26,6 +7,31 @@ import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
 import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.Util;
+import org.hamcrest.Matchers;
+import org.joda.time.Instant;
+import org.junit.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class AuthnResponseTest {
 	private static final String ACS_URL = "http://localhost:8080/java-saml-jspsample/acs.jsp";
@@ -1125,6 +1131,42 @@ public class AuthnResponseTest {
 						"\n[0] SubjectConfirmationData doesn't contain a NotOnOrAfter attribute, " +
 						"\n[1] SubjectConfirmationData doesn't contain a Recipient, " +
 						"\n[2] SubjectConfirmationData is no longer valid");
+	}
+
+	@Test
+	public void testIsValid_multipleThreads() throws Exception {
+		// having
+		final int jobCount = 100;
+		final int threadCount = 5;
+		final ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+		final List<Throwable> errors = new CopyOnWriteArrayList<>();
+		final AtomicInteger successCount = new AtomicInteger();
+
+		// when
+		for (int i = 0; i < jobCount; i++) {
+			executor.submit(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+						settings.setWantAssertionsSigned(false);
+						settings.setWantMessagesSigned(true);
+						final String samlResponseEncoded = loadSignMessageAndEncode("data/responses/valid_idp_initiated_response.xml");
+
+						assertResponseValid(settings, samlResponseEncoded, true, true, null);
+						successCount.incrementAndGet();
+					} catch (Throwable e) {
+						errors.add(e);
+					}
+				}
+			});
+		}
+		executor.shutdown();
+		executor.awaitTermination(30, TimeUnit.SECONDS);
+
+		// then
+		assertThat(errors, Matchers.empty());
+		assertThat(successCount.get(), is(jobCount));
 	}
 
 	/**
