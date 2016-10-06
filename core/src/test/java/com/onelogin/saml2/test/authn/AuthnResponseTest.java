@@ -227,7 +227,7 @@ public class AuthnResponseTest {
 		samlResponseEncoded = Util.getFileAsString("data/responses/response_encrypted_nameid.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		String NameIdDataStr = samlResponse.getNameIdData().toString();
-		assertThat(NameIdDataStr, containsString("Format=urn:oasis:names:tc:SAML:2.0:nameid-format:unspecified"));
+		assertThat(NameIdDataStr, containsString("Format=urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"));
 		assertThat(NameIdDataStr, containsString("Value=2de11defd199f8d5bb63f9b7deb265ba5c675c10"));
 		assertThat(NameIdDataStr, containsString("SPNameQualifier=http://localhost:8080/java-saml-jspsample/metadata.jsp"));
 

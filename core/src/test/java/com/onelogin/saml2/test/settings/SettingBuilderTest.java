@@ -66,7 +66,7 @@ public class SettingBuilderTest {
 		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST", setting.getSpAssertionConsumerServiceBinding());
 		assertNull(setting.getSpSingleLogoutServiceUrl());
 		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect", setting.getSpSingleLogoutServiceBinding());
-		assertEquals("urn:oasis:names:tc:SAML:2.0:nameid-format:unspecified", setting.getSpNameIDFormat());
+		assertEquals("urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified", setting.getSpNameIDFormat());
 
 		assertTrue(setting.getIdpEntityId().isEmpty());
 		assertNull(setting.getIdpSingleSignOnServiceUrl());
@@ -119,7 +119,7 @@ public class SettingBuilderTest {
 		assertEquals(setting.getSpAssertionConsumerServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
 		assertEquals("http://localhost:8080/java-saml-jspsample/sls.jsp", setting.getSpSingleLogoutServiceUrl().toString());
 		assertEquals(setting.getSpSingleLogoutServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
-		assertEquals(setting.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:2.0:nameid-format:unspecified");
+		assertEquals(setting.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
 
 		assertEquals("http://idp.example.com/", setting.getIdpEntityId());
 		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SSOService.php", setting.getIdpSingleSignOnServiceUrl().toString());
@@ -173,7 +173,7 @@ public class SettingBuilderTest {
 		assertEquals(setting.getSpAssertionConsumerServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
 		assertEquals("http://localhost:8080/java-saml-jspsample/sls.jsp", setting.getSpSingleLogoutServiceUrl().toString());
 		assertEquals(setting.getSpSingleLogoutServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
-		assertEquals(setting.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:2.0:nameid-format:unspecified");
+		assertEquals(setting.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
 
 		assertEquals("http://idp.example.com/", setting.getIdpEntityId());
 		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SSOService.php", setting.getIdpSingleSignOnServiceUrl().toString());
@@ -241,7 +241,7 @@ public class SettingBuilderTest {
 		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST", setting.getSpAssertionConsumerServiceBinding());
 		assertEquals("http://localhost:8080/java-saml-jspsample/sls.jsp", setting.getSpSingleLogoutServiceUrl().toString());
 		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect", setting.getSpSingleLogoutServiceBinding());
-		assertEquals("urn:oasis:names:tc:SAML:2.0:nameid-format:unspecified", setting.getSpNameIDFormat());
+		assertEquals("urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified", setting.getSpNameIDFormat());
 
 		assertEquals("http://idp.example.com/", setting.getIdpEntityId());
 		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SSOService.php", setting.getIdpSingleSignOnServiceUrl().toString());
@@ -294,7 +294,7 @@ public class SettingBuilderTest {
 		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST", setting.getSpAssertionConsumerServiceBinding());
 		assertEquals("http://localhost:8080/java-saml-jspsample/sls.jsp", setting.getSpSingleLogoutServiceUrl().toString());
 		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect", setting.getSpSingleLogoutServiceBinding());
-		assertEquals("urn:oasis:names:tc:SAML:2.0:nameid-format:unspecified", setting.getSpNameIDFormat());
+		assertEquals("urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified", setting.getSpNameIDFormat());
 
 		assertEquals("http://idp.example.com/", setting.getIdpEntityId());
 		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SSOService.php", setting.getIdpSingleSignOnServiceUrl().toString());
@@ -401,7 +401,7 @@ public class SettingBuilderTest {
 		assertEquals(setting.getSpAssertionConsumerServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
 		assertEquals("http://localhost:8080/java-saml-jspsample/sls.jsp", setting.getSpSingleLogoutServiceUrl().toString());
 		assertEquals(setting.getSpSingleLogoutServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
-		assertEquals(setting.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:2.0:nameid-format:unspecified");
+		assertEquals(setting.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
 
 		assertEquals("http://idp.example.com/", setting.getIdpEntityId());
 		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SSOService.php", setting.getIdpSingleSignOnServiceUrl().toString());
@@ -453,7 +453,7 @@ public class SettingBuilderTest {
 		assertEquals(setting.getSpAssertionConsumerServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
 		assertEquals("http://localhost:8080/java-saml-jspsample/sls.jsp", setting.getSpSingleLogoutServiceUrl().toString());
 		assertEquals(setting.getSpSingleLogoutServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
-		assertEquals(setting.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:2.0:nameid-format:unspecified");
+		assertEquals(setting.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
 
 		assertEquals("http://idp.example.com/", setting.getIdpEntityId());
 		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SSOService.php", setting.getIdpSingleSignOnServiceUrl().toString());

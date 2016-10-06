@@ -179,7 +179,7 @@ public class AuthnRequestTest {
 		String authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);
 		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
 		assertThat(authnRequestStr, containsString("<samlp:NameIDPolicy"));
-		assertThat(authnRequestStr, containsString("Format=\"urn:oasis:names:tc:SAML:2.0:nameid-format:unspecified\""));
+		assertThat(authnRequestStr, containsString("Format=\"urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified\""));
 
 		authnRequest = new AuthnRequest(settings, false, false, false);
 		authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
@@ -192,7 +192,7 @@ public class AuthnRequestTest {
 		authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);		
 		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
 		assertThat(authnRequestStr, containsString("<samlp:NameIDPolicy"));
-		assertThat(authnRequestStr, containsString("Format=\"urn:oasis:names:tc:SAML:2.0:nameid-format:unspecified\""));
+		assertThat(authnRequestStr, containsString("Format=\"urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified\""));
 	}
 
 	/**

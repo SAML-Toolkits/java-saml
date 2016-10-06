@@ -197,7 +197,7 @@ public class LogoutRequestTest {
 		String logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		assertThat(logoutRequestStr, containsString("<samlp:LogoutRequest"));
 		String nameIdDataStr = LogoutRequest.getNameIdData(logoutRequestStr, null).toString();
-		assertThat(nameIdDataStr, containsString("Format=urn:oasis:names:tc:SAML:2.0:nameid-format:unspecified"));
+		assertThat(nameIdDataStr, containsString("Format=urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"));
 		assertThat(nameIdDataStr, containsString("Value=ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c"));
 		assertThat(nameIdDataStr, not(containsString("SPNameQualifier")));
 
@@ -218,7 +218,7 @@ public class LogoutRequestTest {
 		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		PrivateKey key = settings.getSPkey();
 		nameIdDataStr = LogoutRequest.getNameIdData(logoutRequestStr, key).toString();
-		assertThat(nameIdDataStr, containsString("Format=urn:oasis:names:tc:SAML:2.0:nameid-format:unspecified"));
+		assertThat(nameIdDataStr, containsString("Format=urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"));
 		assertThat(nameIdDataStr, containsString("Value=ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c"));
 		assertThat(nameIdDataStr, not(containsString("SPNameQualifier")));	
 

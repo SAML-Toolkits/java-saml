@@ -1685,11 +1685,11 @@ public class UtilsTest {
 	public void testGenerateNameId() throws URISyntaxException, IOException, CertificateException {
         String nameIdValue = "ONELOGIN_ce998811003f4e60f8b07a311dc641621379cfde";
         String entityId = "http://stuff.com/endpoints/metadata.php";
-        String nameIDFormat = "urn:oasis:names:tc:SAML:2.0:nameid-format:unspecified";
+        String nameIDFormat = "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified";
         
         String nameId = Util.generateNameId(nameIdValue, entityId, nameIDFormat);
         
-        String expectedNameId = "<saml:NameID Format=\"urn:oasis:names:tc:SAML:2.0:nameid-format:unspecified\" SPNameQualifier=\"http://stuff.com/endpoints/metadata.php\">ONELOGIN_ce998811003f4e60f8b07a311dc641621379cfde</saml:NameID>";
+        String expectedNameId = "<saml:NameID Format=\"urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified\" SPNameQualifier=\"http://stuff.com/endpoints/metadata.php\">ONELOGIN_ce998811003f4e60f8b07a311dc641621379cfde</saml:NameID>";
         assertEquals(expectedNameId, nameId);
         
 		String certString = Util.getFileAsString("data/customPath/certs/sp.crt");

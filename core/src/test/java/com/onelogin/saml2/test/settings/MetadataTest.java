@@ -58,7 +58,7 @@ public class MetadataTest {
 		assertThat(metadataStr, not(containsString("<md:KeyDescriptor use=\"signing\">")));
 		assertThat(metadataStr, containsString("<md:AssertionConsumerService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST\" Location=\"http://localhost:8080/java-saml-jspsample/acs.jsp\" index=\"1\"/>"));
 		assertThat(metadataStr, containsString("<md:SingleLogoutService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect\" Location=\"http://localhost:8080/java-saml-jspsample/sls.jsp\"/>")); 
-		assertThat(metadataStr, containsString("<md:NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:unspecified</md:NameIDFormat>"));
+		assertThat(metadataStr, containsString("<md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</md:NameIDFormat>"));
 	}
 
 	/**
@@ -254,7 +254,6 @@ public class MetadataTest {
 		RequestedAttribute requestedAttribute = new RequestedAttribute("userType", null, false, "urn:oasis:names:tc:SAML:2.0:attrname-format:basic", attrValues);
 		RequestedAttribute requestedAttribute2 = new RequestedAttribute("urn:oid:0.9.2342.19200300.100.1.1", "uid", true, "urn:oasis:names:tc:SAML:2.0:attrname-format:uri", null);
 
-		
 		attributeConsumingService.addRequestedAttribute(requestedAttribute);
 		attributeConsumingService.addRequestedAttribute(requestedAttribute2);
 		
