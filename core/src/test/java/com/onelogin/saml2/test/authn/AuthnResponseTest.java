@@ -9,7 +9,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -777,7 +776,7 @@ public class AuthnResponseTest {
 
 		// then
 		assertFalse(samlResponse.isValid());
-		assertEquals("Unexpected number of Response signatures found. SAML Response rejected.", samlResponse.getError());
+		assertEquals("Invalid Signature Element {urn:oasis:names:tc:SAML:2.0:assertion}Response SAML Response rejected", samlResponse.getError());
 	}
 
 	/**
@@ -1040,10 +1039,9 @@ public class AuthnResponseTest {
 	public void testIsValidWrongSPNameQualifier() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/wrong_spnamequalifier.xml.base64");
-		settings.setStrict(false);
+		settings.setStrict(true);
 		settings.setWantAssertionsSigned(false);
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
-		assertTrue(samlResponse.isValid());
 		String nameId = samlResponse.getNameId();
 	}
 	
@@ -1885,27 +1883,27 @@ public class AuthnResponseTest {
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/triple_signed_response.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
-		assertEquals("Unexpected number of Response signatures found. SAML Response rejected.", samlResponse.getError());
+		assertEquals("Duplicated ID. SAML Response rejected", samlResponse.getError());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/signed_assertion_response_with_2signatures.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
-		assertEquals("Unexpected number of Response signatures found. SAML Response rejected.", samlResponse.getError());
+		assertEquals("Duplicated ID. SAML Response rejected", samlResponse.getError());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/signed_message_response_with_2signatures.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
-		assertEquals("Unexpected number of Response signatures found. SAML Response rejected.", samlResponse.getError());
+		assertEquals("Duplicated ID. SAML Response rejected", samlResponse.getError());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/wrong_signed_element.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
-		assertEquals("Invalid Signature Element Subject SAML Response rejected", samlResponse.getError());
+		assertEquals("Invalid Signature Element {urn:oasis:names:tc:SAML:2.0:assertion}Subject SAML Response rejected", samlResponse.getError());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/wrong_signed_element2.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
-		assertEquals("Invalid Signature Element Subject SAML Response rejected", samlResponse.getError());
+		assertEquals("Invalid Signature Element {urn:oasis:names:tc:SAML:2.0:assertion}Subject SAML Response rejected", samlResponse.getError());
 		
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/duplicate_reference_uri.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
@@ -1933,22 +1931,25 @@ public class AuthnResponseTest {
 	 */
 	@Test
 	public void testValidateSignedElements() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		ArrayList<String> signedElements = new ArrayList<String>();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/signed_message_response.xml.base64");
 		Document samlResponseDoc = Util.loadXML(new String(Util.base64decoder(samlResponseEncoded)));
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		NodeList signNodes = Util.query(samlResponseDoc, "//ds:Signature");
 
-		assertFalse(SamlResponse.validateSignedElements(signedElements));
+		assertFalse(samlResponse.validateSignedElements(signedElements));
 
 		signedElements = new ArrayList<String>();
 		for (int i = 0; i < signNodes.getLength(); i++) {
 			Node signNode = signNodes.item(i);
-			signedElements.add(signNode.getParentNode().getLocalName());
+			signedElements.add("{" + signNode.getParentNode().getNamespaceURI() + "}" + signNode.getParentNode().getLocalName());
 		}
-		assertTrue(SamlResponse.validateSignedElements(signedElements));
+		assertTrue(samlResponse.validateSignedElements(signedElements));
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/triple_signed_response.xml.base64");
 		samlResponseDoc = Util.loadXML(new String(Util.base64decoder(samlResponseEncoded)));
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		signNodes = Util.query(samlResponseDoc, "//ds:Signature");
 
 		signedElements = new ArrayList<String>();
@@ -1956,40 +1957,43 @@ public class AuthnResponseTest {
 			Node signNode = signNodes.item(i);
 			signedElements.add(signNode.getParentNode().getLocalName());
 		}
-		assertFalse(SamlResponse.validateSignedElements(signedElements));
+		assertFalse(samlResponse.validateSignedElements(signedElements));
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/signed_assertion_response_with_2signatures.xml.base64");
 		samlResponseDoc = Util.loadXML(new String(Util.base64decoder(samlResponseEncoded)));
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		signNodes = Util.query(samlResponseDoc, "//ds:Signature");
 
 		signedElements = new ArrayList<String>();
 		for (int i = 0; i < signNodes.getLength(); i++) {
 			Node signNode = signNodes.item(i);
-			signedElements.add(signNode.getParentNode().getLocalName());
+			signedElements.add("{" + signNode.getParentNode().getNamespaceURI() + "}" + signNode.getParentNode().getLocalName());
 		}
-		assertFalse(SamlResponse.validateSignedElements(signedElements));
+		assertFalse(samlResponse.validateSignedElements(signedElements));
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/signed_message_response_with_2signatures.xml.base64");
 		samlResponseDoc = Util.loadXML(new String(Util.base64decoder(samlResponseEncoded)));
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		signNodes = Util.query(samlResponseDoc, "//ds:Signature");
 
 		signedElements = new ArrayList<String>();
 		for (int i = 0; i < signNodes.getLength(); i++) {
 			Node signNode = signNodes.item(i);
-			signedElements.add(signNode.getParentNode().getLocalName());
+			signedElements.add("{" + signNode.getParentNode().getNamespaceURI() + "}" + signNode.getParentNode().getLocalName());
 		}
-		assertFalse(SamlResponse.validateSignedElements(signedElements));
+		assertFalse(samlResponse.validateSignedElements(signedElements));
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/wrong_signed_element.xml.base64");
 		samlResponseDoc = Util.loadXML(new String(Util.base64decoder(samlResponseEncoded)));
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		signNodes = Util.query(samlResponseDoc, "//ds:Signature");
 
 		signedElements = new ArrayList<String>();
 		for (int i = 0; i < signNodes.getLength(); i++) {
 			Node signNode = signNodes.item(i);
-			signedElements.add(signNode.getParentNode().getLocalName());
+			signedElements.add("{" + signNode.getParentNode().getNamespaceURI() + "}" + signNode.getParentNode().getLocalName());
 		}
-		assertFalse(SamlResponse.validateSignedElements(signedElements));
+		assertFalse(samlResponse.validateSignedElements(signedElements));
 	}
 	
 	/**
@@ -2088,3 +2092,4 @@ public class AuthnResponseTest {
 		return new HttpRequest(requestURL).addParameter("SAMLResponse", samlResponseEncoded);
 	}
 }
+

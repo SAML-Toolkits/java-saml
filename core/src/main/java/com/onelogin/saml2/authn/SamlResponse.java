@@ -160,8 +160,12 @@ public class SamlResponse {
 
 			ArrayList<String> signedElements = processSignedElements();
 
-			final boolean hasSignedAssertion = signedElements.contains("Assertion");
-			final boolean hasSignedResponse = signedElements.contains("Response");
+			String responseTag = "{" + Constants.NS_SAMLP  + "}Response";
+			String assertionTag = "{" + Constants.NS_SAML + "}Assertion";
+			
+			final boolean hasSignedResponse = signedElements.contains(responseTag);
+			final boolean hasSignedAssertion = signedElements.contains(assertionTag);
+
 			if (settings.isStrict()) {
 				if (settings.getWantXMLValidation()) {
 					if (!Util.validateXML(samlResponseDocument, SchemaFactory.SAML_SCHEMA_PROTOCOL_2_0)) {
@@ -267,7 +271,7 @@ public class SamlResponse {
                 }
 			}
 
-			if (signedElements.isEmpty()) {
+			if (signedElements.isEmpty() || (!hasSignedAssertion && !hasSignedResponse)) {
 				throw new Exception("No Signature found. SAML Response rejected");
 			} else {				 
 				X509Certificate cert = settings.getIdpx509cert();
@@ -403,7 +407,7 @@ public class SamlResponse {
 			
 			if (nameIdElem != null) {
 				String value = nameIdElem.getTextContent();
-				if (value.isEmpty()) {
+				if (settings.isStrict() && value.isEmpty()) {
 					throw new Exception("An empty NameID value found");
 				}
 
@@ -415,7 +419,7 @@ public class SamlResponse {
 				if (nameIdElem.hasAttribute("SPNameQualifier")) {
 					String spId = settings.getSpEntityId();
 					String spNameQualifier = nameIdElem.getAttribute("SPNameQualifier");
-					if (!spNameQualifier.equals(settings.getSpEntityId())) {
+					if (settings.isStrict() && !spNameQualifier.equals(settings.getSpEntityId())) {
 						throw new Exception("The SPNameQualifier value mistmatch the SP entityID value.");
 					} else {
 						nameIdData.put("SPNameQualifier", spNameQualifier);
@@ -461,16 +465,13 @@ public class SamlResponse {
 		HashMap<String, List<String>> attributes = new HashMap<String, List<String>>();
 
 		NodeList nodes = this.queryAssertion("/saml:AttributeStatement/saml:Attribute");
-		List<String> processedNames = new ArrayList<String>();
 		
 		if (nodes.getLength() != 0) {
 			for (int i = 0; i < nodes.getLength(); i++) {
 				NamedNodeMap attrName = nodes.item(i).getAttributes();
 				String attName = attrName.getNamedItem("Name").getNodeValue();
-				if (processedNames.contains(attName)) {
+				if (attributes.containsKey(attName)) {
 					throw new Exception("Found an Attribute element with duplicated Name");
-				} else {
-					processedNames.add(attName);
 				}
 				
 				NodeList childrens = nodes.item(i).getChildNodes();
@@ -525,14 +526,14 @@ public class SamlResponse {
 
 			NodeList statusEntry = Util.query(dom, statusExpr, null);
 			if (statusEntry.getLength() != 1) {
-				throw new IllegalArgumentException("Missing Status on response");
+				throw new IllegalArgumentException("Missing valid Status on response");
 			}
 			NodeList codeEntry;
 
 			codeEntry = Util.query(dom, statusExpr + "/samlp:StatusCode", (Element) statusEntry.item(0));
 
 			if (codeEntry.getLength() != 1) {
-				throw new IllegalArgumentException("Missing Status Code on response");
+				throw new IllegalArgumentException("Missing valid Status Code on response");
 			}
 
 			String stausCode = codeEntry.item(0).getAttributes().getNamedItem("Value").getNodeValue();
@@ -621,7 +622,7 @@ public class SamlResponse {
 				issuers.add(value);
 			}
 		} else {
-			throw new Exception("Issuer of the Response not found.");
+			throw new Exception("Issuer of the Response not found or multiple.");
 		}
 
 		NodeList assertionIssuer = this.queryAssertion("/saml:Issuer");
@@ -631,7 +632,7 @@ public class SamlResponse {
 				issuers.add(value);
 			}
 		} else {
-			throw new Exception("Issuer of the Assertion not found.");
+			throw new Exception("Issuer of the Assertion not found or multiple.");
 		}
 
 		return issuers;
@@ -739,28 +740,15 @@ public class SamlResponse {
 		NodeList signNodes = query("//ds:Signature", null);
 		for (int i = 0; i < signNodes.getLength(); i++) {
 			Node signNode = signNodes.item(i);
-			String signedElement = signNode.getParentNode().getLocalName();
+			String signedElement = "{" + signNode.getParentNode().getNamespaceURI() + "}" + signNode.getParentNode().getLocalName();
 			
-			if (!signedElement.equals("Response") && !signedElement.equals("Assertion")) {
+			String responseTag = "{" + Constants.NS_SAMLP  + "}Response";
+			String assertionTag = "{" + Constants.NS_SAML + "}Assertion";
+			
+			if (!signedElement.equals(responseTag) && !signedElement.equals(assertionTag)) {
 				throw new Exception("Invalid Signature Element " + signedElement + " SAML Response rejected");
 			}
 
-			// check that the signed elements found here, are the ones that will be verified
-			// by com.onelogin.saml2.util.Util.validateSign()
-			if (signedElement.equals("Response")) {
-				final NodeList expectedSignatureNode = query(Util.RESPONSE_SIGNATURE_XPATH, null);
-				if (expectedSignatureNode.getLength() != 1 || signedElements.contains(signedElement)) {
-					throw new Exception("Unexpected number of Response signatures found. SAML Response rejected.");
-				}
-			}
-
-			if (signedElement.equals("Assertion")) {
-				final NodeList expectedSignatureNode = query(Util.ASSERTION_SIGNATURE_XPATH, null);
-				if (expectedSignatureNode.getLength() != 1 || signedElements.contains(signedElement)) {
-					throw new Exception("Unexpected number of Response signatures found. SAML Response rejected.");
-				}
-			}
-			
 			// Check that reference URI matches the parent ID and no duplicate References or IDs
 			Node idNode = signNode.getParentNode().getAttributes().getNamedItem("ID");
 			if (idNode == null || idNode.getNodeValue() == null || idNode.getNodeValue().isEmpty()) {
@@ -810,8 +798,10 @@ public class SamlResponse {
 	 * @param signedElements
 	 *				the elements to be validated
 	 * @return true if is valid
+	 *
+	 * @throws Exception
 	 */
-	public static boolean validateSignedElements(ArrayList<String> signedElements) {
+	public boolean validateSignedElements(ArrayList<String> signedElements) throws Exception {
 		if (signedElements.size() > 2) {
 			return false;
 		}
@@ -825,11 +815,31 @@ public class SamlResponse {
 			}
 		}
 
-		if ((occurrences.containsKey("Response") && occurrences.get("Response") > 1)
-				|| (occurrences.containsKey("Assertion") && occurrences.get("Assertion") > 1)
-				|| !occurrences.containsKey("Response") && !occurrences.containsKey("Assertion")) {
+		String responseTag = "{" + Constants.NS_SAMLP  + "}Response";
+		String assertionTag = "{" + Constants.NS_SAML + "}Assertion";
+		
+		if ((occurrences.containsKey(responseTag) && occurrences.get(responseTag) > 1)
+				|| (occurrences.containsKey(assertionTag) && occurrences.get(assertionTag) > 1)
+				|| !occurrences.containsKey(responseTag) && !occurrences.containsKey(assertionTag)) {
 			return false;
 		}
+
+		// check that the signed elements found here, are the ones that will be verified
+		// by com.onelogin.saml2.util.Util.validateSign()
+		if (occurrences.containsKey(responseTag)) {
+			final NodeList expectedSignatureNode = query(Util.RESPONSE_SIGNATURE_XPATH, null);
+			if (expectedSignatureNode.getLength() != 1) {
+				throw new Exception("Unexpected number of Response signatures found. SAML Response rejected.");
+			}
+		}
+
+		if (occurrences.containsKey(assertionTag)) {
+			final NodeList expectedSignatureNode = query(Util.ASSERTION_SIGNATURE_XPATH, null);
+			if (expectedSignatureNode.getLength() != 1) {
+				throw new Exception("Unexpected number of Assertion signatures found. SAML Response rejected.");
+			}
+		}
+
 		return true;
 	}
 
