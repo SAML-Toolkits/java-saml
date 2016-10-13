@@ -244,6 +244,22 @@ public class AuthnResponseTest {
 	}
 
 	/**
+	 * Tests the decryptAssertion method of SamlResponse
+	 * Case: EncryptedAssertion with an encryptedData element with a KeyInfo
+	 *       that contains a RetrievalMethod to obtain the EncryptedKey.
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	public void testEncryptedResponse() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.decrypt.properties").build();
+
+		String samlResponseEncoded = Util.getFileAsString("data/responses/response_to_decrypt.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertEquals("archit.neema@intellicus.com", samlResponse.getNameId());
+	}
+
+	/**
 	 * Tests the getNameIdData method of SamlResponse
 	 * Case: No NameId
 	 *

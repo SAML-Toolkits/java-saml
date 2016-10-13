@@ -54,6 +54,7 @@ import javax.xml.XMLConstants;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.xml.security.encryption.CipherData;
 import org.apache.xml.security.encryption.EncryptedData;
 import org.apache.xml.security.encryption.EncryptedKey;
 import org.apache.xml.security.encryption.XMLCipher;
@@ -899,6 +900,36 @@ public final class Util {
 
 			XMLCipher xmlCipher = XMLCipher.getInstance();
 			xmlCipher.init(XMLCipher.DECRYPT_MODE, null);
+
+			/* Check if we have encryptedData with a KeyInfo that contains a RetrievalMethod to obtain the EncryptedKey.
+			   xmlCipher is not able to handle that so we move the EncryptedKey inside the KeyInfo element and
+			   replacing the RetrievalMethod.
+			*/
+
+			NodeList keyInfoInEncData = encryptedDataElement.getElementsByTagNameNS(Constants.NS_DS, "KeyInfo");
+			if (keyInfoInEncData.getLength() == 0) {
+				throw new Exception("No KeyInfo inside EncryptedData element");
+			}
+
+			NodeList childs = keyInfoInEncData.item(0).getChildNodes();
+			for (int i=0; i < childs.getLength(); i++) {
+				if (childs.item(i).getLocalName() != null && childs.item(i).getLocalName().equals("RetrievalMethod")) {
+					Element retrievalMethodElem = (Element)childs.item(i);
+					if (!retrievalMethodElem.getAttribute("Type").equals("http://www.w3.org/2001/04/xmlenc#EncryptedKey")) {
+						throw new Exception("Unsupported Retrieval Method found");
+					}
+
+					String uri = retrievalMethodElem.getAttribute("URI").substring(1);
+
+					NodeList encryptedKeyNodes = ((Element) encryptedDataElement.getParentNode()).getElementsByTagNameNS(Constants.NS_XENC, "EncryptedKey");
+					for (int j=0; j < encryptedKeyNodes.getLength(); j++) {
+						if (((Element)encryptedKeyNodes.item(j)).getAttribute("Id").equals(uri)) {
+							keyInfoInEncData.item(0).replaceChild(encryptedKeyNodes.item(j), childs.item(i));
+						}
+					}
+				}
+			}
+
 			xmlCipher.setKEK(inputKey);
 			xmlCipher.doFinal(encryptedDataElement.getOwnerDocument(), encryptedDataElement, false);
 		} catch (Exception e) {

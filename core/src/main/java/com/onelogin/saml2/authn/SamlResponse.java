@@ -162,7 +162,7 @@ public class SamlResponse {
 
 			String responseTag = "{" + Constants.NS_SAMLP  + "}Response";
 			String assertionTag = "{" + Constants.NS_SAML + "}Assertion";
-			
+
 			final boolean hasSignedResponse = signedElements.contains(responseTag);
 			final boolean hasSignedAssertion = signedElements.contains(assertionTag);
 
@@ -741,7 +741,7 @@ public class SamlResponse {
 		for (int i = 0; i < signNodes.getLength(); i++) {
 			Node signNode = signNodes.item(i);
 			String signedElement = "{" + signNode.getParentNode().getNamespaceURI() + "}" + signNode.getParentNode().getLocalName();
-			
+
 			String responseTag = "{" + Constants.NS_SAMLP  + "}Response";
 			String assertionTag = "{" + Constants.NS_SAML + "}Assertion";
 			
@@ -817,7 +817,7 @@ public class SamlResponse {
 
 		String responseTag = "{" + Constants.NS_SAMLP  + "}Response";
 		String assertionTag = "{" + Constants.NS_SAML + "}Assertion";
-		
+
 		if ((occurrences.containsKey(responseTag) && occurrences.get(responseTag) > 1)
 				|| (occurrences.containsKey(assertionTag) && occurrences.get(assertionTag) > 1)
 				|| !occurrences.containsKey(responseTag) && !occurrences.containsKey(assertionTag)) {
