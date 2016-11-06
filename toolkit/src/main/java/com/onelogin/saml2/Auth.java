@@ -213,7 +213,8 @@ public class Auth {
 	 * Initiates the SSO process.
 	 *
 	 * @param returnTo
-	 *				The target URL the user should be returned to after login.
+	 *				The target URL the user should be returned to after login (relayState).
+	 *				Will be a self-routed URL when null, or not be appended at all when an empty string is provided
 	 * @param forceAuthn
 	 *				When true the AuthNRequest will set the ForceAuthn='true'
 	 * @param isPassive
@@ -237,7 +238,10 @@ public class Auth {
 		} else {
 			relayState = returnTo;
 		}
-		parameters.put("RelayState", relayState);
+
+		if (!relayState.isEmpty()) {
+			parameters.put("RelayState", relayState);
+		}
 
 		if (settings.getAuthnRequestsSigned()) {
 			String sigAlg = settings.getSignatureAlgorithm();
@@ -267,7 +271,8 @@ public class Auth {
 	 * Initiates the SSO process.
 	 *
 	 * @param returnTo 
-     *				The target URL the user should be returned to after login.
+     *				The target URL the user should be returned to after login (relayState).
+	 *				Will be a self-routed URL when null, or not be appended at all when an empty string is provided.
      *
 	 * @throws IOException
 	 */
@@ -279,7 +284,8 @@ public class Auth {
 	 * Initiates the SLO process.
 	 *
 	 * @param returnTo 
-     *				The target URL the user should be returned to after logout.
+     *				The target URL the user should be returned to after logout (relayState).
+	 *				Will be a self-routed URL when null, or not be appended at all when an empty string is provided
 	 * @param nameId 
      *				The NameID that will be set in the LogoutRequest.
 	 * @param sessionIndex 
@@ -296,13 +302,15 @@ public class Auth {
 		parameters.put("SAMLRequest", samlLogoutRequest);
 
 		String relayState;
-		if (returnTo == null || returnTo.isEmpty()) {
+		if (returnTo == null) {
 			relayState = ServletUtils.getSelfRoutedURLNoQuery(request);
 		} else {
 			relayState = returnTo;
 		}
 
-		parameters.put("RelayState", relayState);
+		if (!relayState.isEmpty()) {
+			parameters.put("RelayState", relayState);
+		}
 
 		if (settings.getLogoutRequestSigned()) {
 			String sigAlg = settings.getSignatureAlgorithm();
@@ -331,8 +339,9 @@ public class Auth {
 	/**
 	 * Initiates the SLO process.
 	 *
-	 * @param returnTo 
-     *				The target URL the user should be returned to after logout. 
+	 * @param returnTo
+	 *				The target URL the user should be returned to after logout (relayState).
+	 *				Will be a self-routed URL when null, or not be appended at all when an empty string is provided
 	 *
 	 * @throws IOException
 	 * @throws XMLEntityException
@@ -659,11 +668,11 @@ public class Auth {
 		 PrivateKey key = settings.getSPkey();
 		 
 		 String msg = type + "=" + Util.urlEncoder(samlMessage);
-		 if (relayState != null) {
+		 if (StringUtils.isNotEmpty(relayState)) {
 			 msg += "&RelayState=" + Util.urlEncoder(relayState);
 		 }
 		 
-		 if (signAlgorithm == null || signAlgorithm.isEmpty()) {
+		 if (StringUtils.isEmpty(signAlgorithm)) {
 			 signAlgorithm = Constants.RSA_SHA1;
 		 }
 		 
