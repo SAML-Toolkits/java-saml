@@ -106,6 +106,26 @@
 					<argLine>${jacoco.agent.argLine}</argLine>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>1.1.1</version>
+				<executions>
+					<execution>
+						<id>enforce</id>
+						<configuration>
+							<rules>
+								<evaluateBeanshell>
+									<condition>javax.crypto.Cipher.getMaxAllowedKeyLength("AES") > 128</condition>
+								</evaluateBeanshell>
+							</rules>
+						</configuration>
+						<goals>
+						    <goal>enforce</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 <!--
