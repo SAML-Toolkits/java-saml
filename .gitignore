@@ -5,3 +5,5 @@ target
 .classpath
 .settings/
 .project
+core/doc
+toolkit/doc
