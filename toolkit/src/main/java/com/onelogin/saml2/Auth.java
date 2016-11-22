@@ -221,10 +221,13 @@ public class Auth {
 	 *				When true the AuthNRequest will set the IsPassive='true'
 	 * @param setNameIdPolicy
 	 *            When true the AuthNRequest will set a nameIdPolicy
-	 * @returns the representation of the AuthNRequest generated
+	 * @param stay
+	 *            True if we want to stay (returns the url string) False to execute redirection
+	 *
+	 * @return the SSO URL with the AuthNRequest if stay = True
 	 * @throws IOException
 	 */
-	public void login(String returnTo, Boolean forceAuthn, Boolean isPassive, Boolean setNameIdPolicy) throws IOException {
+	public String login(String returnTo, Boolean forceAuthn, Boolean isPassive, Boolean setNameIdPolicy, Boolean stay) throws IOException {
 		Map<String, String> parameters = new HashMap<String, String>();
 
 		AuthnRequest authnRequest = new AuthnRequest(settings, forceAuthn, isPassive, setNameIdPolicy);
@@ -253,11 +256,32 @@ public class Auth {
 
 		String ssoUrl = getSSOurl();
 
-		LOGGER.debug("AuthNRequest sent to " + ssoUrl + " --> " + samlRequest);
-		ServletUtils.sendRedirect(response, ssoUrl, parameters);
 		lastRequestId = authnRequest.getId();
+
+		if (!stay) {
+			LOGGER.debug("AuthNRequest sent to " + ssoUrl + " --> " + samlRequest);
+		}
+		return ServletUtils.sendRedirect(response, ssoUrl, parameters, stay);
 	}
 
+	/**
+	 * Initiates the SSO process.
+	 *
+	 * @param returnTo
+	 *				The target URL the user should be returned to after login (relayState).
+	 *				Will be a self-routed URL when null, or not be appended at all when an empty string is provided
+	 * @param forceAuthn
+	 *				When true the AuthNRequest will set the ForceAuthn='true'
+	 * @param isPassive
+	 *				When true the AuthNRequest will set the IsPassive='true'
+	 * @param setNameIdPolicy
+	 *            When true the AuthNRequest will set a nameIdPolicy
+	 * @throws IOException
+	 */
+	public void login(String returnTo, Boolean forceAuthn, Boolean isPassive, Boolean setNameIdPolicy) throws IOException {
+		login(returnTo ,forceAuthn, isPassive, setNameIdPolicy, false);
+	}
+		
 	/**
 	 * Initiates the SSO process.
 	 *
@@ -290,11 +314,15 @@ public class Auth {
      *				The NameID that will be set in the LogoutRequest.
 	 * @param sessionIndex 
      *				The SessionIndex (taken from the SAML Response in the SSO process).
+	 * @param stay
+	 *            True if we want to stay (returns the url string) False to execute redirection
+	 *
+	 * @return the SLO URL with the LogoutRequest if stay = True
 	 *
 	 * @throws IOException
 	 * @throws XMLEntityException
 	 */
-	public void logout(String returnTo, String nameId, String sessionIndex) throws IOException, XMLEntityException {
+	public String logout(String returnTo, String nameId, String sessionIndex, Boolean stay) throws IOException, XMLEntityException {
 		Map<String, String> parameters = new HashMap<String, String>();
 
 		LogoutRequest logoutRequest = new LogoutRequest(settings, null, nameId, sessionIndex);
@@ -321,9 +349,30 @@ public class Auth {
 		}
 
 		String sloUrl = getSLOurl();
-		LOGGER.debug("Logout request sent to " + sloUrl + " --> " + samlLogoutRequest);
-		ServletUtils.sendRedirect(response, sloUrl, parameters);
 		lastRequestId = logoutRequest.getId();
+
+		if (!stay) {
+			LOGGER.debug("Logout request sent to " + sloUrl + " --> " + samlLogoutRequest);
+		}
+		return ServletUtils.sendRedirect(response, sloUrl, parameters, stay);
+	}
+
+	/**
+	 * Initiates the SLO process.
+	 *
+	 * @param returnTo 
+     *				The target URL the user should be returned to after logout (relayState).
+	 *				Will be a self-routed URL when null, or not be appended at all when an empty string is provided
+	 * @param nameId 
+     *				The NameID that will be set in the LogoutRequest.
+	 * @param sessionIndex 
+     *				The SessionIndex (taken from the SAML Response in the SSO process).
+	 *
+	 * @throws IOException
+	 * @throws XMLEntityException
+	 */
+	public void logout(String returnTo, String nameId, String sessionIndex) throws IOException, XMLEntityException {
+		logout(returnTo, nameId, sessionIndex, false);
 	}
 
 	/**

@@ -136,12 +136,15 @@ public class ServletUtils {
      * 				target location url
      * @param parameters
      * 				GET parameters to be added
-     *
+	 * @param stay
+	 *            True if we want to stay (returns the url string) False to execute redirection
+     * 
+     * @return string the target URL
      * @throws IOException
      *
      * @see javax.servlet.http.HttpServletResponse#sendRedirect(String)
      */
-    public static void sendRedirect(HttpServletResponse response, String location, Map<String, String> parameters) throws IOException {
+    public static String sendRedirect(HttpServletResponse response, String location, Map<String, String> parameters, Boolean stay) throws IOException {
         String target = location;
 
         if (!parameters.isEmpty()) {
@@ -160,9 +163,33 @@ public class ServletUtils {
                 }
             }
         }
-        response.sendRedirect(target);
+        if (!stay) {
+        	response.sendRedirect(target);
+        }
+
+        return target;
     }
 
+    /**
+     * Redirect to location url
+     *
+     * @param response
+     * 				HttpServletResponse object to be used
+     * @param location
+     * 				target location url
+     * @param parameters
+     * 				GET parameters to be added
+	 * @param stay
+	 *            True if we want to stay (returns the url string) False to execute redirection
+	 *
+     * @throws IOException
+     *
+     * @see javax.servlet.http.HttpServletResponse#sendRedirect(String)
+     */
+    public static void sendRedirect(HttpServletResponse response, String location, Map<String, String> parameters) throws IOException {
+    	sendRedirect(response, location, parameters, false);
+    }
+    	
     /**
      * Redirect to location url
      *

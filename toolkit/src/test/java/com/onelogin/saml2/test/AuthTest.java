@@ -997,6 +997,39 @@ public class AuthTest {
 
 	/**
 	 * Tests the login method of Auth
+	 * Case: Login with stay enabled
+	 *
+	 * @throws SettingsException
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 *
+	 * @see com.onelogin.saml2.Auth#login
+	 */
+	@Test
+	public void testLoginStay() throws IOException, SettingsException, URISyntaxException {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		when(request.getScheme()).thenReturn("http");
+		when(request.getServerPort()).thenReturn(8080);
+		when(request.getServerName()).thenReturn("localhost");
+		when(request.getRequestURI()).thenReturn("/initial.jsp");
+
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		settings.setAuthnRequestsSigned(false);
+
+		Auth auth = new Auth(settings, request, response);
+		String target = auth.login("", false, false, false, true);
+		assertThat(target, startsWith("https://pitbulk.no-ip.org/simplesaml/saml2/idp/SSOService.php?SAMLRequest="));
+		assertThat(target, not(containsString("&RelayState=")));
+
+		String relayState = "http://localhost:8080/expected.jsp";
+		target = auth.login(relayState, false, false, false, true);
+		assertThat(target, startsWith("https://pitbulk.no-ip.org/simplesaml/saml2/idp/SSOService.php?SAMLRequest="));
+		assertThat(target, containsString("&RelayState=http%3A%2F%2Flocalhost%3A8080%2Fexpected.jsp"));		
+	}
+	
+	/**
+	 * Tests the login method of Auth
 	 * Case: Signed Login but no sp key
 	 *
 	 * @throws SettingsException
@@ -1143,6 +1176,39 @@ public class AuthTest {
 		assertThat(urlCaptor.getValue(), not(containsString("&RelayState=")));
 	}
 
+	/**
+	 * Tests the logout method of Auth
+	 * Case: Logout Stay
+	 *
+	 * @throws IOException
+	 * @throws SettingsException
+	 * @throws XMLEntityException
+	 *
+	 * @see com.onelogin.saml2.Auth#logout
+	 */
+	@Test
+	public void testLogoutStay() throws IOException, SettingsException, XMLEntityException {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		when(request.getScheme()).thenReturn("http");
+		when(request.getServerPort()).thenReturn(8080);
+		when(request.getServerName()).thenReturn("localhost");		
+		when(request.getRequestURI()).thenReturn("/initial.jsp");
+
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		settings.setLogoutRequestSigned(false);
+
+		Auth auth = new Auth(settings, request, response);
+		String target = auth.logout("", null, null, true);
+		assertThat(target, startsWith("https://pitbulk.no-ip.org/simplesaml/saml2/idp/SingleLogoutService.php?SAMLRequest="));
+		assertThat(target, not(containsString("&RelayState=")));
+		
+		String relayState = "http://localhost:8080/expected.jsp";
+		target = auth.logout(relayState, null, null, true);
+		assertThat(target, startsWith("https://pitbulk.no-ip.org/simplesaml/saml2/idp/SingleLogoutService.php?SAMLRequest="));
+		assertThat(target, containsString("&RelayState=http%3A%2F%2Flocalhost%3A8080%2Fexpected.jsp"));
+	}
+	
 	/**
 	 * Tests the logout method of Auth
 	 * Case: Signed Logout but no sp key

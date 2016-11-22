@@ -118,6 +118,26 @@ public class ServletUtilsTest {
     }
 
     /**
+     * Tests the sendRedirect method
+     * Use Case: Stay and don't execute redirection
+     *
+     * @throws IOException
+     *
+     * @see ServletUtils#sendRedirect
+     */
+    @Test
+    public void testSendRedirectStay() throws IOException {
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        Map<String, String> parameters = new HashMap<String, String>();
+        
+        String url = ServletUtils.sendRedirect(response, "http://example.com/expectedurl.jsp", parameters, true);
+        assertEquals("http://example.com/expectedurl.jsp", url);
+        
+        url = ServletUtils.sendRedirect(response, "http://example.com/expectedurl.jsp?idpid=ffee-aabbb", singletonMap("SAMLRequest", "data"), true);
+        assertEquals("http://example.com/expectedurl.jsp?idpid=ffee-aabbb&SAMLRequest=data", url);
+    }
+    
+    /**
      * Tests the getSelfURLhost method
      *
      * @see ServletUtils#getSelfURLhost
