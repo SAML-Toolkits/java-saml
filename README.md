@@ -5,10 +5,10 @@
 Add SAML support to your Java applications using this library.
 Forget those complicated libraries and use that open source library provided and supported by OneLogin Inc.
 
-This is the Version 2.0.0-SNAPSHOT, compatible with java6 / java7 / java8.
+This is the Version 2.0.0, compatible with java6 / java7 / java8.
 
-The 1.1.2-SNAPSHOT is consider deprecated. If you used it, we strongly recommend to migrate to that new version. 
-We rebuilt the toolkit on 2.0.0-SNAPSHOT so code/settings that you had will not be compatible.
+The 1.1.2 is consider deprecated. If you used it, we strongly recommend to migrate to that new version. 
+We rebuilt the toolkit on 2.0.0 so code/settings that you had will not be compatible.
 
 
 ## Why add SAML support to my software?
@@ -71,7 +71,17 @@ The toolkit is hosted on github. You can download it from:
 * Master repo: https://github.com/onelogin/java-saml/tree/master
 
 #### Maven
-The toolkit is hosted at [Sonatype OSSRH (OSS Repository Hosting)](http://central.sonatype.org/pages/ossrh-guide.html) that is synced to the Central Repository,
+The toolkit is hosted at [Sonatype OSSRH (OSS Repository Hosting)](http://central.sonatype.org/pages/ossrh-guide.html) that is synced to the Central Repository.
+
+Install it as a maven dependecy:
+```
+  <dependency>
+      <groupId>com.onelogin</groupId>
+      <artifactId>java-saml</artifactId>
+      <version>2.0.0</version>
+  </dependency>
+```
+
 
 ### Dependencies
 java-saml (com.onelogin:java-saml-toolkit) has the following dependencies:
@@ -139,7 +149,7 @@ In the repo, at *src/main/java* you will find the source, at *src/main/main/reso
 
 
 #### toolkit (com.onelogin:java-saml) ####
-This folder contains a maven project with the Auth class to handle the low level classes of   java-saml-core and the ServletUtils class to handle javax.servlet.http objetcs, used on the Auth class.
+This folder contains a maven project with the Auth class to handle the low level classes of java-saml-core and the ServletUtils class to handle javax.servlet.http objetcs, used on the Auth class.
 In the repo, at *src/main/java* you will find the source and at *src/test/java* the junit tests for the classes Auth and ServletUtils.
 
 #### samples (com.onelogin:java-saml-tookit-samples) ####
@@ -341,19 +351,22 @@ The IdP will then return the SAML Response to the user's client. The client is t
 
 We can set a 'returnTo' url parameter to the login function and that will be converted as a 'RelayState' parameter:
 ```
-String target_url = 'https://example.com';
-auth.login(returnTo=target_url)
+String targetUrl = 'https://example.com';
+auth.login(returnTo=targetUrl)
 ```
-The login method can recieve 3 more optional parameters:
+The login method can recieve 4 more optional parameters:
 - forceAuthn When true the AuthNReuqest will set the ForceAuthn='true'
 - isPassive When true the AuthNReuqest will set the Ispassive='true'
 - setNameIdPolicy When true the AuthNReuqest will set a nameIdPolicy element.
+- stay True if we want to stay (returns the url string) False to execute a redirection to that url (IdP SSO URL)
 
-If a match on the future SAMLResponse ID and the AuthNRequest ID to be sent is required, that AuthNRequest ID must be extracted and stored for future validation, we can get that ID by
+By default the login method initiates a redirect to the SAML Identity Provider. You can use the stay parameter, to prevent that, and execute the redirection manually. We need to use that
+if a match on the future SAMLResponse ID and the AuthNRequest ID to be sent is required, that AuthNRequest ID must be extracted and stored for future validation so we can't execute the redirection on the login, instead set stay to true, then get that ID by
 ```
 auth.getLastRequestId()
 ```
-and use the login method that let set the stay parameter to true, in order to avoid the redirection.
+and later excuting the redirection manually.
+
 
 #### The SP Endpoints
 Related to the SP there are 3 important endpoints: The metadata view, the ACS view and the SLS view. The toolkit provides at the demo of the samples folder those views.
@@ -404,7 +417,7 @@ if (!errors.isEmpty()) {
 
     String relayState = request.getParameter("RelayState");
 
-    if (relayState != null && relayState !=         ServletUtils.getSelfRoutedURLNoQuery(request)) {
+    if (relayState != null && relayState != ServletUtils.getSelfRoutedURLNoQuery(request)) {
         response.sendRedirect(request.getParameter("RelayState"));
     } else {
         if (attributes.isEmpty()) {
@@ -426,7 +439,7 @@ if (!errors.isEmpty()) {
 The SAML response is processed and then checked that there are no errors. It also verifies that the user is authenticated and stored the userdata in session.
 At that point there are 2 possible alternatives:
 - If no RelayState is provided, we could show the user data in this view or however we wanted.
-- If RelayState is provided, a rediretion take place.
+- If RelayState is provided, a redirection take place.
 Notice that we saved the user data in the session before the redirection to have the user data available at the RelayState view.
 
 In order to retrieve attributes we use:
@@ -445,7 +458,7 @@ With this method we get a Map with all the user data provided by the IdP in the 
 ```
 Each attribute name can be used as a key to obtain the value. Every attribute is a list of values. A single-valued attribute is a listy of a single element.
 
-Before trying to get an attribute, check that the user is authenticated. If the user isn't authenticated, an empty dict will be returned. For example, if we call to getAttributes before a auth.processResponse, the getAttributes() will return an empty Map.
+Before trying to get an attribute, check that the user is authenticated. If the user isn't authenticated, an empty Map will be returned. For example, if we call to getAttributes before a auth.processResponse, the getAttributes() will return an empty Map.
 
 ##### Single Logout Service (SLS)
 This code handles the Logout Request and the Logout Responses.
@@ -479,18 +492,24 @@ The IdP will return the Logout Response through the user's client to the Single 
 
 We can set a 'returnTo' url parameter to the logout function and that will be converted as a 'RelayState' parameter:
 ```
-String target_url = 'https://example.com';
-auth.logout(returnTo=target_url)
+String targetUrl = 'https://example.com';
+auth.logout(returnTo=targetUrl)
 ```
 
-Also there are 2 optional parameters that can be set:
+Also there are 3 optional parameters that can be set:
 - nameId. That will be used to build the LogoutRequest. If not name_id parameter is set and the auth object processed a SAML Response with a NameId, then this NameId will be used.
 - sessionIndex. Identifies the session of the user.
 If a match on the LogoutResponse ID and the LogoutRequest ID to be sent is required, that LogoutRequest ID must to be extracted and stored for future validation, we can get that ID by
+- stay. True if we want to stay (returns the url string) False to execute a redirection to that url (IdP SLS URL)
+
+By default the logout method initiates a redirect to the SAML Identity Provider. You can use the stay parameter, to prevent that, and execute the redirection manually. We need to use that
+if a match on the future LogoutResponse ID and the LogoutRequest ID to be sent is required, that LogoutRequest ID must be extracted and stored for future validation so we can't execute the redirection on the logout, instead set stay to true, then get that ID by
+
 ```
 auth.getLastRequestId()
 ```
-and use the logout method that let set the stay parameter to true, in order to avoid the redirection.
+and later excuting the redirection manually.
+
 
 ## Demo included in the toolkit
 The Onelogin's Java Toolkit allows you to provide the settings in a unique file as described at the [Settings  section](https://github.com/onelogin/java-saml/#Settings).
