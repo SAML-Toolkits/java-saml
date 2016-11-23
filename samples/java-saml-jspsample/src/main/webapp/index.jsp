@@ -20,6 +20,7 @@
 	<div class="container">
     	<h1>A Java SAML Toolkit by OneLogin demo</h1>
 		<a href="dologin.jsp" class="btn btn-primary">Login</a>
+		<a href="dologin.jsp?attrs=1" class="btn btn-primary">Login and access to attrs.jsp page </a>
 	</div>
 </body>
 </html>

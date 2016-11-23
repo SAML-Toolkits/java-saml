@@ -8,7 +8,12 @@
 <body>
 	<%
 		Auth auth = new Auth(request, response);
-		auth.login();
+		if (request.getParameter("attrs") == null) {
+			auth.login();
+		} else {
+			String x = request.getPathInfo();
+			auth.login("/java-saml-tookit-jspsample/attrs.jsp");
+		}
 	%>
 </body>
 </html>

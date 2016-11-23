@@ -1,4 +1,5 @@
 <%@page import="com.onelogin.saml2.Auth"%>
+<%@page import="com.onelogin.saml2.servlet.ServletUtils"%>
 <%@page import="java.util.Collection"%>
 <%@page import="java.util.HashMap"%>
 <%@page import="java.util.List"%>
@@ -25,9 +26,9 @@
 <body>
 	<div class="container">
     	<h1>A Java SAML Toolkit by OneLogin demo</h1>
-    	
+
     	<!--  TODO Session support  --> 
-    	
+
 	<%
 		Auth auth = new Auth(request, response);
 		auth.processResponse();
@@ -35,11 +36,11 @@
 		if (!auth.isAuthenticated()) {
 			out.println("<div class=\"alert alert-danger\" role=\"alert\">Not authenticated</div>");
 		}
-		
+
 		List<String> errors = auth.getErrors();
-    	out.println("<p>" + StringUtils.join(errors, ", ") + "</p>");
-		
+
 	    if (!errors.isEmpty()) {
+	    	out.println("<p>" + StringUtils.join(errors, ", ") + "</p>");
 	    	if (auth.isDebugActive()) {
 	    		String errorReason = auth.getLastErrorReason();
 	    		if (errorReason != null && !errorReason.isEmpty()) {
@@ -50,45 +51,54 @@
 	    } else {
 			Map<String, List<String>> attributes = auth.getAttributes();
 			String nameId = auth.getNameId();
-			
+
 			session.setAttribute("attributes", attributes);
 			session.setAttribute("nameId", nameId);
-			
-			if (attributes.isEmpty()) {
-	%>
-				<div class="alert alert-danger" role="alert">You don't have any attributes</div>
-	<%							
-			}
-			else {
-    %>
-        		<table class="table table-striped">
-      				<thead>
-        				<th>Name</th>
-        				<th>Values</th>
-      				</thead>
-      				<tbody>
-    <%				
-				Collection<String> keys = attributes.keySet();
-				for(String name :keys){
-					out.println("<tr><td>" + name + "</td><td>");
-					List<String> values = attributes.get(name);
-					for(String value :values) {
-						out.println("<li>" + value + "</li>");
-					}
-					
-					out.println("</td></tr>");
+
+			String relayState = request.getParameter("RelayState");
+
+			if (relayState != null && relayState != ServletUtils.getSelfRoutedURLNoQuery(request) &&
+				!relayState.contains("/dologin.jsp") ) { // We don't want to be redirected to login.jsp neither
+				response.sendRedirect(request.getParameter("RelayState"));
+			} else {
+				
+
+				if (attributes.isEmpty()) {
+		%>
+					<div class="alert alert-danger" role="alert">You don't have any attributes</div>
+		<%							
 				}
-	%>
-					</tbody>
-				</table>
-	<%				
+				else {
+	    %>
+	        		<table class="table table-striped">
+	      				<thead>
+	        				<th>Name</th>
+	        				<th>Values</th>
+	      				</thead>
+	      				<tbody>
+	    <%				
+					Collection<String> keys = attributes.keySet();
+					for(String name :keys){
+						out.println("<tr><td>" + name + "</td><td>");
+						List<String> values = attributes.get(name);
+						for(String value :values) {
+							out.println("<li>" + value + "</li>");
+						}
+	
+						out.println("</td></tr>");
+					}
+		%>
+						</tbody>
+					</table>
+		<%				
+				}
+		%>
+				<a href="attrs.jsp" class="btn btn-primary">See user data stored at session</a>
+				<a href="dologout.jsp" class="btn btn-primary">Logout</a>
+		<%
 			}
-	%>
-			<a href="attrs.jsp" class="btn btn-primary">See user data stored at session</a>
-			<a href="dologout.jsp" class="btn btn-primary">Logout</a>
-	<%
 		}
-	%>
+		%>
 	</div>
 </body>
 </html>
