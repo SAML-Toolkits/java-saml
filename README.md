@@ -117,10 +117,10 @@ The toolkit is hosted on github. You can download it from:
 2. File > Import > Maven : Existing Maven Projects > Select the path where the core folder of the Java Toolkit is  *<path>/java-saml/core*, resolve the Workspace project and select the pom.xml
 3. File > Import > Maven : Existing Maven Projects > Select the path where the toolkit folder of the Java Toolkit is  *<path>/java-saml/toolkit*, resolve the Workspace project and select the pom.xml
 
-### Adding the java-saml-jspsample as a project
-1. File > Import > Maven : Existing Maven Projects > Select the path where the core folder of the Java Toolkit is  *<path>/java-saml/samples/java-saml-jspsample*, resolve the Wordkspace project and select the pom.xml
+### Adding the java-saml-tookit-jspsample as a project
+1. File > Import > Maven : Existing Maven Projects > Select the path where the core folder of the Java Toolkit is  *<path>/java-saml/samples/java-saml-tookit-jspsample*, resolve the Wordkspace project and select the pom.xml
 
-### Deploy the java-saml-jspsample
+### Deploy the java-saml-tookit-jspsample
 
 At the Package Explorer, select the jsp-sample project, 2nd bottom of the mouse and Run As > Run Server
 Select a [Tomcat Server](http://crunchify.com/step-by-step-guide-to-setup-and-install-apache-tomcat-server-in-eclipse-development-environment-ide/) in order to deploy the server.
@@ -145,7 +145,7 @@ In the repo, at *src/main/java* you will find the source and at *src/test/java* 
 #### samples (com.onelogin:java-saml-tookit-samples) ####
 This folder contains a maven project with a jsp app used to learn how the java-saml toolkit works.
 
-At *java-saml-jspsample/src/main/webapp* folder we will find several jsp files, each one represent a different endpoint:
+At *java-saml-tookit-jspsample/src/main/webapp* folder we will find several jsp files, each one represent a different endpoint:
 - *index.jsp* Index of the webapp.
 - *dologin.jsp* SP-initiated SSO endpoint.
 - *dologout.jsp* SP-initiated SLO endpoint.
@@ -154,7 +154,7 @@ At *java-saml-jspsample/src/main/webapp* folder we will find several jsp files, 
 - *sls.jsp* Service Provider Single Logout Service endpoint.
 - *metadata.jsp* Publish SP metadata.
 
-At *java-saml-jspsample/src/main/resources* folder is the *onelogin.saml.properties* file that contains the SAML settings.
+At *java-saml-tookit-jspsample/src/main/resources* folder is the *onelogin.saml.properties* file that contains the SAML settings.
 
 ### How it works
 

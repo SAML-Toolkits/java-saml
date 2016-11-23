@@ -11,7 +11,7 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>java-saml-jspsample</module>
+		<module>java-saml-tookit-jspsample</module>
 	</modules>
 
 </project>
