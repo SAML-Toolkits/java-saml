@@ -16,6 +16,13 @@
 			<artifactId>java-saml</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<!-- for log -->
+		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple -->
+		<dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-simple</artifactId>
+		    <version>1.6.1</version>
+		</dependency>
 	</dependencies>
 
 </project>
