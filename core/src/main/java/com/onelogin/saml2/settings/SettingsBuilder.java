@@ -148,9 +148,6 @@ public class SettingsBuilder {
 	/**
 	 * Builds the Saml2Settings object. Read the Properties object and set all the SAML settings
 	 * 
-	 * @param spValidationOnly
-	 *            indicates if the IdP settings should be checked or not
-	 *
 	 * @return the Saml2Settings object with all the SAML settings loaded
 	 *
 	 * @throws IOException 

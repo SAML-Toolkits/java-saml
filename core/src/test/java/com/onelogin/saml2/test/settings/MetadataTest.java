@@ -34,7 +34,7 @@ public class MetadataTest {
 	 *
 	 * @throws Exception
 	 * 
-	 * @see Metadata
+	 * @see com.onelogin.saml2.settings.Metadata
 	 */
 	@Test
 	public void testMetadata() throws Exception {
@@ -67,7 +67,7 @@ public class MetadataTest {
 	 * @throws IOException 
 	 * @throws CertificateEncodingException 
 	 *
-	 * @see Metadata
+	 * @see com.onelogin.saml2.settings.Metadata
 	 */
 	@Test
 	public void testMetadataExpiration() throws IOException, CertificateEncodingException {
@@ -98,7 +98,7 @@ public class MetadataTest {
 	 * @throws IOException
 	 * @throws CertificateEncodingException
 	 *
-	 * @see Metadata.toContactsXml
+	 * @see com.onelogin.saml2.settings.Metadata#toContactsXml
 	 */
 	@Test
 	public void testToContactsXml() throws IOException, CertificateEncodingException {
@@ -122,7 +122,7 @@ public class MetadataTest {
 	 * @throws IOException
 	 * @throws CertificateEncodingException
 	 *
-	 * @see Metadata.toOrganizationXml
+	 * @see com.onelogin.saml2.settings.Metadata#toOrganizationXml
 	 */
 	@Test
 	public void testToOrganizationXml() throws IOException, CertificateEncodingException {
@@ -146,7 +146,7 @@ public class MetadataTest {
 	 * @throws IOException
 	 * @throws CertificateEncodingException
 	 *
-	 * @see Metadata.toSLSXml
+	 * @see com.onelogin.saml2.settings.Metadata#toSLSXml
 	 */
 	@Test
 	public void testToSLSXml() throws IOException, CertificateEncodingException {
@@ -171,7 +171,7 @@ public class MetadataTest {
 	 * @throws IOException
 	 * @throws CertificateEncodingException
 	 *
-	 * @see Metadata.toX509KeyDescriptorsXML
+	 * @see com.onelogin.saml2.settings.Metadata#toX509KeyDescriptorsXML
 	 */
 	@Test
 	public void testToX509KeyDescriptorsXML() throws IOException, CertificateEncodingException {
@@ -199,7 +199,7 @@ public class MetadataTest {
 	 * @throws IOException
 	 * @throws CertificateEncodingException
 	 *
-	 * @see Metadata.getAttributeConsumingServiceXml
+	 * @see com.onelogin.saml2.settings.Metadata#getAttributeConsumingServiceXml
 	 */
 	@Test
 	public void testGetAttributeConsumingServiceXml() throws IOException, CertificateEncodingException {
@@ -241,7 +241,7 @@ public class MetadataTest {
 	 * @throws IOException
 	 * @throws CertificateEncodingException
 	 *
-	 * @see Metadata.getAttributeConsumingServiceXml
+	 * @see com.onelogin.saml2.settings.Metadata#getAttributeConsumingServiceXml
 	 */
 	@Test
 	public void testGetAttributeConsumingServiceXmlWithMultipleAttributeValue() throws IOException, CertificateEncodingException {
