@@ -13,6 +13,11 @@ import org.xml.sax.SAXException;
  * A class that read SAML schemas that will be used to validate XMLs of the OneLogin's Java Toolkit 
  */ 
 public abstract class SchemaFactory {
+	
+	private SchemaFactory() {
+	      //not called
+	}
+	
 	public static final URL SAML_SCHEMA_METADATA_2_0 = SchemaFactory.class
 			.getResource("/schemas/saml-schema-metadata-2.0.xsd");
 	public static final URL SAML_SCHEMA_PROTOCOL_2_0 = SchemaFactory.class

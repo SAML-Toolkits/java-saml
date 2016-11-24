@@ -751,7 +751,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception
 	 *
-	 * @see com.onelogin.saml2.Auth#getNameID
+	 * @see com.onelogin.saml2.Auth#getNameId
 	 */
 	@Test
 	public void testGetNameID() throws Exception {
@@ -1297,7 +1297,7 @@ public class AuthTest {
 	 * @throws URISyntaxException
 	 * @throws SettingsException
 	 *
-	 * @see ccom.onelogin.saml2.Auth#buildRequestSignature
+	 * @see com.onelogin.saml2.Auth#buildRequestSignature
 	 */
 	@Test
 	public void testBuildRequestSignatureRsaSha1() throws URISyntaxException, IOException, SettingsException {
@@ -1342,7 +1342,7 @@ public class AuthTest {
 	 * @throws URISyntaxException
 	 * @throws SettingsException
 	 *
-	 * @see com.onelogin.saml2.Authl#buildRequestSignature
+	 * @see com.onelogin.saml2.Auth#buildRequestSignature
 	 */
 	@Test
 	public void testBuildRequestSignatureRsaSha256() throws URISyntaxException, IOException, SettingsException {
@@ -1408,7 +1408,7 @@ public class AuthTest {
 	 * @throws URISyntaxException
 	 * @throws SettingsException
 	 *
-	 * @see ccom.onelogin.saml2.Auth#buildResponseSignature
+	 * @see com.onelogin.saml2.Auth#buildResponseSignature
 	 */
 	@Test
 	public void testBuildResponseSignatureRsaSha1() throws URISyntaxException, IOException, SettingsException {
@@ -1453,7 +1453,7 @@ public class AuthTest {
 	 * @throws URISyntaxException
 	 * @throws SettingsException
 	 *
-	 * @see com.onelogin.saml2.Authl#buildResponseSignature
+	 * @see com.onelogin.saml2.Auth#buildResponseSignature
 	 */
 	@Test
 	public void testBuildResponseSignatureRsaSha256() throws URISyntaxException, IOException, SettingsException {

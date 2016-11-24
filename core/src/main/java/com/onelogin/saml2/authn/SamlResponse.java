@@ -6,10 +6,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.xml.xpath.XPathExpressionException;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Instant;
 import org.slf4j.Logger;
@@ -187,7 +187,7 @@ public class SamlResponse {
 				}
 
 				// Check if the InResponseTo of the Response matches the ID of the AuthNRequest (requestId) if provided
-				if (requestId != null && !ObjectUtils.equals(responseInResponseTo, requestId)) {
+				if (requestId != null && !Objects.equals(responseInResponseTo, requestId)) {
 						throw new Exception("The InResponseTo of the Response: " + responseInResponseTo
 								+ ", does not match the ID of the AuthNRequest sent by the SP: " + requestId);
 				}
@@ -290,7 +290,7 @@ public class SamlResponse {
 
 			LOGGER.debug("SAMLResponse validated --> " + samlResponseString);
 			return true;
-		} catch (Error | Exception e) {
+		} catch (Exception e) {
 			error = e.getMessage();
 			LOGGER.debug("SAMLResponse invalid --> " + samlResponseString);
 			LOGGER.error(error);
@@ -417,7 +417,6 @@ public class SamlResponse {
 					nameIdData.put("Format", nameIdElem.getAttribute("Format"));
 				}
 				if (nameIdElem.hasAttribute("SPNameQualifier")) {
-					String spId = settings.getSpEntityId();
 					String spNameQualifier = nameIdElem.getAttribute("SPNameQualifier");
 					if (settings.isStrict() && !spNameQualifier.equals(settings.getSpEntityId())) {
 						throw new Exception("The SPNameQualifier value mistmatch the SP entityID value.");
@@ -891,7 +890,7 @@ public class SamlResponse {
      */
 	public String getError() {
 		if (error != null) {
-			return error.toString();
+			return error;
 		}
 		return null;
 	}

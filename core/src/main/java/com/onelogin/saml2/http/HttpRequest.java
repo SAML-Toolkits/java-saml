@@ -112,8 +112,14 @@ public final class HttpRequest {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+        	return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+        	return false;
+        }
+
         HttpRequest that = (HttpRequest) o;
         return Objects.equals(requestURL, that.requestURL) &&
                 Objects.equals(parameters, that.parameters);

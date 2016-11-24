@@ -63,6 +63,12 @@ public class AuthnRequest {
 	 */
 	private final Calendar issueInstant;
 
+	/**
+	 * Constructs the AuthnRequest object.
+	 *
+	 * @param settings
+	 *            OneLogin_Saml2_Settings
+	 */
 	public AuthnRequest(Saml2Settings settings) {
 		this(settings, false, false, true);
 	}

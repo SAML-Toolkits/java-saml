@@ -1,6 +1,5 @@
 package com.onelogin.saml2.model;
 
-import java.util.ArrayList;
 import java.util.List;
 
 

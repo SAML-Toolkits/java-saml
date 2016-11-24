@@ -14,8 +14,18 @@ import org.apache.commons.lang3.StringUtils;
 import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.util.Util;
 
+/**
+ * ServletUtils class of OneLogin's Java Toolkit.
+ *
+ * A class that contains several auxiliary methods related to HttpServletRequest and HttpServletResponse
+ */
 public class ServletUtils {
-    /**
+
+	private ServletUtils() {
+	      //not called
+	}
+	
+	/**
      * Creates an HttpRequest from an HttpServletRequest.
      *
      * @param req the incoming HttpServletRequest
@@ -23,7 +33,7 @@ public class ServletUtils {
      */
     public static HttpRequest makeHttpRequest(HttpServletRequest req) {
         //noinspection unchecked
-        final Map<String, String[]> paramsAsArray = req.getParameterMap();
+        final Map<String, String[]> paramsAsArray = (Map<String, String[]>) req.getParameterMap();
         final Map<String, List<String>> paramsAsList = new HashMap<>();
         for (Map.Entry<String, String[]> param : paramsAsArray.entrySet()) {
             paramsAsList.put(param.getKey(), Arrays.asList(param.getValue()));
@@ -179,8 +189,6 @@ public class ServletUtils {
      * 				target location url
      * @param parameters
      * 				GET parameters to be added
-	 * @param stay
-	 *            True if we want to stay (returns the url string) False to execute redirection
 	 *
      * @throws IOException
      *

@@ -72,8 +72,10 @@
 	    %>
 	        		<table class="table table-striped">
 	      				<thead>
-	        				<th>Name</th>
-	        				<th>Values</th>
+	      					<tr>
+	        					<th>Name</th>
+	        					<th>Values</th>
+	        				</tr>
 	      				</thead>
 	      				<tbody>
 	    <%				

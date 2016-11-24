@@ -28,7 +28,7 @@
     	<h1>A Java SAML Toolkit by OneLogin demo</h1>
 	<%
 		Boolean found = false;
-		Enumeration elems = session.getAttributeNames();	
+		Enumeration<String> elems = (Enumeration<String>) session.getAttributeNames();	
 	
 		while (elems.hasMoreElements() && !found) {
 			String value = (String) elems.nextElement();
@@ -55,8 +55,10 @@
     			<div><b>Attributes:</b></div>
         		<table class="table table-striped">
       				<thead>
-        				<th>Name</th>
-        				<th>Values</th>
+      					<tr>
+        					<th>Name</th>
+        					<th>Values</th>
+        				</tr>
       				</thead>
       				<tbody>
     		<%				
@@ -70,7 +72,10 @@
 					
 					out.println("</td></tr>");
 				}
-				out.println("</tbody></table>");
+			%>
+					</tbody>
+				</table>
+			<%
 			}
 
 			out.println("<a href=\"dologout.jsp\" class=\"btn btn-primary\">Logout</a>");

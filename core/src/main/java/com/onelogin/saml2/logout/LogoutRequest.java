@@ -105,7 +105,7 @@ public class LogoutRequest {
 
 		if (request != null) {
 			samlLogoutRequest = request.getParameter("SAMLRequest");
-			currentUrl = request.getRequestURL().toString();
+			currentUrl = request.getRequestURL();
 		}
 
 		if (samlLogoutRequest == null) {

@@ -14,6 +14,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -477,9 +478,11 @@ public class Auth {
      * @param requestId
      *				The ID of the LogoutRequest sent by this SP to the IdP
      *
-     * @throws Exception 
+     * @throws XMLEntityException 
+     * @throws XPathExpressionException 
+     * @throws IOException
      */
-	public void processSLO(Boolean keepLocalSession, String requestId) throws Exception {
+	public void processSLO(Boolean keepLocalSession, String requestId) throws XMLEntityException, XPathExpressionException, IOException {
 		final HttpRequest httpRequest = ServletUtils.makeHttpRequest(this.request);
 		
 		final String samlRequestParameter = httpRequest.getParameter("SAMLRequest");
@@ -556,9 +559,11 @@ public class Auth {
     /**
      * Process the SAML Logout Response / Logout Request sent by the IdP.
      *
-     * @throws Exception 
+     * @throws IOException 
+     * @throws XMLEntityException 
+     * @throws XPathExpressionException 
      */
-	public void processSLO() throws Exception {
+	public void processSLO() throws XPathExpressionException, XMLEntityException, IOException {
 		processSLO(false, null);
 	}
 

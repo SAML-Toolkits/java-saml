@@ -54,7 +54,6 @@ import javax.xml.XMLConstants;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.xml.security.encryption.CipherData;
 import org.apache.xml.security.encryption.EncryptedData;
 import org.apache.xml.security.encryption.EncryptedKey;
 import org.apache.xml.security.encryption.XMLCipher;
@@ -102,6 +101,10 @@ public final class Util {
 
 	private static final Logger log = LoggerFactory.getLogger(Util.class);
 
+	private Util() {
+	      //not called
+	}
+	
 	/**
 	 * This function load an XML string in a save way. Prevent XEE/XXE Attacks
 	 *
@@ -144,6 +147,7 @@ public final class Util {
 		XPath xpath = XPathFactory.newInstance().newXPath();
 		xpath.setNamespaceContext(new NamespaceContext() {
 
+			@Override
 			public String getNamespaceURI(String prefix) {
 				String result = null;
 				if (prefix.equals("samlp") || prefix.equals("samlp2")) {
@@ -160,11 +164,13 @@ public final class Util {
 				return result;
 			}
 
+			@Override
 			public String getPrefix(String namespaceURI) {
 				return null;
 			}
 
 			@SuppressWarnings("rawtypes")
+			@Override
 			public Iterator getPrefixes(String namespaceURI) {
 				return null;
 			}
@@ -262,28 +268,28 @@ public final class Util {
 		try {
 			// do not include external general entities
 			docfactory.setAttribute("http://xml.org/sax/features/external-general-entities", Boolean.FALSE);
-		} catch (Throwable t) {}
+		} catch (Exception e) {}
 		try {
 			// do not include external parameter entities or the external DTD subset
 			docfactory.setAttribute("http://xml.org/sax/features/external-parameter-entities", Boolean.FALSE);
-		} catch (Throwable t) {}
+		} catch (Exception e) {}
 		try {
 			docfactory.setAttribute("http://apache.org/xml/features/disallow-doctype-decl", Boolean.TRUE);
-		} catch (Throwable t) {}
+		} catch (Exception e) {}
 		try {
 			docfactory.setAttribute("http://javax.xml.XMLConstants/feature/secure-processing", Boolean.TRUE);
-		} catch (Throwable t) {}
+		} catch (Exception e) {}
 		try {
 			// ignore the external DTD completely
 			docfactory.setAttribute("http://apache.org/xml/features/nonvalidating/load-external-dtd", Boolean.FALSE);
-		} catch (Throwable t) {}
+		} catch (Exception e) {}
 		try {
 			// build the grammar but do not use the default attributes and attribute types information it contains
 			docfactory.setAttribute("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", Boolean.FALSE);
-		} catch (Throwable t) {}
+		} catch (Exception e) {}
 		try {
 			docfactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-		} catch (Throwable t) {}
+		} catch (Exception e) {}
 
 		DocumentBuilder builder = docfactory.newDocumentBuilder();
 		Document doc = builder.parse(new InputSource(new StringReader(xmlStr)));

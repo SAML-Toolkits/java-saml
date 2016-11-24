@@ -1,7 +1,6 @@
 package com.onelogin.saml2.settings;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -147,11 +146,11 @@ public class Metadata {
 		valueMap.put("spNameIDFormat", settings.getSpNameIDFormat());
 		valueMap.put("spAssertionConsumerServiceBinding", settings.getSpAssertionConsumerServiceBinding());
 		valueMap.put("spAssertionConsumerServiceUrl", settings.getSpAssertionConsumerServiceUrl().toString());
-		valueMap.put("sls", toSLSXml(settings.getSpSingleLogoutServiceUrl(), settings.getSpSingleLogoutServiceBinding()).toString());
+		valueMap.put("sls", toSLSXml(settings.getSpSingleLogoutServiceUrl(), settings.getSpSingleLogoutServiceBinding()));
 
 		valueMap.put("strAttributeConsumingService", getAttributeConsumingServiceXml());
 		
-		valueMap.put("strKeyDescriptor", toX509KeyDescriptorsXML(settings.getSPcert()).toString());
+		valueMap.put("strKeyDescriptor", toX509KeyDescriptorsXML(settings.getSPcert()));
 		valueMap.put("strContacts", toContactsXml(settings.getContacts()));
 		valueMap.put("strOrganization", toOrganizationXml(settings.getOrganization(), "en"));
 

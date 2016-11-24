@@ -24,7 +24,6 @@ import org.junit.Test;
 
 import com.onelogin.saml2.logout.LogoutRequest;
 import com.onelogin.saml2.http.HttpRequest;
-import com.onelogin.saml2.authn.AuthnRequest;
 import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;

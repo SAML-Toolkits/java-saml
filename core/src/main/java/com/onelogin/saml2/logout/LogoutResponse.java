@@ -95,7 +95,7 @@ public class LogoutResponse {
 		
 		String samlLogoutResponse = null;
 		if (request != null) {
-			currentUrl = request.getRequestURL().toString();
+			currentUrl = request.getRequestURL();
 			samlLogoutResponse = request.getParameter("SAMLResponse");
 		}
 
@@ -148,8 +148,6 @@ public class LogoutResponse {
      * @param requestId
      *              The ID of the LogoutRequest sent by this SP to the IdP
      *
-     * @throws Exception
-     * 
      * @return if the SAML LogoutResponse is or not valid
      */
 	public Boolean isValid(String requestId) {

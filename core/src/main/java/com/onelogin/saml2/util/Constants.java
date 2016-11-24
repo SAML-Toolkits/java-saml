@@ -6,10 +6,12 @@ package com.onelogin.saml2.util;
  * A class that contains several constants related to the SAML protocol
  */ 
 public final class Constants {
-	// Value added to the current time in time condition validations
+	/**
+     * Value added to the current time in time condition validations.
+     */
 	public static Integer ALOWED_CLOCK_DRIFT = 180; // 3 min in seconds
 
-	// NameID Formats
+	// NameID Formats	
 	public static String NAMEID_EMAIL_ADDRESS = "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress";
 	public static String NAMEID_X509_SUBJECT_NAME = "urn:oasis:names:tc:SAML:1.1:nameid-format:X509SubjectName";
 	public static String NAMEID_WINDOWS_DOMAIN_QUALIFIED_NAME = "urn:oasis:names:tc:SAML:1.1:nameid-format:WindowsDomainQualifiedName";
@@ -94,5 +96,9 @@ public final class Constants {
 	public static String RSA_OAEP_MGF1P = "http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p";
 	
 	public static String ENVSIG = "http://www.w3.org/2000/09/xmldsig#enveloped-signature";
+	
+	private Constants() {
+	      //not called
+	}
 	
 }
