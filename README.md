@@ -145,7 +145,7 @@ Let's start describing them:
 #### core (com.onelogin:java-saml-core) ####
 This folder contains a maven project with the heart of java-saml, classes and methods to handle AuthNRequest, SAMLResponse, LogoutRequest, LogoutResponse and Metadata (low level API). In addition contains classes to load the settings of the toolkit and the HttpRequest class, a framework-agnostic representation of an HTTP request.
 
-In the repo, at *src/main/java* you will find the source, at *src/main/main/resources/schemas* there are xsd schemas used to validate the SAML messages, at *src/test/java* are the tests for its classes and at *src/test/resources* different settings, SAML messages and certificates used on the junit tests.
+In the repo, at *src/main/java* you will find the source, at *src/main/resources/schemas* there are xsd schemas used to validate the SAML messages, at *src/test/java* are the tests for its classes and at *src/test/resources* different settings, SAML messages and certificates used on the junit tests.
 
 
 #### toolkit (com.onelogin:java-saml) ####

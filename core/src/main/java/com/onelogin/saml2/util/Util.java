@@ -348,7 +348,7 @@ public final class Util {
 	}
 
 	/**
-	 * Returns a certificate in String format (adding header & footer if required)
+	 * Returns a certificate in String format (adding header and footer if required)
 	 *
 	 * @param cert
 	 * 				A x509 unformatted cert
@@ -375,7 +375,7 @@ public final class Util {
 	}
 
 	/**
-	 * Returns a private key (adding header & footer if required).
+	 * Returns a private key (adding header and footer if required).
 	 *
 	 * @param key
 	 * 				A private key
@@ -1344,6 +1344,7 @@ public final class Util {
 	 * Create string form time In Millis with format yyyy-MM-ddTHH:mm:ssZ
 	 *
 	 * @param timeInMillis
+	 * 				The time in Millis
 	 *
 	 * @return string with format yyyy-MM-ddTHH:mm:ssZ
 	 */
@@ -1354,16 +1355,18 @@ public final class Util {
 	/**
 	 * Create string form time In Millis with format yyyy-MM-ddTHH:mm:ssZ
 	 *
-	 * @param timeInMillis
+	 * @param time
+	 * 			The time
 	 * @param millis
+	 * 			Defines if the time is in Millis
 	 *
 	 * @return string with format yyyy-MM-ddTHH:mm:ssZ
 	 */
-	public static String formatDateTime(long timeInMillis, boolean millis) {
+	public static String formatDateTime(long time, boolean millis) {
 		if (millis) {
-			return DATE_TIME_FORMAT_MILLS.print(timeInMillis);
+			return DATE_TIME_FORMAT_MILLS.print(time);
 		} else {
-			return formatDateTime(timeInMillis);
+			return formatDateTime(time);
 		}
 	}
 

@@ -28,6 +28,7 @@
     	<h1>A Java SAML Toolkit by OneLogin demo</h1>
 	<%
 		Boolean found = false;
+		@SuppressWarnings("unchecked")
 		Enumeration<String> elems = (Enumeration<String>) session.getAttributeNames();	
 	
 		while (elems.hasMoreElements() && !found) {
@@ -39,6 +40,7 @@
 	
 		if (found) {
 			String nameId = (String) session.getAttribute("nameId");
+			@SuppressWarnings("unchecked")
 			Map<String, List<String>> attributes = (Map<String, List<String>>) session.getAttribute("attributes");
 
 			if (!nameId.isEmpty()) {

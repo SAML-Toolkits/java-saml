@@ -6,10 +6,12 @@ public final class Preconditions {
      *
      * @param t       the value to check for null
      * @param message the message to include in the thrown exception
-     * @return t
+     *
+     * @return T 
+     *
      * @throws NullPointerException if {@code t} is null
      */
-    public static <T> T checkNotNull(T t, String message) {
+    public static <T>T checkNotNull(T t, String message) {
         if (t == null) {
             throw new NullPointerException(message);
         } else {

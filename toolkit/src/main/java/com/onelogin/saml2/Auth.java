@@ -708,7 +708,21 @@ public class Auth {
 	{
 		return buildSignature(samlResponse, relayState, signAlgorithm, "SAMLResponse");
 	}
-	
+
+	/**
+	 * Generates the Signature for a SAML Response
+	 *
+	 * @param samlResponse
+	 *				The SAML Response
+	 * @param relayState
+	 *				The RelayState
+	 * @param signAlgorithm
+	 *				Signature algorithm method
+	 * @param type
+	 *              The type of the message
+	 *
+	 * @return the base64 encoded signature
+	 */
 	private String buildSignature(String samlMessage, String relayState, String signAlgorithm, String type)
 	{
 		 String signature = "";

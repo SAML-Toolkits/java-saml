@@ -116,7 +116,7 @@
 						<configuration>
 							<rules>
 								<evaluateBeanshell>
-									<condition>javax.crypto.Cipher.getMaxAllowedKeyLength("AES") > 128</condition>
+									<condition>javax.crypto.Cipher.getMaxAllowedKeyLength("AES") &gt; 128</condition>
 								</evaluateBeanshell>
 							</rules>
 						</configuration>

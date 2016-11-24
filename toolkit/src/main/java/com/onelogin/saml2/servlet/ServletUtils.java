@@ -32,7 +32,7 @@ public class ServletUtils {
      * @return a HttpRequest
      */
     public static HttpRequest makeHttpRequest(HttpServletRequest req) {
-        //noinspection unchecked
+    	@SuppressWarnings("unchecked")
         final Map<String, String[]> paramsAsArray = (Map<String, String[]>) req.getParameterMap();
         final Map<String, List<String>> paramsAsList = new HashMap<>();
         for (Map.Entry<String, String[]> param : paramsAsArray.entrySet()) {
