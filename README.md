@@ -168,6 +168,11 @@ At *java-saml-tookit-jspsample/src/main/resources* folder is the *onelogin.saml.
 
 ### How it works
 
+#### Javadocs
+
+* [toolkit (com.onelogin:java-saml)](https://onelogin.github.io/java-saml/toolkit/index.html)
+* [core (com.onelogin:java-saml-core)](https://onelogin.github.io/java-saml/core/index.html)
+
 #### Settings
 First of all we need to configure the toolkit. The SP's info, the IdP's info, and in some cases, configure advanced security issues like signatures and encryption.
 
