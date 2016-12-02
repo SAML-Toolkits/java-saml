@@ -661,7 +661,7 @@ public class AuthTest {
 		auth.processSLO(false, "wrong_request_id");
 		verify(session, times(0)).invalidate();
 		assertTrue(auth.getErrors().contains("invalid_logout_response"));
-		assertEquals("The InResponseTo of the Logout Response: ONELOGIN_21584ccdfaca36a145ae990442dcd96bfe60151e, does not match the ID of the Logout request sent by the SP:: wrong_request_id", auth.getLastErrorReason());
+		assertEquals("The InResponseTo of the Logout Response: ONELOGIN_21584ccdfaca36a145ae990442dcd96bfe60151e, does not match the ID of the Logout request sent by the SP: wrong_request_id", auth.getLastErrorReason());
 	}
 
 	/**

@@ -6,6 +6,7 @@ import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.xml.xpath.XPathExpressionException;
 
@@ -174,13 +175,16 @@ public class LogoutResponse {
 					}
 				}
 
-				// Check if the InResponseTo of the Logout Response matches the ID of the Logout Request (requestId) if provided
-				if (requestId != null && rootElement.hasAttribute("InResponseTo")) {
-					String responseInResponseTo = rootElement.getAttribute("InResponseTo");
-					if (!responseInResponseTo.equals(requestId)) {
+				String responseInResponseTo = rootElement.hasAttribute("InResponseTo") ? rootElement.getAttribute("InResponseTo") : null;
+				if (requestId == null && responseInResponseTo != null && settings.isRejectUnsolicitedResponsesWithInResponseTo()) {
+					throw new Exception("The Response has an InResponseTo attribute: " + responseInResponseTo +
+							" while no InResponseTo was expected");
+				}
+
+				// Check if the InResponseTo of the Response matches the ID of the AuthNRequest (requestId) if provided
+				if (requestId != null && !Objects.equals(responseInResponseTo, requestId)) {
 						throw new Exception("The InResponseTo of the Logout Response: " + responseInResponseTo
-								+ ", does not match the ID of the Logout request sent by the SP:: " + requestId);
-					}
+								+ ", does not match the ID of the Logout request sent by the SP: " + requestId);
 				}
 
 				// Check issuer
