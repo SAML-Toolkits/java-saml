@@ -2,6 +2,7 @@ package com.onelogin.saml2.test.authn;
 
 import com.onelogin.saml2.authn.SamlResponse;
 import com.onelogin.saml2.http.HttpRequest;
+import com.onelogin.saml2.logout.LogoutResponse;
 import com.onelogin.saml2.model.SamlResponseStatus;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
@@ -101,6 +102,31 @@ public class AuthnResponseTest {
 
 		assertEquals(expectedFirstName, attributes.get("FirstName"));
 		assertEquals(expectedLastName, attributes.get("LastName"));
+	}
+
+	/**
+	 * Tests the getSAMLResponseXml method of SamlResponse
+	 *
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.authn.SamlResponse#getSAMLResponseXml
+	 */
+	@Test
+	public void testGetSAMLResponseXml() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+
+		final String requestURL = "/";
+		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
+
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(requestURL, samlResponseEncoded));
+		String samlResponseXML =  samlResponse.getSAMLResponseXml();
+		assertThat(samlResponseXML, containsString("<samlp:Response"));
+
+		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
+		samlResponse = new SamlResponse(settings, newHttpRequest(requestURL, samlResponseEncoded));
+		samlResponseXML =  samlResponse.getSAMLResponseXml();
+		assertThat(samlResponseXML, containsString("<samlp:Response"));
+		assertThat(samlResponseXML, containsString("<saml:Assertion"));
 	}
 
 	/**

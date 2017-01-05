@@ -131,7 +131,7 @@ public class AuthnRequest {
 	/**
 	 * @return unsigned plain-text AuthnRequest. 
 	 */
-	protected String getAuthnRequestXml() {
+	public String getAuthnRequestXml() {
 		return authnRequestString;
 	}
 

@@ -139,7 +139,7 @@ public class LogoutResponse {
 	/**
 	 * @return the plain XML Logout Response
 	 */
-	protected String getLogoutResponseXml() {
+	public String getLogoutResponseXml() {
 		return logoutResponseString;
 	}
 

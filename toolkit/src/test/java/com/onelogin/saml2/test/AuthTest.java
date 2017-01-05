@@ -28,6 +28,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.xml.xpath.XPathExpressionException;
 
 import org.joda.time.Instant;
 import org.junit.Test;
@@ -1572,5 +1573,157 @@ public class AuthTest {
 		expectedSignature = "GiO58DZMcRb8QR+dxUvn9bp5tIp2Eal8+tvOAEbYoAX6+7TMO8tTkpPjRD60pG+SMYjTC+lXQHygX2AXcO5ZQj8snfqx94C3dCOP7gLKOowFcaD0TunmnFCBx6qLv2cOleS9PSx49BSZJiGuffNcfgvTvsyqGwC2EatPP2+AxDM=";
 		assertEquals(expectedSignature, signature);
 	}
-	
+
+	/**
+	 * Tests the getLastRequestXML method
+	 * Case We can get most recently constructed SAML AuthNRequest
+	 *
+	 * @throws IOException
+	 * @throws SettingsException
+	 *
+	 * @see com.onelogin.saml2.Auth#getLastRequestXML
+	 */
+	@Test
+	public void testGetLastAuthNRequest() throws IOException, SettingsException {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+
+		Auth auth = new Auth(settings, request, response);
+		String targetSSOURL = auth.login(null, false, false, false, true);
+		String authNRequestXML = auth.getLastRequestXML();
+		assertThat(targetSSOURL, containsString(Util.urlEncoder(Util.deflatedBase64encoded(authNRequestXML))));
+	}
+
+	/**
+	 * Tests the getLastRequestXML method
+	 * Case We can get most recently processed LogoutRequest.
+	 *
+	 * @throws IOException
+	 * @throws SettingsException
+	 * @throws XMLEntityException
+	 *
+	 * @see com.onelogin.saml2.Auth#getLastRequestXML
+	 */
+	@Test
+	public void testGetLastLogoutRequestSent() throws IOException, SettingsException, XMLEntityException {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+
+		Auth auth = new Auth(settings, request, response);
+		String targetSLOURL = auth.logout(null, null, null, true);
+		String logoutRequestXML = auth.getLastRequestXML();
+		assertThat(targetSLOURL, containsString(Util.urlEncoder(Util.deflatedBase64encoded(logoutRequestXML))));
+	}
+
+	/**
+	 * Tests the getLastRequestXML method
+	 * Case We can get most recently processed LogoutRequest
+	 *
+	 * @throws IOException
+	 * @throws SettingsException
+	 * @throws XMLEntityException
+	 * @throws XPathExpressionException
+	 *
+	 * @see com.onelogin.saml2.Auth#getLastRequestXML
+	 */
+	@Test
+	public void testGetLastLogoutRequestReceived() throws IOException, SettingsException, XPathExpressionException, XMLEntityException {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		when(request.getRequestURL()).thenReturn(new StringBuffer("/"));
+		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request.xml.base64");
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLRequest", new String[]{samlRequestEncoded}));
+
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		Auth auth = new Auth(settings, request, response);
+		auth.processSLO();
+		String logoutRequestXML =  auth.getLastRequestXML();
+		assertThat(logoutRequestXML, containsString("<samlp:LogoutRequest"));
+	}
+
+	/**
+	 * Tests the getLastResponseXML method
+	 * Case We can get most recently processed SAML Response
+	 *
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.Auth#getLastResponseXML
+	 */
+	@Test
+	public void testGetLastSAMLResponse() throws Exception {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		when(request.getRequestURL()).thenReturn(new StringBuffer("/"));
+		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		Auth auth = new Auth(settings, request, response);
+		auth.processResponse();
+		String samlResponseXML =  auth.getLastResponseXML();
+		assertThat(samlResponseXML, containsString("<samlp:Response"));
+		
+		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		Auth auth2 = new Auth(settings, request, response);
+		auth2.processResponse();
+		samlResponseXML =  auth2.getLastResponseXML();
+		assertThat(samlResponseXML, containsString("<samlp:Response"));
+		assertThat(samlResponseXML, containsString("<saml:Assertion"));
+	}
+
+	/**
+	 * Tests the getLastResponseXML method
+	 * Case We can get most recently processed LogoutResponse
+	 *
+	 * @throws IOException
+	 * @throws SettingsException
+	 * @throws XMLEntityException
+	 * @throws XPathExpressionException
+	 *
+	 * @see com.onelogin.saml2.Auth#getLastResponseXML
+	 */
+	@Test
+	public void testGetLastLogoutResponseSent() throws IOException, SettingsException, XPathExpressionException, XMLEntityException {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
+		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLRequest", new String[]{samlRequestEncoded}));
+
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		settings.setStrict(false);
+		Auth auth = new Auth(settings, request, response);
+		auth.processSLO(true, null);
+		String logoutResponseXML =  auth.getLastResponseXML();
+		assertThat(logoutResponseXML, containsString("<samlp:LogoutResponse"));
+	}
+
+	/**
+	 * Tests the getLastResponseXML method
+	 * Case We can get most recently processed LogoutResponse
+	 *
+	 * @throws IOException
+	 * @throws SettingsException
+	 * @throws XMLEntityException
+	 * @throws XPathExpressionException
+	 *
+	 * @see com.onelogin.saml2.Auth#getLastResponseXML
+	 */
+	@Test
+	public void testGetLastLogoutResponseReceived() throws IOException, SettingsException, XPathExpressionException, XMLEntityException {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		when(request.getRequestURL()).thenReturn(new StringBuffer("/"));
+		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response.xml.base64");
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		Auth auth = new Auth(settings, request, response);
+		auth.processSLO();
+		String logoutResponseXML =  auth.getLastResponseXML();
+		assertThat(logoutResponseXML, containsString("<samlp:LogoutResponse"));
+	}
 }

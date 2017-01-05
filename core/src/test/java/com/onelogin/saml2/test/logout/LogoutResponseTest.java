@@ -18,6 +18,7 @@ import org.junit.Test;
 
 import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.http.HttpRequest;
+import com.onelogin.saml2.logout.LogoutRequest;
 import com.onelogin.saml2.logout.LogoutResponse;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
@@ -42,7 +43,7 @@ public class LogoutResponseTest {
 
 		LogoutResponse logoutResponseBuilder = new LogoutResponse(settings, httpRequest) {
 			@Override
-			protected String getLogoutResponseXml() {
+			public String getLogoutResponseXml() {
 				return logoutResponseString;
 			}
 		};
@@ -57,7 +58,7 @@ public class LogoutResponseTest {
 
 		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest) {
 			@Override
-			protected String getLogoutResponseXml() {
+			public String getLogoutResponseXml() {
 				return logoutResponseString;
 			}
 		};
@@ -77,7 +78,7 @@ public class LogoutResponseTest {
 		settings.setCompressResponse(true);
 		logoutResponse = new LogoutResponse(settings, httpRequest) {
 			@Override
-			protected String getLogoutResponseXml() {
+			public String getLogoutResponseXml() {
 				return logoutResponseString;
 			}
 		};
@@ -87,7 +88,7 @@ public class LogoutResponseTest {
 		settings.setCompressResponse(false);
 		logoutResponse = new LogoutResponse(settings, httpRequest) {
 			@Override
-			protected String getLogoutResponseXml() {
+			public String getLogoutResponseXml() {
 				return logoutResponseString;
 			}
 		};
@@ -151,6 +152,30 @@ public class LogoutResponseTest {
 		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		assertThat(logoutRequestStr, containsString("<samlp:LogoutResponse"));
 		assertThat(logoutRequestStr, containsString("InResponseTo=\"inResponseValue\""));
+	}
+
+	/**
+	 * Tests the getLogoutResponseXml method of LogoutResponse
+	 *
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.logout.getLogoutResponseXml
+	 */
+	@Test
+	public void testGetLogoutRequestXml() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		LogoutResponse logoutResponse = new LogoutResponse(settings, null);
+		logoutResponse.build();
+		String logoutResponseXML = logoutResponse.getLogoutResponseXml();
+		assertThat(logoutResponseXML, containsString("<samlp:LogoutResponse"));
+
+		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response.xml.base64");
+		String requestURL = "/";
+		HttpRequest httpRequest = newHttpRequest(requestURL, samlResponseEncoded);
+		logoutResponse = new LogoutResponse(settings, httpRequest);
+		logoutResponseXML = logoutResponse.getLogoutResponseXml();
+		assertThat(logoutResponseXML, containsString("<samlp:LogoutResponse"));
+		
 	}
 
 	/**

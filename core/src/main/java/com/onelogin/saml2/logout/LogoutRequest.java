@@ -181,7 +181,7 @@ public class LogoutRequest {
 	/**
 	 * @return the plain XML Logout Request
 	 */
-	protected String getLogoutRequestXml() {
+	public String getLogoutRequestXml() {
 		return logoutRequestString;
 	}
 

@@ -24,6 +24,7 @@ import org.junit.Test;
 
 import com.onelogin.saml2.logout.LogoutRequest;
 import com.onelogin.saml2.http.HttpRequest;
+import com.onelogin.saml2.authn.AuthnRequest;
 import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
@@ -45,7 +46,7 @@ public class LogoutRequestTest {
 		final String logoutRequestString = Util.getFileAsString("data/logout_requests/logout_request.xml");
 		LogoutRequest logoutRequest = new LogoutRequest(settings) {
 			@Override
-			protected String getLogoutRequestXml() {
+			public String getLogoutRequestXml() {
 				return logoutRequestString;
 			}
 		};
@@ -69,7 +70,7 @@ public class LogoutRequestTest {
 		settings.setCompressRequest(true);
 		logoutRequest = new LogoutRequest(settings) {
 			@Override
-			protected String getLogoutRequestXml() {
+			public String getLogoutRequestXml() {
 				return logoutRequestString;
 			}
 		};
@@ -79,7 +80,7 @@ public class LogoutRequestTest {
 		settings.setCompressRequest(false);
 		logoutRequest = new LogoutRequest(settings) {
 			@Override
-			protected String getLogoutRequestXml() {
+			public String getLogoutRequestXml() {
 				return logoutRequestString;
 			}
 		};
@@ -168,7 +169,7 @@ public class LogoutRequestTest {
 	@Test
 	public void testConstructorWithEncryptedNameID() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
-		LogoutRequest logoutRequest = new LogoutRequest(settings); 
+		LogoutRequest logoutRequest = new LogoutRequest(settings);
 		String logoutRequestStringBase64 = logoutRequest.getEncodedLogoutRequest();
 		String logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		assertThat(logoutRequestStr, containsString("<saml:EncryptedID><xenc:EncryptedData"));
@@ -179,7 +180,30 @@ public class LogoutRequestTest {
 		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		assertThat(logoutRequestStr, not(containsString("<saml:EncryptedID><xenc:EncryptedData")));
 	}
-	
+
+	/**
+	 * Tests the getLogoutRequestXml method of LogoutRequest
+	 *
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.logout.getLogoutRequestXml
+	 */
+	@Test
+	public void testGetLogoutRequestXml() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		LogoutRequest logoutRequest = new LogoutRequest(settings);
+		String logoutRequestXML = logoutRequest.getLogoutRequestXml();
+		assertThat(logoutRequestXML, containsString("<samlp:LogoutRequest"));
+
+		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request.xml.base64");
+		String requestURL = "/";
+		HttpRequest httpRequest = newHttpRequest(requestURL, samlRequestEncoded);
+		logoutRequest = new LogoutRequest(settings, httpRequest);
+		logoutRequestXML = logoutRequest.getLogoutRequestXml();
+		assertThat(logoutRequestXML, containsString("<samlp:LogoutRequest"));
+		
+	}
+
 	/**
 	 * Tests the getNameIdData method of LogoutRequest
 	 * Case: Able to get the NameIdData

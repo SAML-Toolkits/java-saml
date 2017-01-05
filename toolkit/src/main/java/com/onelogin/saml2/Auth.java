@@ -117,6 +117,19 @@ public class Auth {
 	private String lastRequestId;
 
 	/**
+	 * The most recently-constructed/processed XML SAML request
+     * (AuthNRequest, LogoutRequest) 
+	 */
+	private String lastRequest;
+
+	/**
+     * The most recently-constructed/processed XML SAML response
+     * (SAMLResponse, LogoutResponse). If the SAMLResponse was
+     * encrypted, by default tries to return the decrypted XML 
+	 */
+	private String lastResponse;
+
+	/**
 	 * Initializes the SP SAML instance.
 	 *
 	 * @throws IOException
@@ -234,6 +247,7 @@ public class Auth {
 		AuthnRequest authnRequest = new AuthnRequest(settings, forceAuthn, isPassive, setNameIdPolicy);
 
 		String samlRequest = authnRequest.getEncodedAuthnRequest();
+		
 		parameters.put("SAMLRequest", samlRequest);
 
 		String relayState;
@@ -256,8 +270,8 @@ public class Auth {
 		}
 
 		String ssoUrl = getSSOurl();
-
 		lastRequestId = authnRequest.getId();
+		lastRequest = authnRequest.getAuthnRequestXml();
 
 		if (!stay) {
 			LOGGER.debug("AuthNRequest sent to " + ssoUrl + " --> " + samlRequest);
@@ -351,6 +365,7 @@ public class Auth {
 
 		String sloUrl = getSLOurl();
 		lastRequestId = logoutRequest.getId();
+		lastRequest = logoutRequest.getLogoutRequestXml();
 
 		if (!stay) {
 			LOGGER.debug("Logout request sent to " + sloUrl + " --> " + samlLogoutRequest);
@@ -437,6 +452,7 @@ public class Auth {
 
 		if (samlResponseParameter != null) {
 			SamlResponse samlResponse = new SamlResponse(settings, httpRequest);
+			lastResponse = samlResponse.getSAMLResponseXml();
 
 			if (samlResponse.isValid(requestId)) {
 				nameid = samlResponse.getNameId();
@@ -490,6 +506,7 @@ public class Auth {
 
 		if (samlResponseParameter != null) {
 			LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
+			lastResponse = logoutResponse.getLogoutResponseXml();
 			if (!logoutResponse.isValid(requestId)) {
 				errors.add("invalid_logout_response");
 				LOGGER.error("processSLO error. invalid_logout_response");
@@ -510,7 +527,7 @@ public class Auth {
 			}
 		} else if (samlRequestParameter != null) {
 			LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
-
+			lastRequest = logoutRequest.getLogoutRequestXml();
 			if (!logoutRequest.isValid()) {
 				errors.add("invalid_logout_request");
 				LOGGER.error("processSLO error. invalid_logout_request");
@@ -525,6 +542,8 @@ public class Auth {
 				String inResponseTo = logoutRequest.id;
 				LogoutResponse logoutResponseBuilder = new LogoutResponse(settings, httpRequest);
 				logoutResponseBuilder.build(inResponseTo);
+				lastResponse = logoutResponseBuilder.getLogoutResponseXml();
+
 				String samlLogoutResponse = logoutResponseBuilder.getEncodedLogoutResponse();
 
 				Map<String, String> parameters = new LinkedHashMap<String, String>();
@@ -760,5 +779,29 @@ public class Auth {
 
 		 LOGGER.debug("buildResponseSignature success. --> " + signature);
 		 return signature;
+	}
+
+	/**
+	 * Returns the most recently-constructed/processed
+     * XML SAML request (AuthNRequest, LogoutRequest)
+     *
+	 * @return the last Request XML 
+	 */
+	public String getLastRequestXML()
+	{
+		return lastRequest;
+	}
+
+	/**
+     * Returns the most recently-constructed/processed
+     * XML SAML response (SAMLResponse, LogoutResponse).
+     * If the SAMLResponse was encrypted, by default tries
+     * to return the decrypted XML.
+     *
+	 * @return the last Response XML 
+	 */
+	public String getLastResponseXML()
+	{
+		return lastResponse;
 	}
 }

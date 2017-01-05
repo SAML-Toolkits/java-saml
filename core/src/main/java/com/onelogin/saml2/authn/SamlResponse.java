@@ -59,6 +59,12 @@ public class SamlResponse {
 	 * A DOMDocument object loaded from the SAML Response (Decrypted).
 	 */
 	private Document decryptedDocument;
+
+	/**
+	 * A DOMDocument class loaded from the original decrypted assertion.
+     * used in order to avoid signature validation conflicts due namespace issues
+	 */
+	private Document originalDecryptedAssertion;
 	
 	/**
 	 * URL of the current host + current view
@@ -999,6 +1005,34 @@ public class SamlResponse {
 		String xmlStr = Util.convertDocumentToString(dom);
 		Document doc = Util.convertStringToDocument(xmlStr);
 		// LOGGER.debug("Decrypted SAMLResponse --> " + xmlStr);
+		return doc;
+	}
+
+	/**
+	 * @return the SAMLResponse XML, If the Assertion of the SAMLResponse was encrypted,  
+	 *         returns the XML with the assertion decrypted
+	 */
+	public String getSAMLResponseXml() {
+		String xml;
+		if (encrypted) {
+			xml = Util.convertDocumentToString(decryptedDocument);
+		} else {
+        	xml = samlResponseString;
+		}
+		return xml; 
+	}
+
+	/**
+	 * @return the SAMLResponse Document, If the Assertion of the SAMLResponse was encrypted,  
+	 *         returns the Document with the assertion decrypted
+	 */
+	protected Document getSAMLResponseDocument() {
+		Document doc;
+		if (encrypted) {
+			doc = decryptedDocument;
+		} else {
+        	doc = samlResponseDocument;
+		}
 		return doc;
 	}
 }
