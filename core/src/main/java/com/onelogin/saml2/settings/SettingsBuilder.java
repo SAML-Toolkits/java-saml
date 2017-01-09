@@ -17,6 +17,8 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.onelogin.saml2.exception.Error;
+import com.onelogin.saml2.exception.SettingsException;
 import com.onelogin.saml2.model.Contact;
 import com.onelogin.saml2.model.Organization;
 import com.onelogin.saml2.util.Util;
@@ -107,9 +109,10 @@ public class SettingsBuilder {
 	 *
 	 * @return the SettingsBuilder object with the settings loaded from the file
 	 *
-	 * @throws IOException 
+	 * @throws IOException
+	 * @throws Error
 	 */
-	public SettingsBuilder fromFile(String propFileName) throws IOException {
+	public SettingsBuilder fromFile(String propFileName) throws IOException, Error {
 		this.loadPropFile(propFileName);
 		return this;
 	}
@@ -120,9 +123,10 @@ public class SettingsBuilder {
 	 * @param propFileName
 	 *            the name of the file
 	 *
-	 * @throws IOException 
+	 * @throws IOException
+	 * @throws Error
 	 */
-	private void loadPropFile(String propFileName) throws IOException {
+	private void loadPropFile(String propFileName) throws IOException, Error {
 
 		InputStream inputStream = null;
 
@@ -132,7 +136,9 @@ public class SettingsBuilder {
 				this.prop.load(inputStream);
 				LOGGER.debug("properties file " + propFileName + "loaded succesfully");
 			} else {
-				throw new FileNotFoundException("properties file '" + propFileName + "' not found in the classpath");
+				String errorMsg = "properties file '" + propFileName + "' not found in the classpath";
+				LOGGER.error(errorMsg);
+				throw new Error(errorMsg, Error.SETTINGS_FILE_NOT_FOUND);
 			}
 		} finally {
 			try {
@@ -140,7 +146,7 @@ public class SettingsBuilder {
 					inputStream.close();
 				}
 			} catch (IOException e) {
-				LOGGER.warn("properties file not closed properly.", e);
+				LOGGER.warn("properties file '"  + propFileName +  "' not closed properly.");
 			}
 		}
 	}
@@ -150,7 +156,7 @@ public class SettingsBuilder {
 	 * 
 	 * @return the Saml2Settings object with all the SAML settings loaded
 	 *
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public Saml2Settings build() throws IOException {
 
@@ -343,7 +349,7 @@ public class SettingsBuilder {
 	/**
 	 * Loads the SP settings from the properties file
 	 */
-	private void loadSpSetting() throws IOException {
+	private void loadSpSetting() {
 		String spEntityID = loadStringProperty(SP_ENTITYID_PROPERTY_KEY);
 		if (spEntityID != null)
 			saml2Setting.setSpEntityId(spEntityID);

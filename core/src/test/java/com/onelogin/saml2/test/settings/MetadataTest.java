@@ -19,6 +19,7 @@ import org.junit.Test;
 
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
+import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.model.AttributeConsumingService;
 import com.onelogin.saml2.model.RequestedAttribute;
 import com.onelogin.saml2.settings.Metadata;
@@ -66,11 +67,12 @@ public class MetadataTest {
      *
 	 * @throws IOException 
 	 * @throws CertificateEncodingException 
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.settings.Metadata
 	 */
 	@Test
-	public void testMetadataExpiration() throws IOException, CertificateEncodingException {
+	public void testMetadataExpiration() throws IOException, CertificateEncodingException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
 		Metadata metadataObj = new Metadata(settings);
@@ -97,11 +99,12 @@ public class MetadataTest {
 	 *
 	 * @throws IOException
 	 * @throws CertificateEncodingException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.settings.Metadata#toContactsXml
 	 */
 	@Test
-	public void testToContactsXml() throws IOException, CertificateEncodingException {
+	public void testToContactsXml() throws IOException, CertificateEncodingException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
 		Metadata metadataObj = new Metadata(settings);
 		String metadataStr = metadataObj.getMetadataString();
@@ -121,11 +124,12 @@ public class MetadataTest {
 	 *
 	 * @throws IOException
 	 * @throws CertificateEncodingException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.settings.Metadata#toOrganizationXml
 	 */
 	@Test
-	public void testToOrganizationXml() throws IOException, CertificateEncodingException {
+	public void testToOrganizationXml() throws IOException, CertificateEncodingException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
 		Metadata metadataObj = new Metadata(settings);
 		String metadataStr = metadataObj.getMetadataString();
@@ -145,11 +149,12 @@ public class MetadataTest {
 	 *
 	 * @throws IOException
 	 * @throws CertificateEncodingException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.settings.Metadata#toSLSXml
 	 */
 	@Test
-	public void testToSLSXml() throws IOException, CertificateEncodingException {
+	public void testToSLSXml() throws IOException, CertificateEncodingException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
 		Metadata metadataObj = new Metadata(settings);
 		String metadataStr = metadataObj.getMetadataString();
@@ -170,11 +175,12 @@ public class MetadataTest {
 	 *
 	 * @throws IOException
 	 * @throws CertificateEncodingException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.settings.Metadata#toX509KeyDescriptorsXML
 	 */
 	@Test
-	public void testToX509KeyDescriptorsXML() throws IOException, CertificateEncodingException {
+	public void testToX509KeyDescriptorsXML() throws IOException, CertificateEncodingException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
 		Metadata metadataObj = new Metadata(settings);
 		String metadataStr = metadataObj.getMetadataString();
@@ -198,11 +204,12 @@ public class MetadataTest {
      *
 	 * @throws IOException
 	 * @throws CertificateEncodingException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.settings.Metadata#getAttributeConsumingServiceXml
 	 */
 	@Test
-	public void testGetAttributeConsumingServiceXml() throws IOException, CertificateEncodingException {
+	public void testGetAttributeConsumingServiceXml() throws IOException, CertificateEncodingException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
 		
 		AttributeConsumingService attributeConsumingService = new AttributeConsumingService("Test Service", "Test Service Desc");
@@ -240,11 +247,12 @@ public class MetadataTest {
      *
 	 * @throws IOException
 	 * @throws CertificateEncodingException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.settings.Metadata#getAttributeConsumingServiceXml
 	 */
 	@Test
-	public void testGetAttributeConsumingServiceXmlWithMultipleAttributeValue() throws IOException, CertificateEncodingException {
+	public void testGetAttributeConsumingServiceXmlWithMultipleAttributeValue() throws IOException, CertificateEncodingException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
 		
 		AttributeConsumingService attributeConsumingService = new AttributeConsumingService("Test Service", "Test Service Desc");

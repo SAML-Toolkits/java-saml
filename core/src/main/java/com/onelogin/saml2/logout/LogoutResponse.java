@@ -17,7 +17,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import com.onelogin.saml2.exception.XMLEntityException;
+import com.onelogin.saml2.exception.SettingsException;
+import com.onelogin.saml2.exception.ValidationError;
 import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.util.Constants;
@@ -88,9 +89,8 @@ public class LogoutResponse {
 	 * @param request
      *              the HttpRequest object to be processed (Contains GET and POST parameters, request URL, ...).
      *
-	 * @throws XMLEntityException 
 	 */
-	public LogoutResponse(Saml2Settings settings, HttpRequest request) throws XMLEntityException {
+	public LogoutResponse(Saml2Settings settings, HttpRequest request) {
 		this.settings = settings;
 		this.request = request;
 		
@@ -156,7 +156,7 @@ public class LogoutResponse {
 
 		try {
 			if (this.logoutResponseDocument == null) {
-				throw new Exception("SAML Logout Response is not loaded");
+				throw new ValidationError("SAML Logout Response is not loaded", ValidationError.INVALID_XML_FORMAT);
 			}
 
 			if (this.currentUrl == null || this.currentUrl.isEmpty()) {
@@ -171,26 +171,26 @@ public class LogoutResponse {
 
 				if (settings.getWantXMLValidation()) {
 					if (!Util.validateXML(this.logoutResponseDocument, SchemaFactory.SAML_SCHEMA_PROTOCOL_2_0)) {
-						throw new Exception("Invalid SAML Logout Response. Not match the saml-schema-protocol-2.0.xsd");
+						throw new ValidationError("Invalid SAML Logout Response. Not match the saml-schema-protocol-2.0.xsd", ValidationError.INVALID_XML_FORMAT);
 					}
 				}
 
 				String responseInResponseTo = rootElement.hasAttribute("InResponseTo") ? rootElement.getAttribute("InResponseTo") : null;
 				if (requestId == null && responseInResponseTo != null && settings.isRejectUnsolicitedResponsesWithInResponseTo()) {
-					throw new Exception("The Response has an InResponseTo attribute: " + responseInResponseTo +
-							" while no InResponseTo was expected");
+					throw new ValidationError("The Response has an InResponseTo attribute: " + responseInResponseTo +
+							" while no InResponseTo was expected", ValidationError.WRONG_INRESPONSETO);
 				}
 
 				// Check if the InResponseTo of the Response matches the ID of the AuthNRequest (requestId) if provided
 				if (requestId != null && !Objects.equals(responseInResponseTo, requestId)) {
-						throw new Exception("The InResponseTo of the Logout Response: " + responseInResponseTo
-								+ ", does not match the ID of the Logout request sent by the SP: " + requestId);
+						throw new ValidationError("The InResponseTo of the Logout Response: " + responseInResponseTo
+								+ ", does not match the ID of the Logout request sent by the SP: " + requestId, ValidationError.WRONG_INRESPONSETO);
 				}
 
 				// Check issuer
                 String issuer = getIssuer();
                 if (issuer != null && !issuer.isEmpty() && !issuer.equals(settings.getIdpEntityId())) {
-                    throw new Exception("Invalid issuer in the Logout Response");
+                    throw new ValidationError("Invalid issuer in the Logout Response", ValidationError.WRONG_ISSUER);
                 }
 
 				// Check destination
@@ -198,21 +198,21 @@ public class LogoutResponse {
 					String destinationUrl = rootElement.getAttribute("Destination");
 					if (destinationUrl != null) {
 						if (!destinationUrl.isEmpty() && !destinationUrl.equals(currentUrl)) {
-							throw new Exception("The LogoutResponse was received at " + currentUrl + " instead of "
-									+ destinationUrl);
+							throw new ValidationError("The LogoutResponse was received at " + currentUrl + " instead of "
+									+ destinationUrl, ValidationError.WRONG_DESTINATION);
 						}
 					}
 				}
 
                 if (settings.getWantMessagesSigned() && (signature == null || signature.isEmpty())) {
-                    throw new Exception("The Message of the Logout Response is not signed and the SP requires it");
+                    throw new ValidationError("The Message of the Logout Response is not signed and the SP requires it", ValidationError.NO_SIGNED_MESSAGE);
                 }
 			}
 
 			if (signature != null && !signature.isEmpty()) {
 				X509Certificate cert = settings.getIdpx509cert();
 				if (cert == null) {
-					throw new Exception("In order to validate the sign on the Logout Response, the x509cert of the IdP is required");
+					throw new SettingsException("In order to validate the sign on the Logout Response, the x509cert of the IdP is required", SettingsException.CERT_NOT_FOUND);
 				}
 
 				String signAlg = request.getParameter("SigAlg");
@@ -230,7 +230,7 @@ public class LogoutResponse {
 				signedQuery += "&SigAlg=" + Util.urlEncoder(signAlg);
 
 				if (!Util.validateBinarySignature(signedQuery, Util.base64decoder(signature), cert, signAlg)) {
-					throw new Exception("Signature validation failed. Logout Response rejected");
+					throw new ValidationError("Signature validation failed. Logout Response rejected", ValidationError.INVALID_SIGNATURE);
 				}
 			}
 

@@ -16,9 +16,9 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.junit.Test;
 
+import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.http.HttpRequest;
-import com.onelogin.saml2.logout.LogoutRequest;
 import com.onelogin.saml2.logout.LogoutResponse;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
@@ -103,11 +103,12 @@ public class LogoutResponseTest {
 	 * @throws IOException
 	 * @throws XMLEntityException
 	 * @throws URISyntaxException
+	 * @throws Error
 	 * 
 	 * @see com.onelogin.saml2.logout.LogoutResponse
 	 */
 	@Test
-	public void testConstructor() throws IOException, XMLEntityException, URISyntaxException {
+	public void testConstructor() throws IOException, XMLEntityException, URISyntaxException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
 		final String requestURL = "/";
@@ -125,11 +126,12 @@ public class LogoutResponseTest {
 	 * @throws IOException
 	 * @throws XMLEntityException
 	 * @throws URISyntaxException
+	 * @throws Error
 	 * 
 	 * @see com.onelogin.saml2.logout.LogoutResponse#build
 	 */
 	@Test
-	public void testBuild() throws IOException, XMLEntityException, URISyntaxException {
+	public void testBuild() throws IOException, XMLEntityException, URISyntaxException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
 		final String requestURL = "/";
@@ -185,11 +187,12 @@ public class LogoutResponseTest {
 	 * @throws URISyntaxException
 	 * @throws XMLEntityException
 	 * @throws XPathExpressionException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutResponse#getStatus
 	 */
 	@Test
-	public void testGestStatus() throws IOException, URISyntaxException, XMLEntityException, XPathExpressionException {
+	public void testGestStatus() throws IOException, URISyntaxException, XMLEntityException, XPathExpressionException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
 		final String requestURL = "/";
@@ -210,11 +213,12 @@ public class LogoutResponseTest {
 	 * @throws URISyntaxException
 	 * @throws XMLEntityException
 	 * @throws XPathExpressionException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutResponse#getIssuer
 	 */
 	@Test
-	public void testGetIssuer() throws IOException, URISyntaxException, XMLEntityException, XPathExpressionException {
+	public void testGetIssuer() throws IOException, URISyntaxException, XMLEntityException, XPathExpressionException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
 		final String requestURL = "/";
@@ -237,11 +241,12 @@ public class LogoutResponseTest {
 	 *
 	 * @throws XMLEntityException
 	 * @throws IOException
+	 * @throws Error
 	 * 
 	 * @see com.onelogin.saml2.logout.LogoutResponse#isValid
 	 */
 	@Test
-	public void testIsValidNoResponse() throws XMLEntityException, IOException {
+	public void testIsValidNoResponse() throws XMLEntityException, IOException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		final String requestURL = "/";
 		HttpRequest httpRequest = newHttpRequest(requestURL, "");
@@ -263,11 +268,12 @@ public class LogoutResponseTest {
 	 * @throws XMLEntityException
 	 * @throws IOException
 	 * @throws URISyntaxException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutResponse#isValid
 	 */
 	@Test
-	public void testIsInValidRequestId() throws XMLEntityException, IOException, URISyntaxException {
+	public void testIsInValidRequestId() throws XMLEntityException, IOException, URISyntaxException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
 		final String requestURL = "http://stuff.com/endpoints/endpoints/sls.php";
@@ -294,11 +300,12 @@ public class LogoutResponseTest {
 	 * @throws XMLEntityException
 	 * @throws IOException
 	 * @throws URISyntaxException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutResponse#isValid
 	 */
 	@Test
-	public void testIsInValidIssuer() throws XMLEntityException, IOException, URISyntaxException {
+	public void testIsInValidIssuer() throws XMLEntityException, IOException, URISyntaxException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/invalids/invalid_issuer.xml.base64");
 		final String requestURL = "http://stuff.com/endpoints/endpoints/sls.php";
@@ -320,11 +327,12 @@ public class LogoutResponseTest {
 	 * @throws XMLEntityException
 	 * @throws IOException
 	 * @throws URISyntaxException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutResponse#isValid
 	 */
 	@Test
-	public void testIsInValidWrongXML() throws XMLEntityException, IOException, URISyntaxException {
+	public void testIsInValidWrongXML() throws XMLEntityException, IOException, URISyntaxException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/invalids/invalid_xml.xml.base64");
 		final String requestURL = "http://stuff.com/endpoints/endpoints/sls.php";
@@ -356,11 +364,12 @@ public class LogoutResponseTest {
 	 * @throws XMLEntityException
 	 * @throws IOException
 	 * @throws URISyntaxException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutResponse#isValid
 	 */
 	@Test
-	public void testIsInValidDestination() throws XMLEntityException, IOException, URISyntaxException {
+	public void testIsInValidDestination() throws XMLEntityException, IOException, URISyntaxException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
 		final String requestURL = "/";
@@ -381,11 +390,12 @@ public class LogoutResponseTest {
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 * @throws XMLEntityException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutResponse#isValid
 	 */
 	@Test
-	public void testIsValid() throws URISyntaxException, IOException, XMLEntityException {
+	public void testIsValid() throws URISyntaxException, IOException, XMLEntityException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
 		String requestURL = "/";
@@ -416,11 +426,12 @@ public class LogoutResponseTest {
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 * @throws XMLEntityException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutResponse#isValid
 	 */
 	@Test
-	public void testIsInValidSign() throws URISyntaxException, IOException, XMLEntityException {
+	public void testIsInValidSign() throws URISyntaxException, IOException, XMLEntityException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		settings.setStrict(false);
 		settings.setWantMessagesSigned(true);
@@ -480,11 +491,12 @@ public class LogoutResponseTest {
 	 *
 	 * @throws IOException
 	 * @throws XMLEntityException
+	 * @throws Error
 	 * 
 	 * @see com.onelogin.saml2.logout.LogoutResponse#isValid
 	 */
 	@Test
-	public void testIsValidNoLogoutResponse() throws IOException, XMLEntityException {
+	public void testIsValidNoLogoutResponse() throws IOException, XMLEntityException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		final String requestURL = "/";
 		HttpRequest httpRequest = newHttpRequest(requestURL, "");
@@ -500,11 +512,12 @@ public class LogoutResponseTest {
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 * @throws XMLEntityException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutResponse#getError
 	 */
 	@Test
-	public void testGetError() throws URISyntaxException, IOException, XMLEntityException {
+	public void testGetError() throws URISyntaxException, IOException, XMLEntityException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		settings.setStrict(true);
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");

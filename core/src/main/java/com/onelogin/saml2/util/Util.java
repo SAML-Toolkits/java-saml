@@ -79,6 +79,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import com.onelogin.saml2.exception.ValidationError;
 import com.onelogin.saml2.exception.XMLEntityException;
 
 
@@ -98,8 +99,6 @@ public final class Util {
 	public static final String UNIQUE_ID_PREFIX = "ONELOGIN_";
 	public static final String RESPONSE_SIGNATURE_XPATH = "/samlp:Response/ds:Signature";
 	public static final String ASSERTION_SIGNATURE_XPATH = "/samlp:Response/saml:Assertion/ds:Signature";
-
-	private static final Logger log = LoggerFactory.getLogger(Util.class);
 
 	private Util() {
 	      //not called
@@ -125,7 +124,7 @@ public final class Util {
 			LOGGER.debug("Load XML error: " + e.getMessage(), e);
 		}
 
-		return null;		
+		return null;
 	}
 
 	/**
@@ -209,10 +208,8 @@ public final class Util {
 	 *              The schema filename which should be used
 	 *
 	 * @return found errors after validation
-	 *
-	 * @throws Exception
 	 */
-	public static boolean validateXML(Document xmlDocument, URL schemaUrl) throws Exception {
+	public static boolean validateXML(Document xmlDocument, URL schemaUrl) {
 		try {
 
 			if (xmlDocument == null) {
@@ -441,6 +438,7 @@ public final class Util {
 	 * 				 certificate in string format
 	 *
 	 * @return Loaded Certificate. X509Certificate object
+	 *
 	 * @throws UnsupportedEncodingException 
 	 * @throws CertificateException 
 	 *
@@ -476,15 +474,14 @@ public final class Util {
 		keyString = chunkString(keyString, 64);		
 		KeyFactory kf = KeyFactory.getInstance("RSA");
 		
-		PrivateKey privKey = null;
+		PrivateKey privKey;
 		try {
 			byte[] encoded = Base64.decodeBase64(keyString);
 			PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
 			privKey = (PrivateKey) kf.generatePrivate(keySpec);
 		}
-		catch(Exception e) {
-			LOGGER.debug("Private Key not loaded: "+ e.getMessage(), e);
-			throw e;
+		catch(IllegalArgumentException e) {
+			privKey = null;
 		}
 
 		return privKey;
@@ -806,9 +803,9 @@ public final class Util {
 			final NodeList signatures = query(doc, xpath);
 			return signatures.getLength() == 1 && validateSignNode(signatures.item(0), cert, fingerprint, alg);
 		} catch (XPathExpressionException e) {
-			log.warn("Failed to find signature nodes", e);
-			return false;
+			LOGGER.warn("Failed to find signature nodes", e);		
 		}
+		return false;
 	}
 
 	/**
@@ -848,7 +845,7 @@ public final class Util {
 				return true;
 			}
 		} catch (XPathExpressionException e) {
-			String er = e.getMessage(); 
+			LOGGER.warn("Failed to find signature nodes", e);
 		}
 		return false;
     }
@@ -887,7 +884,7 @@ public final class Util {
 				}
 			}
 		} catch (Exception e) {
-			LOGGER.debug("Error executing validateSignNode: " + e.getMessage(), e);
+			LOGGER.warn("Error executing validateSignNode: " + e.getMessage(), e);
 		}
 		return res;
 	}
@@ -914,7 +911,7 @@ public final class Util {
 
 			NodeList keyInfoInEncData = encryptedDataElement.getElementsByTagNameNS(Constants.NS_DS, "KeyInfo");
 			if (keyInfoInEncData.getLength() == 0) {
-				throw new Exception("No KeyInfo inside EncryptedData element");
+				throw new ValidationError("No KeyInfo inside EncryptedData element", ValidationError.KEYINFO_NOT_FOUND_IN_ENCRYPTED_DATA);
 			}
 
 			NodeList childs = keyInfoInEncData.item(0).getChildNodes();
@@ -922,7 +919,7 @@ public final class Util {
 				if (childs.item(i).getLocalName() != null && childs.item(i).getLocalName().equals("RetrievalMethod")) {
 					Element retrievalMethodElem = (Element)childs.item(i);
 					if (!retrievalMethodElem.getAttribute("Type").equals("http://www.w3.org/2001/04/xmlenc#EncryptedKey")) {
-						throw new Exception("Unsupported Retrieval Method found");
+						throw new ValidationError("Unsupported Retrieval Method found", ValidationError.UNSUPPORTED_RETRIEVAL_METHOD);
 					}
 
 					String uri = retrievalMethodElem.getAttribute("URI").substring(1);
@@ -939,7 +936,7 @@ public final class Util {
 			xmlCipher.setKEK(inputKey);
 			xmlCipher.doFinal(encryptedDataElement.getOwnerDocument(), encryptedDataElement, false);
 		} catch (Exception e) {
-			LOGGER.debug("Error executing decryption: " + e.getMessage(), e);
+			LOGGER.warn("Error executing decryption: " + e.getMessage(), e);
 		}
 	}
 
@@ -1119,7 +1116,7 @@ public final class Util {
 			
 			valid = sig.verify(signature);
 		} catch (Exception e) {
-			LOGGER.debug("Error executing validateSign: " + e.getMessage(), e);
+			LOGGER.warn("Error executing validateSign: " + e.getMessage(), e);
 		}
 		return valid;
 	}

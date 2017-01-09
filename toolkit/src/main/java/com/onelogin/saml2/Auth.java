@@ -14,7 +14,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -25,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import com.onelogin.saml2.authn.AuthnRequest;
 import com.onelogin.saml2.authn.SamlResponse;
 import com.onelogin.saml2.exception.SettingsException;
+import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.logout.LogoutRequest;
@@ -134,8 +134,9 @@ public class Auth {
 	 *
 	 * @throws IOException
 	 * @throws SettingsException 
+	 * @throws Error
 	 */
-	public Auth() throws IOException, SettingsException {
+	public Auth() throws IOException, SettingsException, Error {
 		this(new SettingsBuilder().fromFile("onelogin.saml.properties").build(), null, null);
 	}
 
@@ -147,8 +148,9 @@ public class Auth {
 	 *
 	 * @throws IOException
 	 * @throws SettingsException 
+	 * @throws Error
 	 */
-	public Auth(String filename) throws IOException, SettingsException {
+	public Auth(String filename) throws IOException, SettingsException, Error {
 		this(new SettingsBuilder().fromFile(filename).build(), null, null);
 	}
 	
@@ -162,8 +164,9 @@ public class Auth {
 	 *
 	 * @throws IOException
 	 * @throws SettingsException 
+	 * @throws Error
 	 */
-	public Auth(HttpServletRequest request, HttpServletResponse response) throws IOException, SettingsException {
+	public Auth(HttpServletRequest request, HttpServletResponse response) throws IOException, SettingsException, Error {
 		this(new SettingsBuilder().fromFile("onelogin.saml.properties").build(), request, response);
 	}
 
@@ -179,8 +182,9 @@ public class Auth {
 	 *
 	 * @throws SettingsException 
 	 * @throws IOException
+	 * @throws Error
 	 */
-	public Auth(String filename, HttpServletRequest request, HttpServletResponse response) throws SettingsException, IOException {
+	public Auth(String filename, HttpServletRequest request, HttpServletResponse response) throws SettingsException, IOException, Error {
 		this(new SettingsBuilder().fromFile(filename).build(), request, response);
 	}
 	
@@ -194,7 +198,7 @@ public class Auth {
 	 * @param response
 	 * 				HttpServletResponse object to be used
 	 *
-	 * @throws SettingsException 
+	 * @throws SettingsException
 	 */
 	public Auth(Saml2Settings settings, HttpServletRequest request, HttpServletResponse response) throws SettingsException {
 		this.settings = settings;
@@ -206,8 +210,8 @@ public class Auth {
 		if (!settingsErrors.isEmpty()) {
 			String errorMsg = "Invalid settings: ";
 			errorMsg += StringUtils.join(settingsErrors, ", ");
-			LOGGER.debug(errorMsg);
-			throw new SettingsException(errorMsg);
+			LOGGER.error(errorMsg);
+			throw new SettingsException(errorMsg, SettingsException.SETTINGS_INVALID);
 		}
 		LOGGER.debug("Settings validated");
 	}
@@ -239,9 +243,11 @@ public class Auth {
 	 *            True if we want to stay (returns the url string) False to execute redirection
 	 *
 	 * @return the SSO URL with the AuthNRequest if stay = True
+	 *
 	 * @throws IOException
+	 * @throws SettingsException
 	 */
-	public String login(String returnTo, Boolean forceAuthn, Boolean isPassive, Boolean setNameIdPolicy, Boolean stay) throws IOException {
+	public String login(String returnTo, Boolean forceAuthn, Boolean isPassive, Boolean setNameIdPolicy, Boolean stay) throws IOException, SettingsException {
 		Map<String, String> parameters = new HashMap<String, String>();
 
 		AuthnRequest authnRequest = new AuthnRequest(settings, forceAuthn, isPassive, setNameIdPolicy);
@@ -291,9 +297,11 @@ public class Auth {
 	 *				When true the AuthNRequest will set the IsPassive='true'
 	 * @param setNameIdPolicy
 	 *            When true the AuthNRequest will set a nameIdPolicy
+	 *
 	 * @throws IOException
+	 * @throws SettingsException
 	 */
-	public void login(String returnTo, Boolean forceAuthn, Boolean isPassive, Boolean setNameIdPolicy) throws IOException {
+	public void login(String returnTo, Boolean forceAuthn, Boolean isPassive, Boolean setNameIdPolicy) throws IOException, SettingsException {
 		login(returnTo ,forceAuthn, isPassive, setNameIdPolicy, false);
 	}
 		
@@ -301,8 +309,9 @@ public class Auth {
 	 * Initiates the SSO process.
 	 *
 	 * @throws IOException
+	 * @throws SettingsException
 	 */
-	public void login() throws IOException {
+	public void login() throws IOException, SettingsException {
 		login(null ,false, false, true);
 	}
 
@@ -314,8 +323,9 @@ public class Auth {
 	 *				Will be a self-routed URL when null, or not be appended at all when an empty string is provided.
      *
 	 * @throws IOException
+	 * @throws SettingsException
 	 */
-	public void login(String returnTo) throws IOException {
+	public void login(String returnTo) throws IOException, SettingsException {
 		login(returnTo ,false, false, true);
 	}
 
@@ -336,8 +346,9 @@ public class Auth {
 	 *
 	 * @throws IOException
 	 * @throws XMLEntityException
+	 * @throws SettingsException
 	 */
-	public String logout(String returnTo, String nameId, String sessionIndex, Boolean stay) throws IOException, XMLEntityException {
+	public String logout(String returnTo, String nameId, String sessionIndex, Boolean stay) throws IOException, XMLEntityException, SettingsException {
 		Map<String, String> parameters = new HashMap<String, String>();
 
 		LogoutRequest logoutRequest = new LogoutRequest(settings, null, nameId, sessionIndex);
@@ -386,8 +397,9 @@ public class Auth {
 	 *
 	 * @throws IOException
 	 * @throws XMLEntityException
+	 * @throws SettingsException
 	 */
-	public void logout(String returnTo, String nameId, String sessionIndex) throws IOException, XMLEntityException {
+	public void logout(String returnTo, String nameId, String sessionIndex) throws IOException, XMLEntityException, SettingsException {
 		logout(returnTo, nameId, sessionIndex, false);
 	}
 
@@ -396,8 +408,9 @@ public class Auth {
 	 * 
 	 * @throws IOException
 	 * @throws XMLEntityException
+	 * @throws SettingsException
 	 */
-	public void logout() throws IOException, XMLEntityException {		
+	public void logout() throws IOException, XMLEntityException, SettingsException {		
 		logout(null, null, null);
 	}
 
@@ -410,8 +423,9 @@ public class Auth {
 	 *
 	 * @throws IOException
 	 * @throws XMLEntityException
+	 * @throws SettingsException
 	 */
-	public void logout(String returnTo) throws IOException, XMLEntityException {		
+	public void logout(String returnTo) throws IOException, XMLEntityException, SettingsException {		
 		logout(returnTo, null, null);
 	}
 
@@ -473,7 +487,7 @@ public class Auth {
 			errors.add("invalid_binding");
 			String errorMsg = "SAML Response not found, Only supported HTTP_POST Binding";
 			LOGGER.error("processResponse error." + errorMsg);
-			throw new IllegalArgumentException(errorMsg);
+			throw new Error(errorMsg, Error.SAML_RESPONSE_NOT_FOUND);
 		}
 	}
 
@@ -494,11 +508,9 @@ public class Auth {
      * @param requestId
      *				The ID of the LogoutRequest sent by this SP to the IdP
      *
-     * @throws XMLEntityException 
-     * @throws XPathExpressionException 
-     * @throws IOException
+     * @throws Exception 
      */
-	public void processSLO(Boolean keepLocalSession, String requestId) throws XMLEntityException, XPathExpressionException, IOException {
+	public void processSLO(Boolean keepLocalSession, String requestId) throws Exception {
 		final HttpRequest httpRequest = ServletUtils.makeHttpRequest(this.request);
 		
 		final String samlRequestParameter = httpRequest.getParameter("SAMLRequest");
@@ -571,18 +583,16 @@ public class Auth {
 			errors.add("invalid_binding");
 			String errorMsg = "SAML LogoutRequest/LogoutResponse not found. Only supported HTTP_REDIRECT Binding";
 			LOGGER.error("processSLO error." + errorMsg);
-			throw new IllegalArgumentException(errorMsg);
+			throw new Error(errorMsg, Error.SAML_LOGOUTMESSAGE_NOT_FOUND);
 		}
 	}	
 
     /**
      * Process the SAML Logout Response / Logout Request sent by the IdP.
      *
-     * @throws IOException 
-     * @throws XMLEntityException 
-     * @throws XPathExpressionException 
+     * @throws Exception
      */
-	public void processSLO() throws XPathExpressionException, XMLEntityException, IOException {
+	public void processSLO() throws Exception {
 		processSLO(false, null);
 	}
 
@@ -705,8 +715,10 @@ public class Auth {
 	 *				Signature algorithm method
 	 *
 	 * @return a base64 encoded signature
+	 *
+	 * @throws SettingsException
 	 */
-    public String buildRequestSignature(String samlRequest, String relayState, String signAlgorithm)
+    public String buildRequestSignature(String samlRequest, String relayState, String signAlgorithm) throws SettingsException
     {
     	return buildSignature(samlRequest, relayState, signAlgorithm, "SAMLRequest");
     }
@@ -721,9 +733,11 @@ public class Auth {
 	 * @param signAlgorithm
 	 *				Signature algorithm method
 	 *
-	 * @return the base64 encoded signature 
+	 * @return the base64 encoded signature
+	 *
+	 * @throws SettingsException
 	 */
-	public String buildResponseSignature(String samlResponse, String relayState, String signAlgorithm)
+	public String buildResponseSignature(String samlResponse, String relayState, String signAlgorithm) throws SettingsException
 	{
 		return buildSignature(samlResponse, relayState, signAlgorithm, "SAMLResponse");
 	}
@@ -741,15 +755,18 @@ public class Auth {
 	 *              The type of the message
 	 *
 	 * @return the base64 encoded signature
+	 *
+	 * @throws SettingsException
+	 * @throws IllegalArgumentException
 	 */
-	private String buildSignature(String samlMessage, String relayState, String signAlgorithm, String type)
+	private String buildSignature(String samlMessage, String relayState, String signAlgorithm, String type) throws SettingsException, IllegalArgumentException
 	{
 		 String signature = "";
 		 
 		 if (!settings.checkSPCerts()) {
-			 String errorMsg = "Trying to sign the " + type + " but can't load the SP certs";
+			 String errorMsg = "Trying to sign the " + type + " but can't load the SP private key";
 			 LOGGER.error("buildSignature error. " + errorMsg);
-			 throw new IllegalArgumentException(errorMsg);
+			 throw new SettingsException(errorMsg, SettingsException.PRIVATE_KEY_NOT_FOUND);
 		 }
 
 		 PrivateKey key = settings.getSPkey();
@@ -768,7 +785,8 @@ public class Auth {
 		 try {
 			signature = Util.base64encoder(Util.sign(msg, key, signAlgorithm));
 		} catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
-			LOGGER.error("buildSignature error." + e.getMessage());
+			String errorMsg = "buildSignature error." + e.getMessage();
+			LOGGER.error(errorMsg);
 		}
 
 		 if (signature.isEmpty()) {

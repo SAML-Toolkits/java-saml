@@ -15,6 +15,7 @@ import java.util.List;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
+import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.settings.Metadata;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
@@ -65,11 +66,12 @@ public class Saml2SettingsTest {
 	 * Case: Check that all possible IdP errors are found
 	 *
 	 * @throws IOException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.settings.Saml2Settings#checkIdPSettings
 	 */
 	@Test
-	public void testCheckIdPSettingsAllErrors() throws IOException {
+	public void testCheckIdPSettingsAllErrors() throws IOException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.idperrors.properties").build();
 		List<String> settingsErrors = settings.checkIdPSettings();
 		assertFalse(settingsErrors.isEmpty());
@@ -84,11 +86,12 @@ public class Saml2SettingsTest {
 	 * Case: No IdP Errors
 	 *
 	 * @throws IOException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.settings.Saml2Settings#checkIdPSettings
 	 */
 	@Test
-	public void testCheckIdPSettingsOk() throws IOException {
+	public void testCheckIdPSettingsOk() throws IOException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
 		List<String> settingsErrors = settings.checkIdPSettings();
 		assertTrue(settingsErrors.isEmpty());
@@ -99,11 +102,12 @@ public class Saml2SettingsTest {
 	 * Case: Check that all possible IdP errors are found
 	 *
 	 * @throws IOException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.settings.Saml2Settings#checkSPSettings
 	 */
 	@Test
-	public void testCheckSPSettingsAllErrors() throws IOException {
+	public void testCheckSPSettingsAllErrors() throws IOException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.sperrors.properties").build();
 		List<String> settingsErrors = settings.checkSPSettings();
 		assertFalse(settingsErrors.isEmpty());
@@ -119,11 +123,12 @@ public class Saml2SettingsTest {
 	 * Case: No SP Errors
 	 *
 	 * @throws IOException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.settings.Saml2Settings#checkSPSettings
 	 */
 	@Test
-	public void testCheckSPSettingsOk() throws IOException {
+	public void testCheckSPSettingsOk() throws IOException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
 		List<String> settingsErrors = settings.checkSPSettings();
 		assertTrue(settingsErrors.isEmpty());
@@ -134,11 +139,12 @@ public class Saml2SettingsTest {
 	 * Case: Check that all possible IdP errors are found
 	 *
 	 * @throws IOException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.settings.Saml2Settings#checkSettings
 	 */
 	@Test
-	public void testCheckSettingsAllErrors() throws IOException {
+	public void testCheckSettingsAllErrors() throws IOException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.allerrors.properties").build();
 		List<String> settingsErrors = settings.checkSettings();
 		assertFalse(settingsErrors.isEmpty());
@@ -158,11 +164,12 @@ public class Saml2SettingsTest {
 	 * Case: No SP Errors
 	 *
 	 * @throws IOException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.settings.Saml2Settings#checkSettings
 	 */
 	@Test
-	public void testCheckSettingsOk() throws IOException {
+	public void testCheckSettingsOk() throws IOException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
 		List<String> settingsErrors = settings.checkSettings();
 		assertTrue(settingsErrors.isEmpty());

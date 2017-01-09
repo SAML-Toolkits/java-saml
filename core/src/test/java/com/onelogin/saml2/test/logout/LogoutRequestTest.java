@@ -19,19 +19,25 @@ import javax.xml.xpath.XPathExpressionException;
 import java.security.PrivateKey;
 
 import org.w3c.dom.Document;
-
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import com.onelogin.saml2.logout.LogoutRequest;
 import com.onelogin.saml2.http.HttpRequest;
-import com.onelogin.saml2.authn.AuthnRequest;
 import com.onelogin.saml2.exception.XMLEntityException;
+import com.onelogin.saml2.exception.Error;
+import com.onelogin.saml2.exception.SettingsException;
+import com.onelogin.saml2.exception.ValidationError;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
 import com.onelogin.saml2.util.Util;
 
 public class LogoutRequestTest {
 
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
+	
 	/**
 	 * Tests the constructor and the getEncodedLogoutRequest method of LogoutRequest
 	 *
@@ -283,8 +289,11 @@ public class LogoutRequestTest {
 	 * 
 	 * @see com.onelogin.saml2.logout.LogoutRequest#getNameIdData
 	 */
-	@Test(expected=IllegalArgumentException.class)
+	@Test
 	public void testGetNameIdDataNoKey() throws Exception {
+		expectedEx.expect(SettingsException.class);
+		expectedEx.expectMessage("Key is required in order to decrypt the NameID");
+
 		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_encrypted_nameid.xml");
 		String nameIdDataStr = LogoutRequest.getNameIdData(logoutRequestStr, null).toString();
 	}
@@ -297,8 +306,11 @@ public class LogoutRequestTest {
 	 * 
 	 * @see com.onelogin.saml2.logout.LogoutRequest#getNameIdData
 	 */
-	@Test(expected=Exception.class)
+	@Test
 	public void testGetNameIdDataWrongKey() throws Exception {
+		expectedEx.expect(Exception.class);
+		expectedEx.expectMessage("algid parse error, not a sequence");
+
 		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_encrypted_nameid.xml");
 		String keyString = Util.getFileAsString("data/misc/sp3.key");
 		PrivateKey key = Util.loadPrivateKey(keyString);
@@ -313,8 +325,11 @@ public class LogoutRequestTest {
 	 * 
 	 * @see com.onelogin.saml2.logout.LogoutRequest#getNameIdData
 	 */
-	@Test(expected=Exception.class)
+	@Test
 	public void testGetNameIdDataNoNameId() throws Exception {
+		expectedEx.expect(ValidationError.class);
+		expectedEx.expectMessage("No name id found in Logout Request.");
+
 		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_no_nameid.xml");
 		String nameIdDataStr = LogoutRequest.getNameIdData(logoutRequestStr, null).toString();
 	}
@@ -383,8 +398,11 @@ public class LogoutRequestTest {
 	 * 
 	 * @see com.onelogin.saml2.logout.LogoutRequest#getNameId
 	 */
-	@Test(expected=IllegalArgumentException.class)
+	@Test
 	public void testGetNameIdNoKey() throws Exception {
+		expectedEx.expect(SettingsException.class);
+		expectedEx.expectMessage("Key is required in order to decrypt the NameID");
+
 		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_encrypted_nameid.xml");
 		String nameIdStr = LogoutRequest.getNameId(logoutRequestStr, null).toString();
 	}
@@ -397,8 +415,11 @@ public class LogoutRequestTest {
 	 * 
 	 * @see com.onelogin.saml2.logout.LogoutRequest#getNameId
 	 */
-	@Test(expected=Exception.class)
+	@Test
 	public void testGetNameIdWrongKey() throws Exception {
+		expectedEx.expect(Exception.class);
+		expectedEx.expectMessage("algid parse error, not a sequence");
+		
 		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_encrypted_nameid.xml");
 		String keyString = Util.getFileAsString("data/misc/sp3.key");
 		PrivateKey key = Util.loadPrivateKey(keyString);
@@ -410,13 +431,12 @@ public class LogoutRequestTest {
 	 *
 	 * @throws IOException
 	 * @throws URISyntaxException 
-	 * @throws XMLEntityException
 	 * @throws XPathExpressionException 
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutRequest#getIssuer
 	 */
 	@Test
-	public void testGetIssuer() throws URISyntaxException, IOException, XPathExpressionException, XMLEntityException {
+	public void testGetIssuer() throws URISyntaxException, IOException, XPathExpressionException {
 		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request.xml");
 		String expectedIssuer = "http://idp.example.com/";
 		String issuer = LogoutRequest.getIssuer(logoutRequestStr);
@@ -432,13 +452,14 @@ public class LogoutRequestTest {
 	 *
 	 * @throws IOException
 	 * @throws URISyntaxException
-	 * @throws XMLEntityException
 	 * @throws XPathExpressionException
+	 * @throws XMLEntityException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutRequest#getSessionIndexes
 	 */
 	@Test
-	public void testGetSessionIndexes() throws URISyntaxException, IOException, XPathExpressionException, XMLEntityException {
+	public void testGetSessionIndexes() throws URISyntaxException, IOException, XPathExpressionException, XMLEntityException, Error {
 		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request.xml");
 		List<String> expectedIndexes = new ArrayList<String>();
 		List <String> indexes = LogoutRequest.getSessionIndexes(logoutRequestStr);
@@ -458,14 +479,12 @@ public class LogoutRequestTest {
 	 * Tests the isValid method of LogoutRequest
 	 * Case: Invalid Issuer
 	 *
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 * @throws XMLEntityException
+	 * @throws Exception 
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutRequest#isValid
 	 */
 	@Test
-	public void testIsInvalidIssuer() throws URISyntaxException, IOException, XMLEntityException {
+	public void testIsInvalidIssuer() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/invalids/invalid_issuer.xml.base64");
 		final String requestURL = "http://stuff.com/endpoints/endpoints/sls.php";
@@ -485,14 +504,12 @@ public class LogoutRequestTest {
 	 * Tests the isValid method of LogoutRequest
 	 * Case: Invalid XML
 	 *
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 * @throws XMLEntityException
+	 * @throws Exception 
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutRequest#isValid
 	 */
 	@Test
-	public void testIsInValidWrongXML() throws URISyntaxException, IOException, XMLEntityException {
+	public void testIsInValidWrongXML() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/invalids/invalid_xml.xml.base64");
 		final String requestURL = "http://stuff.com/endpoints/endpoints/sls.php";
@@ -521,14 +538,12 @@ public class LogoutRequestTest {
 	 * Tests the isValid method of LogoutRequest
 	 * Case: Invalid Destination
 	 *
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 * @throws XMLEntityException
+	 * @throws Exception 
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutRequest#isValid
 	 */
 	@Test
-	public void testIsInvalidDestination() throws URISyntaxException, IOException, XMLEntityException {
+	public void testIsInvalidDestination() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
 		final String requestURL = "/";
@@ -548,14 +563,12 @@ public class LogoutRequestTest {
 	 * Tests the isValid method of LogoutRequest
 	 * Case: Invalid NotOnOrAfter
 	 *
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 * @throws XMLEntityException
+	 * @throws Exception 
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutRequest#isValid
 	 */
 	@Test
-	public void testIsInvalidNotOnOrAfter() throws URISyntaxException, IOException, XMLEntityException {
+	public void testIsInvalidNotOnOrAfter() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/invalids/not_after_failed.xml.base64");
 		final String requestURL = "http://stuff.com/endpoints/endpoints/sls.php";
@@ -568,20 +581,18 @@ public class LogoutRequestTest {
 		settings.setStrict(true);
 		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertFalse(logoutRequest.isValid());
-		assertEquals("Timing issues (please check your clock settings)", logoutRequest.getError());
+		assertEquals("Could not validate timestamp: expired. Check system clock.", logoutRequest.getError());
 	}
 
 	/**
 	 * Tests the isValid method of LogoutRequest
 	 *
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 * @throws XMLEntityException
+	 * @throws Exception 
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutRequest#isValid
 	 */
 	@Test
-	public void testIsValid() throws URISyntaxException, IOException, XMLEntityException {
+	public void testIsValid() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
 		String requestURL = "/";
@@ -610,14 +621,12 @@ public class LogoutRequestTest {
 	/**
 	 * Tests the isValid method of LogoutRequest
 	 *
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 * @throws XMLEntityException
+	 * @throws Exception 
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutRequest#isValid
 	 */
 	@Test
-	public void testIsInValidSign() throws URISyntaxException, IOException, XMLEntityException {
+	public void testIsInValidSign() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		settings.setStrict(false);
 		settings.setWantMessagesSigned(true);
@@ -677,13 +686,12 @@ public class LogoutRequestTest {
 	 * Tests the isValid method of LogoutRequest
 	 * Case: No SAML Logout Request
 	 *
-	 * @throws IOException
-	 * @throws XMLEntityException
-	 * 
+	 * @throws Exception 
+	 *
 	 * @see com.onelogin.saml2.logout.LogoutRequest#isValid
 	 */
 	@Test
-	public void testIsValidNoLogoutRequest() throws IOException, XMLEntityException {
+	public void testIsValidNoLogoutRequest() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlRequestEncoded = "";
 		final String requestURL = "/";
@@ -698,14 +706,12 @@ public class LogoutRequestTest {
 	 * Tests the isValid method of LogoutRequest
 	 * Case: No current URL
 	 *
-	 * @throws IOException
-	 * @throws XMLEntityException
-	 * @throws URISyntaxException
-	 * 
+	 * @throws Exception 
+	 *
 	 * @see com.onelogin.saml2.logout.LogoutRequest#isValid
 	 */
 	@Test
-	public void testIsValidNoCurrentURL() throws IOException, XMLEntityException, URISyntaxException {
+	public void testIsValidNoCurrentURL() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
 		
@@ -724,14 +730,12 @@ public class LogoutRequestTest {
 	/**
 	 * Tests the getError method of LogoutRequest
 	 *
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 * @throws XMLEntityException
+	 * @throws Exception 
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutRequest#getError
 	 */
 	@Test
-	public void testGetError() throws URISyntaxException, IOException, XMLEntityException {
+	public void testGetError() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		settings.setStrict(true);
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");

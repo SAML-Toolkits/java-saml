@@ -20,7 +20,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import com.onelogin.saml2.exception.ValidationError;
 import com.onelogin.saml2.exception.XMLEntityException;
+import com.onelogin.saml2.exception.SettingsException;
 import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.util.Util;
@@ -94,8 +96,8 @@ public class LogoutRequest {
 	 *              The NameID that will be set in the LogoutRequest.
 	 * @param sessionIndex
 	 *              The SessionIndex (taken from the SAML Response in the SSO process).
-	 *
 	 * @throws XMLEntityException 
+	 *
 	 */
 	public LogoutRequest(Saml2Settings settings, HttpRequest request, String nameId, String sessionIndex) throws XMLEntityException {
 		this.settings = settings;
@@ -256,14 +258,14 @@ public class LogoutRequest {
      *
      * @return true if the SAML LogoutRequest is valid
      *
-	 * @throws XMLEntityException 
+	 * @throws Exception
      */
-	public Boolean isValid() throws XMLEntityException {
+	public Boolean isValid() throws Exception {
 		error = null;
 
 		try {
 			if (this.logoutRequestString == null || logoutRequestString.isEmpty()) {
-				throw new Exception("SAML Logout Request is not loaded");
+				throw new ValidationError("SAML Logout Request is not loaded", ValidationError.INVALID_XML_FORMAT);
 			}
 
 			if (this.request == null) {
@@ -284,7 +286,7 @@ public class LogoutRequest {
 
 				if (settings.getWantXMLValidation()) {
 					if (!Util.validateXML(logoutRequestDocument, SchemaFactory.SAML_SCHEMA_PROTOCOL_2_0)) {
-						throw new Exception("Invalid SAML Logout Request. Not match the saml-schema-protocol-2.0.xsd");
+						throw new ValidationError("Invalid SAML Logout Request. Not match the saml-schema-protocol-2.0.xsd", ValidationError.INVALID_XML_FORMAT);
 					}
 				}
 
@@ -293,7 +295,7 @@ public class LogoutRequest {
 					String notOnOrAfter = rootElement.getAttribute("NotOnOrAfter");
 					DateTime notOnOrAfterDate = Util.parseDateTime(notOnOrAfter);
 					if (notOnOrAfterDate.isEqualNow() || notOnOrAfterDate.isBeforeNow()) {
-						throw new Exception("Timing issues (please check your clock settings)");
+						throw new ValidationError("Could not validate timestamp: expired. Check system clock.", ValidationError.RESPONSE_EXPIRED);
 					}
 				}
 
@@ -302,8 +304,8 @@ public class LogoutRequest {
 					String destinationUrl = rootElement.getAttribute("Destination");
 					if (destinationUrl != null) {
 						if (!destinationUrl.isEmpty() && !destinationUrl.equals(currentUrl)) {
-							throw new Exception("The LogoutRequest was received at " + currentUrl + " instead of "
-									+ destinationUrl);
+							throw new ValidationError("The LogoutRequest was received at " + currentUrl + " instead of "
+									+ destinationUrl, ValidationError.WRONG_DESTINATION);
 						}
 					}
 				}
@@ -314,18 +316,18 @@ public class LogoutRequest {
 				// Check the issuer
 				String issuer = getIssuer(logoutRequestDocument);
 				if (issuer != null && (issuer.isEmpty() || !issuer.equals(settings.getIdpEntityId()))) {
-					throw new Exception("Invalid issuer in the Logout Request");
+					throw new ValidationError("Invalid issuer in the Logout Request", ValidationError.WRONG_ISSUER);
 				}
 
                 if (settings.getWantMessagesSigned() && (signature == null || signature.isEmpty())) {
-                    throw new Exception("The Message of the Logout Request is not signed and the SP requires it");
+                    throw new ValidationError("The Message of the Logout Request is not signed and the SP requires it", ValidationError.NO_SIGNED_MESSAGE);
                 }
 			}
                 
 			if (signature != null && !signature.isEmpty()) {
 				X509Certificate cert = settings.getIdpx509cert();
 				if (cert == null) {
-					throw new Exception("In order to validate the sign on the Logout Request, the x509cert of the IdP is required");
+					throw new SettingsException("In order to validate the sign on the Logout Request, the x509cert of the IdP is required", SettingsException.CERT_NOT_FOUND);
 				}
 
 				String signAlg = request.getParameter("SigAlg");
@@ -343,7 +345,7 @@ public class LogoutRequest {
 				signedQuery += "&SigAlg=" + Util.urlEncoder(signAlg);
 
 				if (!Util.validateBinarySignature(signedQuery, Util.base64decoder(signature), cert, signAlg)) {
-					throw new Exception("Signature validation failed. Logout Request rejected");
+					throw new ValidationError("Signature validation failed. Logout Request rejected", ValidationError.INVALID_SIGNATURE);
 				}
 			}
 			
@@ -383,9 +385,8 @@ public class LogoutRequest {
 	 *
      * @return the ID of the Logout Request.
      *
-     * @throws XMLEntityException 
      */
-	public static String getId(String samlLogoutRequestString) throws XMLEntityException {
+	public static String getId(String samlLogoutRequestString) {
 		Document doc = Util.loadXML(samlLogoutRequestString);
 		return getId(doc);
 	}
@@ -400,17 +401,16 @@ public class LogoutRequest {
      *
      * @return the Name ID Data (Value, Format, NameQualifier, SPNameQualifier)
      *
-     * @throws IllegalArgumentException
 	 * @throws Exception
      */
-	public static Map<String, String> getNameIdData(Document samlLogoutRequestDocument, PrivateKey key) throws IllegalArgumentException, Exception {
+	public static Map<String, String> getNameIdData(Document samlLogoutRequestDocument, PrivateKey key) throws Exception {
 		NodeList encryptedIDNodes = Util.query(samlLogoutRequestDocument, "/samlp:LogoutRequest/saml:EncryptedID");
 		NodeList nameIdNodes;
 		Element nameIdElem;
 		
 		if (encryptedIDNodes.getLength() == 1) {
 			if (key == null) {
-				throw new IllegalArgumentException("Key is required in order to decrypt the NameID");
+				throw new SettingsException("Key is required in order to decrypt the NameID", SettingsException.PRIVATE_KEY_NOT_FOUND);
 			}
 
 			Element encryptedData = (Element) encryptedIDNodes.item(0);
@@ -428,7 +428,7 @@ public class LogoutRequest {
 		if (nameIdNodes != null && nameIdNodes.getLength() == 1) {
 			nameIdElem = (Element) nameIdNodes.item(0);
 		} else {
-			throw new Exception("No name id found in Logout Request.");
+			throw new ValidationError("No name id found in Logout Request.", ValidationError.NO_NAMEID);
 		}
 		
 		Map<String, String> nameIdData = new HashMap<String, String>();
@@ -459,10 +459,9 @@ public class LogoutRequest {
      *
      * @return the Name ID Data (Value, Format, NameQualifier, SPNameQualifier)
      *
-	 * @throws IllegalArgumentException if PrivateKey is not provided and the NameId is encrypted
 	 * @throws Exception
      */
-	public static Map<String, String> getNameIdData(String samlLogoutRequestString, PrivateKey key) throws IllegalArgumentException, Exception {
+	public static Map<String, String> getNameIdData(String samlLogoutRequestString, PrivateKey key) throws Exception {
 		Document doc = Util.loadXML(samlLogoutRequestString);
 		return getNameIdData(doc, key);
 	}
@@ -565,10 +564,9 @@ public class LogoutRequest {
 	 *
 	 * @return the issuer of the logout request
 	 * 
-	 * @throws XMLEntityException
 	 * @throws XPathExpressionException
 	 */
-    public static String getIssuer(String samlLogoutRequestString) throws XMLEntityException, XPathExpressionException
+    public static String getIssuer(String samlLogoutRequestString) throws XPathExpressionException
     {
 		Document doc = Util.loadXML(samlLogoutRequestString);
 		return getIssuer(doc);
@@ -603,10 +601,9 @@ public class LogoutRequest {
 	 * 				A Logout Request string.
      * @return the SessionIndexes
      *
-     * @throws XMLEntityException
      * @throws XPathExpressionException 
      */
-    public static List<String> getSessionIndexes(String samlLogoutRequestString) throws XMLEntityException, XPathExpressionException
+    public static List<String> getSessionIndexes(String samlLogoutRequestString) throws XPathExpressionException
     {
 		Document doc = Util.loadXML(samlLogoutRequestString);
 		return getSessionIndexes(doc);
