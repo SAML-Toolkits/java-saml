@@ -120,7 +120,7 @@ public class SamlResponse {
 	 * @throws ValidationError
 	 */
 	public void loadXmlFromBase64(String responseStr) throws ParserConfigurationException, XPathExpressionException, SAXException, IOException, SettingsException, ValidationError {
-		samlResponseString = new String(Util.base64decoder(responseStr));
+		samlResponseString = new String(Util.base64decoder(responseStr), "UTF-8");
 		samlResponseDocument = Util.loadXML(samlResponseString);
 
 		if (samlResponseDocument == null) {
