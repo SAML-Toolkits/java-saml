@@ -329,7 +329,16 @@ public final class Util {
 		} else {
 			XMLUtils.outputDOM(doc, baos);
 		}
-		return baos.toString();
+		
+		return Util.toUtf8String(baos.toByteArray());
+	}
+
+	private static String toUtf8String(byte[] bytes) {
+		try {
+			return new String(bytes, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	/**
