@@ -330,17 +330,9 @@ public final class Util {
 			XMLUtils.outputDOM(doc, baos);
 		}
 		
-		return Util.toUtf8String(baos.toByteArray());
+		return Util.toStringUtf8(baos.toByteArray());
 	}
-
-	private static String toUtf8String(byte[] bytes) {
-		try {
-			return new String(bytes, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new IllegalStateException(e);
-		}
-	}
-
+	
 	/**
 	 * Converts an XML in Document format in a String without applying the c14n transformation 
 	 *
@@ -655,7 +647,7 @@ public final class Util {
 	 * @return the base64 encoded string
 	 */
 	public static String base64encoder(byte [] input) {
-		return new String(Base64.encodeBase64(input));
+		return toStringUtf8(Base64.encodeBase64(input));
 	}
 
 	/**
@@ -667,7 +659,7 @@ public final class Util {
 	 * @return the base64 encoded string
 	 */
 	public static String base64encoder(String input) {		
-		return base64encoder(input.getBytes());
+		return base64encoder(toBytesUtf8(input));
 	}
 
 	/**
@@ -691,7 +683,7 @@ public final class Util {
 	 * @return the base64 decoded bytes
 	 */
 	public static byte[] base64decoder(String input) {		
-		return base64decoder(input.getBytes());
+		return base64decoder(toBytesUtf8(input));
 	}
 
 	/**
@@ -1395,4 +1387,21 @@ public final class Util {
 		return parsedData;
 	}
 
+	private static String toStringUtf8(byte[] bytes) {
+		try {
+			return new String(bytes, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	private static byte[] toBytesUtf8(String str) {
+		try {
+			return str.getBytes("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	
 }
