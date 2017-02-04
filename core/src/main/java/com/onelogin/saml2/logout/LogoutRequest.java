@@ -12,6 +12,7 @@ import java.util.Map;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -61,6 +62,11 @@ public class LogoutRequest {
 	private final HttpRequest request;
 
 	/**
+	 * Map with raw request parameters as received in the queryString. Required for accurate signature verification.
+	 */
+	private Map<String, String> rawRequestParams;
+	
+	/**
      * NameID.
      */	
 	private String nameId;
@@ -92,6 +98,8 @@ public class LogoutRequest {
 	 *              OneLogin_Saml2_Settings
 	 * @param request
      *              the HttpRequest object to be processed (Contains GET and POST parameters, request URL, ...).
+     * @param rawRequestParams
+     *              map with 'raw' url request parameters for signature validation (keyed on name, value is key & value)          
 	 * @param nameId
 	 *              The NameID that will be set in the LogoutRequest.
 	 * @param sessionIndex
@@ -99,9 +107,10 @@ public class LogoutRequest {
 	 * @throws XMLEntityException 
 	 *
 	 */
-	public LogoutRequest(Saml2Settings settings, HttpRequest request, String nameId, String sessionIndex) throws XMLEntityException {
+	public LogoutRequest(Saml2Settings settings, HttpRequest request, Map<String, String> rawRequestParams, String nameId, String sessionIndex) throws XMLEntityException {
 		this.settings = settings;
 		this.request = request;
+		this.rawRequestParams = rawRequestParams;
 
 		String samlLogoutRequest = null;
 
@@ -133,7 +142,7 @@ public class LogoutRequest {
 	 * @throws XMLEntityException 
 	 */
 	public LogoutRequest(Saml2Settings settings) throws XMLEntityException {
-		this(settings, null, null, null);
+		this(settings, null, null, null, null);
 	}
 
 	/**
@@ -143,11 +152,13 @@ public class LogoutRequest {
 	 *            OneLogin_Saml2_Settings
 	 * @param request
      *              the HttpRequest object to be processed (Contains GET and POST parameters, request URL, ...).
+     * @param rawRequestParams
+     *              map with 'raw' url request parameters for signature validation (keyed on name, value is key & value)
      *
 	 * @throws XMLEntityException 
 	 */
-	public LogoutRequest(Saml2Settings settings, HttpRequest request) throws XMLEntityException {
-		this(settings, request, null, null);
+	public LogoutRequest(Saml2Settings settings, HttpRequest request, Map<String, String> rawRequestParams) throws XMLEntityException {
+		this(settings, request, rawRequestParams, null, null);
 	}
 
 	/**
@@ -334,15 +345,19 @@ public class LogoutRequest {
 				if (signAlg == null || signAlg.isEmpty()) {
 					signAlg = Constants.RSA_SHA1;
 				}
-				String relayState = request.getParameter("RelayState");
-
-				String signedQuery = "SAMLRequest=" + Util.urlEncoder(request.getParameter("SAMLRequest"));
-
-				if (relayState != null && !relayState.isEmpty()) {
-					signedQuery += "&RelayState=" + Util.urlEncoder(relayState);
+				
+				String rawSamlRequest = rawRequestParams.get("SAMLRequest");
+				String rawRelayState = rawRequestParams.get("RelayState");
+				String rawSigAlg = rawRequestParams.get("SigAlg");
+				
+				String signedQuery = "";
+				signedQuery += rawSamlRequest;
+				
+				if (StringUtils.isNotBlank(rawRelayState)) {
+					signedQuery += "&" + rawRelayState;
 				}
 
-				signedQuery += "&SigAlg=" + Util.urlEncoder(signAlg);
+				signedQuery += "&" + rawSigAlg;
 
 				if (!Util.validateBinarySignature(signedQuery, Util.base64decoder(signature), cert, signAlg)) {
 					throw new ValidationError("Signature validation failed. Logout Request rejected", ValidationError.INVALID_SIGNATURE);
