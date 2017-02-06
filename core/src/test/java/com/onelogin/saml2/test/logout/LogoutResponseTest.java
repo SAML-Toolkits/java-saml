@@ -11,12 +11,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.xml.xpath.XPathExpressionException;
 
@@ -47,7 +41,7 @@ public class LogoutResponseTest {
 		final String requestURL = "/";
 		HttpRequest httpRequest = new HttpRequest(requestURL);
 
-		LogoutResponse logoutResponseBuilder = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest)) {
+		LogoutResponse logoutResponseBuilder = new LogoutResponse(settings, httpRequest) {
 			@Override
 			public String getLogoutResponseXml() {
 				return logoutResponseString;
@@ -62,7 +56,7 @@ public class LogoutResponseTest {
 		String logoutResponseStringBase64Deflated = logoutResponseBuilder.getEncodedLogoutResponse();
 		assertEquals(logoutResponseStringBase64Deflated, expectedLogoutResponseStringBase64Deflated);
 
-		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest)) {
+		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest) {
 			@Override
 			public String getLogoutResponseXml() {
 				return logoutResponseString;
@@ -82,7 +76,7 @@ public class LogoutResponseTest {
 		assertEquals(logoutResponseStringBase64Deflated,expectedLogoutResponseStringBase64);
 		
 		settings.setCompressResponse(true);
-		logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest)) {
+		logoutResponse = new LogoutResponse(settings, httpRequest) {
 			@Override
 			public String getLogoutResponseXml() {
 				return logoutResponseString;
@@ -92,7 +86,7 @@ public class LogoutResponseTest {
 		assertEquals(logoutResponseStringBase64Deflated, expectedLogoutResponseStringBase64Deflated);
 
 		settings.setCompressResponse(false);
-		logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest)) {
+		logoutResponse = new LogoutResponse(settings, httpRequest) {
 			@Override
 			public String getLogoutResponseXml() {
 				return logoutResponseString;
@@ -119,7 +113,7 @@ public class LogoutResponseTest {
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
 		final String requestURL = "/";
 		HttpRequest httpRequest = newHttpRequest(requestURL, samlResponseEncoded);
-		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
 
 		String expectedLogoutResponseStringBase64 = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
 		String logoutResponseStringBase64 = logoutResponse.getEncodedLogoutResponse();
@@ -143,7 +137,7 @@ public class LogoutResponseTest {
 		final String requestURL = "/";
 		HttpRequest httpRequest = new HttpRequest(requestURL);
 
-		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertFalse(logoutResponse.isValid());
 		assertEquals("SAML Logout Response is not loaded", logoutResponse.getError());
 		logoutResponse.build();
@@ -154,7 +148,7 @@ public class LogoutResponseTest {
 		assertThat(logoutRequestStr, containsString("<samlp:LogoutResponse"));
 		assertThat(logoutRequestStr, not(containsString("InResponseTo=")));
 		
-		LogoutResponse logoutResponse2 = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		LogoutResponse logoutResponse2 = new LogoutResponse(settings, httpRequest);
 		logoutResponse2.build("inResponseValue");
 		logoutRequestStringBase64 = logoutResponse2.getEncodedLogoutResponse();
 		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
@@ -172,7 +166,7 @@ public class LogoutResponseTest {
 	@Test
 	public void testGetLogoutRequestXml() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		LogoutResponse logoutResponse = new LogoutResponse(settings, null, fakeRawRequest(null));
+		LogoutResponse logoutResponse = new LogoutResponse(settings, null);
 		logoutResponse.build();
 		String logoutResponseXML = logoutResponse.getLogoutResponseXml();
 		assertThat(logoutResponseXML, containsString("<samlp:LogoutResponse"));
@@ -180,7 +174,7 @@ public class LogoutResponseTest {
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response.xml.base64");
 		String requestURL = "/";
 		HttpRequest httpRequest = newHttpRequest(requestURL, samlResponseEncoded);
-		logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutResponse = new LogoutResponse(settings, httpRequest);
 		logoutResponseXML = logoutResponse.getLogoutResponseXml();
 		assertThat(logoutResponseXML, containsString("<samlp:LogoutResponse"));
 		
@@ -203,12 +197,12 @@ public class LogoutResponseTest {
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
 		final String requestURL = "/";
 		HttpRequest httpRequest = newHttpRequest(requestURL, samlResponseEncoded);
-		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertEquals(Constants.STATUS_SUCCESS, logoutResponse.getStatus());
 
 		samlResponseEncoded = Util.getFileAsString("data/logout_responses/invalids/no_status.xml.base64");
 		httpRequest = newHttpRequest(requestURL, samlResponseEncoded);
-		logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertNull(logoutResponse.getStatus());
 	}
 
@@ -229,7 +223,7 @@ public class LogoutResponseTest {
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
 		final String requestURL = "/";
 		HttpRequest httpRequest = newHttpRequest(requestURL, samlResponseEncoded);
-		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
 		String expectedIssuer = "http://idp.example.com/";
 		assertEquals(expectedIssuer, logoutResponse.getIssuer());
 		
@@ -237,7 +231,7 @@ public class LogoutResponseTest {
 		logoutRequestStr = logoutRequestStr.replace("<saml:Issuer>http://idp.example.com/</saml:Issuer>", "");
 		samlResponseEncoded = Util.deflatedBase64encoded(logoutRequestStr);
 		httpRequest = newHttpRequest(requestURL, samlResponseEncoded);
-		logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertNull(logoutResponse.getIssuer());		
 	}
 
@@ -257,12 +251,12 @@ public class LogoutResponseTest {
 		final String requestURL = "/";
 		HttpRequest httpRequest = newHttpRequest(requestURL, "");
 
-		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertFalse(logoutResponse.isValid());
 		assertEquals("SAML Logout Response is not loaded", logoutResponse.getError());
 
 		httpRequest = new HttpRequest(requestURL);
-		logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertFalse(logoutResponse.isValid());
 		assertEquals("SAML Logout Response is not loaded", logoutResponse.getError());		
 	}
@@ -286,13 +280,13 @@ public class LogoutResponseTest {
 		HttpRequest httpRequest = newHttpRequest(requestURL, samlResponseEncoded);
 		
 		settings.setStrict(false);
-		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertTrue(logoutResponse.isValid());
 
 		assertTrue(logoutResponse.isValid("invalid_request_id"));
 		
 		settings.setStrict(true);
-		logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertTrue(logoutResponse.isValid());
 
 		assertFalse(logoutResponse.isValid("invalid_request_id"));
@@ -318,7 +312,7 @@ public class LogoutResponseTest {
 		HttpRequest httpRequest = newHttpRequest(requestURL, samlResponseEncoded);
 		
 		settings.setStrict(false);
-		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertTrue(logoutResponse.isValid());
 
 		settings.setStrict(true);
@@ -346,20 +340,20 @@ public class LogoutResponseTest {
 
 		settings.setWantXMLValidation(true);
 		settings.setStrict(false);
-		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertTrue(logoutResponse.isValid());
 
 		settings.setStrict(true);
-		logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertFalse(logoutResponse.isValid());
 		assertEquals("Invalid SAML Logout Response. Not match the saml-schema-protocol-2.0.xsd", logoutResponse.getError());
 
 		settings.setWantXMLValidation(false);
-		logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertTrue(logoutResponse.isValid());
 		
 		settings.setStrict(false);
-		logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertTrue(logoutResponse.isValid());
 	}
 
@@ -382,7 +376,7 @@ public class LogoutResponseTest {
 		HttpRequest httpRequest = newHttpRequest(requestURL, samlResponseEncoded);
 
 		settings.setStrict(false);
-		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertTrue(logoutResponse.isValid());
 
 		settings.setStrict(true);
@@ -408,21 +402,21 @@ public class LogoutResponseTest {
 		HttpRequest httpRequest = newHttpRequest(requestURL, samlResponseEncoded);
 
 		settings.setStrict(true);
-		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertFalse(logoutResponse.isValid());
 
 		settings.setStrict(false);
-		logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertTrue(logoutResponse.isValid());
 
 		requestURL = "http://stuff.com/endpoints/endpoints/sls.php";
 		httpRequest = newHttpRequest(requestURL, samlResponseEncoded);
 		settings.setStrict(true);
-		logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertTrue(logoutResponse.isValid());
 
 		settings.setStrict(false);
-		logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertTrue(logoutResponse.isValid());
 	}
 
@@ -454,39 +448,39 @@ public class LogoutResponseTest {
 				.addParameter("SigAlg", sigAlg)
 				.addParameter("Signature", signature);
 		
-		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertTrue(logoutResponse.isValid());
 
 		settings.setStrict(true);
-		logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertTrue(logoutResponse.isValid());
 
 		settings.setStrict(false);
 		String signature2 = "vfWbbc47PkP3ejx4bjKsRX7lo9Ml1WRoE5J5owF/0mnyKHfSY6XbhO1wwjBV5vWdrUVX+xp6slHyAf4YoAsXFS0qhan6txDiZY4Oec6yE+l10iZbzvie06I4GPak4QrQ4gAyXOSzwCrRmJu4gnpeUxZ6IqKtdrKfAYRAcVf3333=";
 		httpRequest = httpRequest.removeParameter("Signature")
 					  			 .addParameter("Signature", signature2);
-		logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertFalse(logoutResponse.isValid());
 		assertEquals("Signature validation failed. Logout Response rejected", logoutResponse.getError());
 
 		httpRequest = httpRequest.removeParameter("Signature")
 								 .addParameter("Signature", signature)
 								 .removeParameter("SigAlg");
-		logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
-		assertFalse("Expected not valid when mandatory SigAlg parameter missing", logoutResponse.isValid());
+		logoutResponse = new LogoutResponse(settings, httpRequest);
+		assertTrue(logoutResponse.isValid());
 
 		httpRequest = httpRequest.removeParameter("Signature");
-		logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertTrue(logoutResponse.isValid());
 
 		settings.setStrict(true);
-		logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertFalse(logoutResponse.isValid());
 		assertEquals("The Message of the Logout Response is not signed and the SP requires it", logoutResponse.getError());
 
 		httpRequest = httpRequest.addParameter("Signature", signature);
 		settings = new SettingsBuilder().fromFile("config/config.mywithnocert.properties").build();
-		logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertFalse(logoutResponse.isValid());
 		assertEquals("In order to validate the sign on the Logout Response, the x509cert of the IdP is required", logoutResponse.getError());
 	}
@@ -507,7 +501,7 @@ public class LogoutResponseTest {
 		final String requestURL = "/";
 		HttpRequest httpRequest = newHttpRequest(requestURL, "");
 
-		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertFalse(logoutResponse.isValid());
 		assertEquals("SAML Logout Response is not loaded", logoutResponse.getError());
 	}
@@ -529,13 +523,13 @@ public class LogoutResponseTest {
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
 		final String requestURL = "/";
 		HttpRequest httpRequest = newHttpRequest(requestURL, samlResponseEncoded);
-		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertNull(logoutResponse.getError());
 		logoutResponse.isValid();
 		assertThat(logoutResponse.getError(), containsString("The LogoutResponse was received at"));
 
 		settings.setStrict(false);
-		logoutResponse = new LogoutResponse(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertNull(logoutResponse.getError());
 		logoutResponse.isValid();
 		assertNull(logoutResponse.getError());
@@ -544,20 +538,4 @@ public class LogoutResponseTest {
 	private static HttpRequest newHttpRequest(String requestURL, String samlResponseEncoded) {
 		return new HttpRequest(requestURL).addParameter("SAMLResponse", samlResponseEncoded);
 	}
-	
-	private Map<String, String> fakeRawRequest(HttpRequest httpRequest) {
-		Map<String, String> m = new HashMap<>();
-		
-		if (httpRequest == null) {
-			return m;
-		}
-		
-		for (Entry<String, List<String>> parameter : httpRequest.getParameters().entrySet()) {
-			String key = parameter.getKey();
-			String value = parameter.getValue().get(0);
-			m.put(key, key + "=" + Util.urlEncoder(value));
-		}
-		return m;
-	}
-
 }

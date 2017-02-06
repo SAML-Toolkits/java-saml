@@ -33,7 +33,6 @@ import com.onelogin.saml2.servlet.ServletUtils;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
 import com.onelogin.saml2.util.Constants;
-import com.onelogin.saml2.util.QueryStringSplitter;
 import com.onelogin.saml2.util.Util;
 
 /**
@@ -352,7 +351,7 @@ public class Auth {
 	public String logout(String returnTo, String nameId, String sessionIndex, Boolean stay) throws IOException, XMLEntityException, SettingsException {
 		Map<String, String> parameters = new HashMap<String, String>();
 
-		LogoutRequest logoutRequest = new LogoutRequest(settings, null, null, nameId, sessionIndex);
+		LogoutRequest logoutRequest = new LogoutRequest(settings, null, nameId, sessionIndex);
 		String samlLogoutRequest = logoutRequest.getEncodedLogoutRequest();
 		parameters.put("SAMLRequest", samlLogoutRequest);
 
@@ -516,10 +515,9 @@ public class Auth {
 		
 		final String samlRequestParameter = httpRequest.getParameter("SAMLRequest");
 		final String samlResponseParameter = httpRequest.getParameter("SAMLResponse");
-		Map<String, String> rawQuery = QueryStringSplitter.split(this.request.getQueryString());
 
 		if (samlResponseParameter != null) {
-			LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest, rawQuery);
+			LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
 			lastResponse = logoutResponse.getLogoutResponseXml();
 			if (!logoutResponse.isValid(requestId)) {
 				errors.add("invalid_logout_response");
@@ -540,7 +538,7 @@ public class Auth {
 				}
 			}
 		} else if (samlRequestParameter != null) {
-			LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest, rawQuery);
+			LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
 			lastRequest = logoutRequest.getLogoutRequestXml();
 			if (!logoutRequest.isValid()) {
 				errors.add("invalid_logout_request");
@@ -554,7 +552,7 @@ public class Auth {
 				}
 
 				String inResponseTo = logoutRequest.id;
-				LogoutResponse logoutResponseBuilder = new LogoutResponse(settings, httpRequest, rawQuery);
+				LogoutResponse logoutResponseBuilder = new LogoutResponse(settings, httpRequest);
 				logoutResponseBuilder.build(inResponseTo);
 				lastResponse = logoutResponseBuilder.getLogoutResponseXml();
 

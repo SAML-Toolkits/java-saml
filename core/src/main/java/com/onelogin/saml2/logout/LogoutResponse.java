@@ -7,11 +7,9 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import javax.xml.xpath.XPathExpressionException;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,11 +62,6 @@ public class LogoutResponse {
 	private final HttpRequest request;
 
 	/**
-	 * Map with raw request parameters as received in the queryString. Required for accurate signature verification.
-	 */
-	private Map<String, String> rawRequestParams;
-	
-	/**
 	 * URL of the current host + current view
 	 */
 	private String currentUrl;
@@ -95,14 +88,11 @@ public class LogoutResponse {
 	 *              OneLogin_Saml2_Settings
 	 * @param request
      *              the HttpRequest object to be processed (Contains GET and POST parameters, request URL, ...).
-     * @param rawRequestParams
-     *              map with 'raw' url request parameters for signature validation (keyed on name, value is key & value)
      *
 	 */
-	public LogoutResponse(Saml2Settings settings, HttpRequest request, Map<String, String> rawRequestParams) {
+	public LogoutResponse(Saml2Settings settings, HttpRequest request) {
 		this.settings = settings;
 		this.request = request;
-		this.rawRequestParams = rawRequestParams;
 		
 		String samlLogoutResponse = null;
 		if (request != null) {
@@ -224,25 +214,20 @@ public class LogoutResponse {
 				if (cert == null) {
 					throw new SettingsException("In order to validate the sign on the Logout Response, the x509cert of the IdP is required", SettingsException.CERT_NOT_FOUND);
 				}
-				
-				
+
 				String signAlg = request.getParameter("SigAlg");
 				if (signAlg == null || signAlg.isEmpty()) {
 					signAlg = Constants.RSA_SHA1;
 				}
 
-				String rawSamlResponse = rawRequestParams.get("SAMLResponse");
-				String rawRelayState = rawRequestParams.get("RelayState");
-				String rawSigAlg = rawRequestParams.get("SigAlg");
-				
-				String signedQuery = "";
-				signedQuery += rawSamlResponse;
-				
-				if (StringUtils.isNotBlank(rawRelayState)) {
-					signedQuery += "&" + rawRelayState;
+				String signedQuery = "SAMLResponse=" + Util.urlEncoder(request.getParameter("SAMLResponse"));
+
+				String relayState = request.getParameter("RelayState");
+				if (relayState != null && !relayState.isEmpty()) {
+					signedQuery += "&RelayState=" + Util.urlEncoder(relayState);
 				}
 
-				signedQuery += "&" + rawSigAlg;
+				signedQuery += "&SigAlg=" + Util.urlEncoder(signAlg);
 
 				if (!Util.validateBinarySignature(signedQuery, Util.base64decoder(signature), cert, signAlg)) {
 					throw new ValidationError("Signature validation failed. Logout Response rejected", ValidationError.INVALID_SIGNATURE);

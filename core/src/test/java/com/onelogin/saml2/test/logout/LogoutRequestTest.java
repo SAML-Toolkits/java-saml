@@ -10,10 +10,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
@@ -135,7 +132,7 @@ public class LogoutRequestTest {
 		final String requestURL = "/";
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
 
-		LogoutRequest logoutRequest = new LogoutRequest(settings, newHttpRequest(requestURL, samlRequestEncoded), null);
+		LogoutRequest logoutRequest = new LogoutRequest(settings, newHttpRequest(requestURL, samlRequestEncoded));
 
 		String logoutRequestStringBase64 = logoutRequest.getEncodedLogoutRequest();
 		String logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
@@ -153,14 +150,14 @@ public class LogoutRequestTest {
 	public void testConstructorWithSessionIndex() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String sessionIndex = "_51be37965feb5579d803141076936dc2e9d1d98ebf";
-		LogoutRequest logoutRequest = new LogoutRequest(settings, null, null, null, sessionIndex); 
+		LogoutRequest logoutRequest = new LogoutRequest(settings, null, null, sessionIndex); 
 		String logoutRequestStringBase64 = logoutRequest.getEncodedLogoutRequest();
 		String logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		String expectedSessionIndex = "<samlp:SessionIndex>_51be37965feb5579d803141076936dc2e9d1d98ebf</samlp:SessionIndex>";
 		assertThat(logoutRequestStr, containsString("<samlp:LogoutRequest"));
 		assertThat(logoutRequestStr, containsString(expectedSessionIndex));
 
-		logoutRequest = new LogoutRequest(settings, null, null, null, null);
+		logoutRequest = new LogoutRequest(settings, null, null, null);
 		logoutRequestStringBase64 = logoutRequest.getEncodedLogoutRequest();
 		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		assertThat(logoutRequestStr, containsString("<samlp:LogoutRequest"));
@@ -207,7 +204,7 @@ public class LogoutRequestTest {
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request.xml.base64");
 		String requestURL = "/";
 		HttpRequest httpRequest = newHttpRequest(requestURL, samlRequestEncoded);
-		logoutRequest = new LogoutRequest(settings, httpRequest, null);
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		logoutRequestXML = logoutRequest.getLogoutRequestXml();
 		assertThat(logoutRequestXML, containsString("<samlp:LogoutRequest"));
 		
@@ -224,7 +221,7 @@ public class LogoutRequestTest {
 	@Test
 	public void testGetNameIdData() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		LogoutRequest logoutRequest = new LogoutRequest(settings, null, null, "ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c", null); 
+		LogoutRequest logoutRequest = new LogoutRequest(settings, null, "ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c", null); 
 		String logoutRequestStringBase64 = logoutRequest.getEncodedLogoutRequest();
 		String logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		assertThat(logoutRequestStr, containsString("<samlp:LogoutRequest"));
@@ -233,7 +230,7 @@ public class LogoutRequestTest {
 		assertThat(nameIdDataStr, containsString("Value=ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c"));
 		assertThat(nameIdDataStr, not(containsString("SPNameQualifier")));
 
-		logoutRequest = new LogoutRequest(settings, null, null, null, null);
+		logoutRequest = new LogoutRequest(settings, null, null, null);
 		logoutRequestStringBase64 = logoutRequest.getEncodedLogoutRequest();
 		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		assertThat(logoutRequestStr, containsString("<samlp:LogoutRequest"));
@@ -245,7 +242,7 @@ public class LogoutRequestTest {
 
 		// This settings file contains as IdP cert the SP cert, so I can use the getSPkey to decrypt.
 		settings = new SettingsBuilder().fromFile("config/config.samecerts.properties").build();
-		logoutRequest = new LogoutRequest(settings, null, null, "ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c", null); 
+		logoutRequest = new LogoutRequest(settings, null, "ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c", null); 
 		logoutRequestStringBase64 = logoutRequest.getEncodedLogoutRequest();
 		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		PrivateKey key = settings.getSPkey();
@@ -348,7 +345,7 @@ public class LogoutRequestTest {
 	@Test
 	public void testGetNameId() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		LogoutRequest logoutRequest = new LogoutRequest(settings, null, null, "ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c", null); 
+		LogoutRequest logoutRequest = new LogoutRequest(settings, null, "ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c", null); 
 		String logoutRequestStringBase64 = logoutRequest.getEncodedLogoutRequest();
 		String logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		assertThat(logoutRequestStr, containsString("<samlp:LogoutRequest"));
@@ -356,7 +353,7 @@ public class LogoutRequestTest {
 		String nameIdStr = LogoutRequest.getNameId(logoutRequestStr, null).toString();
 		assertEquals(expectedNameIdStr, nameIdStr);
 
-		logoutRequest = new LogoutRequest(settings, null, null, null, null);
+		logoutRequest = new LogoutRequest(settings, null, null, null);
 		logoutRequestStringBase64 = logoutRequest.getEncodedLogoutRequest();
 		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		assertThat(logoutRequestStr, containsString("<samlp:LogoutRequest"));
@@ -373,7 +370,7 @@ public class LogoutRequestTest {
 
 		// This settings file contains as IdP cert the SP cert, so I can use the getSPkey to decrypt.
 		settings = new SettingsBuilder().fromFile("config/config.samecerts.properties").build();
-		logoutRequest = new LogoutRequest(settings, null, null, "ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c", null); 
+		logoutRequest = new LogoutRequest(settings, null, "ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c", null); 
 		logoutRequestStringBase64 = logoutRequest.getEncodedLogoutRequest();
 		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		PrivateKey key = settings.getSPkey();
@@ -471,7 +468,7 @@ public class LogoutRequestTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String sessionIndex = "_51be37965feb5579d803141076936dc2e9d1d98ebf";
 		expectedIndexes.add(sessionIndex);
-		LogoutRequest logoutRequest = new LogoutRequest(settings, null, null, null, sessionIndex); 
+		LogoutRequest logoutRequest = new LogoutRequest(settings, null, null, sessionIndex); 
 		String logoutRequestStringBase64 = logoutRequest.getEncodedLogoutRequest();
 		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		indexes = LogoutRequest.getSessionIndexes(logoutRequestStr);
@@ -494,11 +491,11 @@ public class LogoutRequestTest {
 		HttpRequest httpRequest = newHttpRequest(requestURL, samlRequestEncoded);
 		
 		settings.setStrict(false);
-		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest, fakeRawRequest(httpRequest));
+		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertTrue(logoutRequest.isValid());
 
 		settings.setStrict(true);
-		logoutRequest = new LogoutRequest(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertFalse(logoutRequest.isValid());
 		assertEquals("Invalid issuer in the Logout Request", logoutRequest.getError());
 	}
@@ -520,20 +517,20 @@ public class LogoutRequestTest {
 		
 		settings.setWantXMLValidation(true);
 		settings.setStrict(false);
-		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest, fakeRawRequest(httpRequest));
+		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertTrue(logoutRequest.isValid());
 
 		settings.setStrict(true);
-		logoutRequest = new LogoutRequest(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertFalse(logoutRequest.isValid());
 		assertEquals("Invalid SAML Logout Request. Not match the saml-schema-protocol-2.0.xsd", logoutRequest.getError());
 
 		settings.setWantXMLValidation(false);
-		logoutRequest = new LogoutRequest(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertTrue(logoutRequest.isValid());
 		
 		settings.setStrict(false);
-		logoutRequest = new LogoutRequest(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertTrue(logoutRequest.isValid());
 	}
 
@@ -553,11 +550,11 @@ public class LogoutRequestTest {
 		HttpRequest httpRequest = newHttpRequest(requestURL, samlRequestEncoded);
 
 		settings.setStrict(false);
-		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest, fakeRawRequest(httpRequest));
+		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertTrue(logoutRequest.isValid());
 
 		settings.setStrict(true);
-		logoutRequest = new LogoutRequest(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertFalse(logoutRequest.isValid());
 		assertThat(logoutRequest.getError(), containsString("The LogoutRequest was received at"));
 	}
@@ -578,11 +575,11 @@ public class LogoutRequestTest {
 		HttpRequest httpRequest = newHttpRequest(requestURL, samlRequestEncoded);
 		
 		settings.setStrict(false);
-		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest, fakeRawRequest(httpRequest));
+		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertTrue(logoutRequest.isValid());
 
 		settings.setStrict(true);
-		logoutRequest = new LogoutRequest(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertFalse(logoutRequest.isValid());
 		assertEquals("Could not validate timestamp: expired. Check system clock.", logoutRequest.getError());
 	}
@@ -602,22 +599,22 @@ public class LogoutRequestTest {
 		HttpRequest httpRequest = newHttpRequest(requestURL, samlRequestEncoded);
 
 		settings.setStrict(true);
-		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest, fakeRawRequest(httpRequest));
+		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertFalse(logoutRequest.isValid());
 
 		settings.setStrict(false);
-		logoutRequest = new LogoutRequest(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertTrue(logoutRequest.isValid());
 
 		requestURL = "http://stuff.com/endpoints/endpoints/sls.php";
 		httpRequest = newHttpRequest(requestURL, samlRequestEncoded);
 
 		settings.setStrict(true);
-		logoutRequest = new LogoutRequest(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertTrue(logoutRequest.isValid());
 
 		settings.setStrict(false);
-		logoutRequest = new LogoutRequest(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertTrue(logoutRequest.isValid());
 	}
 
@@ -646,11 +643,11 @@ public class LogoutRequestTest {
 						.addParameter("SigAlg", sigAlg)
 						.addParameter("Signature", signature);
 
-		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest, fakeRawRequest(httpRequest));
+		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertTrue(logoutRequest.isValid());
 
 		settings.setStrict(true);
-		logoutRequest = new LogoutRequest(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertTrue(logoutRequest.isValid());
 
 		settings.setStrict(false);
@@ -658,7 +655,7 @@ public class LogoutRequestTest {
 		httpRequest = httpRequest.removeParameter("Signature")
 								 .addParameter("Signature", signature2);
 		
-		logoutRequest = new LogoutRequest(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertFalse(logoutRequest.isValid());
 		assertEquals("Signature validation failed. Logout Request rejected", logoutRequest.getError());
 
@@ -666,21 +663,21 @@ public class LogoutRequestTest {
 								 .addParameter("Signature", signature)
 								 .removeParameter("SigAlg");
 		
-		logoutRequest = new LogoutRequest(settings, httpRequest, fakeRawRequest(httpRequest));
-		assertFalse("Expected not valid when mandatory SigAlg parameter missing", logoutRequest.isValid());
+		logoutRequest = new LogoutRequest(settings, httpRequest);
+		assertTrue(logoutRequest.isValid());
 
 		httpRequest = httpRequest.removeParameter("Signature");
-		logoutRequest = new LogoutRequest(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertTrue(logoutRequest.isValid());
 
 		settings.setStrict(true);
-		logoutRequest = new LogoutRequest(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertFalse(logoutRequest.isValid());
 		assertEquals("The Message of the Logout Request is not signed and the SP requires it", logoutRequest.getError());
 
 		httpRequest = httpRequest.addParameter("Signature", signature);
 		settings = new SettingsBuilder().fromFile("config/config.mywithnocert.properties").build();
-		logoutRequest = new LogoutRequest(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertFalse(logoutRequest.isValid());
 		assertEquals("In order to validate the sign on the Logout Request, the x509cert of the IdP is required", logoutRequest.getError());
 	}
@@ -700,7 +697,7 @@ public class LogoutRequestTest {
 		final String requestURL = "/";
 		HttpRequest httpRequest = newHttpRequest(requestURL, samlRequestEncoded);
 		
-		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest, fakeRawRequest(httpRequest));
+		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertFalse(logoutRequest.isValid());
 		assertEquals("SAML Logout Request is not loaded", logoutRequest.getError());
 	}
@@ -718,14 +715,14 @@ public class LogoutRequestTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
 		
-		LogoutRequest logoutRequest = new LogoutRequest(settings, null, null);
+		LogoutRequest logoutRequest = new LogoutRequest(settings, null);
 		assertFalse(logoutRequest.isValid());
 		assertEquals("The HttpRequest of the current host was not established", logoutRequest.getError());
 
 		final String requestURL = "";
 		HttpRequest httpRequest = newHttpRequest(requestURL, samlRequestEncoded);
 		
-		logoutRequest = new LogoutRequest(settings, httpRequest, fakeRawRequest(httpRequest));		
+		logoutRequest = new LogoutRequest(settings, httpRequest);		
 		assertFalse(logoutRequest.isValid());
 		assertEquals("The URL of the current host was not established", logoutRequest.getError());
 	}
@@ -745,13 +742,13 @@ public class LogoutRequestTest {
 		final String requestURL = "/";
 		HttpRequest httpRequest = newHttpRequest(requestURL, samlRequestEncoded);
 
-		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest, fakeRawRequest(httpRequest));
+		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertNull(logoutRequest.getError());
 		logoutRequest.isValid();
 		assertThat(logoutRequest.getError(), containsString("The LogoutRequest was received at"));
 
 		settings.setStrict(false);
-		logoutRequest = new LogoutRequest(settings, httpRequest, fakeRawRequest(httpRequest));
+		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertNull(logoutRequest.getError());
 		logoutRequest.isValid();
 		assertNull(logoutRequest.getError());
@@ -759,20 +756,5 @@ public class LogoutRequestTest {
 
 	private static HttpRequest newHttpRequest(String requestURL, String samlRequestEncoded) {
 		return new HttpRequest(requestURL).addParameter("SAMLRequest", samlRequestEncoded);
-	}
-	
-	private Map<String, String> fakeRawRequest(HttpRequest httpRequest) {
-		Map<String, String> m = new HashMap<>();
-		
-		if (httpRequest == null) {
-			return m;
-		}
-		
-		for (Entry<String, List<String>> parameter : httpRequest.getParameters().entrySet()) {
-			String key = parameter.getKey();
-			String value = parameter.getValue().get(0);
-			m.put(key, key + "=" + Util.urlEncoder(value));
-		}
-		return m;
 	}
 }
