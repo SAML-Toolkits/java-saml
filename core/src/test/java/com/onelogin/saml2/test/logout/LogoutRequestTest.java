@@ -31,6 +31,8 @@ import com.onelogin.saml2.exception.SettingsException;
 import com.onelogin.saml2.exception.ValidationError;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
+import com.onelogin.saml2.test.NaiveUrlEncoder;
+import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.Util;
 
 public class LogoutRequestTest {
@@ -618,6 +620,63 @@ public class LogoutRequestTest {
 		assertTrue(logoutRequest.isValid());
 	}
 
+	@Test
+	public void testIsInValidSign_defaultUrlEncode() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.knownIdpPrivateKey.properties").build();
+		settings.setStrict(true);
+		settings.setWantMessagesSigned(true);
+
+		final String requestURL = "https://pitbulk.no-ip.org/newonelogin/demo1/index.php?sls";
+		String samlRequestEncoded = "lVLBitswEP0Vo7tjeWzJtki8LIRCYLvbNksPewmyPc6K2pJqyXQ/v1LSQlroQi/DMJr33rwZbZ2cJysezNms/gt+X9H55G2etBOXlx1ZFy2MdMoJLWd0wvfieP/xQcCGCrsYb3ozkRvI+wjpHC5eGU2Sw35HTg3lA8hqZFwWFcMKsStpxbEsxoLXeQN9OdY1VAgk+YqLC8gdCUQB7tyKB+281D6UaF6mtEiBPudcABcMXkiyD26Ulv6CevXeOpFlVvlunb5ttEmV3ZjlnGn8YTRO5qx0NuBs8kzpAd829tXeucmR5NH4J/203I8el6gFRUqbFPJnyEV51Wq30by4TLW0/9ZyarYTxt4sBsjUYLMZvRykl1Fxm90SXVkfwx4P++T4KSafVzmpUcVJ/sfSrQZJPphllv79W8WKGtLx0ir8IrVTqD1pT2MH3QAMSs4KTvui71jeFFiwirOmprwPkYW063+5uRq4urHiiC4e8hCX3J5wqAEGaPpw9XB5JmkBdeDqSlkz6CmUXdl0Qae5kv2F/1384wu3PwE=";
+		String relayState = "_1037fbc88ec82ce8e770b2bed1119747bb812a07e6";
+		String sigAlg = Constants.SHA256;
+		
+		String queryString = "SAMLRequest=" + Util.urlEncoder(samlRequestEncoded);
+		queryString += "&RelayState=" + Util.urlEncoder(relayState);
+		queryString += "&SigAlg=" + Util.urlEncoder(sigAlg);
+		
+		//This signature is based on the query string above
+		String signature = "cxDTcLRHhXJKGYcjZE2RRz5p7tVg/irNimq48KkJ0n10wiGwAmuzUByxEm4OHbetDrHGtxI5ygjrR0/HcrD8IkYyI5Ie4r5tJYkfdtpUrvOQ7khbBvP9GzEbZIrz7eH1ALdCDchORaRB/cs6v+OZbBj5uPTrN//wOhZl2k9H2xVW/SYy17jDoIKh/wvqtQ9FF+h2UxdUEhxeB/UUXOC6nVLMo+RGaamSviYkUE1Zu1tmalO+F6FivNQ31T/TkqzWz0KEjmnFs3eKbHakPVuUHpDQm7Gf2gBS1TXwVQsL7e2axtvv4RH5djlq1Z2WH2V+PwGOkIvLxf3igGUSR1A8bw==";
+
+		HttpRequest httpRequest = new HttpRequest(requestURL, queryString)
+				.addParameter("SAMLRequest", samlRequestEncoded)
+				.addParameter("RelayState", relayState)
+				.addParameter("SigAlg", sigAlg)
+				.addParameter("Signature", signature);
+
+		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
+		assertTrue("Signature validation failed", logoutRequest.isValid());
+	}
+
+	@Test
+	public void testIsInValidSign_naiveUrlEncoding() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.knownIdpPrivateKey.properties").build();
+		settings.setStrict(true);
+		settings.setWantMessagesSigned(true);
+
+		final String requestURL = "https://pitbulk.no-ip.org/newonelogin/demo1/index.php?sls";
+		String samlRequestEncoded = "lVLBitswEP0Vo7tjeWzJtki8LIRCYLvbNksPewmyPc6K2pJqyXQ/v1LSQlroQi/DMJr33rwZbZ2cJysezNms/gt+X9H55G2etBOXlx1ZFy2MdMoJLWd0wvfieP/xQcCGCrsYb3ozkRvI+wjpHC5eGU2Sw35HTg3lA8hqZFwWFcMKsStpxbEsxoLXeQN9OdY1VAgk+YqLC8gdCUQB7tyKB+281D6UaF6mtEiBPudcABcMXkiyD26Ulv6CevXeOpFlVvlunb5ttEmV3ZjlnGn8YTRO5qx0NuBs8kzpAd829tXeucmR5NH4J/203I8el6gFRUqbFPJnyEV51Wq30by4TLW0/9ZyarYTxt4sBsjUYLMZvRykl1Fxm90SXVkfwx4P++T4KSafVzmpUcVJ/sfSrQZJPphllv79W8WKGtLx0ir8IrVTqD1pT2MH3QAMSs4KTvui71jeFFiwirOmprwPkYW063+5uRq4urHiiC4e8hCX3J5wqAEGaPpw9XB5JmkBdeDqSlkz6CmUXdl0Qae5kv2F/1384wu3PwE=";
+		String relayState = "_1037fbc88ec82ce8e770b2bed1119747bb812a07e6";
+		String sigAlg = Constants.SHA256;
+
+		String queryString = "SAMLRequest=" + NaiveUrlEncoder.encode(samlRequestEncoded);
+		queryString += "&RelayState=" + NaiveUrlEncoder.encode(relayState);
+		queryString += "&SigAlg=" + NaiveUrlEncoder.encode(sigAlg);
+
+		//This signature is based on the query string above
+		String signatureNaiveEncoding = "Gj2mUq6RBPAPXI9VjDDlwAxueSEBlOfgpWKLpsQbqIp+2XPFtC/vPAZpuPjHCDNNnAI3WKZa4l8ijwQBTqQwKz88k9gTx6vcLxPl2L4SrWdLOokiGrIVYJ+0sK2hapHHMa7WzGiTgpeTuejHbD4ptneaRXl4nrJAEo0WJ/rNTSWbJpnb+ENtgBnsfkmj+6z1KFY70ruo7W/vme21Jg+4XNfBSGl6LLSjEnZHJG0ET80HKvJEZayv4BQGZ3MShcSMyab/w+rLfDvDRA5RcRxw+NHOXo/kxZ3qhpa6daOwG69+PiiWmusmB2gaSq6jy2L55zFks9a36Pt5l5fYA2dE4g==";
+		
+		HttpRequest httpRequest = new HttpRequest(requestURL, queryString)
+				.addParameter("SAMLRequest", samlRequestEncoded)
+				.addParameter("RelayState", relayState)
+				.addParameter("SigAlg", sigAlg)
+				.addParameter("Signature", signatureNaiveEncoding);
+
+		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
+		assertTrue("Signature validation failed", logoutRequest.isValid());	
+	}
+
+	
 	/**
 	 * Tests the isValid method of LogoutRequest
 	 *

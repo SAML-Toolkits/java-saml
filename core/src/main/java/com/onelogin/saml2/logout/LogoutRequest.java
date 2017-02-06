@@ -334,16 +334,16 @@ public class LogoutRequest {
 				if (signAlg == null || signAlg.isEmpty()) {
 					signAlg = Constants.RSA_SHA1;
 				}
-				String relayState = request.getParameter("RelayState");
+				String relayState = request.getEncodedParameter("RelayState");
 
-				String signedQuery = "SAMLRequest=" + Util.urlEncoder(request.getParameter("SAMLRequest"));
+				String signedQuery = "SAMLRequest=" + request.getEncodedParameter("SAMLRequest");
 
 				if (relayState != null && !relayState.isEmpty()) {
-					signedQuery += "&RelayState=" + Util.urlEncoder(relayState);
+					signedQuery += "&RelayState=" + relayState;
 				}
 
-				signedQuery += "&SigAlg=" + Util.urlEncoder(signAlg);
-
+				signedQuery += "&SigAlg=" + request.getEncodedParameter("SigAlg", signAlg);
+				
 				if (!Util.validateBinarySignature(signedQuery, Util.base64decoder(signature), cert, signAlg)) {
 					throw new ValidationError("Signature validation failed. Logout Request rejected", ValidationError.INVALID_SIGNATURE);
 				}
