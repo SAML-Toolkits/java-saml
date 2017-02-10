@@ -879,7 +879,7 @@ public final class Util {
 			org.apache.xml.security.Init.init();
 
 			Element sigElement = (Element) signNode;
-			XMLSignature signature = new XMLSignature(sigElement, "");
+			XMLSignature signature = new XMLSignature(sigElement, "", true);
 
 			if (cert != null) {
 				res = signature.checkSignatureValue(cert);
