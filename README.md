@@ -515,6 +515,21 @@ auth.getLastRequestId()
 and later excuting the redirection manually.
 
 
+### Working behind load balancer
+
+Is possible that asserting request URL and Destination attribute of SAML response fails when working behind load balancer with SSL offload.
+
+You should be able to workaround this by configuring your server so that it is aware of the proxy and returns the original url when requested.
+
+For Apache Tomcat this is done by setting the proxyName, proxyPort, scheme and secure attributes for the Connector. See [here](http://serverfault.com/questions/774300/ssl-offloading-from-apache-to-tomcat-get-overwritten-somewhere) for an example.
+
+
+### Reply attacks
+
+In order to avoid reply attacks, you can store the ID of the SAML messages already processed, to avoid processing them twice. Since the Messages expires and will be invalidated due that fact, you don't need to store those IDs longer than the time frame that you currently accepting.
+
+Get the ID of the last processed message with the getLastMessageId method of the Auth object.
+
 ## Demo included in the toolkit
 The Onelogin's Java Toolkit allows you to provide the settings in a unique file as described at the [Settings  section](https://github.com/onelogin/java-saml/#Settings).
 

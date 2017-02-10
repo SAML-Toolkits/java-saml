@@ -161,7 +161,7 @@ public class LogoutResponseTest {
 	 *
 	 * @throws Exception
 	 * 
-	 * @see com.onelogin.saml2.logout.getLogoutResponseXml
+	 * @see com.onelogin.saml2.logout.LogoutResponse#getLogoutResponseXml
 	 */
 	@Test
 	public void testGetLogoutRequestXml() throws Exception {

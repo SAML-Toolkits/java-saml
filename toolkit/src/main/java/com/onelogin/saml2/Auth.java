@@ -82,6 +82,11 @@ public class Auth {
 	private DateTime sessionExpiration;
 
 	/**
+	 * The ID of the last message processed
+	 */
+	private String lastMessageId;
+
+	/**
 	 * The ID of the last assertion processed
 	 */
 	private String lastAssertionId;
@@ -474,6 +479,7 @@ public class Auth {
 				attributes = samlResponse.getAttributes();
 				sessionIndex = samlResponse.getSessionIndex();
 				sessionExpiration = samlResponse.getSessionNotOnOrAfter();
+				lastMessageId = samlResponse.getId();
 				lastAssertionId = samlResponse.getAssertionId();
 				lastAssertionNotOnOrAfter = samlResponse.getAssertionNotOnOrAfter();
 				LOGGER.debug("processResponse success --> " + samlResponseParameter);
@@ -531,6 +537,7 @@ public class Auth {
 					LOGGER.error("processSLO error. logout_not_success");
 					LOGGER.debug(" --> " + samlResponseParameter);
 				} else {
+					lastMessageId = logoutResponse.getId();
 					LOGGER.debug("processSLO success --> " + samlResponseParameter);
 					if (!keepLocalSession) {
 						request.getSession().invalidate();
@@ -546,6 +553,7 @@ public class Auth {
 				LOGGER.debug(" --> " + samlRequestParameter);
 				errorReason = logoutRequest.getError();
 			} else {
+				lastMessageId = logoutRequest.getId();
 				LOGGER.debug("processSLO success --> " + samlRequestParameter);
 				if (!keepLocalSession) {
 					request.getSession().invalidate();
@@ -649,6 +657,13 @@ public class Auth {
 	public final DateTime getSessionExpiration()
 	{
 	    return sessionExpiration;
+	}
+
+	/**
+	 * @return The ID of the last message processed
+	 */
+	public String getLastMessageId() {
+		return lastMessageId;
 	}
 
 	/**

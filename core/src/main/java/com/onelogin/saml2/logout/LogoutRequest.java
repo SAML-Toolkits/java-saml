@@ -619,7 +619,7 @@ public class LogoutRequest {
 	}
 
 	/**
-	 * @return the generated id of the LogoutRequest message
+	 * @return the ID of the Logout Request
 	 */
 	public String getId()
 	{

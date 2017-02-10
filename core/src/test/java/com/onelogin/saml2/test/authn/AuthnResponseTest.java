@@ -1667,7 +1667,6 @@ public class AuthnResponseTest {
 	public void testIsValidSubjectConfirmation_noSubjectConfirmationMethod() throws Exception {
 		final Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		final String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_subjectconfirmation_method.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 
 		assertResponseValid(settings, samlResponseEncoded, false, false, "No Signature found. SAML Response rejected");
 		assertResponseValid(settings, samlResponseEncoded, true, false, "A valid SubjectConfirmation was not found on this Response");

@@ -143,6 +143,19 @@ public class LogoutResponse {
 		return logoutResponseString;
 	}
 
+	/**
+	 * @return the ID of the Response
+	 */
+	public String getId() {
+		String idvalue = null;
+		if (id != null) {
+			idvalue = id;
+		} else if (logoutResponseDocument != null) {
+			idvalue = logoutResponseDocument.getDocumentElement().getAttributes().getNamedItem("ID").getNodeValue();
+		}
+		return idvalue;
+	}
+
 	 /**
      * Determines if the SAML LogoutResponse is valid
      *

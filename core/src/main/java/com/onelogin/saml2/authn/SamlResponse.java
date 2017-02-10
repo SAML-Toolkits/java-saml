@@ -706,6 +706,13 @@ public class SamlResponse {
     }
 
 	/**
+	 * @return the ID of the Response
+	 */
+	public String getId() {
+		return samlResponseDocument.getDocumentElement().getAttributes().getNamedItem("ID").getNodeValue();
+	}
+
+	/**
 	 * @return the ID of the assertion in the Response
 	 * @throws XPathExpressionException
 	 *
