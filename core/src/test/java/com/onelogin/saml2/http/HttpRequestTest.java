@@ -143,6 +143,16 @@ public class HttpRequestTest {
     }
 
     @Test
+    public void testGetEncodedParameter_stopsAtUrlFragment() throws Exception {
+        final String url = "url";
+        final String queryString = "first=&foo=bar#ignore";
+
+        final HttpRequest request = new HttpRequest(url, queryString);
+
+        assertThat(request.getEncodedParameter("foo"), equalTo("bar"));
+    }
+
+    @Test
     public void testGetEncodedParameter_withDefault_usesDefaultWhenParameterMissing() throws Exception {
         final String url = "url";
         final String foobar = "foo/bar!";

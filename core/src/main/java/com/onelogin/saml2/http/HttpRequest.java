@@ -152,7 +152,7 @@ public final class HttpRequest {
      * @return the first value for the parameter, or null
      */
     public String getEncodedParameter(String name) {
-        Matcher matcher = Pattern.compile(Pattern.quote(name) + "=([^&]+)").matcher(queryString);
+        Matcher matcher = Pattern.compile(Pattern.quote(name) + "=([^&#]+)").matcher(queryString);
         if (matcher.find()) {
             return matcher.group(1);
         } else {
