@@ -35,7 +35,9 @@ public final class HttpRequest {
      *
      * @param requestURL the request URL (up to but not including query parameters)
      * @throws NullPointerException if requestURL is null
+     * @deprecated Not providing a queryString can cause HTTP Redirect binding to fail.
      */
+    @Deprecated
     public HttpRequest(String requestURL) {
         this(requestURL, EMPTY_PARAMETERS);
     }
@@ -56,7 +58,9 @@ public final class HttpRequest {
      * @param requestURL  the request URL (up to but not including query parameters)
      * @param parameters the request query parameters
      * @throws NullPointerException if any of the parameters is null
+     * @deprecated Not providing a queryString can cause HTTP Redirect binding to fail.
      */
+    @Deprecated
     public HttpRequest(String requestURL, Map<String, List<String>> parameters) {
         this(requestURL, parameters, null);
     }
