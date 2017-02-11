@@ -266,7 +266,7 @@ public class ServletUtilsTest {
         final HttpServletRequest servletRequest = mock(HttpServletRequest.class);
         when(servletRequest.getRequestURL()).thenReturn(new StringBuffer(url));
         when(servletRequest.getParameterMap()).thenReturn(paramAsArray);
-        
+
         final String barNaiveEncoded = NaiveUrlEncoder.encode("bar"); //must differ from normal url encode
 		when(servletRequest.getQueryString()).thenReturn("foo=" + barNaiveEncoded);
 

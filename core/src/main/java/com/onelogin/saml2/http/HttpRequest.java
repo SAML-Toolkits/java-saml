@@ -23,9 +23,9 @@ import com.onelogin.saml2.util.Util;
  * @since 2.0.0
  */
 public final class HttpRequest {
-	
-	public static final Map<String, List<String>> EMPTY_PARAMETERS = Collections.<String, List<String>>emptyMap(); 
-	
+
+    public static final Map<String, List<String>> EMPTY_PARAMETERS = Collections.<String, List<String>>emptyMap();
+
     private final String requestURL;
     private final Map<String, List<String>> parameters;
     private final String queryString;
@@ -47,9 +47,9 @@ public final class HttpRequest {
      * @param query string that is contained in the request URL after the path
      */
     public HttpRequest(String requestURL, String queryString) {
-    	this(requestURL, EMPTY_PARAMETERS, queryString);
+        this(requestURL, EMPTY_PARAMETERS, queryString);
     }
-    
+
     /**
      * Creates a new HttpRequest.
      *
@@ -58,9 +58,9 @@ public final class HttpRequest {
      * @throws NullPointerException if any of the parameters is null
      */
     public HttpRequest(String requestURL, Map<String, List<String>> parameters) {
-    	this(requestURL, parameters, null);
-    }  
-      
+        this(requestURL, parameters, null);
+    }
+
     /**
      * Creates a new HttpRequest.
      *
@@ -75,7 +75,6 @@ public final class HttpRequest {
         this.queryString = StringUtils.trimToEmpty(queryString);
     }
 
-    
     /**
      * @param name  the query parameter name
      * @param value the query parameter value
@@ -148,34 +147,33 @@ public final class HttpRequest {
      * Return an url encoded get parameter value
      * Prefer to extract the original encoded value directly from queryString since url
      * encoding is not canonical.
-     * 
+     *
      * @param name
      * @return the first value for the parameter, or null
      */
-    public String getEncodedParameter(String name) {    	
-    	Matcher matcher = Pattern.compile(Pattern.quote(name) + "=([^&]+)").matcher(queryString);
-    	if (matcher.find()) {
-    		return matcher.group(1);
-    	} else {
-    		return Util.urlEncoder(getParameter(name));
-    	}
+    public String getEncodedParameter(String name) {
+        Matcher matcher = Pattern.compile(Pattern.quote(name) + "=([^&]+)").matcher(queryString);
+        if (matcher.find()) {
+            return matcher.group(1);
+        } else {
+            return Util.urlEncoder(getParameter(name));
+        }
     }
-    
+
     /**
      * Return an url encoded get parameter value
      * Prefer to extract the original encoded value directly from queryString since url
      * encoding is not canonical.
-     * 
+     *
      * @param name
-     * @param defaultValue 
-     * @return the first value for the parameter, or url encoded default value 
+     * @param defaultValue
+     * @return the first value for the parameter, or url encoded default value
      */
-	public String getEncodedParameter(String name, String defaultValue) {
-		String value = getEncodedParameter(name);
-		return (value != null ? value : Util.urlEncoder(defaultValue));
-	}
+    public String getEncodedParameter(String name, String defaultValue) {
+            String value = getEncodedParameter(name);
+            return (value != null ? value : Util.urlEncoder(defaultValue));
+    }
 
-    
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -202,7 +200,7 @@ public final class HttpRequest {
         return "HttpRequest{" +
                 "requestURL='" + requestURL + '\'' +
                 ", parameters=" + parameters +
-                ", queryString=" + queryString + 
+                ", queryString=" + queryString +
                 '}';
     }
 

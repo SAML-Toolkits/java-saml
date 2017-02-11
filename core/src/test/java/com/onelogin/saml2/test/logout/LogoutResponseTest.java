@@ -431,11 +431,11 @@ public class LogoutResponseTest {
 		String samlResponseEncoded = "fZJva8IwEMa/Ssl7TZrW/gnqGHMMwSlM8cXeyLU9NaxNQi9lfvxVZczB5ptwSe733MPdjQma2qmFPdjOvyE5awiDU1MbUpevCetaoyyQJmWgQVK+VOvH14WSQ6Fca70tbc1ukPsEEGHrtTUsmM8mbDfKUhnFci8gliGINI/yXIAAiYnsw6JIRgWWAKlkwRZb6skJ64V6nKjDuSEPxvdPIowHIhpIsQkTFaYqSt9ZMEPy2oC/UEfvHSnOnfZFV38MjR1oN7TtgRv8tAZre9CGV9jYkGtT4Wnoju6Bauprme/ebOyErZbPi9XLfLnDoohwhHGc5WVSVhjCKM6rBMpYQpWJrIizfZ4IZNPxuTPqYrmd/m+EdONqPOfy8yG5rhxv0EMFHs52xvxWaHyd3tqD7+j37clWGGyh7vD+POiSrdZdWSIR49NrhR9R/teGTL8A";
 		String relayState = "https://pitbulk.no-ip.org/newonelogin/demo1/index.php";
 		String sigAlg = Constants.SHA256;
-		
+
 		String queryString = "SAMLResponse=" + Util.urlEncoder(samlResponseEncoded);
 		queryString += "&RelayState=" + Util.urlEncoder(relayState);
 		queryString += "&SigAlg=" + Util.urlEncoder(sigAlg);
-		
+
 		//This signature is based on the query string above
 		String signature = "czxEy2WDRZS1U4b2PQFpE4KRhRs8jt5bBKdTFx5oIXpte6qtm0Lk/5lzw/2S6Y1NJpj5DJvSLJvylgNE+RYfJR1GX0zQplm2dZYtlo7CZUyfS3JCLsWviEtPXaon+8Z0lQQkPt4yxCf9v8Qd0pvxHglTUCK/sU0NXnZQdpSxxfsaNCcjQf5gTg/gj8oI7xdrnamBPFtsaH6tAirkjGMoYS4Otju3mcrdcNBIHG40wrffUDnE83Jw4AOFCp8Vsf0zPTQOQsxS4HF4VS78OvGn7jLi2MdabeAQcK5+tP3mUB4vO8AAt8QbkEEiWQbcvA9i1Ezma92CdNYgaf4B3JYpPA==";
 
@@ -466,7 +466,7 @@ public class LogoutResponseTest {
 
 		//This signature is based on the query string above
 		String signature = "eSoTB+0GA/HfncASEFk7ONHbB3+9YrOBgK9xUyRoCDY97oXw49JYoXOL07kHrVvbngKmKFNx5fnYtDaL8WCe5LfRRgjJz1LLacriHn2ggeMmY/fTaXPoy2zQW0Fv1H362QXicTWQXgWFS5cJAIcBa2I7TLgNwXsMgjdBF2hyacW0IwfkAceGiBwDDTy6XIBAZk2Ff7w5lbZh+fa5JLNKrbvoveJk2NS3KK6INYO7UW5hukWz2cpzbHsx9lfxUJi8/ZCwUtFWZ4rdXVN+Qiw5y8S2eE2BIEfFmz7IfvrMRXa2la/rXFQfmteQo+N1sO3K1YZyoT/aA3k36glXvnj3kw==";
-		
+
 		HttpRequest httpRequest = new HttpRequest(requestURL, queryString)
 				.addParameter("SAMLResponse", samlResponseEncoded)
 				.addParameter("RelayState", relayState)
@@ -474,9 +474,9 @@ public class LogoutResponseTest {
 				.addParameter("Signature", signature);
 
 		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
-		assertTrue("Signature validation failed", logoutResponse.isValid());	
+		assertTrue("Signature validation failed", logoutResponse.isValid());
 	}
-	
+
 	/**
 	 * Tests the isValid method of LogoutResponse
 	 *

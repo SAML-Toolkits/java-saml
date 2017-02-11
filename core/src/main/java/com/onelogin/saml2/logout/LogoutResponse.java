@@ -228,7 +228,7 @@ public class LogoutResponse {
 				}
 
 				signedQuery += "&SigAlg=" + request.getEncodedParameter("SigAlg", signAlg);
-				
+
 				if (!Util.validateBinarySignature(signedQuery, Util.base64decoder(signature), cert, signAlg)) {
 					throw new ValidationError("Signature validation failed. Logout Response rejected", ValidationError.INVALID_SIGNATURE);
 				}
