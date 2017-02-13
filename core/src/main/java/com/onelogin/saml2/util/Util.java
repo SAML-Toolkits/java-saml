@@ -40,6 +40,8 @@ import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.validation.Schema;
@@ -99,9 +101,41 @@ public final class Util {
 	public static final String UNIQUE_ID_PREFIX = "ONELOGIN_";
 	public static final String RESPONSE_SIGNATURE_XPATH = "/samlp:Response/ds:Signature";
 	public static final String ASSERTION_SIGNATURE_XPATH = "/samlp:Response/saml:Assertion/ds:Signature";
+	/** Indicates if JAXP 1.5 support has been detected. */
+	private static boolean JAXP_15_SUPPORTED = isJaxp15Supported();
 
 	private Util() {
 	      //not called
+	}
+
+	/**
+	 * Method which uses the recommended way ( https://docs.oracle.com/javase/tutorial/jaxp/properties/error.html ) 
+	 * of checking if JAXP >= 1.5 options are supported. Needed if the project which uses this library also has
+	 * Xerces in it's classpath. 
+	 * 
+	 * If for whatever reason this method cannot determine if JAXP 1.5 properties are supported it will indicate the
+	 * options are supported. This way we don't accidentally disable configuration options.
+	 *
+	 * @return
+	 */
+	public static boolean isJaxp15Supported() {
+		boolean supported = true;		
+		
+		try {
+			SAXParserFactory spf = SAXParserFactory.newInstance();
+			SAXParser parser = spf.newSAXParser();
+			parser.setProperty("http://javax.xml.XMLConstants/property/accessExternalDTD", "file");
+		} catch (SAXException ex) {
+			String err = ex.getMessage();
+			if (err.contains("Property 'http://javax.xml.XMLConstants/property/accessExternalDTD' is not recognized.")) {
+				//expected, jaxp 1.5 not supported
+				supported = false;
+			}
+		} catch (Exception e) {
+			LOGGER.info("An exception occurred while trying to determine if JAXP 1.5 options are supported.", e);
+		}
+		
+		return supported;
 	}
 	
 	/**
@@ -218,9 +252,12 @@ public final class Util {
 
 			Schema schema = SchemaFactory.loadFromUrl(schemaUrl);
 			Validator validator = schema.newValidator();
-			// Prevent XXE attacks
-			validator.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-			validator.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+			
+			if (JAXP_15_SUPPORTED) {
+				// Prevent XXE attacks
+				validator.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+				validator.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+			}
 
 			XMLErrorAccumulatorHandler errorAcumulator = new XMLErrorAccumulatorHandler();
 			validator.setErrorHandler(errorAcumulator);
