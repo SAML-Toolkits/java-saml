@@ -233,14 +233,14 @@ public class LogoutResponse {
 					signAlg = Constants.RSA_SHA1;
 				}
 
-				String signedQuery = "SAMLResponse=" + Util.urlEncoder(request.getParameter("SAMLResponse"));
+				String signedQuery = "SAMLResponse=" + request.getEncodedParameter("SAMLResponse");
 
-				String relayState = request.getParameter("RelayState");
+				String relayState = request.getEncodedParameter("RelayState");
 				if (relayState != null && !relayState.isEmpty()) {
-					signedQuery += "&RelayState=" + Util.urlEncoder(relayState);
+					signedQuery += "&RelayState=" + relayState;
 				}
 
-				signedQuery += "&SigAlg=" + Util.urlEncoder(signAlg);
+				signedQuery += "&SigAlg=" + request.getEncodedParameter("SigAlg", signAlg);
 
 				if (!Util.validateBinarySignature(signedQuery, Util.base64decoder(signature), cert, signAlg)) {
 					throw new ValidationError("Signature validation failed. Logout Response rejected", ValidationError.INVALID_SIGNATURE);
