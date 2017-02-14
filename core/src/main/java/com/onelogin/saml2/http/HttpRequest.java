@@ -46,7 +46,7 @@ public final class HttpRequest {
      * Creates a new HttpRequest.
      *
      * @param requestURL  the request URL (up to but not including query parameters)
-     * @param query string that is contained in the request URL after the path
+     * @param queryString string that is contained in the request URL after the path
      */
     public HttpRequest(String requestURL, String queryString) {
         this(requestURL, EMPTY_PARAMETERS, queryString);
@@ -70,7 +70,7 @@ public final class HttpRequest {
      *
      * @param requestURL  the request URL (up to but not including query parameters)
      * @param parameters the request query parameters
-     * @param query string that is contained in the request URL after the path
+     * @param queryString string that is contained in the request URL after the path
      * @throws NullPointerException if any of the parameters is null
      */
     public HttpRequest(String requestURL, Map<String, List<String>> parameters, String queryString) {

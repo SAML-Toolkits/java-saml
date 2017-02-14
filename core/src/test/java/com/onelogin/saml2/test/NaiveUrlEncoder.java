@@ -11,6 +11,11 @@ public final  class NaiveUrlEncoder {
     /**
      * Encodes ALL characters in URL using %xx encoding.<br>
      * This differs from 'normal' url encoding.
+     * 
+     * @param s string to be encoded
+     * @return a string with the url-encoded values
+     *
+     * @throws UnsupportedEncodingException
      */
     public static String encode (String s) throws UnsupportedEncodingException {
         StringBuilder buf = new StringBuilder();
