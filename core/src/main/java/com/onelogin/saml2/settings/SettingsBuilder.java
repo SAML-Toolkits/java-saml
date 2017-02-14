@@ -1,6 +1,5 @@
 package com.onelogin.saml2.settings;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -18,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.onelogin.saml2.exception.Error;
-import com.onelogin.saml2.exception.SettingsException;
 import com.onelogin.saml2.model.Contact;
 import com.onelogin.saml2.model.Organization;
 import com.onelogin.saml2.util.Util;
@@ -35,7 +33,7 @@ public class SettingsBuilder {
 	private static final Logger LOGGER = LoggerFactory.getLogger(SettingsBuilder.class);
 
 	/**
-     * Private property that contain the SAML settings
+     * Private property that contains the SAML settings
      */
 	private Properties prop = new Properties();
 
@@ -102,7 +100,7 @@ public class SettingsBuilder {
 	public final static String ORGANIZATION_URL = "onelogin.saml2.organization.url";
 
 	/**
-	 * Load settings from the file.
+	 * Load settings from the file
 	 *
 	 * @param propFileName
 	 *            OneLogin_Saml2_Settings
@@ -149,6 +147,19 @@ public class SettingsBuilder {
 				LOGGER.warn("properties file '"  + propFileName +  "' not closed properly.");
 			}
 		}
+	}
+
+	/**
+	 * Loads the settings from a properties object
+	 *
+	 * @param prop
+	 *            contains the properties
+	 *
+	 * @return the SettingsBuilder object with the settings loaded from the prop object
+	 */
+	public SettingsBuilder fromProperties(Properties prop) {
+	    this.prop = prop;
+	    return this;
 	}
 
 	/**
