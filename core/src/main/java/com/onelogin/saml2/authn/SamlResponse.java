@@ -649,13 +649,15 @@ public class SamlResponse {
 		List<String> issuers = new ArrayList<String>();
 		String value;
 		NodeList responseIssuer = Util.query(samlResponseDocument, "/samlp:Response/saml:Issuer");
-		if (responseIssuer.getLength() == 1) {
-			value = responseIssuer.item(0).getTextContent();
-			if (!issuers.contains(value)) {
-				issuers.add(value);
+		if (responseIssuer.getLength() > 1) {
+			if (responseIssuer.getLength() == 1) {
+				value = responseIssuer.item(0).getTextContent();
+				if (!issuers.contains(value)) {
+					issuers.add(value);
+				}
+			} else {
+				throw new ValidationError("Issuer of the Response is multiple.", ValidationError.ISSUER_MULTIPLE_IN_RESPONSE);
 			}
-		} else {
-			throw new ValidationError("Issuer of the Response not found or multiple.", ValidationError.ISSUER_NOT_FOUND_IN_RESPONSE);
 		}
 
 		NodeList assertionIssuer = this.queryAssertion("/saml:Issuer");

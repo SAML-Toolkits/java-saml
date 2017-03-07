@@ -716,31 +716,12 @@ public class AuthnResponseTest {
 		samlResponseEncoded = Util.getFileAsString("data/responses/signed_assertion_response.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertEquals(expectedIssuers, samlResponse.getIssuers());
-	}
 
-	/**
-	 * Tests the getIssuers method of SamlResponse
-	 * Case: Issuer of the response not found
-	 *
-	 * @throws Error
-	 * @throws IOException
-	 * @throws ValidationError
-	 * @throws SettingsException
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws XPathExpressionException
-	 *
-	 * @see com.onelogin.saml2.authn.SamlResponse#getIssuers
-	 */
-	@Test
-	public void testGetIssuersNoInResponse() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
-		expectedEx.expect(ValidationError.class);
-		expectedEx.expectMessage("Issuer of the Response not found or multiple.");
-
-		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
-		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_issuer_response.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
-		List<String> issuers = samlResponse.getIssuers();
+		expectedIssuers = new ArrayList<String>();
+		expectedIssuers.add("https://app.onelogin.com/saml/metadata/13590");
+		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_issuer_response.xml.base64");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertEquals(expectedIssuers, samlResponse.getIssuers());
 	}
 
 	/**
@@ -1630,7 +1611,7 @@ public class AuthnResponseTest {
 		settings.setStrict(true);
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
-		assertEquals("Invalid issuer in the Assertion/Response", samlResponse.getError());
+		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
 		
 	}
 

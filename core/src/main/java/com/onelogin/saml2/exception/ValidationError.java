@@ -31,7 +31,7 @@ public class ValidationError extends Exception {
 	public static final int WRONG_DESTINATION = 24;
 	public static final int EMPTY_DESTINATION = 25;
 	public static final int WRONG_AUDIENCE = 26;
-	public static final int ISSUER_NOT_FOUND_IN_RESPONSE = 27;
+	public static final int ISSUER_MULTIPLE_IN_RESPONSE = 27;
 	public static final int ISSUER_NOT_FOUND_IN_ASSERTION = 28;
 	public static final int WRONG_ISSUER = 29;
 	public static final int SESSION_EXPIRED = 30;
