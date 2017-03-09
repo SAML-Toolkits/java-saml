@@ -253,6 +253,14 @@ public class LogoutRequestTest {
 		assertThat(nameIdDataStr, containsString("Value=ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c"));
 		assertThat(nameIdDataStr, not(containsString("SPNameQualifier")));	
 
+		logoutRequest = new LogoutRequest(settings, null, "ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c", null, "urn:oasis:names:tc:SAML:2.0:nameid-format:emailAddress");
+		logoutRequestStringBase64 = logoutRequest.getEncodedLogoutRequest();
+		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
+		nameIdDataStr = LogoutRequest.getNameIdData(logoutRequestStr, key).toString();
+		assertThat(nameIdDataStr, containsString("urn:oasis:names:tc:SAML:2.0:nameid-format:emailAddress"));
+		assertThat(nameIdDataStr, containsString("Value=ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c"));
+		assertThat(nameIdDataStr, not(containsString("SPNameQualifier")));	
+		
   	    String keyString = Util.getFileAsString("data/customPath/certs/sp.pem");
   	    key = Util.loadPrivateKey(keyString);
 		logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_encrypted_nameid.xml");

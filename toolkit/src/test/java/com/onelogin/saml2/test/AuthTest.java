@@ -811,6 +811,48 @@ public class AuthTest {
 	}
 
 	/**
+	 * Tests the getNameIdFormat method of Auth
+	 * Case: get nameid format from a SAMLResponse
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.Auth#getNameIdFormat
+	 */
+	@Test
+	public void testGetNameIdFormat() throws Exception {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		Auth auth = new Auth(settings, request, response);
+		assertNull(auth.getNameIdFormat());
+		auth.processResponse();
+		assertFalse(auth.isAuthenticated());
+		assertNull(auth.getNameIdFormat());
+
+		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		Auth auth2 = new Auth(settings, request, response);
+		assertNull(auth2.getNameIdFormat());
+		auth2.processResponse();
+		assertTrue(auth2.isAuthenticated());
+		assertEquals("urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress", auth2.getNameIdFormat());
+
+		samlResponseEncoded = Util.getFileAsString("data/responses/response_encrypted_nameid.xml.base64");
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		when(request.getRequestURL()).thenReturn(new StringBuffer("https://pitbulk.no-ip.org/newonelogin/demo1/index.php?acs"));
+		settings.setStrict(false);
+		Auth auth3 = new Auth(settings, request, response);
+		assertNull(auth3.getNameIdFormat());
+		auth3.processResponse();
+		assertTrue(auth3.isAuthenticated());
+		assertEquals("urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified", auth3.getNameIdFormat());
+	}
+
+	/**
 	 * Tests the getNameId method of SamlResponse
 	 *
 	 * @throws Exception

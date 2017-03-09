@@ -198,6 +198,34 @@ public class AuthnResponseTest {
 	}
 
 	/**
+	 * Tests the getNameIdFormat method of SamlResponse
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#getNameIdFormat
+	 */
+	@Test
+	public void testGetNameIdFormat() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertEquals("urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress", samlResponse.getNameIdFormat());
+
+		samlResponseEncoded = Util.getFileAsString("data/responses/response_encrypted_nameid.xml.base64");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertEquals("urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified", samlResponse.getNameIdFormat());
+
+		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertEquals("urn:oasis:names:tc:SAML:2.0:nameid-format:transient", samlResponse.getNameIdFormat());
+
+		settings.setWantNameId(false);
+		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_nameid.xml.base64");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertNull(samlResponse.getNameIdFormat());
+	}
+	
+	/**
 	 * Tests the getNameId method of SamlResponse
 	 * Case: No NameId
 	 *

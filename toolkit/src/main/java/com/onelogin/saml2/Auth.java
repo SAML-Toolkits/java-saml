@@ -72,6 +72,11 @@ public class Auth {
 	private String nameid;
 
 	/**
+     * NameIDFormat.
+     */
+	private String nameidFormat;
+
+	/**
      * SessionIndex. When the user is logged, this stored it from the AuthnStatement of the SAML Response
      */
 	private String sessionIndex;
@@ -345,7 +350,9 @@ public class Auth {
 	 * @param sessionIndex 
      *				The SessionIndex (taken from the SAML Response in the SSO process).
 	 * @param stay
-	 *            True if we want to stay (returns the url string) False to execute redirection
+	 *            	True if we want to stay (returns the url string) False to execute redirection
+	 * @param nameidFormat
+	 *            	The NameID Format will be set in the LogoutRequest.
 	 *
 	 * @return the SLO URL with the LogoutRequest if stay = True
 	 *
@@ -353,10 +360,10 @@ public class Auth {
 	 * @throws XMLEntityException
 	 * @throws SettingsException
 	 */
-	public String logout(String returnTo, String nameId, String sessionIndex, Boolean stay) throws IOException, XMLEntityException, SettingsException {
+	public String logout(String returnTo, String nameId, String sessionIndex, Boolean stay, String nameidFormat) throws IOException, XMLEntityException, SettingsException {
 		Map<String, String> parameters = new HashMap<String, String>();
 
-		LogoutRequest logoutRequest = new LogoutRequest(settings, null, nameId, sessionIndex);
+		LogoutRequest logoutRequest = new LogoutRequest(settings, null, nameId, sessionIndex, nameidFormat);
 		String samlLogoutRequest = logoutRequest.getEncodedLogoutRequest();
 		parameters.put("SAMLRequest", samlLogoutRequest);
 
@@ -399,13 +406,56 @@ public class Auth {
      *				The NameID that will be set in the LogoutRequest.
 	 * @param sessionIndex 
      *				The SessionIndex (taken from the SAML Response in the SSO process).
+	 * @param stay
+	 *            	True if we want to stay (returns the url string) False to execute redirection
+	 *
+	 * @return the SLO URL with the LogoutRequest if stay = True
 	 *
 	 * @throws IOException
 	 * @throws XMLEntityException
 	 * @throws SettingsException
 	 */
+	public String logout(String returnTo, String nameId, String sessionIndex, Boolean stay) throws IOException, XMLEntityException, SettingsException {
+		return logout(returnTo, nameId, sessionIndex, stay, null);
+	}
+
+	/**
+	 * Initiates the SLO process.
+	 *
+	 * @param returnTo
+     *				The target URL the user should be returned to after logout (relayState).
+	 *				Will be a self-routed URL when null, or not be appended at all when an empty string is provided
+	 * @param nameId
+     *				The NameID that will be set in the LogoutRequest.
+	 * @param sessionIndex
+     *				The SessionIndex (taken from the SAML Response in the SSO process).
+	 * @param nameidFormat
+	 *            	The NameID Format will be set in the LogoutRequest.
+	 * @throws IOException
+	 * @throws XMLEntityException
+	 * @throws SettingsException
+	 */
+	public void logout(String returnTo, String nameId, String sessionIndex, String nameidFormat) throws IOException, XMLEntityException, SettingsException {
+		logout(returnTo, nameId, sessionIndex, false, nameidFormat);
+	}
+
+	/**
+	 * Initiates the SLO process.
+	 *
+	 * @param returnTo
+     *				The target URL the user should be returned to after logout (relayState).
+	 *				Will be a self-routed URL when null, or not be appended at all when an empty string is provided
+	 * @param nameId
+     *				The NameID that will be set in the LogoutRequest.
+	 * @param sessionIndex
+     *				The SessionIndex (taken from the SAML Response in the SSO process).
+     *
+	 * @throws IOException
+	 * @throws XMLEntityException
+	 * @throws SettingsException
+	 */
 	public void logout(String returnTo, String nameId, String sessionIndex) throws IOException, XMLEntityException, SettingsException {
-		logout(returnTo, nameId, sessionIndex, false);
+		logout(returnTo, nameId, sessionIndex, false, null);
 	}
 
 	/**
@@ -416,7 +466,7 @@ public class Auth {
 	 * @throws SettingsException
 	 */
 	public void logout() throws IOException, XMLEntityException, SettingsException {		
-		logout(null, null, null);
+		logout(null, null, null, false);
 	}
 
 	/**
@@ -475,6 +525,7 @@ public class Auth {
 
 			if (samlResponse.isValid(requestId)) {
 				nameid = samlResponse.getNameId();
+				nameidFormat = samlResponse.getNameIdFormat();
 				authenticated = true;
 				attributes = samlResponse.getAttributes();
 				sessionIndex = samlResponse.getSessionIndex();
@@ -641,6 +692,14 @@ public class Auth {
     public final String getNameId()
     {
         return nameid;
+    }
+
+    /**
+     * @return the nameID Format of the assertion
+     */
+    public final String getNameIdFormat()
+    {
+        return nameidFormat;
     }
 
     /**

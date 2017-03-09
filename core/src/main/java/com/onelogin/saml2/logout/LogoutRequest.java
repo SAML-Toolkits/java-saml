@@ -64,7 +64,12 @@ public class LogoutRequest {
      * NameID.
      */	
 	private String nameId;
-	
+
+	/**
+     * NameID Format.
+     */
+	private String nameIdFormat;
+
 	/**
      * SessionIndex. When the user is logged, this stored it from the AuthnStatement of the SAML Response
      */
@@ -96,10 +101,12 @@ public class LogoutRequest {
 	 *              The NameID that will be set in the LogoutRequest.
 	 * @param sessionIndex
 	 *              The SessionIndex (taken from the SAML Response in the SSO process).
+	 * @param nameIdFormat
+	 *              The nameIdFormat that will be set in the LogoutRequest.
 	 * @throws XMLEntityException 
 	 *
 	 */
-	public LogoutRequest(Saml2Settings settings, HttpRequest request, String nameId, String sessionIndex) throws XMLEntityException {
+	public LogoutRequest(Saml2Settings settings, HttpRequest request, String nameId, String sessionIndex, String nameIdFormat) throws XMLEntityException {
 		this.settings = settings;
 		this.request = request;
 
@@ -114,6 +121,7 @@ public class LogoutRequest {
 			id = Util.generateUniqueID();
 			issueInstant = Calendar.getInstance();
 			this.nameId = nameId;
+			this.nameIdFormat = nameIdFormat;
 			this.sessionIndex = sessionIndex;
 
 			StrSubstitutor substitutor = generateSubstitutor(settings);
@@ -122,6 +130,24 @@ public class LogoutRequest {
 			logoutRequestString = Util.base64decodedInflated(samlLogoutRequest);
 			id = getId(logoutRequestString);
 		}
+	}
+
+	/**
+	 * Constructs the LogoutRequest object.
+	 *
+	 * @param settings
+	 *              OneLogin_Saml2_Settings
+	 * @param request
+     *              the HttpRequest object to be processed (Contains GET and POST parameters, request URL, ...).
+	 * @param nameId
+	 *              The NameID that will be set in the LogoutRequest.
+	 * @param sessionIndex
+	 *              The SessionIndex (taken from the SAML Response in the SSO process).
+	 *
+	 * @throws XMLEntityException
+	 */
+	public LogoutRequest(Saml2Settings settings, HttpRequest request, String nameId, String sessionIndex) throws XMLEntityException {
+		this(settings, request, nameId, sessionIndex, null);
 	}
 
 	/**
@@ -215,7 +241,11 @@ public class LogoutRequest {
 		String nameIdFormat = null;
 		String spNameQualifier = null;
 		if (nameId != null) {
-			nameIdFormat = settings.getSpNameIDFormat();
+			if (this.nameIdFormat == null) {
+				nameIdFormat = settings.getSpNameIDFormat();
+			} else {
+				nameIdFormat = this.nameIdFormat;
+			}
 		} else {
 			nameId = settings.getIdpEntityId();
 			nameIdFormat = Constants.NAMEID_ENTITY;

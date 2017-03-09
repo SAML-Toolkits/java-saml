@@ -410,17 +410,20 @@ public class SamlResponse {
 	public HashMap<String,String> getNameIdData() throws Exception {
 		HashMap<String,String> nameIdData = new HashMap<String, String>();
 
-		NodeList encryptedIDNodes = this.queryAssertion("/saml:Subject/saml:EncryptedID/xenc:EncryptedData");
+		NodeList encryptedIDNodes = this.queryAssertion("/saml:Subject/saml:EncryptedID");
 		NodeList nameIdNodes;
 		Element nameIdElem;
 		if (encryptedIDNodes.getLength() == 1) {
-			Element encryptedData = (Element) encryptedIDNodes.item(0);
-			PrivateKey key = settings.getSPkey();
-			if (key == null) {
-				throw new SettingsException("Key is required in order to decrypt the NameID", SettingsException.PRIVATE_KEY_NOT_FOUND);
-			}
+			NodeList encryptedDataNodes = this.queryAssertion("/saml:Subject/saml:EncryptedID/xenc:EncryptedData");
+			if (encryptedDataNodes.getLength() == 1) {
+				Element encryptedData = (Element) encryptedDataNodes.item(0);
+				PrivateKey key = settings.getSPkey();
+				if (key == null) {
+					throw new SettingsException("Key is required in order to decrypt the NameID", SettingsException.PRIVATE_KEY_NOT_FOUND);
+				}
 
-			Util.decryptElement(encryptedData, key);
+				Util.decryptElement(encryptedData, key);
+			}
 			nameIdNodes = this.queryAssertion("/saml:Subject/saml:EncryptedID/saml:NameID|/saml:Subject/saml:NameID");
 
 			if (nameIdNodes == null || nameIdNodes.getLength() == 0) {
@@ -479,6 +482,23 @@ public class SamlResponse {
 			nameID = nameIdData.get("Value");
 		}
 		return nameID;
+	}
+
+    /**
+     * Gets the NameID Format provided from the SAML Response String.
+     *
+     * @return string NameID Format
+     *
+     * @throws Exception
+     */
+	public String getNameIdFormat() throws Exception {
+		HashMap<String,String> nameIdData = getNameIdData();
+		String nameidFormat = null;
+		if (!nameIdData.isEmpty() && nameIdData.containsKey("Format")) {
+			LOGGER.debug("SAMLResponse has NameID Format --> " + nameIdData.get("Format"));
+			nameidFormat = nameIdData.get("Format");
+		}
+		return nameidFormat;
 	}
 
 	/**
