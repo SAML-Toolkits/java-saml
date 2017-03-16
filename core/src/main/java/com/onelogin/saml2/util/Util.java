@@ -921,10 +921,13 @@ public final class Util {
 				res = signature.checkSignatureValue(cert);
 			} else {
 				KeyInfo keyInfo = signature.getKeyInfo();
-				if (keyInfo != null && keyInfo.containsX509Data()) {
+				if (fingerprint != null && keyInfo != null && keyInfo.containsX509Data()) {
 					X509Certificate providedCert = keyInfo.getX509Certificate();
-					if (fingerprint.equals(calculateX509Fingerprint(providedCert, alg))) {						
-						res = signature.checkSignatureValue(providedCert);
+					String calculatedFingerprint = calculateX509Fingerprint(providedCert, alg);
+					for (String fingerprintStr : fingerprint.split(",")) {
+						if (calculatedFingerprint.equals(fingerprintStr.trim())) {
+							res = signature.checkSignatureValue(providedCert);
+						}
 					}
 				}
 			}
