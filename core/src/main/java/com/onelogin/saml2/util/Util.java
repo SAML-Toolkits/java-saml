@@ -302,28 +302,28 @@ public final class Util {
 		try {
 			// do not include external general entities
 			docfactory.setAttribute("http://xml.org/sax/features/external-general-entities", Boolean.FALSE);
-		} catch (Exception e) {}
+		} catch (Throwable e) {}
 		try {
 			// do not include external parameter entities or the external DTD subset
 			docfactory.setAttribute("http://xml.org/sax/features/external-parameter-entities", Boolean.FALSE);
-		} catch (Exception e) {}
+		} catch (Throwable e) {}
 		try {
 			docfactory.setAttribute("http://apache.org/xml/features/disallow-doctype-decl", Boolean.TRUE);
-		} catch (Exception e) {}
+		} catch (Throwable e) {}
 		try {
 			docfactory.setAttribute("http://javax.xml.XMLConstants/feature/secure-processing", Boolean.TRUE);
-		} catch (Exception e) {}
+		} catch (Throwable e) {}
 		try {
 			// ignore the external DTD completely
 			docfactory.setAttribute("http://apache.org/xml/features/nonvalidating/load-external-dtd", Boolean.FALSE);
-		} catch (Exception e) {}
+		} catch (Throwable e) {}
 		try {
 			// build the grammar but do not use the default attributes and attribute types information it contains
 			docfactory.setAttribute("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", Boolean.FALSE);
-		} catch (Exception e) {}
+		} catch (Throwable e) {}
 		try {
 			docfactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-		} catch (Exception e) {}
+		} catch (Throwable e) {}
 
 		DocumentBuilder builder = docfactory.newDocumentBuilder();
 		Document doc = builder.parse(new InputSource(new StringReader(xmlStr)));
