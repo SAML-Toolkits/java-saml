@@ -1628,7 +1628,7 @@ public class AuthnResponseTest {
 		settings.setStrict(true);
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
-		assertEquals("Invalid issuer in the Assertion/Response", samlResponse.getError());
+		assertEquals("Invalid issuer in the Assertion/Response. Was 'http://invalid.issuer.example.com/', but expected 'http://idp.example.com/'", samlResponse.getError());
 
 		settings.setStrict(false);
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/invalid_issuer_message.xml.base64");

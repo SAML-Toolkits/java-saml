@@ -264,7 +264,9 @@ public class SamlResponse {
 				for (int i = 0; i < issuers.size(); i++) {
 					String issuer = issuers.get(i);
 					if (issuer.isEmpty() || !issuer.equals(settings.getIdpEntityId())) {
-						throw new ValidationError("Invalid issuer in the Assertion/Response", ValidationError.WRONG_ISSUER);
+						throw new ValidationError(
+								String.format("Invalid issuer in the Assertion/Response. Was '%s', but expected '%s'", issuer, settings.getIdpEntityId()),
+								ValidationError.WRONG_ISSUER);
 					}
 				}
 
