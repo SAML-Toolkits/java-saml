@@ -318,7 +318,7 @@ public class LogoutResponseTest {
 
 		settings.setStrict(true);
 		assertFalse(logoutResponse.isValid());
-		assertEquals("Invalid issuer in the Logout Response", logoutResponse.getError());		
+		assertEquals("Invalid issuer in the Logout Response. Was 'http://invalid.example.com/', but expected 'http://idp.example.com/'", logoutResponse.getError());
 	}
 
 	/**

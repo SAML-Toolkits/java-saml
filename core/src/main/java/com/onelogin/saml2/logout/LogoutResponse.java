@@ -203,7 +203,10 @@ public class LogoutResponse {
 				// Check issuer
                 String issuer = getIssuer();
                 if (issuer != null && !issuer.isEmpty() && !issuer.equals(settings.getIdpEntityId())) {
-                    throw new ValidationError("Invalid issuer in the Logout Response", ValidationError.WRONG_ISSUER);
+					throw new ValidationError(
+							String.format("Invalid issuer in the Logout Response. Was '%s', but expected '%s'" , issuer, settings.getIdpEntityId()),
+							ValidationError.WRONG_ISSUER
+					);
                 }
 
 				// Check destination

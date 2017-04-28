@@ -507,7 +507,7 @@ public class LogoutRequestTest {
 		settings.setStrict(true);
 		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertFalse(logoutRequest.isValid());
-		assertEquals("Invalid issuer in the Logout Request", logoutRequest.getError());
+		assertEquals("Invalid issuer in the Logout Request. Was 'https://example.hello.com/access/saml', but expected 'http://idp.example.com/'", logoutRequest.getError());
 	}
 
 	/**

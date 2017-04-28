@@ -346,7 +346,10 @@ public class LogoutRequest {
 				// Check the issuer
 				String issuer = getIssuer(logoutRequestDocument);
 				if (issuer != null && (issuer.isEmpty() || !issuer.equals(settings.getIdpEntityId()))) {
-					throw new ValidationError("Invalid issuer in the Logout Request", ValidationError.WRONG_ISSUER);
+					throw new ValidationError(
+							String.format("Invalid issuer in the Logout Request. Was '%s', but expected '%s'", issuer, settings.getIdpEntityId()),
+							ValidationError.WRONG_ISSUER
+					);
 				}
 
                 if (settings.getWantMessagesSigned() && (signature == null || signature.isEmpty())) {
