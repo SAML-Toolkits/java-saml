@@ -98,6 +98,7 @@ public class SettingsBuilder {
 	public final static String ORGANIZATION_NAME = "onelogin.saml2.organization.name";
 	public final static String ORGANIZATION_DISPLAYNAME = "onelogin.saml2.organization.displayname";
 	public final static String ORGANIZATION_URL = "onelogin.saml2.organization.url";
+	public final static String ORGANIZATION_LANG = "onelogin.saml2.organization.lang";
 
 	/**
 	 * Load settings from the file
@@ -324,9 +325,10 @@ public class SettingsBuilder {
 		String orgName = loadStringProperty(ORGANIZATION_NAME);
 		String orgDisplayName = loadStringProperty(ORGANIZATION_DISPLAYNAME);
 		URL orgUrl = loadURLProperty(ORGANIZATION_URL);
+		String orgLangAttribute = loadStringProperty(ORGANIZATION_LANG);
 
 		if ((orgName != null && !orgName.isEmpty()) || (orgDisplayName != null && !orgDisplayName.isEmpty()) || (orgUrl != null)) {
-			orgResult = new Organization(orgName, orgDisplayName, orgUrl);
+			orgResult = new Organization(orgName, orgDisplayName, orgUrl, orgLangAttribute);
 		}
 
 		return orgResult;

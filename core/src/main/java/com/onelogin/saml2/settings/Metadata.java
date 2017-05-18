@@ -152,7 +152,7 @@ public class Metadata {
 		
 		valueMap.put("strKeyDescriptor", toX509KeyDescriptorsXML(settings.getSPcert()));
 		valueMap.put("strContacts", toContactsXml(settings.getContacts()));
-		valueMap.put("strOrganization", toOrganizationXml(settings.getOrganization(), "en"));
+		valueMap.put("strOrganization", toOrganizationXml(settings.getOrganization()));
 
 		return new StrSubstitutor(valueMap);
 	}
@@ -271,19 +271,13 @@ public class Metadata {
 	 *
 	 * @param organization
 	 * 				organization object
-	 * @param lang
-	 * 				language
-	 *
 	 *  @return the organization section of the metadata's template
 	 */
-	private String toOrganizationXml(Organization organization, String lang) {
+	private String toOrganizationXml(Organization organization) {
 		String orgXml = "";
 
-		if (lang == null) {
-			lang = "en";
-		}
-
 		if (organization != null) {
+			String lang = organization.getOrgLangAttribute();
 			orgXml = "<md:Organization><md:OrganizationName xml:lang=\"" + lang + "\">" + organization.getOrgName()
 					+ "</md:OrganizationName><md:OrganizationDisplayName xml:lang=\"" + lang + "\">"
 					+ organization.getOrgDisplayName() + "</md:OrganizationDisplayName><md:OrganizationURL xml:lang=\""
