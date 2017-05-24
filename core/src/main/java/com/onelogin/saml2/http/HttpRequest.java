@@ -191,7 +191,7 @@ public final class HttpRequest {
         HttpRequest that = (HttpRequest) o;
         return Objects.equals(requestURL, that.requestURL) &&
                 Objects.equals(parameters, that.parameters) &&
-                Objects.equals(queryString, this.queryString);
+                Objects.equals(queryString, that.queryString);
     }
 
     @Override
