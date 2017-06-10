@@ -73,6 +73,7 @@ public class Saml2Settings {
 	private boolean rejectUnsolicitedResponsesWithInResponseTo = false;
 	private boolean validateTimes = true;
 	private boolean validateAudience = true;
+	private boolean validateRecipient = true;
 
 	// Compress
 	private Boolean compressRequest = true;
@@ -703,6 +704,16 @@ public class Saml2Settings {
 	public void setValidateAudience(boolean validateAudience)
 	{
 		this.validateAudience = validateAudience;
+	}
+
+	public boolean isValidateRecipient()
+	{
+		return validateRecipient;
+	}
+
+	public void setValidateRecipient(boolean validateRecipient)
+	{
+		this.validateRecipient = validateRecipient;
 	}
 
 	/**

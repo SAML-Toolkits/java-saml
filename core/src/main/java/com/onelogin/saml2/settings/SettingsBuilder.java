@@ -86,6 +86,7 @@ public class SettingsBuilder {
 	public final static String SECURITY_REJECT_UNSOLICITED_RESPONSES_WITH_INRESPONSETO = "onelogin.saml2.security.reject_unsolicited_responses_with_inresponseto";
 	public final static String SECURITY_VALIDATE_TIMES = "onelogin.saml2.security.validateTimes";
 	public final static String SECURITY_VALIDATE_AUDIENCE = "onelogin.saml2.security.validateAudience";
+	public final static String SECURITY_VALIDATE_RECIPIENT = "onelogin.saml2.security.validateRecipient";
 
 	// Compress
 	public final static String COMPRESS_REQUEST = "onelogin.saml2.compress.request";
@@ -309,6 +310,10 @@ public class SettingsBuilder {
 		Boolean validateAudience = loadBooleanProperty(SECURITY_VALIDATE_AUDIENCE);
 		if (validateAudience != null)
 			saml2Setting.setValidateAudience(validateAudience);
+
+		Boolean validateRecipient = loadBooleanProperty(SECURITY_VALIDATE_RECIPIENT);
+		if (validateRecipient != null)
+			saml2Setting.setValidateRecipient(validateRecipient);
 	}
 
 	/**

@@ -288,13 +288,13 @@ public class SamlResponse {
 
 				validateSubjectConfirmation(responseInResponseTo);
 
-                if (settings.getWantAssertionsSigned() && !hasSignedAssertion) {
-                	throw new ValidationError("The Assertion of the Response is not signed and the SP requires it", ValidationError.NO_SIGNED_ASSERTION);
-                }
+				if (settings.getWantAssertionsSigned() && !hasSignedAssertion) {
+					throw new ValidationError("The Assertion of the Response is not signed and the SP requires it", ValidationError.NO_SIGNED_ASSERTION);
+				}
 
-                if (settings.getWantMessagesSigned() && !hasSignedResponse) {
-                	throw new ValidationError("The Message of the Response is not signed and the SP requires it", ValidationError.NO_SIGNED_MESSAGE);
-                }
+				if (settings.getWantMessagesSigned() && !hasSignedResponse) {
+					throw new ValidationError("The Message of the Response is not signed and the SP requires it", ValidationError.NO_SIGNED_MESSAGE);
+				}
 			}
 
 			if (signedElements.isEmpty() || (!hasSignedAssertion && !hasSignedResponse)) {
@@ -355,7 +355,7 @@ public class SamlResponse {
 						continue;
 					}
 
-					if (!recipient.getNodeValue().equals(currentUrl)) {
+					if (settings.isValidateRecipient() && !recipient.getNodeValue().equals(currentUrl)) {
 						validationIssues.add(new SubjectConfirmationIssue(i, "SubjectConfirmationData doesn't match a valid Recipient"));
 						continue;
 					}
