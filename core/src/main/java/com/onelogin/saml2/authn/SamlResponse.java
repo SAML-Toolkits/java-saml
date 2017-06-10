@@ -225,7 +225,7 @@ public class SamlResponse {
 				}
 				
 				// Validate Assertion timestamps
-				if (!this.validateTimestamps()) {
+				if (settings.isValidateTimes() && !this.validateTimestamps()) {
 					throw new Exception("Timing issues (please check your clock settings)");
 				}
 
@@ -254,11 +254,13 @@ public class SamlResponse {
 				}
 
 				// Check Audience
-				List<String> validAudiences = this.getAudiences();				
-				if (!validAudiences.isEmpty() && !validAudiences.contains(settings.getSpEntityId())) {
-					throw new ValidationError(settings.getSpEntityId() + " is not a valid audience for this Response", ValidationError.WRONG_AUDIENCE);
+				if (settings.isValidateAudience()) {
+					List<String> validAudiences = this.getAudiences();
+					if (!validAudiences.isEmpty() && !validAudiences.contains(settings.getSpEntityId())) {
+						throw new ValidationError(settings.getSpEntityId() + " is not a valid audience for this Response", ValidationError.WRONG_AUDIENCE);
+					}
 				}
-				
+
 				// Check the issuers
 				List<String> issuers = this.getIssuers();
 				for (int i = 0; i < issuers.size(); i++) {
@@ -271,11 +273,16 @@ public class SamlResponse {
 				}
 
 				// Check the session Expiration
-				DateTime sessionExpiration = this.getSessionNotOnOrAfter();
-				if (sessionExpiration != null) {
-					sessionExpiration = sessionExpiration.plus(Constants.ALOWED_CLOCK_DRIFT * 1000);
-					if (sessionExpiration.isEqualNow() || sessionExpiration.isBeforeNow()) {
-						throw new ValidationError("The attributes have expired, based on the SessionNotOnOrAfter of the AttributeStatement of this Response", ValidationError.SESSION_EXPIRED);
+				if (settings.isValidateTimes())
+				{
+					DateTime sessionExpiration = this.getSessionNotOnOrAfter();
+					if (sessionExpiration != null)
+					{
+						sessionExpiration = sessionExpiration.plus(Constants.ALOWED_CLOCK_DRIFT * 1000);
+						if (sessionExpiration.isEqualNow() || sessionExpiration.isBeforeNow())
+						{
+							throw new ValidationError("The attributes have expired, based on the SessionNotOnOrAfter of the AttributeStatement of this Response", ValidationError.SESSION_EXPIRED);
+						}
 					}
 				}
 
@@ -356,7 +363,7 @@ public class SamlResponse {
 					Node inResponseTo = subjectConfirmationDataNodes.item(c).getAttributes().getNamedItem("InResponseTo");
 					if (inResponseTo == null && responseInResponseTo != null ||
 							inResponseTo != null && !inResponseTo.getNodeValue().equals(responseInResponseTo)) {
-						validationIssues.add(new SubjectConfirmationIssue(i, "SubjectConfirmationData has an invalid InResponseTo value"));;
+						validationIssues.add(new SubjectConfirmationIssue(i, "SubjectConfirmationData has an invalid InResponseTo value"));
 						continue;
 					}
 
@@ -366,20 +373,22 @@ public class SamlResponse {
 						continue;
 					}
 
-					DateTime noa = Util.parseDateTime(notOnOrAfter.getNodeValue());
-					noa = noa.plus(Constants.ALOWED_CLOCK_DRIFT * 1000);
-					if (noa.isEqualNow() || noa.isBeforeNow()) {
-						validationIssues.add(new SubjectConfirmationIssue(i, "SubjectConfirmationData is no longer valid"));
-						continue;
-					}
-
-					Node notBefore = subjectConfirmationDataNodes.item(c).getAttributes().getNamedItem("NotBefore");
-					if (notBefore != null) {
-						DateTime nb = Util.parseDateTime(notBefore.getNodeValue());
-						nb = nb.minus(Constants.ALOWED_CLOCK_DRIFT * 1000);
-						if (nb.isAfterNow()) {
-							validationIssues.add(new SubjectConfirmationIssue(i, "SubjectConfirmationData is not yet valid"));
+					if (settings.isValidateTimes()) {
+						DateTime noa = Util.parseDateTime(notOnOrAfter.getNodeValue());
+						noa = noa.plus(Constants.ALOWED_CLOCK_DRIFT * 1000);
+						if (noa.isEqualNow() || noa.isBeforeNow()) {
+							validationIssues.add(new SubjectConfirmationIssue(i, "SubjectConfirmationData is no longer valid"));
 							continue;
+						}
+
+						Node notBefore = subjectConfirmationDataNodes.item(c).getAttributes().getNamedItem("NotBefore");
+						if (notBefore != null) {
+							DateTime nb = Util.parseDateTime(notBefore.getNodeValue());
+							nb = nb.minus(Constants.ALOWED_CLOCK_DRIFT * 1000);
+							if (nb.isAfterNow()) {
+								validationIssues.add(new SubjectConfirmationIssue(i, "SubjectConfirmationData is not yet valid"));
+								continue;
+							}
 						}
 					}
 					validSubjectConfirmation = true;
