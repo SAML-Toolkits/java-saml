@@ -642,9 +642,13 @@ public final class Util {
 		
 		// Inflater
 		try {
-			Inflater decompresser = new Inflater(true);
+		    Inflater decompresser = new Inflater(true);
 		    decompresser.setInput(decoded);
-		    byte[] result = new byte[2048];
+		    int resultBytes = 1;
+		    while (resultBytes <= decoded.length) {
+			    resultBytes *= 2;
+		    }
+		    byte[] result = new byte[resultBytes];
 		    int resultLength = decompresser.inflate(result);
 		    decompresser.end();
 
