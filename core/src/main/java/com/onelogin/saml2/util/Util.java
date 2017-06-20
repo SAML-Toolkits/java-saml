@@ -644,7 +644,7 @@ public final class Util {
 		try {
 		    Inflater decompresser = new Inflater(true);
 		    decompresser.setInput(decoded);
-		    int resultBytes = 1;
+		    int resultBytes = 2048;
 		    while (resultBytes <= decoded.length) {
 			    resultBytes *= 2;
 		    }
