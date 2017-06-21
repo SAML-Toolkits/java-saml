@@ -143,6 +143,57 @@ public class MetadataTest {
 
 		assertThat(metadataStr2, not(containsString(orgStr)));
 	}
+	
+	/**
+	 * Tests the toOrganizationXml method of Metadata without any "lang" attribute
+	 *
+	 * @throws IOException
+	 * @throws CertificateEncodingException
+	 * @throws Error
+	 *
+	 * @see com.onelogin.saml2.settings.Metadata#toOrganizationXml
+	 */
+	@Test
+	public void testToNonLocalizedOrganizationXml() throws IOException, CertificateEncodingException, Error {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.org.properties").build();
+		Metadata metadataObj = new Metadata(settings);
+		String metadataStr = metadataObj.getMetadataString();
+		
+		String orgStr = "<md:Organization><md:OrganizationName xml:lang=\"en\">SP Java</md:OrganizationName><md:OrganizationDisplayName xml:lang=\"en\">SP Java Example</md:OrganizationDisplayName><md:OrganizationURL xml:lang=\"en\">http://sp.example.com</md:OrganizationURL></md:Organization>";
+		assertThat(metadataStr, containsString(orgStr));
+
+		Saml2Settings settings2 = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		Metadata metadataObj2 = new Metadata(settings2);
+		String metadataStr2 = metadataObj2.getMetadataString();
+
+		assertThat(metadataStr2, not(containsString(orgStr)));
+	}
+
+	
+	/**
+	 * Tests the toOrganizationXml method of Metadata using a non default "lang" attribute
+	 *
+	 * @throws IOException
+	 * @throws CertificateEncodingException
+	 * @throws Error
+	 *
+	 * @see com.onelogin.saml2.settings.Metadata#toOrganizationXml
+	 */
+	@Test
+	public void testToLocalizedOrganizationXml() throws IOException, CertificateEncodingException, Error {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.org.localized.properties").build();
+		Metadata metadataObj = new Metadata(settings);
+		String metadataStr = metadataObj.getMetadataString();
+		
+		String orgStr = "<md:Organization><md:OrganizationName xml:lang=\"fr\">SP Java</md:OrganizationName><md:OrganizationDisplayName xml:lang=\"fr\">SP Exemple Java</md:OrganizationDisplayName><md:OrganizationURL xml:lang=\"fr\">http://sp.example.com/fr</md:OrganizationURL></md:Organization>";
+		assertThat(metadataStr, containsString(orgStr));
+
+		Saml2Settings settings2 = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		Metadata metadataObj2 = new Metadata(settings2);
+		String metadataStr2 = metadataObj2.getMetadataString();
+
+		assertThat(metadataStr2, not(containsString(orgStr)));
+	}
 
 	/**
 	 * Tests the toSLSXml method of Metadata
