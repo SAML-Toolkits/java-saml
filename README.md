@@ -5,7 +5,9 @@
 Add SAML support to your Java applications using this library.
 Forget those complicated libraries and use that open source library provided and supported by OneLogin Inc.
 
-This is version 2.0.0, compatible with java6 / java7 / java8.
+This is version 2.0.0, compatible with java7 / java8.
+
+We [introduced some incompatibilities](https://github.com/onelogin/java-saml/issues/90), that could be fixed and make it compatible with java6.
 
 Version 1.1.2 is considered to be deprecated. If you have used it, we strongly recommend that you migrate to the new version. 
 We rebuilt the toolkit on 2.0.0, so code/settings that you had been using in the previous version will no longer be compatible.
