@@ -637,6 +637,9 @@ public final class Util {
 	 * @return the base64 decoded and inflated string
 	 */
 	public static String base64decodedInflated(String input) {
+		if (input.isEmpty()) {
+			return input;
+		}
 		// Base64 decoder
 		byte[] decoded = Base64.decodeBase64(input);
 		
@@ -644,11 +647,15 @@ public final class Util {
 		try {
 			Inflater decompresser = new Inflater(true);
 		    decompresser.setInput(decoded);
-		    byte[] result = new byte[2048];
-		    int resultLength = decompresser.inflate(result);
+		    byte[] result = new byte[1024];
+		    String inflated = "";
+		    long limit = 0;
+		    while(!decompresser.finished() && limit < 150) {
+		    	int resultLength = decompresser.inflate(result);
+		    	limit += 1; 
+		    	inflated += new String(result, 0, resultLength, "UTF-8");
+		    }
 		    decompresser.end();
-
-		    String inflated =  new String(result, 0, resultLength, "UTF-8");
 		    return inflated;
 		} catch (Exception e) {
 			return new String(decoded);

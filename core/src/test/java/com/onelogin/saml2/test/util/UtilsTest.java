@@ -779,6 +779,22 @@ public class UtilsTest {
 		assertThat(authNRequest.toString(), equalTo(Util.base64decodedInflated(deflatedEncodedAuthNRequest).toString()));
 	}
 
+	/**
+	 * Tests the base64decodedInflated method
+	 * Case: Long certs
+	 *
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 *
+	 * @see com.onelogin.saml2.util.Util#base64decodedInflated
+	 */
+	@Test
+	public void testBase64decodedInflated2() throws URISyntaxException, IOException {
+		String samlResponse = Util.getFileAsString("data/responses/response_long_cert.xml");
+		String deflatedEncodedsamlResponse = Util.getFileAsString("data/responses/response_long_cert.xml.deflated.base64");
+
+		assertThat(samlResponse.toString(), equalTo(Util.base64decodedInflated(deflatedEncodedsamlResponse).toString()));
+	}
 	
 	/**
 	 * Tests the deflatedBase64encoded method
