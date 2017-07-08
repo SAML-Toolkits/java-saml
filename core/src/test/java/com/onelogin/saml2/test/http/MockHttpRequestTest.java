@@ -1,4 +1,4 @@
-package com.onelogin.saml2.http;
+package com.onelogin.saml2.test.http;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
@@ -6,10 +6,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,15 +17,13 @@ import org.junit.Test;
 import com.onelogin.saml2.test.NaiveUrlEncoder;
 import com.onelogin.saml2.util.Util;
 
-public class HttpRequestTest {
+public class MockHttpRequestTest {
     @Test
     public void testConstructorWithNoQueryParams() throws Exception {
         final String url = "url";
 
-        final HttpRequest request = new HttpRequest(url);
+        final MockHttpRequest request = new MockHttpRequest(url);
         assertThat(request.getRequestURL(), equalTo(url));
-        assertThat(request.getParameters(), equalTo(Collections.<String, List<String>>emptyMap()));
-        assertThat(request.getParameters("x"), equalTo(Collections.<String>emptyList()));
         assertThat(request.getParameter("x"), nullValue());
     }
 
@@ -41,10 +37,8 @@ public class HttpRequestTest {
         final List<String> values = Arrays.asList(value1, value2);
         final Map<String, List<String>> parametersMap = singletonMap(name, values);
 
-        final HttpRequest request = new HttpRequest(url, parametersMap);
+        final MockHttpRequest request = new MockHttpRequest(url, parametersMap);
         assertThat(request.getRequestURL(), equalTo(url));
-        assertThat(request.getParameters(), equalTo(parametersMap));
-        assertThat(request.getParameters(name), equalTo(values));
         assertThat(request.getParameter(name), equalTo(value1));
     }
 
@@ -54,14 +48,9 @@ public class HttpRequestTest {
         final String name = "name";
         final String value = "value";
 
-        final HttpRequest request = new HttpRequest(url).addParameter(name, value);
+        final MockHttpRequest request = new MockHttpRequest(url).addParameter(name, value);
         assertThat(request.getRequestURL(), equalTo(url));
-        assertThat(request.getParameters(), equalTo(singletonMap(name, singletonList(value))));
-        assertThat(request.getParameters(name), equalTo(singletonList(value)));
         assertThat(request.getParameter(name), equalTo(value));
-
-        final HttpRequest request2 = request.addParameter(name, value);
-        assertThat(request2.getParameters(name), equalTo(Arrays.asList(value, value)));
     }
 
     @Test
@@ -70,16 +59,12 @@ public class HttpRequestTest {
         final String name = "name";
         final String value = "value";
 
-        HttpRequest request = new HttpRequest(url).addParameter(name, value);
+        MockHttpRequest request = new MockHttpRequest(url).addParameter(name, value);
         assertThat(request.getRequestURL(), equalTo(url));
-        assertThat(request.getParameters(), equalTo(singletonMap(name, singletonList(value))));
-        assertThat(request.getParameters(name), equalTo(singletonList(value)));
         assertThat(request.getParameter(name), equalTo(value));
 
         request = request.removeParameter(name);
         assertThat(request.getRequestURL(), equalTo(url));
-        assertTrue(request.getParameters().isEmpty());
-        assertTrue(request.getParameters(name).isEmpty());
         assertNull(request.getParameter(name));
     }
 
@@ -91,10 +76,10 @@ public class HttpRequestTest {
         final String addedName = "added";
         final String addedValue = "added#value!";
 
-        final List<String> values = Arrays.asList(value1);
+        final List<String> values = singletonList(value1);
         final Map<String, List<String>> parametersMap = singletonMap(name, values);
 
-        final HttpRequest request = new HttpRequest(url, parametersMap).addParameter(addedName, addedValue);
+        final MockHttpRequest request = new MockHttpRequest(url, parametersMap).addParameter(addedName, addedValue);
 
         assertThat(request.getEncodedParameter(name), equalTo(Util.urlEncoder(value1)));
         assertThat(request.getEncodedParameter(addedName), equalTo(Util.urlEncoder(addedValue)));
@@ -108,10 +93,10 @@ public class HttpRequestTest {
         final String urlValue1 = "onUrl1";
         final String queryString = name + "=" + urlValue1;
 
-        final List<String> values = Arrays.asList(value1);
+        final List<String> values = singletonList(value1);
         final Map<String, List<String>> parametersMap = singletonMap(name, values);
 
-        final HttpRequest request = new HttpRequest(url, parametersMap, queryString);
+        final MockHttpRequest request = new MockHttpRequest(url, parametersMap, queryString);
 
         assertThat(request.getEncodedParameter(name), equalTo(urlValue1));
         assertThat(request.getParameter(name), equalTo(value1));
@@ -124,7 +109,7 @@ public class HttpRequestTest {
         String encodedValue1 = NaiveUrlEncoder.encode("do not alter!");
         final String queryString = name + "=" + encodedValue1;
 
-        final HttpRequest request = new HttpRequest(url, queryString);
+        final MockHttpRequest request = new MockHttpRequest(url, queryString);
 
         assertThat(request.getEncodedParameter(name), equalTo(encodedValue1));
     }
@@ -135,7 +120,7 @@ public class HttpRequestTest {
         final String queryString = "k1=v1&k2=v2&k3=v3";
 
         final Map<String, List<String>> parametersMap = new HashMap<>();
-        final HttpRequest request = new HttpRequest(url, parametersMap, queryString);
+        final MockHttpRequest request = new MockHttpRequest(url, parametersMap, queryString);
 
         assertThat(request.getEncodedParameter("k1"), equalTo("v1"));
         assertThat(request.getEncodedParameter("k2"), equalTo("v2"));
@@ -147,7 +132,7 @@ public class HttpRequestTest {
         final String url = "url";
         final String queryString = "first=&foo=bar#ignore";
 
-        final HttpRequest request = new HttpRequest(url, queryString);
+        final MockHttpRequest request = new MockHttpRequest(url, queryString);
 
         assertThat(request.getEncodedParameter("foo"), equalTo("bar"));
     }
@@ -157,7 +142,7 @@ public class HttpRequestTest {
         final String url = "url";
         final String foobar = "foo/bar!";
 
-        final HttpRequest request = new HttpRequest(url);
+        final MockHttpRequest request = new MockHttpRequest(url);
         assertThat(request.getEncodedParameter("missing", foobar), equalTo(Util.urlEncoder(foobar)));
     }
 
@@ -171,7 +156,7 @@ public class HttpRequestTest {
         final String queryString = name + "=" + encodedValue1;
 
         final Map<String, List<String>> parametersMap = new HashMap<>();
-        final HttpRequest request = new HttpRequest(url, parametersMap, queryString).addParameter(name, value1);
+        final MockHttpRequest request = new MockHttpRequest(url, parametersMap, queryString).addParameter(name, value1);
 
         assertThat(request.getEncodedParameter(name), equalTo(encodedValue1));
     }
@@ -184,12 +169,11 @@ public class HttpRequestTest {
         String encodedValue1 = NaiveUrlEncoder.encode(value1);
         final String queryString = name + "=" + encodedValue1;
 
-        final List<String> values = Arrays.asList(value1);
+        final List<String> values = singletonList(value1);
         final Map<String, List<String>> parametersMap = singletonMap(name, values);
 
-        final HttpRequest request = new HttpRequest(url, parametersMap, queryString).removeParameter(name);
+        final MockHttpRequest request = new MockHttpRequest(url, parametersMap, queryString).removeParameter(name);
 
         assertThat(request.getEncodedParameter(name), equalTo(encodedValue1));
     }
-
 }

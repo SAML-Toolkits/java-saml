@@ -8,6 +8,7 @@ import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.model.SamlResponseStatus;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
+import com.onelogin.saml2.test.http.MockHttpRequest;
 import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.Util;
 
@@ -2676,7 +2677,6 @@ public class AuthnResponseTest {
 	}
 
 	private static HttpRequest newHttpRequest(String requestURL, String samlResponseEncoded) {
-		return new HttpRequest(requestURL).addParameter("SAMLResponse", samlResponseEncoded);
+		return new MockHttpRequest(requestURL).addParameter("SAMLResponse", samlResponseEncoded);
 	}
 }
-

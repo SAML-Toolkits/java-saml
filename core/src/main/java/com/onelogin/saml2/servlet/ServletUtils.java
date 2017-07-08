@@ -1,58 +1,35 @@
 package com.onelogin.saml2.servlet;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.onelogin.saml2.http.HttpRequest;
+import com.onelogin.saml2.http.HttpResponse;
 import com.onelogin.saml2.util.Util;
 
 /**
  * ServletUtils class of OneLogin's Java Toolkit.
  *
- * A class that contains several auxiliary methods related to HttpServletRequest and HttpServletResponse
+ * A class that contains several auxiliary methods related to HttpRequest and HttpResponse
  */
 public class ServletUtils {
 
 	private ServletUtils() {
 	      //not called
 	}
-	
-	/**
-     * Creates an HttpRequest from an HttpServletRequest.
-     *
-     * @param req the incoming HttpServletRequest
-     * @return a HttpRequest
-     */
-    public static HttpRequest makeHttpRequest(HttpServletRequest req) {
-    	@SuppressWarnings("unchecked")
-        final Map<String, String[]> paramsAsArray = (Map<String, String[]>) req.getParameterMap();
-        final Map<String, List<String>> paramsAsList = new HashMap<>();
-        for (Map.Entry<String, String[]> param : paramsAsArray.entrySet()) {
-            paramsAsList.put(param.getKey(), Arrays.asList(param.getValue()));
-        }
-
-        return new HttpRequest(req.getRequestURL().toString(), paramsAsList, req.getQueryString());
-    }
 
     /**
      * Returns the protocol + the current host + the port (if different than
      * common ports).
      *
      * @param request
-     * 				HttpServletRequest object to be processed
+     * 				HttpRequest object to be processed
      *
      * @return the HOST URL
      */
-    public static String getSelfURLhost(HttpServletRequest request) {
-        String hostUrl = StringUtils.EMPTY;
+    public static String getSelfURLhost(HttpRequest request) {
+        final String hostUrl;
         final int serverPort = request.getServerPort();
         if ((serverPort == 80) || (serverPort == 443) || serverPort == 0) {
             hostUrl = String.format("%s://%s", request.getScheme(), request.getServerName());
@@ -64,11 +41,11 @@ public class ServletUtils {
 
     /**
      * @param request
-     * 				HttpServletRequest object to be processed
+     * 				HttpRequest object to be processed
      *
      * @return the server name
      */
-    public static String getSelfHost(HttpServletRequest request) {
+    public static String getSelfHost(HttpRequest request) {
         return request.getServerName();
     }
 
@@ -76,11 +53,11 @@ public class ServletUtils {
      * Check if under https or http protocol
      *
      * @param request
-     * 				HttpServletRequest object to be processed
+     * 				HttpRequest object to be processed
      *
      * @return false if https is not active
      */
-    public static boolean isHTTPS(HttpServletRequest request) {
+    public static boolean isHTTPS(HttpRequest request) {
         return request.isSecure();
     }
 
@@ -88,11 +65,11 @@ public class ServletUtils {
      * Returns the URL of the current context + current view + query
      *
      * @param request
-     * 				HttpServletRequest object to be processed
+     * 				HttpRequest object to be processed
      *
      * @return current context + current view + query
      */
-    public static String getSelfURL(HttpServletRequest request) {
+    public static String getSelfURL(HttpRequest request) {
         String url = getSelfURLhost(request);
 
         String requestUri = request.getRequestURI();
@@ -112,23 +89,23 @@ public class ServletUtils {
      * Returns the URL of the current host + current view.
      *
      * @param request
-     * 				HttpServletRequest object to be processed
+     * 				HttpRequest object to be processed
      *
      * @return current host + current view
      */
-    public static String getSelfURLNoQuery(HttpServletRequest request) {
-        return request.getRequestURL().toString();
+    public static String getSelfURLNoQuery(HttpRequest request) {
+        return request.getRequestURL();
     }
 
     /**
      * Returns the routed URL of the current host + current view.
      *
      * @param request
-     * 				HttpServletRequest object to be processed
+     * 				HttpRequest object to be processed
      *
      * @return the current routed url
      */
-    public static String getSelfRoutedURLNoQuery(HttpServletRequest request) {
+    public static String getSelfRoutedURLNoQuery(HttpRequest request) {
         String url = getSelfURLhost(request);
         String requestUri = request.getRequestURI();
         if (null != requestUri && !requestUri.isEmpty()) {
@@ -141,7 +118,7 @@ public class ServletUtils {
      * Redirect to location url
      *
      * @param response
-     * 				HttpServletResponse object to be used
+     * 				HttpResponse object to be used
      * @param location
      * 				target location url
      * @param parameters
@@ -152,9 +129,9 @@ public class ServletUtils {
      * @return string the target URL
      * @throws IOException
      *
-     * @see javax.servlet.http.HttpServletResponse#sendRedirect(String)
+     * @see HttpResponse#sendRedirect(String)
      */
-    public static String sendRedirect(HttpServletResponse response, String location, Map<String, String> parameters, Boolean stay) throws IOException {
+    public static String sendRedirect(HttpResponse response, String location, Map<String, String> parameters, Boolean stay) throws IOException {
         String target = location;
 
         if (!parameters.isEmpty()) {
@@ -184,7 +161,7 @@ public class ServletUtils {
      * Redirect to location url
      *
      * @param response
-     * 				HttpServletResponse object to be used
+     * 				HttpResponse object to be used
      * @param location
      * 				target location url
      * @param parameters
@@ -192,9 +169,9 @@ public class ServletUtils {
 	 *
      * @throws IOException
      *
-     * @see javax.servlet.http.HttpServletResponse#sendRedirect(String)
+     * @see HttpResponse#sendRedirect(String)
      */
-    public static void sendRedirect(HttpServletResponse response, String location, Map<String, String> parameters) throws IOException {
+    public static void sendRedirect(HttpResponse response, String location, Map<String, String> parameters) throws IOException {
     	sendRedirect(response, location, parameters, false);
     }
     	
@@ -202,15 +179,15 @@ public class ServletUtils {
      * Redirect to location url
      *
      * @param response
-     * 				HttpServletResponse object to be used
+     * 				HttpResponse object to be used
      * @param location
      * 				target location url
      *
      * @throws IOException
      *
-     * @see HttpServletResponse#sendRedirect(String)
+     * @see HttpResponse#sendRedirect(String)
      */
-    public static void sendRedirect(HttpServletResponse response, String location) throws IOException {
+    public static void sendRedirect(HttpResponse response, String location) throws IOException {
         Map<String, String> parameters  =new HashMap<String, String>();
         sendRedirect(response, location, parameters);
     }

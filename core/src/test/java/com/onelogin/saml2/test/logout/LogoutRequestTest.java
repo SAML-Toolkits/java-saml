@@ -18,6 +18,7 @@ import javax.xml.xpath.XPathExpressionException;
 
 import java.security.PrivateKey;
 
+import com.onelogin.saml2.test.http.MockHttpRequest;
 import org.w3c.dom.Document;
 import org.junit.Rule;
 import org.junit.Test;
@@ -646,7 +647,7 @@ public class LogoutRequestTest {
 		//This signature is based on the query string above
 		String signature = "cxDTcLRHhXJKGYcjZE2RRz5p7tVg/irNimq48KkJ0n10wiGwAmuzUByxEm4OHbetDrHGtxI5ygjrR0/HcrD8IkYyI5Ie4r5tJYkfdtpUrvOQ7khbBvP9GzEbZIrz7eH1ALdCDchORaRB/cs6v+OZbBj5uPTrN//wOhZl2k9H2xVW/SYy17jDoIKh/wvqtQ9FF+h2UxdUEhxeB/UUXOC6nVLMo+RGaamSviYkUE1Zu1tmalO+F6FivNQ31T/TkqzWz0KEjmnFs3eKbHakPVuUHpDQm7Gf2gBS1TXwVQsL7e2axtvv4RH5djlq1Z2WH2V+PwGOkIvLxf3igGUSR1A8bw==";
 
-		HttpRequest httpRequest = new HttpRequest(requestURL, queryString)
+		MockHttpRequest httpRequest = new MockHttpRequest(requestURL, queryString)
 				.addParameter("SAMLRequest", samlRequestEncoded)
 				.addParameter("RelayState", relayState)
 				.addParameter("SigAlg", sigAlg)
@@ -674,7 +675,7 @@ public class LogoutRequestTest {
 		//This signature is based on the query string above
 		String signatureNaiveEncoding = "Gj2mUq6RBPAPXI9VjDDlwAxueSEBlOfgpWKLpsQbqIp+2XPFtC/vPAZpuPjHCDNNnAI3WKZa4l8ijwQBTqQwKz88k9gTx6vcLxPl2L4SrWdLOokiGrIVYJ+0sK2hapHHMa7WzGiTgpeTuejHbD4ptneaRXl4nrJAEo0WJ/rNTSWbJpnb+ENtgBnsfkmj+6z1KFY70ruo7W/vme21Jg+4XNfBSGl6LLSjEnZHJG0ET80HKvJEZayv4BQGZ3MShcSMyab/w+rLfDvDRA5RcRxw+NHOXo/kxZ3qhpa6daOwG69+PiiWmusmB2gaSq6jy2L55zFks9a36Pt5l5fYA2dE4g==";
 
-		HttpRequest httpRequest = new HttpRequest(requestURL, queryString)
+		MockHttpRequest httpRequest = new MockHttpRequest(requestURL, queryString)
 				.addParameter("SAMLRequest", samlRequestEncoded)
 				.addParameter("RelayState", relayState)
 				.addParameter("SigAlg", sigAlg)
@@ -703,7 +704,7 @@ public class LogoutRequestTest {
 		String sigAlg = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
 		String signature = "XCwCyI5cs7WhiJlB5ktSlWxSBxv+6q2xT3c8L7dLV6NQG9LHWhN7gf8qNsahSXfCzA0Ey9dp5BQ0EdRvAk2DIzKmJY6e3hvAIEp1zglHNjzkgcQmZCcrkK9Czi2Y1WkjOwR/WgUTUWsGJAVqVvlRZuS3zk3nxMrLH6f7toyvuJc=";
 
-		HttpRequest httpRequest = new HttpRequest(requestURL)
+		MockHttpRequest httpRequest = new MockHttpRequest(requestURL)
 						.addParameter("SAMLRequest", samlRequestEncoded)
 						.addParameter("RelayState", relayState)
 						.addParameter("SigAlg", sigAlg)
@@ -821,6 +822,6 @@ public class LogoutRequestTest {
 	}
 
 	private static HttpRequest newHttpRequest(String requestURL, String samlRequestEncoded) {
-		return new HttpRequest(requestURL).addParameter("SAMLRequest", samlRequestEncoded);
+		return new MockHttpRequest(requestURL).addParameter("SAMLRequest", samlRequestEncoded);
 	}
 }

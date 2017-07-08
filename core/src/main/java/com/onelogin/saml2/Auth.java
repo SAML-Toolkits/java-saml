@@ -12,9 +12,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Instant;
@@ -27,6 +24,7 @@ import com.onelogin.saml2.exception.SettingsException;
 import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.http.HttpRequest;
+import com.onelogin.saml2.http.HttpResponse;
 import com.onelogin.saml2.logout.LogoutRequest;
 import com.onelogin.saml2.logout.LogoutResponse;
 import com.onelogin.saml2.servlet.ServletUtils;
@@ -57,14 +55,14 @@ public class Auth {
 	private Saml2Settings settings;
 
 	/**
-     * HttpServletRequest object to be processed (Contains GET and POST parameters, session, ...).
+     * HttpRequest object to be processed (Contains GET and POST parameters, session, ...).
      */
-	private HttpServletRequest request;
+	private HttpRequest request;
 
 	/**
-     * HttpServletResponse object to be used (For example to execute the redirections).
+     * HttpResponse object to be used (For example to execute the redirections).
      */
-	private HttpServletResponse response;
+	private HttpResponse response;
 
 	/**
      * NameID.
@@ -168,15 +166,15 @@ public class Auth {
 	 * Initializes the SP SAML instance.
 	 *
 	 * @param request
-	 * 				HttpServletRequest object to be processed
+	 * 				HttpRequest object to be processed
 	 * @param response
-	 * 				HttpServletResponse object to be used
+	 * 				HttpResponse object to be used
 	 *
 	 * @throws IOException
 	 * @throws SettingsException 
 	 * @throws Error
 	 */
-	public Auth(HttpServletRequest request, HttpServletResponse response) throws IOException, SettingsException, Error {
+	public Auth(HttpRequest request, HttpResponse response) throws IOException, SettingsException, Error {
 		this(new SettingsBuilder().fromFile("onelogin.saml.properties").build(), request, response);
 	}
 
@@ -186,15 +184,15 @@ public class Auth {
 	 * @param filename
 	 *				String Filename with the settings
 	 * @param request
-	 * 				HttpServletRequest object to be processed
+	 * 				HttpRequest object to be processed
 	 * @param response
-	 * 				HttpServletResponse object to be used
+	 * 				HttpResponse object to be used
 	 *
 	 * @throws SettingsException 
 	 * @throws IOException
 	 * @throws Error
 	 */
-	public Auth(String filename, HttpServletRequest request, HttpServletResponse response) throws SettingsException, IOException, Error {
+	public Auth(String filename, HttpRequest request, HttpResponse response) throws SettingsException, IOException, Error {
 		this(new SettingsBuilder().fromFile(filename).build(), request, response);
 	}
 	
@@ -204,13 +202,13 @@ public class Auth {
 	 * @param settings
 	 *				Saml2Settings object. Setting data
 	 * @param request
-	 * 				HttpServletRequest object to be processed
+	 * 				HttpRequest object to be processed
 	 * @param response
-	 * 				HttpServletResponse object to be used
+	 * 				HttpResponse object to be used
 	 *
 	 * @throws SettingsException
 	 */
-	public Auth(Saml2Settings settings, HttpServletRequest request, HttpServletResponse response) throws SettingsException {
+	public Auth(Saml2Settings settings, HttpRequest request, HttpResponse response) throws SettingsException {
 		this.settings = settings;
 		this.request = request;
 		this.response = response;
@@ -516,11 +514,10 @@ public class Auth {
      */
 	public void processResponse(String requestId) throws Exception {
 		authenticated = false;
-		final HttpRequest httpRequest = ServletUtils.makeHttpRequest(this.request);
-		final String samlResponseParameter = httpRequest.getParameter("SAMLResponse");
+		final String samlResponseParameter = request.getParameter("SAMLResponse");
 
 		if (samlResponseParameter != null) {
-			SamlResponse samlResponse = new SamlResponse(settings, httpRequest);
+			SamlResponse samlResponse = new SamlResponse(settings, request);
 			lastResponse = samlResponse.getSAMLResponseXml();
 
 			if (samlResponse.isValid(requestId)) {
@@ -568,13 +565,12 @@ public class Auth {
      * @throws Exception 
      */
 	public void processSLO(Boolean keepLocalSession, String requestId) throws Exception {
-		final HttpRequest httpRequest = ServletUtils.makeHttpRequest(this.request);
 		
-		final String samlRequestParameter = httpRequest.getParameter("SAMLRequest");
-		final String samlResponseParameter = httpRequest.getParameter("SAMLResponse");
+		final String samlRequestParameter = request.getParameter("SAMLRequest");
+		final String samlResponseParameter = request.getParameter("SAMLResponse");
 
 		if (samlResponseParameter != null) {
-			LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
+			LogoutResponse logoutResponse = new LogoutResponse(settings, request);
 			lastResponse = logoutResponse.getLogoutResponseXml();
 			if (!logoutResponse.isValid(requestId)) {
 				errors.add("invalid_logout_response");
@@ -591,12 +587,12 @@ public class Auth {
 					lastMessageId = logoutResponse.getId();
 					LOGGER.debug("processSLO success --> " + samlResponseParameter);
 					if (!keepLocalSession) {
-						request.getSession().invalidate();
+						request.invalidateSession();
 					}
 				}
 			}
 		} else if (samlRequestParameter != null) {
-			LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
+			LogoutRequest logoutRequest = new LogoutRequest(settings, request);
 			lastRequest = logoutRequest.getLogoutRequestXml();
 			if (!logoutRequest.isValid()) {
 				errors.add("invalid_logout_request");
@@ -607,11 +603,11 @@ public class Auth {
 				lastMessageId = logoutRequest.getId();
 				LOGGER.debug("processSLO success --> " + samlRequestParameter);
 				if (!keepLocalSession) {
-					request.getSession().invalidate();
+					request.invalidateSession();
 				}
 
 				String inResponseTo = logoutRequest.id;
-				LogoutResponse logoutResponseBuilder = new LogoutResponse(settings, httpRequest);
+				LogoutResponse logoutResponseBuilder = new LogoutResponse(settings, request);
 				logoutResponseBuilder.build(inResponseTo);
 				lastResponse = logoutResponseBuilder.getLogoutResponseXml();
 
@@ -819,7 +815,7 @@ public class Auth {
 	/**
 	 * Generates the Signature for a SAML Response
 	 *
-	 * @param samlResponse
+	 * @param samlMessage
 	 *				The SAML Response
 	 * @param relayState
 	 *				The RelayState
