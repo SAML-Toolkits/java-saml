@@ -150,7 +150,7 @@ public class Metadata {
 
 		valueMap.put("strAttributeConsumingService", getAttributeConsumingServiceXml());
 		
-		valueMap.put("strKeyDescriptor", toX509KeyDescriptorsXML(settings.getSPcert()));
+		valueMap.put("strKeyDescriptor", toX509KeyDescriptorsXML(settings));
 		valueMap.put("strContacts", toContactsXml(settings.getContacts()));
 		valueMap.put("strOrganization", toOrganizationXml(settings.getOrganization()));
 
@@ -289,34 +289,38 @@ public class Metadata {
 	/**
 	 * Generates the KeyDescriptor section of the metadata's template
 	 * 
-	 * @param cert
-	 * 				the public cert that will be used by the SP to sign and encrypt
+	 * @param settings
+	 * 				the Saml2Settings object that contains the public cert that will be used by the SP to sign and encrypt, and your signing/encryption preferences
 	 *
 	 * @return the KeyDescriptor section of the metadata's template
 	 */
-	private String toX509KeyDescriptorsXML(X509Certificate cert) throws CertificateEncodingException {
+	private String toX509KeyDescriptorsXML(Saml2Settings settings) throws CertificateEncodingException {
 		StringBuilder keyDescriptorXml = new StringBuilder();
 
+		X509Certificate cert = settings.getSPcert();
 		if (cert != null) {
 			Base64 encoder = new Base64(64);
 			byte[] encodedCert = cert.getEncoded();
 			String certString = new String(encoder.encode(encodedCert));
 
-			keyDescriptorXml.append("<md:KeyDescriptor use=\"signing\">");
-			keyDescriptorXml.append("<ds:KeyInfo xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\">");
-			keyDescriptorXml.append("<ds:X509Data>");
-			keyDescriptorXml.append("<ds:X509Certificate>"+certString+"</ds:X509Certificate>");
-			keyDescriptorXml.append("</ds:X509Data>");
-			keyDescriptorXml.append("</ds:KeyInfo>");
-			keyDescriptorXml.append("</md:KeyDescriptor>");
-
-			keyDescriptorXml.append("<md:KeyDescriptor use=\"encryption\">");
-			keyDescriptorXml.append("<ds:KeyInfo xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\">");
-			keyDescriptorXml.append("<ds:X509Data>");
-			keyDescriptorXml.append("<ds:X509Certificate>"+certString+"</ds:X509Certificate>");
-			keyDescriptorXml.append("</ds:X509Data>");
-			keyDescriptorXml.append("</ds:KeyInfo>");
-			keyDescriptorXml.append("</md:KeyDescriptor>");
+			if (settings.getAuthnRequestsSigned()) {
+				keyDescriptorXml.append("<md:KeyDescriptor use=\"signing\">");
+				keyDescriptorXml.append("<ds:KeyInfo xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\">");
+				keyDescriptorXml.append("<ds:X509Data>");
+				keyDescriptorXml.append("<ds:X509Certificate>"+certString+"</ds:X509Certificate>");
+				keyDescriptorXml.append("</ds:X509Data>");
+				keyDescriptorXml.append("</ds:KeyInfo>");
+				keyDescriptorXml.append("</md:KeyDescriptor>");
+			}
+			if (settings.getWantAssertionsEncrypted()) {
+				keyDescriptorXml.append("<md:KeyDescriptor use=\"encryption\">");
+				keyDescriptorXml.append("<ds:KeyInfo xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\">");
+				keyDescriptorXml.append("<ds:X509Data>");
+				keyDescriptorXml.append("<ds:X509Certificate>"+certString+"</ds:X509Certificate>");
+				keyDescriptorXml.append("</ds:X509Data>");
+				keyDescriptorXml.append("</ds:KeyInfo>");
+				keyDescriptorXml.append("</md:KeyDescriptor>");
+			}
 		}
 
 		return keyDescriptorXml.toString();
