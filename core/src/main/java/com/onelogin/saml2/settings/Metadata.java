@@ -303,7 +303,7 @@ public class Metadata {
 			byte[] encodedCert = cert.getEncoded();
 			String certString = new String(encoder.encode(encodedCert));
 
-			if (settings.getAuthnRequestsSigned()) {
+			if (settings.getAuthnRequestsSigned() || settings.getLogoutRequestSigned()) {
 				keyDescriptorXml.append("<md:KeyDescriptor use=\"signing\">");
 				keyDescriptorXml.append("<ds:KeyInfo xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\">");
 				keyDescriptorXml.append("<ds:X509Data>");
