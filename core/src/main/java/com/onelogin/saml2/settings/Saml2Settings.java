@@ -71,6 +71,9 @@ public class Saml2Settings {
 	private Boolean wantXMLValidation = true;
 	private String signatureAlgorithm = Constants.RSA_SHA1;
 	private boolean rejectUnsolicitedResponsesWithInResponseTo = false;
+	private boolean validateTimes = true;
+	private boolean validateAudience = true;
+	private boolean validateRecipient = true;
 
 	// Compress
 	private Boolean compressRequest = true;
@@ -681,6 +684,36 @@ public class Saml2Settings {
 
 	public boolean isRejectUnsolicitedResponsesWithInResponseTo() {
 		return rejectUnsolicitedResponsesWithInResponseTo;
+	}
+
+	public boolean isValidateTimes()
+	{
+		return validateTimes;
+	}
+
+	public void setValidateTimes(boolean validateTimes)
+	{
+		this.validateTimes = validateTimes;
+	}
+
+	public boolean isValidateAudience()
+	{
+		return validateAudience;
+	}
+
+	public void setValidateAudience(boolean validateAudience)
+	{
+		this.validateAudience = validateAudience;
+	}
+
+	public boolean isValidateRecipient()
+	{
+		return validateRecipient;
+	}
+
+	public void setValidateRecipient(boolean validateRecipient)
+	{
+		this.validateRecipient = validateRecipient;
 	}
 
 	/**
