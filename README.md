@@ -527,9 +527,9 @@ You should be able to workaround this by configuring your server so that it is a
 For Apache Tomcat this is done by setting the proxyName, proxyPort, scheme and secure attributes for the Connector. See [here](http://serverfault.com/questions/774300/ssl-offloading-from-apache-to-tomcat-get-overwritten-somewhere) for an example.
 
 
-### Reply attacks
+### Replay attacks
 
-In order to avoid reply attacks, you can store the ID of the SAML messages already processed, to avoid processing them twice. Since the Messages expires and will be invalidated due that fact, you don't need to store those IDs longer than the time frame that you currently accepting.
+In order to avoid replay attacks, you can store the ID of the SAML messages already processed, to avoid processing them twice. Since the Messages expires and will be invalidated due that fact, you don't need to store those IDs longer than the time frame that you currently accepting.
 
 Get the ID of the last processed message with the getLastMessageId method of the Auth object.
 
