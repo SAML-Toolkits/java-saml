@@ -70,7 +70,7 @@ public class Saml2Settings {
 	private String requestedAuthnContextComparison = "exact";
 	private Boolean wantXMLValidation = true;
 	private String signatureAlgorithm = Constants.RSA_SHA1;
-	private boolean rejectUnsolicitedResponsesWithInResponseTo = false;
+	private Boolean rejectUnsolicitedResponsesWithInResponseTo = false;
 
 	// Compress
 	private Boolean compressRequest = true;
@@ -80,7 +80,8 @@ public class Saml2Settings {
 	private List<Contact> contacts = new LinkedList<Contact>();
 	private Organization organization = null;
 
-
+    private boolean spValidationOnly = false;
+	
 	/**
 	 * @return the strict setting value
 	 */
@@ -744,7 +745,9 @@ public class Saml2Settings {
 	 */
 	public List<String> checkSettings() {
 		List<String> errors = new ArrayList<String>(this.checkSPSettings());
-		errors.addAll(this.checkIdPSettings());
+		if (!spValidationOnly) { 
+			errors.addAll(this.checkIdPSettings());
+		}
 
 		return errors;
 	}
@@ -891,12 +894,31 @@ public class Saml2Settings {
 	}
 
 	/**
+	 * Set the spValidationOnly value, used to check IdP data on checkSettings method
+	 *
+	 * @param spValidationOnly
+	 *            the spValidationOnly value to be set
+	 */
+	public void setSPValidationOnly(Boolean spValidationOnly)
+	{
+		this.spValidationOnly = spValidationOnly;
+	}
+
+	/**
+	 * @return the spValidationOnly value
+	 */
+	public boolean getSPValidationOnly()
+	{
+		return this.spValidationOnly;
+	}
+	
+	/**
 	 * Gets the SP metadata. The XML representation.
 	 *
 	 * @return the SP metadata (xml)
 	 *
 	 * @throws CertificateEncodingException
-	 */	
+	 */
 	public String getSPMetadata() throws CertificateEncodingException {
 		Metadata metadataObj = new Metadata(this);
 		String metadataString = metadataObj.getMetadataString();

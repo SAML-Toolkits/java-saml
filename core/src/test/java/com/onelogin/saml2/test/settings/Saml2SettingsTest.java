@@ -136,7 +136,7 @@ public class Saml2SettingsTest {
 
 	/**
 	 * Tests the checkSettings method of the Saml2Settings
-	 * Case: Check that all possible IdP errors are found
+	 * Case: Check that all possible errors are found
 	 *
 	 * @throws IOException
 	 * @throws Error
@@ -159,6 +159,30 @@ public class Saml2SettingsTest {
 		assertThat(settingsErrors, hasItem("idp_cert_not_found_and_required"));
 	}
 
+	/**
+	 * Tests the checkSettings method of the Saml2Settings
+	 * Case: Check IdP errors
+	 *
+	 * @throws IOException
+	 * @throws Error
+	 *
+	 * @see com.onelogin.saml2.settings.Saml2Settings#checkSettings
+	 */
+	@Test
+	public void testCheckSettingsIdPErrors() throws IOException, Error {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.idperrors.properties").build();
+		List<String> settingsErrors = settings.checkSettings();
+		assertFalse(settingsErrors.isEmpty());
+		assertThat(settingsErrors, hasItem("idp_entityId_not_found"));
+		assertThat(settingsErrors, hasItem("idp_sso_url_invalid"));
+		assertThat(settingsErrors, hasItem("idp_cert_or_fingerprint_not_found_and_required"));
+		assertThat(settingsErrors, hasItem("idp_cert_not_found_and_required"));
+		
+		settings.setSPValidationOnly(true);
+		settingsErrors = settings.checkSettings();
+		assertTrue(settingsErrors.isEmpty());
+	}
+	
 	/**
 	 * Tests the checkSettings method of the Saml2Settings
 	 * Case: No SP Errors
