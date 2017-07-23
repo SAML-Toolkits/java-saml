@@ -249,7 +249,47 @@ public class MetadataTest {
 		assertThat(metadataStr2, not(containsString(keyDescriptorSignStr)));
 		assertThat(metadataStr2, not(containsString(keyDescriptorEncStr)));
 	}
-	
+
+	/**
+	 * Tests the toX509KeyDescriptorsXML method of Metadata
+	 * Case: Check where to add or not md:KeyDescriptor encryption
+	 *
+	 * @throws IOException
+	 * @throws CertificateEncodingException
+	 * @throws Error
+	 *
+	 * @see com.onelogin.saml2.settings.Metadata#toX509KeyDescriptorsXML
+	 */
+	@Test
+	public void testToX509KeyDescriptorsXMLEncryption() throws IOException, CertificateEncodingException, Error {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
+		String keyDescriptorEncStr = "<md:KeyDescriptor use=\"encryption\"><ds:KeyInfo xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\"><ds:X509Data><ds:X509Certificate>MIICeDCCAeGgAwIBAgIBADANBgkqhkiG9w0BAQ0FADBZMQswCQYDVQQGEwJ1czET";
+
+		settings.setWantAssertionsEncrypted(false);
+		settings.setWantNameIdEncrypted(false);
+		Metadata metadataObj = new Metadata(settings);
+		String metadataStr = metadataObj.getMetadataString();
+		assertThat(metadataStr, not(containsString(keyDescriptorEncStr)));
+
+		settings.setWantAssertionsEncrypted(true);
+		settings.setWantNameIdEncrypted(false);
+		metadataObj = new Metadata(settings);
+		metadataStr = metadataObj.getMetadataString();
+		assertThat(metadataStr, containsString(keyDescriptorEncStr));
+
+		settings.setWantAssertionsEncrypted(false);
+		settings.setWantNameIdEncrypted(true);
+		metadataObj = new Metadata(settings);
+		metadataStr = metadataObj.getMetadataString();
+		assertThat(metadataStr, containsString(keyDescriptorEncStr));
+
+		settings.setWantAssertionsEncrypted(true);
+		settings.setWantNameIdEncrypted(true);
+		metadataObj = new Metadata(settings);
+		metadataStr = metadataObj.getMetadataString();
+		assertThat(metadataStr, containsString(keyDescriptorEncStr));
+	}
+		
 	/**
 	 * Tests the getAttributeConsumingServiceXml method of Metadata
      *
