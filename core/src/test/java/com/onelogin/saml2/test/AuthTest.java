@@ -1,7 +1,5 @@
 package com.onelogin.saml2.test;
 
-
-import static java.util.Collections.singletonMap;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -23,12 +21,9 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
+import com.onelogin.saml2.http.HttpRequest;
+import com.onelogin.saml2.http.HttpResponse;
 import org.joda.time.Instant;
 import org.junit.Rule;
 import org.junit.Test;
@@ -104,10 +99,8 @@ public class AuthTest {
 	 */
 	@Test
 	public void testConstructorWithReqRes() throws IOException, SettingsException, URISyntaxException, Error {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 
 		Auth auth = new Auth(request, response);
 		assertTrue(auth.getSettings() != null);
@@ -130,10 +123,8 @@ public class AuthTest {
 	 */
 	@Test
 	public void testConstructorWithFilenameReqRes() throws IOException, SettingsException, URISyntaxException, Error {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 
 		Auth auth = new Auth("config/config.min.properties", request, response);
 		assertTrue(auth.getSettings() != null);
@@ -156,10 +147,8 @@ public class AuthTest {
 	 */
 	@Test
 	public void testConstructorWithSettingsReqRes() throws IOException, SettingsException, URISyntaxException, Error {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		Auth auth = new Auth(settings, request, response);
@@ -183,13 +172,11 @@ public class AuthTest {
 		expectedEx.expect(SettingsException.class);
 		expectedEx.expectMessage("Invalid settings: sp_entityId_not_found, sp_acs_not_found, sp_cert_not_found_and_required, contact_not_enought_data, organization_not_enought_data, idp_cert_or_fingerprint_not_found_and_required, idp_cert_not_found_and_required");
 		
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.sperrors.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		new Auth(settings, request, response);
 	}
 
 	/**
@@ -252,10 +239,8 @@ public class AuthTest {
 	 */
 	@Test
 	public void testIsDebugActive() throws IOException, SettingsException, URISyntaxException, Error {
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		HttpResponse response = mock(HttpResponse.class);
+		HttpRequest request = mock(HttpRequest.class);
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		settings.setDebug(false);
@@ -280,10 +265,8 @@ public class AuthTest {
 	 */
 	@Test
 	public void testGetSSOurl() throws URISyntaxException, IOException, SettingsException, Error {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
@@ -303,10 +286,8 @@ public class AuthTest {
 	 */
 	@Test
 	public void testGetSLOurl() throws URISyntaxException, IOException, SettingsException, Error {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
@@ -327,10 +308,8 @@ public class AuthTest {
 	 */
 	@Test
 	public void testGetSLOResponseUrl() throws URISyntaxException, IOException, SettingsException, Error {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
 
@@ -350,10 +329,8 @@ public class AuthTest {
 	 */
 	@Test
 	public void testGetSLOResponseUrlNull() throws URISyntaxException, IOException, SettingsException, Error {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
@@ -370,9 +347,9 @@ public class AuthTest {
 	 */
 	@Test
 	public void testProcessNoResponse() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
+		when(request.getRequestURL()).thenReturn("http://localhost:8080/java-saml-jspsample/acs.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		Auth auth = new Auth(settings, request, response);
@@ -402,12 +379,12 @@ public class AuthTest {
 	 */
 	@Test
 	public void testProcessResponse() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
+		when(request.getRequestURL()).thenReturn("http://localhost:8080/java-saml-jspsample/acs.jsp");
 
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		Auth auth = new Auth(settings, request, response);
@@ -418,7 +395,7 @@ public class AuthTest {
 		assertTrue(auth.getAttributes().isEmpty());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
 		Auth auth2 = new Auth(settings, request, response);
 
 		HashMap<String, List<String>> expectedAttributes = new HashMap<String, List<String>>();
@@ -461,9 +438,9 @@ public class AuthTest {
 	 */
 	@Test
 	public void testProcessSLONoMessage() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
+		when(request.getRequestURL()).thenReturn("http://localhost:8080/java-saml-jspsample/acs.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		Auth auth = new Auth(settings, request, response);
@@ -491,14 +468,12 @@ public class AuthTest {
 	 */
 	@Test
 	public void testProcessSLORequestKeepSession() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		HttpSession session = mock(HttpSession.class);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
-		when(request.getSession()).thenReturn(session);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
+		when(request.getRequestURL()).thenReturn("http://stuff.com/endpoints/endpoints/sls.php");
 
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLRequest", new String[]{samlRequestEncoded}));		
+		when(request.getParameter("SAMLRequest")).thenReturn(samlRequestEncoded);
 		
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		Auth auth = new Auth(settings, request, response);
@@ -506,7 +481,7 @@ public class AuthTest {
 		assertTrue(auth.getErrors().isEmpty());
 		auth.processSLO(true, null);
 		verify(response).sendRedirect(matches("http:\\/\\/idp.example.com\\/simplesaml\\/saml2\\/idp\\/SingleLogoutService.php\\?SAMLResponse=(.)*"));
-		verify(session, times(0)).invalidate();
+		verify(request, times(0)).invalidateSession();
 		assertTrue(auth.getErrors().isEmpty());
 	}
 
@@ -520,21 +495,19 @@ public class AuthTest {
 	 */
 	@Test
 	public void testProcessSLORequestRemoveSession() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		HttpSession session = mock(HttpSession.class);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
-		when(request.getSession()).thenReturn(session);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
+		when(request.getRequestURL()).thenReturn("http://stuff.com/endpoints/endpoints/sls.php");
 
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLRequest", new String[]{samlRequestEncoded}));		
+		when(request.getParameter("SAMLRequest")).thenReturn(samlRequestEncoded);
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		Auth auth = new Auth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getErrors().isEmpty());
 		auth.processSLO();
 		verify(response).sendRedirect(matches("http:\\/\\/idp.example.com\\/simplesaml\\/saml2\\/idp\\/SingleLogoutService.php\\?SAMLResponse=(.)*"));
-		verify(session, times(1)).invalidate();
+		verify(request, times(1)).invalidateSession();
 		assertTrue(auth.getErrors().isEmpty());
 	}
 
@@ -548,19 +521,13 @@ public class AuthTest {
 	 */
 	@Test
 	public void testProcessSLORequestSignRes() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		HttpSession session = mock(HttpSession.class);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
-		when(request.getSession()).thenReturn(session);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
+		when(request.getRequestURL()).thenReturn("http://stuff.com/endpoints/endpoints/sls.php");
 		String relayState = "http://localhost:8080/expected.jsp";
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
-		Map<String, String[]> paramsAsArray = new HashMap<>();
-		paramsAsArray.put("SAMLRequest", new String[]{samlRequestEncoded});
-		paramsAsArray.put("RelayState", new String[]{relayState});
-		when(request.getParameterMap()).thenReturn(paramsAsArray);
+		when(request.getParameter("SAMLRequest")).thenReturn(samlRequestEncoded);
 		when(request.getParameter("RelayState")).thenReturn(relayState);
-		
 		
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
 		settings.setWantMessagesSigned(false);
@@ -570,7 +537,7 @@ public class AuthTest {
 		assertTrue(auth.getErrors().isEmpty());
 		auth.processSLO();
 		verify(response).sendRedirect(matches("http:\\/\\/idp.example.com\\/simplesaml\\/saml2\\/idp\\/SingleLogoutServiceResponse.php\\?SAMLResponse=(.)*&RelayState=http%3A%2F%2Flocalhost%3A8080%2Fexpected.jsp&SigAlg=http%3A%2F%2Fwww.w3.org%2F2001%2F04%2Fxmldsig-more%23rsa-sha512&Signature=(.)*"));
-		verify(session, times(1)).invalidate();
+		verify(request, times(1)).invalidateSession();
 		assertTrue(auth.getErrors().isEmpty());
 	}
 	
@@ -584,21 +551,19 @@ public class AuthTest {
 	 */
 	@Test
 	public void testProcessSLORequestInvalid() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		HttpSession session = mock(HttpSession.class);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/sls.jsp"));
-		when(request.getSession()).thenReturn(session);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
+		when(request.getRequestURL()).thenReturn("http://localhost:8080/java-saml-jspsample/sls.jsp");
 
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLRequest", new String[]{samlRequestEncoded}));
+		when(request.getParameter("SAMLRequest")).thenReturn(samlRequestEncoded);
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		settings.setStrict(true);
 		Auth auth = new Auth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getErrors().isEmpty());
 		auth.processSLO();		
-		verify(session, times(0)).invalidate();
+		verify(request, times(0)).invalidateSession();
 		assertFalse(auth.getErrors().isEmpty());
 		assertTrue(auth.getErrors().contains("invalid_logout_request"));
 		assertThat(auth.getLastErrorReason(), containsString("The LogoutRequest was received at"));
@@ -614,20 +579,18 @@ public class AuthTest {
 	 */
 	@Test
 	public void testProcessSLOResponseKeepSession() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		HttpSession session = mock(HttpSession.class);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
-		when(request.getSession()).thenReturn(session);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
+		when(request.getRequestURL()).thenReturn("http://stuff.com/endpoints/endpoints/sls.php");
 
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		Auth auth = new Auth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getErrors().isEmpty());
 		auth.processSLO(true, null);
-		verify(session, times(0)).invalidate();
+		verify(request, times(0)).invalidateSession();
 		assertTrue(auth.getErrors().isEmpty());
 	}
 
@@ -641,20 +604,18 @@ public class AuthTest {
 	 */
 	@Test
 	public void testProcessSLOResponseRemoveSession() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		HttpSession session = mock(HttpSession.class);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
-		when(request.getSession()).thenReturn(session);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
+		when(request.getRequestURL()).thenReturn("http://stuff.com/endpoints/endpoints/sls.php");
 
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		Auth auth = new Auth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getErrors().isEmpty());
 		auth.processSLO();
-		verify(session, times(1)).invalidate();
+		verify(request, times(1)).invalidateSession();
 		assertTrue(auth.getErrors().isEmpty());
 	}
 
@@ -668,21 +629,19 @@ public class AuthTest {
 	 */
 	@Test
 	public void testProcessSLOResponseWrongRequestId() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		HttpSession session = mock(HttpSession.class);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
-		when(request.getSession()).thenReturn(session);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
+		when(request.getRequestURL()).thenReturn("http://stuff.com/endpoints/endpoints/sls.php");
 
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		settings.setStrict(true);
 		Auth auth = new Auth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getErrors().isEmpty());
 		auth.processSLO(false, "wrong_request_id");
-		verify(session, times(0)).invalidate();
+		verify(request, times(0)).invalidateSession();
 		assertTrue(auth.getErrors().contains("invalid_logout_response"));
 		assertEquals("The InResponseTo of the Logout Response: ONELOGIN_21584ccdfaca36a145ae990442dcd96bfe60151e, does not match the ID of the Logout request sent by the SP: wrong_request_id", auth.getLastErrorReason());
 	}
@@ -697,20 +656,18 @@ public class AuthTest {
 	 */
 	@Test
 	public void testProcessSLOResponseStatusResponder() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		HttpSession session = mock(HttpSession.class);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
-		when(request.getSession()).thenReturn(session);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
+		when(request.getRequestURL()).thenReturn("http://stuff.com/endpoints/endpoints/sls.php");
 
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/invalids/status_code_responder.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		Auth auth = new Auth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getErrors().isEmpty());
 		auth.processSLO();
-		verify(session, times(0)).invalidate();
+		verify(request, times(0)).invalidateSession();
 		assertFalse(auth.getErrors().isEmpty());
 		assertTrue(auth.getErrors().contains("logout_not_success"));
 	}
@@ -726,11 +683,11 @@ public class AuthTest {
 	 */
 	@Test
 	public void testIsAuthenticated() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response4.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
+		when(request.getRequestURL()).thenReturn("http://localhost:8080/java-saml-jspsample/acs.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		Auth auth = new Auth(settings, request, response);
@@ -745,7 +702,7 @@ public class AuthTest {
 		assertEquals("SAML Response must contain 1 Assertion.", auth.getLastErrorReason());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
 		Auth auth2 = new Auth(settings, request, response);
 		assertFalse(auth2.isAuthenticated());
 		assertTrue(auth2.getErrors().isEmpty());
@@ -758,7 +715,7 @@ public class AuthTest {
 		assertThat(auth2.getLastErrorReason(), containsString("Invalid issuer in the Assertion/Response"));
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
 		Auth auth3 = new Auth(settings, request, response);
 		assertFalse(auth3.isAuthenticated());
 		assertTrue(auth3.getErrors().isEmpty());
@@ -778,11 +735,11 @@ public class AuthTest {
 	 */
 	@Test
 	public void testGetNameID() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
+		when(request.getRequestURL()).thenReturn("http://localhost:8080/java-saml-jspsample/acs.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		Auth auth = new Auth(settings, request, response);
@@ -792,7 +749,7 @@ public class AuthTest {
 		assertNull(auth.getNameId());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
 		Auth auth2 = new Auth(settings, request, response);
 		assertNull(auth2.getNameId());
 		auth2.processResponse();
@@ -800,8 +757,8 @@ public class AuthTest {
 		assertEquals("492882615acf31c8096b627245d76ae53036c090", auth2.getNameId());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/response_encrypted_nameid.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
-		when(request.getRequestURL()).thenReturn(new StringBuffer("https://pitbulk.no-ip.org/newonelogin/demo1/index.php?acs"));
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
+		when(request.getRequestURL()).thenReturn("https://pitbulk.no-ip.org/newonelogin/demo1/index.php?acs");
 		settings.setStrict(false);
 		Auth auth3 = new Auth(settings, request, response);
 		assertNull(auth3.getNameId());
@@ -820,11 +777,11 @@ public class AuthTest {
 	 */
 	@Test
 	public void testGetNameIdFormat() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
+		when(request.getRequestURL()).thenReturn("http://localhost:8080/java-saml-jspsample/acs.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		Auth auth = new Auth(settings, request, response);
@@ -834,7 +791,7 @@ public class AuthTest {
 		assertNull(auth.getNameIdFormat());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
 		Auth auth2 = new Auth(settings, request, response);
 		assertNull(auth2.getNameIdFormat());
 		auth2.processResponse();
@@ -842,8 +799,8 @@ public class AuthTest {
 		assertEquals("urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress", auth2.getNameIdFormat());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/response_encrypted_nameid.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
-		when(request.getRequestURL()).thenReturn(new StringBuffer("https://pitbulk.no-ip.org/newonelogin/demo1/index.php?acs"));
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
+		when(request.getRequestURL()).thenReturn("https://pitbulk.no-ip.org/newonelogin/demo1/index.php?acs");
 		settings.setStrict(false);
 		Auth auth3 = new Auth(settings, request, response);
 		assertNull(auth3.getNameIdFormat());
@@ -864,12 +821,12 @@ public class AuthTest {
 		expectedEx.expect(SettingsException.class);
 		expectedEx.expectMessage("Invalid settings: idp_cert_not_found_and_required");
 
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.mywithnocert.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response_encrypted_nameid.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
-		when(request.getRequestURL()).thenReturn(new StringBuffer("https://pitbulk.no-ip.org/newonelogin/demo1/index.php?acs"));
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
+		when(request.getRequestURL()).thenReturn("https://pitbulk.no-ip.org/newonelogin/demo1/index.php?acs");
 		settings.setStrict(false);
 		Auth auth = new Auth(settings, request, response);
 		assertNull(auth.getNameId());
@@ -890,11 +847,11 @@ public class AuthTest {
 		expectedEx.expect(ValidationError.class);
 		expectedEx.expectMessage("SAML Response could not be processed");
 
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/wrapped_response_2.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
+		when(request.getRequestURL()).thenReturn("http://localhost:8080/java-saml-jspsample/acs.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		Auth auth = new Auth(settings, request, response);
@@ -912,11 +869,11 @@ public class AuthTest {
 	 */
 	@Test
 	public void testGetSessionIndex() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
+		when(request.getRequestURL()).thenReturn("http://localhost:8080/java-saml-jspsample/acs.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		Auth auth = new Auth(settings, request, response);
@@ -926,7 +883,7 @@ public class AuthTest {
 		assertNull(auth.getSessionIndex());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
 		Auth auth2 = new Auth(settings, request, response);
 		assertNull(auth2.getSessionIndex());
 		auth2.processResponse();
@@ -936,11 +893,11 @@ public class AuthTest {
 
 	@Test
 	public void testGetAssertionDetails() throws Exception {
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
+		HttpRequest request = mock(HttpRequest.class);
 		String samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
+		when(request.getRequestURL()).thenReturn("http://localhost:8080/java-saml-jspsample/acs.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		Auth auth = new Auth(settings, request, response);
@@ -959,11 +916,11 @@ public class AuthTest {
 	 */
 	@Test
 	public void testGetSessionExpiration() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
+		when(request.getRequestURL()).thenReturn("http://localhost:8080/java-saml-jspsample/acs.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		Auth auth = new Auth(settings, request, response);
@@ -973,7 +930,7 @@ public class AuthTest {
 		assertNull(auth.getSessionExpiration());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
 		Auth auth2 = new Auth(settings, request, response);
 		assertNull(auth2.getSessionExpiration());
 		auth2.processResponse();
@@ -994,8 +951,8 @@ public class AuthTest {
 	 */
 	@Test
 	public void testLogin() throws IOException, SettingsException, URISyntaxException, Error {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 		when(request.getScheme()).thenReturn("http");
 		when(request.getServerPort()).thenReturn(8080);
 		when(request.getServerName()).thenReturn("localhost");		
@@ -1022,8 +979,8 @@ public class AuthTest {
 	 */
 	@Test
 	public void testLoginWithRelayState() throws IOException, SettingsException, URISyntaxException, Error {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 		when(request.getScheme()).thenReturn("http");
 		when(request.getServerPort()).thenReturn(8080);
 		when(request.getServerName()).thenReturn("localhost");		
@@ -1051,8 +1008,8 @@ public class AuthTest {
 	 */
 	@Test
 	public void testLoginWithoutRelayState() throws IOException, SettingsException, URISyntaxException, Error {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 		when(request.getScheme()).thenReturn("http");
 		when(request.getServerPort()).thenReturn(8080);
 		when(request.getServerName()).thenReturn("localhost");
@@ -1082,8 +1039,8 @@ public class AuthTest {
 	 */
 	@Test
 	public void testLoginStay() throws IOException, SettingsException, URISyntaxException, Error {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 		when(request.getScheme()).thenReturn("http");
 		when(request.getServerPort()).thenReturn(8080);
 		when(request.getServerName()).thenReturn("localhost");
@@ -1119,8 +1076,8 @@ public class AuthTest {
 		expectedEx.expect(SettingsException.class);
 		expectedEx.expectMessage("Invalid settings: sp_cert_not_found_and_required");
 
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 		when(request.getScheme()).thenReturn("http");
 		when(request.getServerPort()).thenReturn(8080);
 		when(request.getServerName()).thenReturn("localhost");		
@@ -1147,8 +1104,8 @@ public class AuthTest {
 	 */
 	@Test
 	public void testLoginSigned() throws IOException, SettingsException, URISyntaxException, Error {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 		when(request.getScheme()).thenReturn("http");
 		when(request.getServerPort()).thenReturn(8080);
 		when(request.getServerName()).thenReturn("localhost");		
@@ -1181,8 +1138,8 @@ public class AuthTest {
 	 */
 	@Test
 	public void testLogout() throws IOException, SettingsException, XMLEntityException, Error {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 		when(request.getScheme()).thenReturn("http");
 		when(request.getServerPort()).thenReturn(8080);
 		when(request.getServerName()).thenReturn("localhost");		
@@ -1210,8 +1167,8 @@ public class AuthTest {
 	 */
 	@Test
 	public void testLogoutWithRelayState() throws IOException, SettingsException, XMLEntityException, Error {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 		when(request.getScheme()).thenReturn("http");
 		when(request.getServerPort()).thenReturn(8080);
 		when(request.getServerName()).thenReturn("localhost");		
@@ -1240,8 +1197,8 @@ public class AuthTest {
 	 */
 	@Test
 	public void testLogoutWithoutRelayState() throws IOException, SettingsException, XMLEntityException, Error {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 		when(request.getScheme()).thenReturn("http");
 		when(request.getServerPort()).thenReturn(8080);
 		when(request.getServerName()).thenReturn("localhost");
@@ -1272,8 +1229,8 @@ public class AuthTest {
 	 */
 	@Test
 	public void testLogoutStay() throws IOException, SettingsException, XMLEntityException, Error {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 		when(request.getScheme()).thenReturn("http");
 		when(request.getServerPort()).thenReturn(8080);
 		when(request.getServerName()).thenReturn("localhost");		
@@ -1309,8 +1266,8 @@ public class AuthTest {
 		expectedEx.expect(SettingsException.class);
 		expectedEx.expectMessage("Invalid settings: sp_cert_not_found_and_required");
 
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 		when(request.getScheme()).thenReturn("http");
 		when(request.getServerPort()).thenReturn(8080);
 		when(request.getServerName()).thenReturn("localhost");		
@@ -1337,8 +1294,8 @@ public class AuthTest {
 	 */
 	@Test
 	public void testLogoutSigned() throws IOException, SettingsException, XMLEntityException, Error {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 		when(request.getScheme()).thenReturn("http");
 		when(request.getServerPort()).thenReturn(8080);
 		when(request.getServerName()).thenReturn("localhost");		
@@ -1689,8 +1646,8 @@ public class AuthTest {
 	 */
 	@Test
 	public void testGetLastAuthNRequest() throws IOException, SettingsException, Error {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
 		Auth auth = new Auth(settings, request, response);
@@ -1712,8 +1669,8 @@ public class AuthTest {
 	 */
 	@Test
 	public void testGetLastLogoutRequestSent() throws IOException, SettingsException, XMLEntityException, Error {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
 		Auth auth = new Auth(settings, request, response);
@@ -1732,11 +1689,11 @@ public class AuthTest {
 	 */
 	@Test
 	public void testGetLastLogoutRequestReceived() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("/"));
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
+		when(request.getRequestURL()).thenReturn("/");
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLRequest", new String[]{samlRequestEncoded}));
+		when(request.getParameter("SAMLRequest")).thenReturn(samlRequestEncoded);
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		Auth auth = new Auth(settings, request, response);
@@ -1755,11 +1712,11 @@ public class AuthTest {
 	 */
 	@Test
 	public void testGetLastSAMLResponse() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("/"));
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
+		when(request.getRequestURL()).thenReturn("/");
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		Auth auth = new Auth(settings, request, response);
@@ -1768,7 +1725,7 @@ public class AuthTest {
 		assertThat(samlResponseXML, containsString("<samlp:Response"));
 		
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
 		Auth auth2 = new Auth(settings, request, response);
 		auth2.processResponse();
 		samlResponseXML =  auth2.getLastResponseXML();
@@ -1786,11 +1743,11 @@ public class AuthTest {
 	 */
 	@Test
 	public void testGetLastLogoutResponseSent() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
+		when(request.getRequestURL()).thenReturn("http://stuff.com/endpoints/endpoints/sls.php");
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLRequest", new String[]{samlRequestEncoded}));
+		when(request.getParameter("SAMLRequest")).thenReturn(samlRequestEncoded);
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		settings.setStrict(false);
@@ -1810,11 +1767,11 @@ public class AuthTest {
 	 */
 	@Test
 	public void testGetLastLogoutResponseReceived() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("/"));
+		HttpRequest request = mock(HttpRequest.class);
+		HttpResponse response = mock(HttpResponse.class);
+		when(request.getRequestURL()).thenReturn("/");
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		when(request.getParameter("SAMLResponse")).thenReturn(samlResponseEncoded);
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		Auth auth = new Auth(settings, request, response);
