@@ -844,6 +844,32 @@ public class AuthnResponseTest {
 		assertThat(notOnOrAfters, contains(new Instant("2120-06-17T14:53:44Z"), new Instant("2010-06-17T14:53:44Z")));
 	}
 
+	@Test
+	public void testGetConditionsDetails() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
+		final SamlResponse samlResponse = new SamlResponse(
+				new SettingsBuilder().fromFile("config/config.my.properties").build(),
+				newHttpRequest(Util.getFileAsString("data/responses/response1.xml.base64"))
+		);
+		final List<Instant> notOnOrAfters = samlResponse.getConditionsNotOnOrAfter();
+
+		assertEquals("pfxa46574df-b3b0-a06a-23c8-636413198772", samlResponse.getAssertionId());
+		assertThat(notOnOrAfters, contains(new Instant("2010-11-18T22:02:37Z")));
+
+	}
+
+	@Test
+	public void testGetConditionsDetails_encrypted() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
+		final SamlResponse samlResponse = new SamlResponse(
+				new SettingsBuilder().fromFile("config/config.my.properties").build(),
+				newHttpRequest(Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64"))
+		);
+		final List<Instant> notOnOrAfters = samlResponse.getConditionsNotOnOrAfter();
+
+		assertEquals("_519c2712648ee09a06d1f9a08e9e835715fea60267", samlResponse.getAssertionId());
+		assertThat(notOnOrAfters, contains(new Instant("2055-06-07T20:17:08Z")));
+
+	}
+
 	/**
 	 * Tests the getAttributes method of SamlResponse
 	 *

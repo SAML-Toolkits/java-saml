@@ -758,13 +758,29 @@ public class SamlResponse {
 	 *
 	 */
 	public List<Instant> getAssertionNotOnOrAfter() throws XPathExpressionException {
-		final NodeList notOnOrAfterNodes = queryAssertion("/saml:Subject/saml:SubjectConfirmation/saml:SubjectConfirmationData");
+		return getNotOnOrAfter(queryAssertion("/saml:Subject/saml:SubjectConfirmation/saml:SubjectConfirmationData"));
+	}
+
+	/**
+	 * @return a list of NotOnOrAfter values from Conditions nodes in this Response
+	 * @throws XPathExpressionException
+	 *
+	 */
+	public List<Instant> getConditionsNotOnOrAfter() throws XPathExpressionException {
+		return getNotOnOrAfter(queryAssertion("/saml:Conditions"));
+	}
+
+	/**
+	 * @param notOnOrAfterNodes The NodeList to get the NotOnOrAfter values.
+	 * @return a list of NotOnOrAfter values from a given NodeList.
+	 */
+	private List<Instant> getNotOnOrAfter(final NodeList notOnOrAfterNodes) {
 		final ArrayList<Instant> notOnOrAfters = new ArrayList<>();
 		for (int i = 0; i < notOnOrAfterNodes.getLength(); i++) {
 			final Node notOnOrAfterAttribute = notOnOrAfterNodes.item(i).getAttributes().getNamedItem("NotOnOrAfter");
 			if (notOnOrAfterAttribute != null) {
 				notOnOrAfters.add(new Instant(notOnOrAfterAttribute.getNodeValue()));
-		}}
+			}}
 		return notOnOrAfters;
 	}
 
