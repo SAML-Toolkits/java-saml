@@ -336,7 +336,7 @@ public class DynamicSettingsBuilder {
      *
      * @param wantNameId the wantNameId value to be set. Based on it the SP expects a NameID
      */
-    public DynamicSettingsBuilder wantNameId(Boolean wantNameId) {
+    public DynamicSettingsBuilder wantNameId(boolean wantNameId) {
         this.saml2Settings.setWantNameId(wantNameId);
         return this;
     }

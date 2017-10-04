@@ -65,6 +65,10 @@ public class DynamicSettingsBuilderTest {
         assertTrue(setting.getWantXMLValidation());
         assertEquals(Constants.RSA_SHA1, setting.getSignatureAlgorithm());
         assertFalse(setting.getSignMetadata());
+        assertTrue(setting.getWantNameId());
+
+        assertTrue(setting.isCompressRequestEnabled());
+        assertTrue(setting.isCompressResponseEnabled());
 
         assertNull(setting.getOrganization());
         assertTrue(setting.getContacts().isEmpty());
@@ -124,6 +128,10 @@ public class DynamicSettingsBuilderTest {
         assertTrue(setting.getWantXMLValidation());
         assertEquals(Constants.RSA_SHA1, setting.getSignatureAlgorithm());
         assertFalse(setting.getSignMetadata());
+        assertTrue(setting.getWantNameId());
+
+        assertTrue(setting.isCompressRequestEnabled());
+        assertTrue(setting.isCompressResponseEnabled());
 
         assertNull(setting.getOrganization());
         assertTrue(setting.getContacts().isEmpty());
@@ -169,7 +177,12 @@ public class DynamicSettingsBuilderTest {
         builder.requestedAuthnContextComparison("exact");
         builder.wantXMLValidation(true);
         builder.signatureAlgorithm("http://www.w3.org/2001/04/xmldsig-more#rsa-sha512");
+        builder.wantNameId(false);
         
+        // Compress
+        builder.compressRequest(false);
+        builder.compressResponse(false);
+
         // Organization
         builder.organization("SP Java", "SP Java Example", "http://sp.example.com", "en");
         
@@ -214,6 +227,10 @@ public class DynamicSettingsBuilderTest {
         assertTrue(setting.getWantXMLValidation());
         assertEquals(Constants.RSA_SHA512, setting.getSignatureAlgorithm());
         assertTrue(setting.getSignMetadata());
+        assertFalse(setting.getWantNameId());
+
+        assertFalse(setting.isCompressRequestEnabled());
+        assertFalse(setting.isCompressResponseEnabled());
 
         Organization org = new Organization("SP Java", "SP Java Example", "http://sp.example.com");
         assertTrue(org.equalsTo(setting.getOrganization()));
@@ -247,8 +264,7 @@ public class DynamicSettingsBuilderTest {
         // Build IdP
         builder.idpEntityId("http://idp.example.com/");
         builder.idpSingleSignOnServiceUrl("http://idp.example.com/simplesaml/saml2/idp/SSOService.php");
-        builder.idpX509cert(
-                "-----BEGIN CERTIFICATE-----\nMIIBrTCCAaGgAwIBAgIBATADBgEAMGcxCzAJBgNVBAYTAlVTMRMwEQYDVQQIDApDYWxpZm9ybmlhMRUwEwYDVQQHDAxTYW50YSBNb25pY2ExETAPBgNVBAoMCE9uZUxvZ2luMRkwFwYDVQQDDBBhcHAub25lbG9naW4uY29tMB4XDTEwMTAxMTIxMTUxMloXDTE1MTAxMTIxMTUxMlowZzELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFTATBgNVBAcMDFNhbnRhIE1vbmljYTERMA8GA1UECgwIT25lTG9naW4xGTAXBgNVBAMMEGFwcC5vbmVsb2dpbi5jb20wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMPmjfjy7L35oDpeBXBoRVCgktPkLno9DOEWB7MgYMMVKs2B6ymWQLEWrDugMK1hkzWFhIb5fqWLGbWy0J0veGR9/gHOQG+rD/I36xAXnkdiXXhzoiAG/zQxM0edMOUf40n314FC8moErcUg6QabttzesO59HFz6shPuxcWaVAgxAgMBAAEwAwYBAAMBAA==\n-----END CERTIFICATE-----");
+        builder.idpX509cert("-----BEGIN CERTIFICATE-----\nMIIBrTCCAaGgAwIBAgIBATADBgEAMGcxCzAJBgNVBAYTAlVTMRMwEQYDVQQIDApDYWxpZm9ybmlhMRUwEwYDVQQHDAxTYW50YSBNb25pY2ExETAPBgNVBAoMCE9uZUxvZ2luMRkwFwYDVQQDDBBhcHAub25lbG9naW4uY29tMB4XDTEwMTAxMTIxMTUxMloXDTE1MTAxMTIxMTUxMlowZzELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFTATBgNVBAcMDFNhbnRhIE1vbmljYTERMA8GA1UECgwIT25lTG9naW4xGTAXBgNVBAMMEGFwcC5vbmVsb2dpbi5jb20wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMPmjfjy7L35oDpeBXBoRVCgktPkLno9DOEWB7MgYMMVKs2B6ymWQLEWrDugMK1hkzWFhIb5fqWLGbWy0J0veGR9/gHOQG+rD/I36xAXnkdiXXhzoiAG/zQxM0edMOUf40n314FC8moErcUg6QabttzesO59HFz6shPuxcWaVAgxAgMBAAEwAwYBAAMBAA==\n-----END CERTIFICATE-----");
 
         builder.build();
     }
@@ -264,8 +280,7 @@ public class DynamicSettingsBuilderTest {
         // Build IdP
         builder.idpEntityId("http://idp.example.com/");
         builder.idpSingleSignOnServiceUrl("http://idp.example.com/simplesaml/saml2/idp/SSOService.php");
-        builder.idpX509cert(
-                "-----BEGIN CERTIFICATE-----\nMIIBrTCCAaGgAwIBAgIBATADBgEAMGcxCzAJBgNVBAYTAlVTMRMwEQYDVQQIDApDYWxpZm9ybmlhMRUwEwYDVQQHDAxTYW50YSBNb25pY2ExETAPBgNVBAoMCE9uZUxvZ2luMRkwFwYDVQQDDBBhcHAub25lbG9naW4uY29tMB4XDTEwMTAxMTIxMTUxMloXDTE1MTAxMTIxMTUxMlowZzELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFTATBgNVBAcMDFNhbnRhIE1vbmljYTERMA8GA1UECgwIT25lTG9naW4xGTAXBgNVBAMMEGFwcC5vbmVsb2dpbi5jb20wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMPmjfjy7L35oDpeBXBoRVCgktPkLno9DOEWB7MgYMMVKs2B6ymWQLEWrDugMK1hkzWFhIb5fqWLGbWy0J0veGR9/gHOQG+rD/I36xAXnkdiXXhzoiAG/zQxM0edMOUf40n314FC8moErcUg6QabttzesO59HFz6shPuxcWaVAgxAgMBAAEwAwYBAAMBAA==\n-----END CERTIFICATE-----");
+        builder.idpX509cert("-----BEGIN CERTIFICATE-----\nMIIBrTCCAaGgAwIBAgIBATADBgEAMGcxCzAJBgNVBAYTAlVTMRMwEQYDVQQIDApDYWxpZm9ybmlhMRUwEwYDVQQHDAxTYW50YSBNb25pY2ExETAPBgNVBAoMCE9uZUxvZ2luMRkwFwYDVQQDDBBhcHAub25lbG9naW4uY29tMB4XDTEwMTAxMTIxMTUxMloXDTE1MTAxMTIxMTUxMlowZzELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFTATBgNVBAcMDFNhbnRhIE1vbmljYTERMA8GA1UECgwIT25lTG9naW4xGTAXBgNVBAMMEGFwcC5vbmVsb2dpbi5jb20wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMPmjfjy7L35oDpeBXBoRVCgktPkLno9DOEWB7MgYMMVKs2B6ymWQLEWrDugMK1hkzWFhIb5fqWLGbWy0J0veGR9/gHOQG+rD/I36xAXnkdiXXhzoiAG/zQxM0edMOUf40n314FC8moErcUg6QabttzesO59HFz6shPuxcWaVAgxAgMBAAEwAwYBAAMBAA==\n-----END CERTIFICATE-----");
 
         builder.build();
     }
@@ -298,8 +313,7 @@ public class DynamicSettingsBuilderTest {
         // Build IdP
         builder.idpEntityId("http://idp.example.com/");
         builder.idpSingleSignOnServiceUrl(null);
-        builder.idpX509cert(
-                "-----BEGIN CERTIFICATE-----\nMIIBrTCCAaGgAwIBAgIBATADBgEAMGcxCzAJBgNVBAYTAlVTMRMwEQYDVQQIDApDYWxpZm9ybmlhMRUwEwYDVQQHDAxTYW50YSBNb25pY2ExETAPBgNVBAoMCE9uZUxvZ2luMRkwFwYDVQQDDBBhcHAub25lbG9naW4uY29tMB4XDTEwMTAxMTIxMTUxMloXDTE1MTAxMTIxMTUxMlowZzELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFTATBgNVBAcMDFNhbnRhIE1vbmljYTERMA8GA1UECgwIT25lTG9naW4xGTAXBgNVBAMMEGFwcC5vbmVsb2dpbi5jb20wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMPmjfjy7L35oDpeBXBoRVCgktPkLno9DOEWB7MgYMMVKs2B6ymWQLEWrDugMK1hkzWFhIb5fqWLGbWy0J0veGR9/gHOQG+rD/I36xAXnkdiXXhzoiAG/zQxM0edMOUf40n314FC8moErcUg6QabttzesO59HFz6shPuxcWaVAgxAgMBAAEwAwYBAAMBAA==\n-----END CERTIFICATE-----");
+        builder.idpX509cert("-----BEGIN CERTIFICATE-----\nMIIBrTCCAaGgAwIBAgIBATADBgEAMGcxCzAJBgNVBAYTAlVTMRMwEQYDVQQIDApDYWxpZm9ybmlhMRUwEwYDVQQHDAxTYW50YSBNb25pY2ExETAPBgNVBAoMCE9uZUxvZ2luMRkwFwYDVQQDDBBhcHAub25lbG9naW4uY29tMB4XDTEwMTAxMTIxMTUxMloXDTE1MTAxMTIxMTUxMlowZzELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFTATBgNVBAcMDFNhbnRhIE1vbmljYTERMA8GA1UECgwIT25lTG9naW4xGTAXBgNVBAMMEGFwcC5vbmVsb2dpbi5jb20wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMPmjfjy7L35oDpeBXBoRVCgktPkLno9DOEWB7MgYMMVKs2B6ymWQLEWrDugMK1hkzWFhIb5fqWLGbWy0J0veGR9/gHOQG+rD/I36xAXnkdiXXhzoiAG/zQxM0edMOUf40n314FC8moErcUg6QabttzesO59HFz6shPuxcWaVAgxAgMBAAEwAwYBAAMBAA==\n-----END CERTIFICATE-----");
 
         builder.build();
     }
@@ -318,6 +332,23 @@ public class DynamicSettingsBuilderTest {
 
         builder.build();
     }
+    
+    @Test(expected = SettingsException.class)
+    public void testInvalidIdPCert() throws Exception {
+        DynamicSettingsBuilder builder = new DynamicSettingsBuilder(true);
+
+        // Build SP
+        builder.spEntityId("http://localhost:8080/java-saml-jspsample/metadata.jsp");
+        builder.spAssertionConsumerServiceUrl("http://localhost:8080/java-saml-jspsample/acs.jsp");
+
+        // Build IdP
+        builder.idpEntityId("http://idp.example.com/");
+        builder.idpSingleSignOnServiceUrl("http://idp.example.com/simplesaml/saml2/idp/SSOService.php");
+        builder.idpX509cert("Invalid cert");
+
+        builder.build();
+    }
+    
 
     @Test(expected = SettingsException.class)
     public void testMissingSPCerts() throws Exception {
@@ -326,6 +357,43 @@ public class DynamicSettingsBuilderTest {
         // Build SP
         builder.spEntityId("http://localhost:8080/java-saml-jspsample/metadata.jsp");
         builder.spAssertionConsumerServiceUrl("http://localhost:8080/java-saml-jspsample/acs.jsp");
+        
+        // Build IdP
+        builder.idpEntityId("http://idp.example.com/");
+        builder.idpSingleSignOnServiceUrl("http://idp.example.com/simplesaml/saml2/idp/SSOService.php");
+        builder.idpX509cert("-----BEGIN CERTIFICATE-----\nMIIBrTCCAaGgAwIBAgIBATADBgEAMGcxCzAJBgNVBAYTAlVTMRMwEQYDVQQIDApDYWxpZm9ybmlhMRUwEwYDVQQHDAxTYW50YSBNb25pY2ExETAPBgNVBAoMCE9uZUxvZ2luMRkwFwYDVQQDDBBhcHAub25lbG9naW4uY29tMB4XDTEwMTAxMTIxMTUxMloXDTE1MTAxMTIxMTUxMlowZzELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFTATBgNVBAcMDFNhbnRhIE1vbmljYTERMA8GA1UECgwIT25lTG9naW4xGTAXBgNVBAMMEGFwcC5vbmVsb2dpbi5jb20wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMPmjfjy7L35oDpeBXBoRVCgktPkLno9DOEWB7MgYMMVKs2B6ymWQLEWrDugMK1hkzWFhIb5fqWLGbWy0J0veGR9/gHOQG+rD/I36xAXnkdiXXhzoiAG/zQxM0edMOUf40n314FC8moErcUg6QabttzesO59HFz6shPuxcWaVAgxAgMBAAEwAwYBAAMBAA==\n-----END CERTIFICATE-----");
+        
+        builder.authnRequestsSigned(true);
+        builder.build();
+    }
+    
+    @Test(expected = SettingsException.class)
+    public void testMissingSPPrivateKey() throws Exception {
+        DynamicSettingsBuilder builder = new DynamicSettingsBuilder(true);
+        
+        // Build SP
+        builder.spEntityId("http://localhost:8080/java-saml-jspsample/metadata.jsp");
+        builder.spAssertionConsumerServiceUrl("http://localhost:8080/java-saml-jspsample/acs.jsp");
+        builder.spX509cert("-----BEGIN CERTIFICATE-----MIICeDCCAeGgAwIBAgIBADANBgkqhkiG9w0BAQ0FADBZMQswCQYDVQQGEwJ1czETMBEGA1UECAwKQ2FsaWZvcm5pYTEVMBMGA1UECgwMT25lTG9naW4gSW5jMR4wHAYDVQQDDBVqYXZhLXNhbWwuZXhhbXBsZS5jb20wHhcNMTUxMDE4MjAxMjM1WhcNMTgwNzE0MjAxMjM1WjBZMQswCQYDVQQGEwJ1czETMBEGA1UECAwKQ2FsaWZvcm5pYTEVMBMGA1UECgwMT25lTG9naW4gSW5jMR4wHAYDVQQDDBVqYXZhLXNhbWwuZXhhbXBsZS5jb20wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBALvwEktX1+4y2AhEqxVwOO6HO7Wtzi3hr5becRkfLYGjNSyhzZCjI1DsNL61JSWDO3nviZd9fSkFnRC4akFUm0CS6GJ7TZe4T5o+9aowQ6N8e8cts9XPXyP6Inz7q4sD8pO2EInlfwHYPQCqFmz/SDW7cDgIC8vb0ygOsiXdreANAgMBAAGjUDBOMB0GA1UdDgQWBBTifMwN3CQ5ZOPkV5tDJsutU8teFDAfBgNVHSMEGDAWgBTifMwN3CQ5ZOPkV5tDJsutU8teFDAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBDQUAA4GBAG3nAEUjJaA75SkzID5FKLolsxG5TE/0HU0+yEUAVkXiqvqN4mPWq/JjoK5+uP4LEZIb4pRrCqI3iHp+vazLLYSeyV3kaGN7q35Afw8nk8WM0f7vImbQ69j1S8GQ+6E0PEI26qBLykGkMn3GUVtBBWSdpP093NuNLJiOomnHqhqj-----END CERTIFICATE-----");
+        
+        // Build IdP
+        builder.idpEntityId("http://idp.example.com/");
+        builder.idpSingleSignOnServiceUrl("http://idp.example.com/simplesaml/saml2/idp/SSOService.php");
+        builder.idpX509cert("-----BEGIN CERTIFICATE-----\nMIIBrTCCAaGgAwIBAgIBATADBgEAMGcxCzAJBgNVBAYTAlVTMRMwEQYDVQQIDApDYWxpZm9ybmlhMRUwEwYDVQQHDAxTYW50YSBNb25pY2ExETAPBgNVBAoMCE9uZUxvZ2luMRkwFwYDVQQDDBBhcHAub25lbG9naW4uY29tMB4XDTEwMTAxMTIxMTUxMloXDTE1MTAxMTIxMTUxMlowZzELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFTATBgNVBAcMDFNhbnRhIE1vbmljYTERMA8GA1UECgwIT25lTG9naW4xGTAXBgNVBAMMEGFwcC5vbmVsb2dpbi5jb20wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMPmjfjy7L35oDpeBXBoRVCgktPkLno9DOEWB7MgYMMVKs2B6ymWQLEWrDugMK1hkzWFhIb5fqWLGbWy0J0veGR9/gHOQG+rD/I36xAXnkdiXXhzoiAG/zQxM0edMOUf40n314FC8moErcUg6QabttzesO59HFz6shPuxcWaVAgxAgMBAAEwAwYBAAMBAA==\n-----END CERTIFICATE-----");
+        
+        builder.authnRequestsSigned(true);
+        builder.build();
+    }
+    
+    @Test(expected = SettingsException.class)
+    public void testInvalidSPPrivateKey() throws Exception {
+        DynamicSettingsBuilder builder = new DynamicSettingsBuilder(true);
+        
+        // Build SP
+        builder.spEntityId("http://localhost:8080/java-saml-jspsample/metadata.jsp");
+        builder.spAssertionConsumerServiceUrl("http://localhost:8080/java-saml-jspsample/acs.jsp");
+        builder.spX509cert("-----BEGIN CERTIFICATE-----MIICeDCCAeGgAwIBAgIBADANBgkqhkiG9w0BAQ0FADBZMQswCQYDVQQGEwJ1czETMBEGA1UECAwKQ2FsaWZvcm5pYTEVMBMGA1UECgwMT25lTG9naW4gSW5jMR4wHAYDVQQDDBVqYXZhLXNhbWwuZXhhbXBsZS5jb20wHhcNMTUxMDE4MjAxMjM1WhcNMTgwNzE0MjAxMjM1WjBZMQswCQYDVQQGEwJ1czETMBEGA1UECAwKQ2FsaWZvcm5pYTEVMBMGA1UECgwMT25lTG9naW4gSW5jMR4wHAYDVQQDDBVqYXZhLXNhbWwuZXhhbXBsZS5jb20wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBALvwEktX1+4y2AhEqxVwOO6HO7Wtzi3hr5becRkfLYGjNSyhzZCjI1DsNL61JSWDO3nviZd9fSkFnRC4akFUm0CS6GJ7TZe4T5o+9aowQ6N8e8cts9XPXyP6Inz7q4sD8pO2EInlfwHYPQCqFmz/SDW7cDgIC8vb0ygOsiXdreANAgMBAAGjUDBOMB0GA1UdDgQWBBTifMwN3CQ5ZOPkV5tDJsutU8teFDAfBgNVHSMEGDAWgBTifMwN3CQ5ZOPkV5tDJsutU8teFDAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBDQUAA4GBAG3nAEUjJaA75SkzID5FKLolsxG5TE/0HU0+yEUAVkXiqvqN4mPWq/JjoK5+uP4LEZIb4pRrCqI3iHp+vazLLYSeyV3kaGN7q35Afw8nk8WM0f7vImbQ69j1S8GQ+6E0PEI26qBLykGkMn3GUVtBBWSdpP093NuNLJiOomnHqhqj-----END CERTIFICATE-----");
+        builder.spPrivateKey("Invalid Private Key");
         
         // Build IdP
         builder.idpEntityId("http://idp.example.com/");

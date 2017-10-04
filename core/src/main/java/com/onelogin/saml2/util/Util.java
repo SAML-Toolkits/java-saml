@@ -482,13 +482,13 @@ public final class Util {
 	 * @throws CertificateException 
 	 *
 	 */
-    public static X509Certificate loadCert(String certString) throws CertificateException {
+	public static X509Certificate loadCert(String certString) throws CertificateException {
 		certString = formatCert(certString, true);
 		X509Certificate cert;
 		
 		try {
 			cert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(
-                    new ByteArrayInputStream(certString.getBytes(StandardCharsets.UTF_8)));
+				new ByteArrayInputStream(certString.getBytes(StandardCharsets.UTF_8)));
 		} catch (IllegalArgumentException e){
 			cert = null;
 		}
@@ -505,16 +505,24 @@ public final class Util {
 	 *
 	 * @throws GeneralSecurityException 
 	 */
-    public static PrivateKey loadPrivateKey(String keyString) throws GeneralSecurityException {
+	public static PrivateKey loadPrivateKey(String keyString) throws GeneralSecurityException {
 		org.apache.xml.security.Init.init();
 
-        String extractedKey = formatPrivateKey(keyString, false);
-        extractedKey = chunkString(extractedKey, 64);
+		String extractedKey = formatPrivateKey(keyString, false);
+		extractedKey = chunkString(extractedKey, 64);
 		KeyFactory kf = KeyFactory.getInstance("RSA");
 		
-        byte[] encoded = Base64.decodeBase64(extractedKey);
-		PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
-		return kf.generatePrivate(keySpec);
+		PrivateKey privKey;
+		try {
+			byte[] encoded = Base64.decodeBase64(extractedKey);
+			PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
+			privKey = kf.generatePrivate(keySpec);
+		}
+		catch(IllegalArgumentException e) {
+			privKey = null;
+		}
+
+		return privKey;
 	}
 
 	/**

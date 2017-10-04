@@ -66,7 +66,7 @@ public class Saml2Settings {
 	private Boolean wantNameId = true;
 	private Boolean wantNameIdEncrypted = false;
 	private Boolean signMetadata = false;
-    private List<String> requestedAuthnContext = new ArrayList<>();
+	private List<String> requestedAuthnContext = new ArrayList<>();
 	private String requestedAuthnContextComparison = "exact";
 	private Boolean wantXMLValidation = true;
 	private String signatureAlgorithm = Constants.RSA_SHA1;
@@ -629,9 +629,9 @@ public class Saml2Settings {
 	 *            the requestedAuthnContext value to be set on the AuthNRequest.
 	 */
 	public void setRequestedAuthnContext(List<String> requestedAuthnContext) {
-        if (requestedAuthnContext != null) {
-            this.requestedAuthnContext = requestedAuthnContext;
-        }
+		if (requestedAuthnContext != null) {
+			this.requestedAuthnContext = requestedAuthnContext;
+		}
 	}
 
 	/**
