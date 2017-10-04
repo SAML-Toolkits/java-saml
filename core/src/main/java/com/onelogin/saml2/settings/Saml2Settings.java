@@ -66,7 +66,7 @@ public class Saml2Settings {
 	private Boolean wantNameId = true;
 	private Boolean wantNameIdEncrypted = false;
 	private Boolean signMetadata = false;
-	private List<String> requestedAuthnContext = new ArrayList<String>();
+    private List<String> requestedAuthnContext = new ArrayList<>();
 	private String requestedAuthnContextComparison = "exact";
 	private Boolean wantXMLValidation = true;
 	private String signatureAlgorithm = Constants.RSA_SHA1;
@@ -77,7 +77,7 @@ public class Saml2Settings {
 	private Boolean compressResponse = true;
 
 	// Misc
-	private List<Contact> contacts = new LinkedList<Contact>();
+	private List<Contact> contacts = new LinkedList<>();
 	private Organization organization = null;
 
     private boolean spValidationOnly = false;
@@ -629,7 +629,9 @@ public class Saml2Settings {
 	 *            the requestedAuthnContext value to be set on the AuthNRequest.
 	 */
 	public void setRequestedAuthnContext(List<String> requestedAuthnContext) {
-		this.requestedAuthnContext = requestedAuthnContext;
+        if (requestedAuthnContext != null) {
+            this.requestedAuthnContext = requestedAuthnContext;
+        }
 	}
 
 	/**
@@ -744,7 +746,7 @@ public class Saml2Settings {
 	 * @return errors found on the settings data
 	 */
 	public List<String> checkSettings() {
-		List<String> errors = new ArrayList<String>(this.checkSPSettings());
+		List<String> errors = new ArrayList<>(this.checkSPSettings());
 		if (!spValidationOnly) { 
 			errors.addAll(this.checkIdPSettings());
 		}
@@ -758,7 +760,7 @@ public class Saml2Settings {
 	 * @return errors found on the IdP settings data
 	 */
 	public List<String> checkIdPSettings() {
-		List<String> errors = new ArrayList<String>();
+		List<String> errors = new ArrayList<>();
 		String errorMsg;
 
 		if (!checkRequired(getIdpEntityId())) {
@@ -794,7 +796,7 @@ public class Saml2Settings {
 	 * @return errors found on the SP settings data
 	 */
 	public List<String> checkSPSettings() {
-		List<String> errors = new ArrayList<String>();
+		List<String> errors = new ArrayList<>();
 		String errorMsg;
 
 		if (!checkRequired(getSpEntityId())) {
@@ -957,7 +959,7 @@ public class Saml2Settings {
 
 		Document metadataDocument = Util.loadXML(metadataString);
 
-		List<String> errors = new ArrayList<String>();
+		List<String> errors = new ArrayList<>();
 
 		if (!Util.validateXML(metadataDocument, SchemaFactory.SAML_SCHEMA_METADATA_2_0)) {
 			errors.add("Invalid SAML Metadata. Not match the saml-schema-metadata-2.0.xsd");
