@@ -1,5 +1,7 @@
 package com.onelogin.saml2.test.settings;
 
+import static com.onelogin.saml2.settings.SettingsBuilder.*;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -10,7 +12,9 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.codec.binary.Base64;
@@ -534,13 +538,13 @@ public class SettingBuilderTest {
 		String x509cert = new String(encoder.encode(setting.getIdpx509cert().getEncoded()));
 		
 		Properties prop = new Properties();
-		prop.setProperty(SettingsBuilder.IDP_ENTITYID_PROPERTY_KEY, setting.getIdpEntityId());
-		prop.setProperty(SettingsBuilder.IDP_SINGLE_SIGN_ON_SERVICE_URL_PROPERTY_KEY, setting.getIdpSingleSignOnServiceUrl().toString());
-		prop.setProperty(SettingsBuilder.IDP_SINGLE_LOGOUT_SERVICE_URL_PROPERTY_KEY, setting.getIdpSingleLogoutServiceUrl().toString());
-		prop.setProperty(SettingsBuilder.IDP_X509CERT_PROPERTY_KEY , x509cert);
-		prop.setProperty(SettingsBuilder.SP_ENTITYID_PROPERTY_KEY, setting.getSpEntityId());
-		prop.setProperty(SettingsBuilder.SP_ASSERTION_CONSUMER_SERVICE_URL_PROPERTY_KEY, setting.getSpAssertionConsumerServiceUrl().toString());
-		prop.setProperty(SettingsBuilder.SP_SINGLE_LOGOUT_SERVICE_URL_PROPERTY_KEY, setting.getSpSingleLogoutServiceUrl().toString());
+		prop.setProperty(IDP_ENTITYID, setting.getIdpEntityId());
+		prop.setProperty(IDP_SINGLE_SIGN_ON_SERVICE_URL, setting.getIdpSingleSignOnServiceUrl().toString());
+		prop.setProperty(IDP_SINGLE_LOGOUT_SERVICE_URL, setting.getIdpSingleLogoutServiceUrl().toString());
+		prop.setProperty(IDP_X509CERT , x509cert);
+		prop.setProperty(SP_ENTITYID, setting.getSpEntityId());
+		prop.setProperty(SP_ASSERTION_CONSUMER_SERVICE_URL, setting.getSpAssertionConsumerServiceUrl().toString());
+		prop.setProperty(SP_SINGLE_LOGOUT_SERVICE_URL, setting.getSpSingleLogoutServiceUrl().toString());
 		
 		Saml2Settings setting2 = new SettingsBuilder().fromProperties(prop).build();
 
@@ -581,6 +585,128 @@ public class SettingBuilderTest {
 
 		assertNull(setting2.getOrganization());
 		assertTrue(setting2.getContacts().isEmpty());
+	}
+	
+	/**
+	 * Tests SettingsBuilder constructor
+	 * Case: settings from values
+	 *
+	 * @see com.onelogin.saml2.settings.SettingsBuilder
+	 */
+	@Test
+	public void testLoadFromValues() throws Exception {
+	    	Map<String, String> prop = new LinkedHashMap<>();
+	    	prop.put(STRICT, "true");
+	    	
+		// Build SP
+		prop.put(SP_ENTITYID, "http://localhost:8080/java-saml-jspsample/metadata.jsp");
+		prop.put(SP_ASSERTION_CONSUMER_SERVICE_URL, "http://localhost:8080/java-saml-jspsample/acs.jsp");
+		prop.put(SP_ASSERTION_CONSUMER_SERVICE_BINDING, "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
+		prop.put(SP_SINGLE_LOGOUT_SERVICE_URL, "http://localhost:8080/java-saml-jspsample/sls.jsp");
+		prop.put(SP_SINGLE_LOGOUT_SERVICE_BINDING, "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
+		prop.put(SP_NAMEIDFORMAT, "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
+		prop.put(SP_X509CERT, "-----BEGIN CERTIFICATE-----MIICeDCCAeGgAwIBAgIBADANBgkqhkiG9w0BAQ0FADBZMQswCQYDVQQGEwJ1czETMBEGA1UECAwKQ2FsaWZvcm5pYTEVMBMGA1UECgwMT25lTG9naW4gSW5jMR4wHAYDVQQDDBVqYXZhLXNhbWwuZXhhbXBsZS5jb20wHhcNMTUxMDE4MjAxMjM1WhcNMTgwNzE0MjAxMjM1WjBZMQswCQYDVQQGEwJ1czETMBEGA1UECAwKQ2FsaWZvcm5pYTEVMBMGA1UECgwMT25lTG9naW4gSW5jMR4wHAYDVQQDDBVqYXZhLXNhbWwuZXhhbXBsZS5jb20wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBALvwEktX1+4y2AhEqxVwOO6HO7Wtzi3hr5becRkfLYGjNSyhzZCjI1DsNL61JSWDO3nviZd9fSkFnRC4akFUm0CS6GJ7TZe4T5o+9aowQ6N8e8cts9XPXyP6Inz7q4sD8pO2EInlfwHYPQCqFmz/SDW7cDgIC8vb0ygOsiXdreANAgMBAAGjUDBOMB0GA1UdDgQWBBTifMwN3CQ5ZOPkV5tDJsutU8teFDAfBgNVHSMEGDAWgBTifMwN3CQ5ZOPkV5tDJsutU8teFDAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBDQUAA4GBAG3nAEUjJaA75SkzID5FKLolsxG5TE/0HU0+yEUAVkXiqvqN4mPWq/JjoK5+uP4LEZIb4pRrCqI3iHp+vazLLYSeyV3kaGN7q35Afw8nk8WM0f7vImbQ69j1S8GQ+6E0PEI26qBLykGkMn3GUVtBBWSdpP093NuNLJiOomnHqhqj-----END CERTIFICATE-----");
+		prop.put(SP_PRIVATEKEY, "-----BEGIN PRIVATE KEY-----MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBALvwEktX1+4y2AhEqxVwOO6HO7Wtzi3hr5becRkfLYGjNSyhzZCjI1DsNL61JSWDO3nviZd9fSkFnRC4akFUm0CS6GJ7TZe4T5o+9aowQ6N8e8cts9XPXyP6Inz7q4sD8pO2EInlfwHYPQCqFmz/SDW7cDgIC8vb0ygOsiXdreANAgMBAAECgYA7VPVRl+/xoVeWdKdWY1F17HerSa23ynI2vQ8TkUY6kR3ucz6ElRxHJesY8fNCPoX+XuMfUly7IKyPZMkWyvEgDPo7J5mYqP5VsTK0Li4AwR/BA93Aw6gaX7/EYi3HjBh8QdNSt4fi9yOea/hv04yfR9Lx/a5fvQIyhqaDtT2QeQJBAOnCgnxnj70/sv9UsFPa8t1OGdAfXtOgEoklh1F2NR9jid6FPw5E98eCpdZ00MfRrmUavgqg6Y4swZISyzJIjGMCQQDN0YNsC4S+eJJM6aOCpupKluWE/cCWB01UQYekyXH7OdUtl49NlKEUPBSAvtaLMuMKlTNOjlPrx4Q+/c5i0vTPAkEA5H7CR9J/OZETaewhc8ZYkaRvLPYNHjWhCLhLXoB6itUkhgOfUFZwEXAOpOOI1VmL675JN2B1DAmJqTx/rQYnWwJBAMx3ztsAmnBq8dTM6y65ydouDHhRawjg2jbRHwNbSQvuyVSQ08Gb3WZvxWKdtB/3fsydqqnpBYAf5sZ5eJZ+wssCQAOiIKnhdYe+RBbBwykzjUqtzEmt4fwCFE8tD4feEx77D05j5f7u7KYh1mL0G2zIbnUryi7jwc4ye98VirRpZ1w=-----END PRIVATE KEY-----");
+		
+		// Build IdP
+		prop.put(IDP_ENTITYID, "http://idp.example.com/");
+		prop.put(IDP_SINGLE_SIGN_ON_SERVICE_URL, "http://idp.example.com/simplesaml/saml2/idp/SSOService.php");
+		prop.put(IDP_SINGLE_SIGN_ON_SERVICE_BINDING, "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
+		prop.put(IDP_SINGLE_LOGOUT_SERVICE_URL, "http://idp.example.com/simplesaml/saml2/idp/SingleLogoutService.php");
+		prop.put(IDP_SINGLE_LOGOUT_SERVICE_BINDING, "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
+		prop.put(IDP_SINGLE_LOGOUT_SERVICE_RESPONSE_URL, "http://idp.example.com/simplesaml/saml2/idp/SingleLogoutServiceResponse.php");
+		prop.put(IDP_X509CERT, "-----BEGIN CERTIFICATE-----\nMIIBrTCCAaGgAwIBAgIBATADBgEAMGcxCzAJBgNVBAYTAlVTMRMwEQYDVQQIDApDYWxpZm9ybmlhMRUwEwYDVQQHDAxTYW50YSBNb25pY2ExETAPBgNVBAoMCE9uZUxvZ2luMRkwFwYDVQQDDBBhcHAub25lbG9naW4uY29tMB4XDTEwMTAxMTIxMTUxMloXDTE1MTAxMTIxMTUxMlowZzELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFTATBgNVBAcMDFNhbnRhIE1vbmljYTERMA8GA1UECgwIT25lTG9naW4xGTAXBgNVBAMMEGFwcC5vbmVsb2dpbi5jb20wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMPmjfjy7L35oDpeBXBoRVCgktPkLno9DOEWB7MgYMMVKs2B6ymWQLEWrDugMK1hkzWFhIb5fqWLGbWy0J0veGR9/gHOQG+rD/I36xAXnkdiXXhzoiAG/zQxM0edMOUf40n314FC8moErcUg6QabttzesO59HFz6shPuxcWaVAgxAgMBAAEwAwYBAAMBAA==\n-----END CERTIFICATE-----");
+		prop.put(IDP_CERTFINGERPRINT, "4b6f70bb2cab82c86a8270f71a880b62e25bc2b3");
+		prop.put(IDP_CERTFINGERPRINT_ALGORITHM, "sha1");
+		
+		// Security
+		prop.put(SECURITY_NAMEID_ENCRYPTED, "true");
+		prop.put(SECURITY_AUTHREQUEST_SIGNED, "true");
+		prop.put(SECURITY_LOGOUTREQUEST_SIGNED, "true");
+		prop.put(SECURITY_LOGOUTRESPONSE_SIGNED, "true");
+		prop.put(SECURITY_WANT_MESSAGES_SIGNED,"true");
+		prop.put(SECURITY_WANT_ASSERTIONS_SIGNED, "true");
+		prop.put(SECURITY_SIGN_METADATA, "true");
+		prop.put(SECURITY_WANT_ASSERTIONS_ENCRYPTED, "true");
+		prop.put(SECURITY_WANT_NAMEID, "false");
+		prop.put(SECURITY_WANT_NAMEID_ENCRYPTED, "true");
+		prop.put(SECURITY_REQUESTED_AUTHNCONTEXT, "urn:oasis:names:tc:SAML:2.0:ac:classes:urn:oasis:names:tc:SAML:2.0:ac:classes:Password");
+		prop.put(SECURITY_REQUESTED_AUTHNCONTEXTCOMPARISON, "exact");
+		prop.put(SECURITY_WANT_XML_VALIDATION, "true");
+		prop.put(SECURITY_SIGNATURE_ALGORITHM, "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512");
+		
+		// Compress
+		prop.put(COMPRESS_REQUEST, "false");
+		prop.put(COMPRESS_RESPONSE, "false");
+
+		// Organization
+		prop.put(ORGANIZATION_NAME, "SP Java");
+		prop.put(ORGANIZATION_DISPLAYNAME, "SP Java Example");
+		prop.put(ORGANIZATION_URL, "http://sp.example.com");
+		prop.put(ORGANIZATION_LANG, "en");
+		
+		// Contacts
+		prop.put(CONTACT_TECHNICAL_GIVEN_NAME, "Technical Guy");
+		prop.put(CONTACT_TECHNICAL_EMAIL_ADDRESS, "technical@example.org");
+		prop.put(CONTACT_SUPPORT_GIVEN_NAME, "Support Guy");
+		prop.put(CONTACT_SUPPORT_EMAIL_ADDRESS, "support@example.org");
+		
+		Saml2Settings setting = new SettingsBuilder().fromValues(prop).build();
+		
+		assertTrue(setting.isStrict());
+
+		assertEquals("http://localhost:8080/java-saml-jspsample/metadata.jsp", setting.getSpEntityId());
+		assertEquals("http://localhost:8080/java-saml-jspsample/acs.jsp", setting.getSpAssertionConsumerServiceUrl().toString());
+		assertEquals(setting.getSpAssertionConsumerServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
+		assertEquals("http://localhost:8080/java-saml-jspsample/sls.jsp", setting.getSpSingleLogoutServiceUrl().toString());
+		assertEquals(setting.getSpSingleLogoutServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
+		assertEquals(setting.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
+
+		assertEquals("http://idp.example.com/", setting.getIdpEntityId());
+		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SSOService.php", setting.getIdpSingleSignOnServiceUrl().toString());
+		assertEquals(setting.getIdpSingleSignOnServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
+		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SingleLogoutService.php", setting.getIdpSingleLogoutServiceUrl().toString());
+		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SingleLogoutServiceResponse.php", setting.getIdpSingleLogoutServiceResponseUrl().toString());
+		assertEquals(setting.getIdpSingleLogoutServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
+		assertNotNull(setting.getIdpx509cert());
+		assertEquals(Util.loadCert(Util.getFileAsString("certs/certificate1")), setting.getIdpx509cert());
+		assertEquals("4b6f70bb2cab82c86a8270f71a880b62e25bc2b3", setting.getIdpCertFingerprint());
+		assertEquals("sha1", setting.getIdpCertFingerprintAlgorithm());
+
+		assertTrue(setting.getNameIdEncrypted());
+		assertTrue(setting.getAuthnRequestsSigned());
+		assertTrue(setting.getLogoutRequestSigned());
+		assertTrue(setting.getLogoutResponseSigned());
+		assertTrue(setting.getWantMessagesSigned());
+		assertTrue(setting.getWantAssertionsSigned());
+		assertTrue(setting.getWantAssertionsEncrypted());
+		assertTrue(setting.getWantNameIdEncrypted());
+
+		List<String> reqAuthContext = new ArrayList<>();
+		reqAuthContext.add("urn:oasis:names:tc:SAML:2.0:ac:classes:urn:oasis:names:tc:SAML:2.0:ac:classes:Password");
+		assertEquals(reqAuthContext, setting.getRequestedAuthnContext());
+		assertEquals("exact", setting.getRequestedAuthnContextComparison());
+		assertTrue(setting.getWantXMLValidation());
+		assertEquals(Constants.RSA_SHA512, setting.getSignatureAlgorithm());
+		assertTrue(setting.getSignMetadata());
+		assertFalse(setting.getWantNameId());
+
+		assertFalse(setting.isCompressRequestEnabled());
+		assertFalse(setting.isCompressResponseEnabled());
+
+		Organization org = new Organization("SP Java", "SP Java Example", "http://sp.example.com");
+		assertTrue(org.equalsTo(setting.getOrganization()));
+
+		List<Contact> contacts = setting.getContacts();
+		assertEquals(2, contacts.size());
+		Contact c1 = contacts.get(0);
+		assertEquals("technical", c1.getContactType());
+		assertEquals("technical@example.org", c1.getEmailAddress());
+		assertEquals("Technical Guy", c1.getGivenName());
+		Contact c2 = contacts.get(1);
+		assertEquals("support", c2.getContactType());
+		assertEquals("support@example.org", c2.getEmailAddress());
+		assertEquals("Support Guy", c2.getGivenName());
 	}
 	
 	/**
