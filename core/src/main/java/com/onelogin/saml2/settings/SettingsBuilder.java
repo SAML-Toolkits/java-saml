@@ -8,6 +8,7 @@ import java.security.PrivateKey;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -36,38 +37,38 @@ public class SettingsBuilder {
 	/**
 	 * Private property that contains the SAML settings
 	 */
-	private Properties prop = new Properties();
+	private Map<String, Object> samlData = new LinkedHashMap<>();
 
 	/**
 	 * Saml2Settings object
 	 */
 	private Saml2Settings saml2Setting;
 
-	public final static String STRICT = "onelogin.saml2.strict";
-	public final static String DEBUG = "onelogin.saml2.debug";
+	public final static String STRICT_PROPERTY_KEY = "onelogin.saml2.strict";
+	public final static String DEBUG_PROPERTY_KEY = "onelogin.saml2.debug";
 
 	// SP
-	public final static String SP_ENTITYID = "onelogin.saml2.sp.entityid";
-	public final static String SP_ASSERTION_CONSUMER_SERVICE_URL = "onelogin.saml2.sp.assertion_consumer_service.url";
-	public final static String SP_ASSERTION_CONSUMER_SERVICE_BINDING = "onelogin.saml2.sp.assertion_consumer_service.binding";
-	public final static String SP_SINGLE_LOGOUT_SERVICE_URL = "onelogin.saml2.sp.single_logout_service.url";
-	public final static String SP_SINGLE_LOGOUT_SERVICE_BINDING = "onelogin.saml2.sp.single_logout_service.binding";
-	public final static String SP_NAMEIDFORMAT = "onelogin.saml2.sp.nameidformat";
+	public final static String SP_ENTITYID_PROPERTY_KEY = "onelogin.saml2.sp.entityid";
+	public final static String SP_ASSERTION_CONSUMER_SERVICE_URL_PROPERTY_KEY = "onelogin.saml2.sp.assertion_consumer_service.url";
+	public final static String SP_ASSERTION_CONSUMER_SERVICE_BINDING_PROPERTY_KEY = "onelogin.saml2.sp.assertion_consumer_service.binding";
+	public final static String SP_SINGLE_LOGOUT_SERVICE_URL_PROPERTY_KEY = "onelogin.saml2.sp.single_logout_service.url";
+	public final static String SP_SINGLE_LOGOUT_SERVICE_BINDING_PROPERTY_KEY = "onelogin.saml2.sp.single_logout_service.binding";
+	public final static String SP_NAMEIDFORMAT_PROPERTY_KEY = "onelogin.saml2.sp.nameidformat";
 
-	public final static String SP_X509CERT = "onelogin.saml2.sp.x509cert";
-	public final static String SP_PRIVATEKEY = "onelogin.saml2.sp.privatekey";
+	public final static String SP_X509CERT_PROPERTY_KEY = "onelogin.saml2.sp.x509cert";
+	public final static String SP_PRIVATEKEY_PROPERTY_KEY = "onelogin.saml2.sp.privatekey";
 
 	// IDP
-	public final static String IDP_ENTITYID = "onelogin.saml2.idp.entityid";
-	public final static String IDP_SINGLE_SIGN_ON_SERVICE_URL = "onelogin.saml2.idp.single_sign_on_service.url";
-	public final static String IDP_SINGLE_SIGN_ON_SERVICE_BINDING = "onelogin.saml2.idp.single_sign_on_service.binding";
-	public final static String IDP_SINGLE_LOGOUT_SERVICE_URL = "onelogin.saml2.idp.single_logout_service.url";
-	public final static String IDP_SINGLE_LOGOUT_SERVICE_RESPONSE_URL = "onelogin.saml2.idp.single_logout_service.response.url";
-	public final static String IDP_SINGLE_LOGOUT_SERVICE_BINDING = "onelogin.saml2.idp.single_logout_service.binding";
+	public final static String IDP_ENTITYID_PROPERTY_KEY = "onelogin.saml2.idp.entityid";
+	public final static String IDP_SINGLE_SIGN_ON_SERVICE_URL_PROPERTY_KEY = "onelogin.saml2.idp.single_sign_on_service.url";
+	public final static String IDP_SINGLE_SIGN_ON_SERVICE_BINDING_PROPERTY_KEY = "onelogin.saml2.idp.single_sign_on_service.binding";
+	public final static String IDP_SINGLE_LOGOUT_SERVICE_URL_PROPERTY_KEY = "onelogin.saml2.idp.single_logout_service.url";
+	public final static String IDP_SINGLE_LOGOUT_SERVICE_RESPONSE_URL_PROPERTY_KEY = "onelogin.saml2.idp.single_logout_service.response.url";
+	public final static String IDP_SINGLE_LOGOUT_SERVICE_BINDING_PROPERTY_KEY = "onelogin.saml2.idp.single_logout_service.binding";
 
-	public final static String IDP_X509CERT = "onelogin.saml2.idp.x509cert";
-	public final static String IDP_CERTFINGERPRINT = "onelogin.saml2.idp.certfingerprint";
-	public final static String IDP_CERTFINGERPRINT_ALGORITHM = "onelogin.saml2.idp.certfingerprint_algorithm";
+	public final static String IDP_X509CERT_PROPERTY_KEY = "onelogin.saml2.idp.x509cert";
+	public final static String CERTFINGERPRINT_PROPERTY_KEY = "onelogin.saml2.idp.certfingerprint";
+	public final static String CERTFINGERPRINT_ALGORITHM_PROPERTY_KEY = "onelogin.saml2.idp.certfingerprint_algorithm";
 
 	// Security
 	public final static String SECURITY_NAMEID_ENCRYPTED = "onelogin.saml2.security.nameid_encrypted";
@@ -117,7 +118,9 @@ public class SettingsBuilder {
 		ClassLoader classLoader = getClass().getClassLoader();
 		try (InputStream inputStream = classLoader.getResourceAsStream(propFileName)) {
 			if (inputStream != null) {
-				this.prop.load(inputStream);
+				Properties prop = new Properties();
+				prop.load(inputStream);
+				parseProperties(prop);
 				LOGGER.debug("properties file '{}' loaded succesfully", propFileName);
 			} else {
 				String errorMsg = "properties file '" + propFileName + "' not found in the classpath";
@@ -142,8 +145,8 @@ public class SettingsBuilder {
 	 * @return the SettingsBuilder object with the settings loaded from the prop object
 	 */
 	public SettingsBuilder fromProperties(Properties prop) {
-	    this.prop = prop;
-	    return this;
+		parseProperties(prop);
+		return this;
 	}
 
 	/**
@@ -154,10 +157,11 @@ public class SettingsBuilder {
 	 *
 	 * @return the SettingsBuilder object with the settings loaded from the prop object
 	 */
-	public SettingsBuilder fromValues(Map<String, String> values) {
-	    this.prop = new Properties();
-	    this.prop.putAll(values);
-	    return this;
+	public SettingsBuilder fromValues(Map<String, Object> samlData) {
+		if (samlData != null) {
+			this.samlData.putAll(samlData);
+		}
+		return this;
 	}
 	
 	/**
@@ -170,11 +174,11 @@ public class SettingsBuilder {
 
 		saml2Setting = new Saml2Settings();
 		
-		Boolean strict = loadBooleanProperty(STRICT);
+		Boolean strict = loadBooleanProperty(STRICT_PROPERTY_KEY);
 		if (strict != null)
 			saml2Setting.setStrict(strict);
 
-		Boolean debug = loadBooleanProperty(DEBUG);
+		Boolean debug = loadBooleanProperty(DEBUG_PROPERTY_KEY);
 		if (debug != null)
 			saml2Setting.setDebug(debug);
 
@@ -194,39 +198,39 @@ public class SettingsBuilder {
 	 * Loads the IdP settings from the properties file
 	 */
 	private void loadIdpSetting() {
-		String idpEntityID = loadStringProperty(IDP_ENTITYID);
+		String idpEntityID = loadStringProperty(IDP_ENTITYID_PROPERTY_KEY);
 		if (idpEntityID != null)
 			saml2Setting.setIdpEntityId(idpEntityID);
 
-		URL idpSingleSignOnServiceUrl = loadURLProperty(IDP_SINGLE_SIGN_ON_SERVICE_URL);
+		URL idpSingleSignOnServiceUrl = loadURLProperty(IDP_SINGLE_SIGN_ON_SERVICE_URL_PROPERTY_KEY);
 		if (idpSingleSignOnServiceUrl != null)
 			saml2Setting.setIdpSingleSignOnServiceUrl(idpSingleSignOnServiceUrl);
 
-		String idpSingleSignOnServiceBinding = loadStringProperty(IDP_SINGLE_SIGN_ON_SERVICE_BINDING);
+		String idpSingleSignOnServiceBinding = loadStringProperty(IDP_SINGLE_SIGN_ON_SERVICE_BINDING_PROPERTY_KEY);
 		if (idpSingleSignOnServiceBinding != null)
 			saml2Setting.setIdpSingleSignOnServiceBinding(idpSingleSignOnServiceBinding);
 
-		URL idpSingleLogoutServiceUrl = loadURLProperty(IDP_SINGLE_LOGOUT_SERVICE_URL);
+		URL idpSingleLogoutServiceUrl = loadURLProperty(IDP_SINGLE_LOGOUT_SERVICE_URL_PROPERTY_KEY);
 		if (idpSingleLogoutServiceUrl != null)
 			saml2Setting.setIdpSingleLogoutServiceUrl(idpSingleLogoutServiceUrl);
 
-		URL idpSingleLogoutServiceResponseUrl = loadURLProperty(IDP_SINGLE_LOGOUT_SERVICE_RESPONSE_URL);
+		URL idpSingleLogoutServiceResponseUrl = loadURLProperty(IDP_SINGLE_LOGOUT_SERVICE_RESPONSE_URL_PROPERTY_KEY);
 		if (idpSingleLogoutServiceResponseUrl != null)
 			saml2Setting.setIdpSingleLogoutServiceResponseUrl(idpSingleLogoutServiceResponseUrl);
 
-		String idpSingleLogoutServiceBinding = loadStringProperty(IDP_SINGLE_LOGOUT_SERVICE_BINDING);
+		String idpSingleLogoutServiceBinding = loadStringProperty(IDP_SINGLE_LOGOUT_SERVICE_BINDING_PROPERTY_KEY);
 		if (idpSingleLogoutServiceBinding != null)
 			saml2Setting.setIdpSingleLogoutServiceBinding(idpSingleLogoutServiceBinding);
 
-		X509Certificate idpX509cert = loadCertificateFromProp(IDP_X509CERT);
+		X509Certificate idpX509cert = loadCertificateFromProp(IDP_X509CERT_PROPERTY_KEY);
 		if (idpX509cert != null)
 			saml2Setting.setIdpx509cert(idpX509cert);
 
-		String idpCertFingerprint = loadStringProperty(IDP_CERTFINGERPRINT);
+		String idpCertFingerprint = loadStringProperty(CERTFINGERPRINT_PROPERTY_KEY);
 		if (idpCertFingerprint != null)
 			saml2Setting.setIdpCertFingerprint(idpCertFingerprint);
 
-		String idpCertFingerprintAlgorithm = loadStringProperty(IDP_CERTFINGERPRINT_ALGORITHM);
+		String idpCertFingerprintAlgorithm = loadStringProperty(CERTFINGERPRINT_ALGORITHM_PROPERTY_KEY);
 		if (idpCertFingerprintAlgorithm != null && !idpCertFingerprintAlgorithm.isEmpty())
 			saml2Setting.setIdpCertFingerprintAlgorithm(idpCertFingerprintAlgorithm);
 	}
@@ -359,35 +363,35 @@ public class SettingsBuilder {
 	 * Loads the SP settings from the properties file
 	 */
 	private void loadSpSetting() {
-		String spEntityID = loadStringProperty(SP_ENTITYID);
+		String spEntityID = loadStringProperty(SP_ENTITYID_PROPERTY_KEY);
 		if (spEntityID != null)
 			saml2Setting.setSpEntityId(spEntityID);
 
-		URL assertionConsumerServiceUrl = loadURLProperty(SP_ASSERTION_CONSUMER_SERVICE_URL);
+		URL assertionConsumerServiceUrl = loadURLProperty(SP_ASSERTION_CONSUMER_SERVICE_URL_PROPERTY_KEY);
 		if (assertionConsumerServiceUrl != null)
 			saml2Setting.setSpAssertionConsumerServiceUrl(assertionConsumerServiceUrl);
 
-		String spAssertionConsumerServiceBinding = loadStringProperty(SP_ASSERTION_CONSUMER_SERVICE_BINDING);
+		String spAssertionConsumerServiceBinding = loadStringProperty(SP_ASSERTION_CONSUMER_SERVICE_BINDING_PROPERTY_KEY);
 		if (spAssertionConsumerServiceBinding != null)
 			saml2Setting.setSpAssertionConsumerServiceBinding(spAssertionConsumerServiceBinding);
 
-		URL spSingleLogoutServiceUrl = loadURLProperty(SP_SINGLE_LOGOUT_SERVICE_URL);
+		URL spSingleLogoutServiceUrl = loadURLProperty(SP_SINGLE_LOGOUT_SERVICE_URL_PROPERTY_KEY);
 		if (spSingleLogoutServiceUrl != null)
 			saml2Setting.setSpSingleLogoutServiceUrl(spSingleLogoutServiceUrl);
 
-		String spSingleLogoutServiceBinding = loadStringProperty(SP_SINGLE_LOGOUT_SERVICE_BINDING);
+		String spSingleLogoutServiceBinding = loadStringProperty(SP_SINGLE_LOGOUT_SERVICE_BINDING_PROPERTY_KEY);
 		if (spSingleLogoutServiceBinding != null)
 			saml2Setting.setSpSingleLogoutServiceBinding(spSingleLogoutServiceBinding);
 
-		String spNameIDFormat = loadStringProperty(SP_NAMEIDFORMAT);
+		String spNameIDFormat = loadStringProperty(SP_NAMEIDFORMAT_PROPERTY_KEY);
 		if (spNameIDFormat != null && !spNameIDFormat.isEmpty())
 			saml2Setting.setSpNameIDFormat(spNameIDFormat);
 
-		X509Certificate spX509cert = loadCertificateFromProp(SP_X509CERT);
+		X509Certificate spX509cert = loadCertificateFromProp(SP_X509CERT_PROPERTY_KEY);
 		if (spX509cert != null)
 			saml2Setting.setSpX509cert(spX509cert);
 
-		PrivateKey spPrivateKey = loadPrivateKeyFromProp(SP_PRIVATEKEY);
+		PrivateKey spPrivateKey = loadPrivateKeyFromProp(SP_PRIVATEKEY_PROPERTY_KEY);
 		if (spPrivateKey != null)
 			saml2Setting.setSpPrivateKey(spPrivateKey);
 	}
@@ -401,11 +405,11 @@ public class SettingsBuilder {
 	 * @return the value
 	 */
 	private String loadStringProperty(String propertyKey) {
-		String propValue = prop.getProperty(propertyKey);
-		if (propValue != null) {
-			propValue = propValue.trim();
+		Object propValue = samlData.get(propertyKey);
+		if (isString(propValue)) {
+			return StringUtils.trimToNull((String) propValue);
 		}
-		return propValue;
+		return null;
 	}
 
 	/**
@@ -417,9 +421,13 @@ public class SettingsBuilder {
 	 * @return the value
 	 */
 	private Boolean loadBooleanProperty(String propertyKey) {
-		String booleanPropValue = prop.getProperty(propertyKey);
-		if (booleanPropValue != null) {
-			return Boolean.parseBoolean(booleanPropValue.trim());
+		Object propValue = samlData.get(propertyKey);
+		if (isString(propValue)) {
+			return Boolean.parseBoolean(((String) propValue).trim());
+		}
+		
+		if (propValue instanceof Boolean) {
+		    	return (Boolean) propValue;
 		}
 		return null;
 	}
@@ -433,13 +441,17 @@ public class SettingsBuilder {
 	 * @return the value
 	 */
 	private List<String> loadListProperty(String propertyKey) {
-		String arrayPropValue = prop.getProperty(propertyKey);
-		if (StringUtils.isNotBlank(arrayPropValue)) {
-			String [] values = arrayPropValue.trim().split(",");
+		Object propValue = samlData.get(propertyKey);
+		if (isString(propValue)) {
+			String [] values = ((String) propValue).trim().split(",");
 			for (int i = 0; i < values.length; i++) {
 				values[i] = values[i].trim();
 			}
 			return Arrays.asList(values);
+		}
+		
+		if (propValue instanceof List) {
+			return (List<String>) propValue;
 		}
 		return null;
 	}
@@ -454,18 +466,22 @@ public class SettingsBuilder {
 	 */
 	private URL loadURLProperty(String propertyKey) {
 
-		String urlPropValue = prop.getProperty(propertyKey);
+		Object propValue = samlData.get(propertyKey);
 
-		if (StringUtils.isBlank(urlPropValue)) {
-			return null;
+		if (isString(propValue)) {
+			try {
+				return new URL(((String) propValue).trim());
+			} catch (MalformedURLException e) {
+				LOGGER.error("'{}' contains malformed url.", propertyKey, e);
+				return null;
+			}
 		}
 
-		try {
-			return new URL(urlPropValue.trim());
-		} catch (MalformedURLException e) {
-			LOGGER.error("'{}' contains malformed url.", propertyKey, e);
-			return null;
+		if (propValue instanceof URL) {
+			return (URL) propValue;
 		}
+		
+		return null;
 	}
 	
 	/**
@@ -477,18 +493,22 @@ public class SettingsBuilder {
 	 * @return the X509Certificate object
 	 */
 	protected X509Certificate loadCertificateFromProp(String propertyKey) {
-		String certString = prop.getProperty(propertyKey);
+		Object propValue = samlData.get(propertyKey);
 
-		if (StringUtils.isBlank(certString)) {
-			return null;
+		if (isString(propValue)) {
+			try {
+				return Util.loadCert(((String) propValue).trim());
+			} catch (CertificateException e) {
+				LOGGER.error("Error loading certificate from properties.", e);
+				return null;
+			}
 		}
 
-		try {
-			return Util.loadCert(certString);
-		} catch (CertificateException e) {
-			LOGGER.error("Error loading certificate from properties.", e);
-			return null;
+		if ( propValue instanceof X509Certificate) {
+		    	return (X509Certificate) propValue;
 		}
+		
+		return null;
 	}
 
 	/**
@@ -535,18 +555,22 @@ public class SettingsBuilder {
 	 * @return the PrivateKey object
 	 */
 	protected PrivateKey loadPrivateKeyFromProp(String propertyKey) {
-		String keyString = prop.getProperty(propertyKey);
+		Object propValue = samlData.get(propertyKey);
 
-		if (keyString == null || keyString.isEmpty()) {
-			return null;
-		}
-
-		try {
-			return Util.loadPrivateKey(keyString);
-		} catch (Exception e) {
+		if (isString(propValue)) {
+		    try {
+			return Util.loadPrivateKey(((String) propValue).trim());
+		    } catch (Exception e) {
 			LOGGER.error("Error loading privatekey from properties.", e);
 			return null;
+		    }
 		}
+
+		if ( propValue instanceof PrivateKey) {
+		    	return (PrivateKey) propValue;
+		}
+		
+		return null;
 	}
 
 	/**
@@ -582,4 +606,15 @@ public class SettingsBuilder {
 		}
 	}
 	*/
+	private void parseProperties(Properties properties) {
+		if (properties != null) {
+			for (String propertyKey: properties.stringPropertyNames()) {
+				this.samlData.put(propertyKey, properties.getProperty(propertyKey));
+			}
+		}
+	}
+	
+	private boolean isString(Object propValue) {
+		return propValue instanceof String && StringUtils.isNotBlank((String) propValue);
+	}
 }
