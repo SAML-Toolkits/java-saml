@@ -178,6 +178,7 @@ At *java-saml-tookit-jspsample/src/main/resources* folder is the *onelogin.saml.
 #### Settings
 First of all we need to configure the toolkit. The SP's info, the IdP's info, and in some cases, configuration for advanced security issues, such as signatures and encryption.
 
+##### Properties File
 All the settings are defined in one unique file; by default, the Auth class loads a *onelogin.saml.properties* file with the Auth() method, but if we named it in a different way, we can use Auth(filename);
 
 Here are the list of properties to be defined on the settings file:
@@ -337,7 +338,27 @@ onelogin.saml2.organization.lang = en
 onelogin.saml2.contacts.technical.given_name = Technical Guy
 onelogin.saml2.contacts.technical.email_address = technical@example.com
 onelogin.saml2.contacts.support.given_name = Support Guy
-onelogin.saml2.contacts.support.email_address = support@@example.com
+onelogin.saml2.contacts.support.email_address = support@example.com
+```
+
+##### Dynamic Settings
+It is possible to build settings programatically. You can load your values from different sources such as files, databases, or generated values.
+
+The `SettingsBuilder` class exposes the method `fromValues(Map<String, Object> samlData)` which let you build your settings dynamically. The `key` strings are the same from the *Properties file*
+```java
+Map<String, Object> samlData = new HashMap<>();
+samlData.put("onelogin.saml2.sp.entityid", "http://localhost:8080/java-saml-tookit-jspsample/metadata.jsp");
+samlData.put("onelogin.saml2.sp.assertion_consumer_service.url", new URL("http://localhost:8080/java-saml-tookit-jspsample/acs.jsp"));
+samlData.put("onelogin.saml2.security.want_xml_validation",true);
+samlData.put("onelogin.saml2.sp.x509cert", myX509CertInstance);
+
+SettingsBuilder builder = new SettingsBuilder();
+Saml2Settings settings = builder.fromValues(samlData).build();
+```
+
+To instantiate the `Auth` class you write
+```java
+Auth auth = new Auth(settings, request, response);
 ```
 
 #### The HttpRequest
