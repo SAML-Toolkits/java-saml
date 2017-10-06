@@ -13,12 +13,13 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.Key;
 import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.SignatureException;
@@ -34,8 +35,10 @@ import java.util.UUID;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.Inflater;
+
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -51,7 +54,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-import javax.xml.XMLConstants;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -477,17 +479,16 @@ public final class Util {
 	 *
 	 * @return Loaded Certificate. X509Certificate object
 	 *
-	 * @throws UnsupportedEncodingException 
 	 * @throws CertificateException 
 	 *
 	 */
-	public static X509Certificate loadCert(String certString) throws CertificateException, UnsupportedEncodingException {
+	public static X509Certificate loadCert(String certString) throws CertificateException {
 		certString = formatCert(certString, true);
 		X509Certificate cert;
 		
 		try {
 			cert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(
-				new ByteArrayInputStream(certString.getBytes("utf-8")));
+				new ByteArrayInputStream(certString.getBytes(StandardCharsets.UTF_8)));
 		} catch (IllegalArgumentException e){
 			cert = null;
 		}
@@ -503,20 +504,19 @@ public final class Util {
 	 * @return Loaded private key. PrivateKey object
 	 *
 	 * @throws GeneralSecurityException 
-	 * @throws IOException 
 	 */
-	public static PrivateKey loadPrivateKey(String keyString) throws GeneralSecurityException, IOException {
+	public static PrivateKey loadPrivateKey(String keyString) throws GeneralSecurityException {
 		org.apache.xml.security.Init.init();
 
-		keyString = formatPrivateKey(keyString, false);
-		keyString = chunkString(keyString, 64);		
+		String extractedKey = formatPrivateKey(keyString, false);
+		extractedKey = chunkString(extractedKey, 64);
 		KeyFactory kf = KeyFactory.getInstance("RSA");
 		
 		PrivateKey privKey;
 		try {
-			byte[] encoded = Base64.decodeBase64(keyString);
+			byte[] encoded = Base64.decodeBase64(extractedKey);
 			PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
-			privKey = (PrivateKey) kf.generatePrivate(keySpec);
+			privKey = kf.generatePrivate(keySpec);
 		}
 		catch(IllegalArgumentException e) {
 			privKey = null;
