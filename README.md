@@ -80,7 +80,7 @@ Install it as a maven dependecy:
   <dependency>
       <groupId>com.onelogin</groupId>
       <artifactId>java-saml</artifactId>
-      <version>2.0.0</version>
+      <version>2.2.0</version>
   </dependency>
 ```
 
@@ -116,7 +116,7 @@ also the [Java Cryptography Extension (JCE)](https://en.wikipedia.org/wiki/Java_
 * org.apache.maven.plugins:maven-enforcer-plugin
 
 For more info, open and read the different pom.xml files:
-[core/pom.xml](https://github.com/onelogin/java-saml/blob/v2.0.0/core/pom.xml), [toolkit/pom.xml](https://github.com/onelogin/java-saml/blob/v2.0.0/toolkit/pom.xml)
+[core/pom.xml](https://github.com/onelogin/java-saml/blob/v2.2.0/core/pom.xml), [toolkit/pom.xml](https://github.com/onelogin/java-saml/blob/v2.2.0/toolkit/pom.xml)
 
 ## Working with the github repository code and Eclipse.
 ### Get the toolkit.
