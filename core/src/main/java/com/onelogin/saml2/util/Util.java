@@ -1191,7 +1191,7 @@ public final class Util {
 				nameId.setAttribute("SPNameQualifier", spnq);
 			}
 			if (format != null && !format.isEmpty()) {
-			nameId.setAttribute("Format", format);
+				nameId.setAttribute("Format", format);
 			}
 			nameId.appendChild(doc.createTextNode(value));
 			doc.appendChild(nameId);
@@ -1245,6 +1245,18 @@ public final class Util {
 	 */
 	public static String generateNameId(String value, String spnq, String format) {
 		return generateNameId(value, spnq, format, null);
+	}
+
+	/**
+	 * Generates a nameID.
+	 *
+	 * @param value
+	 * 				 The value
+	 *
+	 * @return Xml contained in the document.
+	 */
+	public static String generateNameId(String value) {
+		return generateNameId(value, null, null, null);
 	}
 	
 	/**

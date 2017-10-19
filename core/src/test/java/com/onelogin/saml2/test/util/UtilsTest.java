@@ -1717,7 +1717,25 @@ public class UtilsTest {
 		assertThat(nameIdEnc, containsString("http://www.w3.org/2001/04/xmlenc#aes128-cbc"));
 		assertThat(nameIdEnc, containsString("http://www.w3.org/2001/04/xmlenc#rsa-1_5"));
 	}
-	
+
+	/**
+	 * Tests the generateNameId method
+	 *
+	 * @throws IOException 
+	 * @throws URISyntaxException 
+	 * @throws CertificateException 
+	 *
+	 * @see com.onelogin.saml2.util.Util#generateNameId
+	 */
+	@Test
+	public void testGenerateNameIdWithoutFormat() throws URISyntaxException, IOException, CertificateException {
+        String nameIdValue = "ONELOGIN_ce998811003f4e60f8b07a311dc641621379cfde";
+        String nameId = Util.generateNameId(nameIdValue);
+
+        String expectedNameId = "<saml:NameID>ONELOGIN_ce998811003f4e60f8b07a311dc641621379cfde</saml:NameID>";
+        assertEquals(expectedNameId, nameId);        
+	}
+
 	/**
 	 * Tests the generateUniqueID method
 	 * 
