@@ -249,7 +249,11 @@ public class LogoutRequest {
 		} else {
 			nameId = settings.getIdpEntityId();
 			nameIdFormat = Constants.NAMEID_ENTITY;
-			spNameQualifier = settings.getSpEntityId();
+			
+			// If the format is unspecified, omit the SPEntityID. This will fix the error affecting ADFS on windows, 
+			// which complains about omitting the NameQualifier. @albertogeniola 02/11/2017
+			if (settings.getSpNameIDFormat().equals(Constants.NAMEID_UNSPECIFIED))
+				spNameQualifier = settings.getSpEntityId();
 		}
 
 		X509Certificate cert = null;
