@@ -192,6 +192,8 @@ public class ServletUtils {
       }
       html.append("</form>\n</body>\n</html>");
       if (!stay) {
+        response.setContentType("text/html;charset=UTF-8");
+        response.setContentLength(html.toString().getBytes("UTF-8").length);
         response.getWriter().write(html.toString());
       }
       return html.toString();
