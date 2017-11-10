@@ -626,7 +626,7 @@ public class Auth {
 					parameters.put("RelayState", relayState);
 				}
 
-				if (settings.getLogoutRequestSigned()) {
+				if (settings.getLogoutResponseSigned()) {
 					String sigAlg = settings.getSignatureAlgorithm();
 					String signature = this.buildResponseSignature(samlLogoutResponse, relayState, sigAlg);
 

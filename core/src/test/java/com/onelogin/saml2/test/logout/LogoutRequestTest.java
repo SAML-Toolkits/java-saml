@@ -228,7 +228,6 @@ public class LogoutRequestTest {
 		String logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		assertThat(logoutRequestStr, containsString("<samlp:LogoutRequest"));
 		String nameIdDataStr = LogoutRequest.getNameIdData(logoutRequestStr, null).toString();
-		assertThat(nameIdDataStr, containsString("Format=urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"));
 		assertThat(nameIdDataStr, containsString("Value=ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c"));
 		assertThat(nameIdDataStr, not(containsString("SPNameQualifier")));
 
@@ -249,7 +248,6 @@ public class LogoutRequestTest {
 		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		PrivateKey key = settings.getSPkey();
 		nameIdDataStr = LogoutRequest.getNameIdData(logoutRequestStr, key).toString();
-		assertThat(nameIdDataStr, containsString("Format=urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"));
 		assertThat(nameIdDataStr, containsString("Value=ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c"));
 		assertThat(nameIdDataStr, not(containsString("SPNameQualifier")));	
 
@@ -268,6 +266,16 @@ public class LogoutRequestTest {
 		assertThat(nameIdDataStr, containsString("Format=urn:oasis:names:tc:SAML:2.0:nameid-format:emailAddress"));
 		assertThat(nameIdDataStr, containsString("Value=ONELOGIN_9c86c4542ab9d6fce07f2f7fd335287b9b3cdf69"));
 		assertThat(nameIdDataStr, containsString("SPNameQualifier=https://pitbulk.no-ip.org/newonelogin/demo1/metadata.php"));
+	
+		settings = new SettingsBuilder().fromFile("config/config.emailaddressformat.properties").build();
+		logoutRequest = new LogoutRequest(settings, null, "ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c", null); 
+		logoutRequestStringBase64 = logoutRequest.getEncodedLogoutRequest();
+		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
+		assertThat(logoutRequestStr, containsString("<samlp:LogoutRequest"));
+		nameIdDataStr = LogoutRequest.getNameIdData(logoutRequestStr, null).toString();
+		assertThat(nameIdDataStr, containsString("Value=ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c"));
+		assertThat(nameIdDataStr, containsString("Format=urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"));
+		assertThat(nameIdDataStr, not(containsString("SPNameQualifier")));		
 	}
 
 	/**

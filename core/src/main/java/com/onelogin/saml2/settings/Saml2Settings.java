@@ -56,31 +56,31 @@ public class Saml2Settings {
 	private String idpCertFingerprintAlgorithm = "sha1";
 
 	// Security
-	private Boolean nameIdEncrypted = false;
-	private Boolean authnRequestsSigned = false;
-	private Boolean logoutRequestSigned = false;
-	private Boolean logoutResponseSigned = false;
-	private Boolean wantMessagesSigned = false;
-	private Boolean wantAssertionsSigned = false;
-	private Boolean wantAssertionsEncrypted = false;
-	private Boolean wantNameId = true;
-	private Boolean wantNameIdEncrypted = false;
-	private Boolean signMetadata = false;
-	private List<String> requestedAuthnContext = new ArrayList<String>();
+	private boolean nameIdEncrypted = false;
+	private boolean authnRequestsSigned = false;
+	private boolean logoutRequestSigned = false;
+	private boolean logoutResponseSigned = false;
+	private boolean wantMessagesSigned = false;
+	private boolean wantAssertionsSigned = false;
+	private boolean wantAssertionsEncrypted = false;
+	private boolean wantNameId = true;
+	private boolean wantNameIdEncrypted = false;
+	private boolean signMetadata = false;
+	private List<String> requestedAuthnContext = new ArrayList<>();
 	private String requestedAuthnContextComparison = "exact";
-	private Boolean wantXMLValidation = true;
+	private boolean wantXMLValidation = true;
 	private String signatureAlgorithm = Constants.RSA_SHA1;
-	private Boolean rejectUnsolicitedResponsesWithInResponseTo = false;
+	private boolean rejectUnsolicitedResponsesWithInResponseTo = false;
 
 	// Compress
-	private Boolean compressRequest = true;
-	private Boolean compressResponse = true;
+	private boolean compressRequest = true;
+	private boolean compressResponse = true;
 
 	// Misc
-	private List<Contact> contacts = new LinkedList<Contact>();
+	private List<Contact> contacts = new LinkedList<>();
 	private Organization organization = null;
 
-    private boolean spValidationOnly = false;
+	private boolean spValidationOnly = false;
 	
 	/**
 	 * @return the strict setting value
@@ -215,70 +215,70 @@ public class Saml2Settings {
 	/**
 	 * @return the nameIdEncrypted setting value
 	 */
-	public Boolean getNameIdEncrypted() {
+	public boolean getNameIdEncrypted() {
 		return nameIdEncrypted;
 	}
 
 	/**
 	 * @return the authnRequestsSigned setting value
 	 */
-	public Boolean getAuthnRequestsSigned() {
+	public boolean getAuthnRequestsSigned() {
 		return authnRequestsSigned;
 	}
 
 	/**
 	 * @return the logoutRequestSigned setting value
 	 */
-	public Boolean getLogoutRequestSigned() {
+	public boolean getLogoutRequestSigned() {
 		return logoutRequestSigned;
 	}
 
 	/**
 	 * @return the logoutResponseSigned setting value
 	 */
-	public Boolean getLogoutResponseSigned() {
+	public boolean getLogoutResponseSigned() {
 		return logoutResponseSigned;
 	}
 
 	/**
 	 * @return the wantMessagesSigned setting value
 	 */
-	public Boolean getWantMessagesSigned() {
+	public boolean getWantMessagesSigned() {
 		return wantMessagesSigned;
 	}
 
 	/**
 	 * @return the wantAssertionsSigned setting value
 	 */
-	public Boolean getWantAssertionsSigned() {
+	public boolean getWantAssertionsSigned() {
 		return wantAssertionsSigned;
 	}
 
 	/**
 	 * @return the wantAssertionsEncrypted setting value
 	 */
-	public Boolean getWantAssertionsEncrypted() {
+	public boolean getWantAssertionsEncrypted() {
 		return wantAssertionsEncrypted;
 	}
 
 	/**
 	 * @return the wantNameId setting value
 	 */
-	public Boolean getWantNameId() {
+	public boolean getWantNameId() {
 		return wantNameId;
 	}
 	
 	/**
 	 * @return the wantNameIdEncrypted setting value
 	 */
-	public Boolean getWantNameIdEncrypted() {
+	public boolean getWantNameIdEncrypted() {
 		return wantNameIdEncrypted;
 	}
 
 	/**
 	 * @return the signMetadata setting value
 	 */
-	public Boolean getSignMetadata() {
+	public boolean getSignMetadata() {
 		return signMetadata;
 	}
 
@@ -299,7 +299,7 @@ public class Saml2Settings {
 	/**
 	 * @return the wantXMLValidation setting value
 	 */
-	public Boolean getWantXMLValidation() {
+	public boolean getWantXMLValidation() {
 		return wantXMLValidation;
 	}
 
@@ -327,7 +327,7 @@ public class Saml2Settings {
 	/**
 	 * @return if the debug is active or not
 	 */
-	public Boolean isDebugActive() {
+	public boolean isDebugActive() {
 		return this.debug;
 	}
 	
@@ -528,7 +528,7 @@ public class Saml2Settings {
 	 * @param nameIdEncrypted
 	 *            the nameIdEncrypted value to be set. Based on it the SP will encrypt the NameID or not
 	 */
-	public void setNameIdEncrypted(Boolean nameIdEncrypted) {
+	public void setNameIdEncrypted(boolean nameIdEncrypted) {
 		this.nameIdEncrypted = nameIdEncrypted;
 	}
 
@@ -538,7 +538,7 @@ public class Saml2Settings {
 	 * @param authnRequestsSigned
 	 *            the authnRequestsSigned value to be set. Based on it the SP will sign Logout Request or not
 	 */
-	public void setAuthnRequestsSigned(Boolean authnRequestsSigned) {
+	public void setAuthnRequestsSigned(boolean authnRequestsSigned) {
 		this.authnRequestsSigned = authnRequestsSigned;
 	}
 
@@ -548,7 +548,7 @@ public class Saml2Settings {
 	 * @param logoutRequestSigned
 	 *            the logoutRequestSigned value to be set. Based on it the SP will sign Logout Request or not
 	 */
-	public void setLogoutRequestSigned(Boolean logoutRequestSigned) {
+	public void setLogoutRequestSigned(boolean logoutRequestSigned) {
 		this.logoutRequestSigned = logoutRequestSigned;
 	}
 
@@ -558,7 +558,7 @@ public class Saml2Settings {
 	 * @param logoutResponseSigned
 	 *            the logoutResponseSigned value to be set. Based on it the SP will sign Logout Response or not
 	 */
-	public void setLogoutResponseSigned(Boolean logoutResponseSigned) {
+	public void setLogoutResponseSigned(boolean logoutResponseSigned) {
 		this.logoutResponseSigned = logoutResponseSigned;
 	}
 
@@ -568,7 +568,7 @@ public class Saml2Settings {
 	 * @param wantMessagesSigned
 	 *            the wantMessagesSigned value to be set. Based on it the SP expects the SAML Messages to be signed or not
 	 */
-	public void setWantMessagesSigned(Boolean wantMessagesSigned) {
+	public void setWantMessagesSigned(boolean wantMessagesSigned) {
 		this.wantMessagesSigned = wantMessagesSigned;
 	}
 
@@ -578,7 +578,7 @@ public class Saml2Settings {
 	 * @param wantAssertionsSigned
 	 *            the wantAssertionsSigned value to be set. Based on it the SP expects the SAML Assertions to be signed or not
 	 */
-	public void setWantAssertionsSigned(Boolean wantAssertionsSigned) {
+	public void setWantAssertionsSigned(boolean wantAssertionsSigned) {
 		this.wantAssertionsSigned = wantAssertionsSigned;
 	}
 
@@ -588,7 +588,7 @@ public class Saml2Settings {
 	 * @param wantAssertionsEncrypted
 	 *            the wantAssertionsEncrypted value to be set. Based on it the SP expects the SAML Assertions to be encrypted or not
 	 */
-	public void setWantAssertionsEncrypted(Boolean wantAssertionsEncrypted) {
+	public void setWantAssertionsEncrypted(boolean wantAssertionsEncrypted) {
 		this.wantAssertionsEncrypted = wantAssertionsEncrypted;
 	}
 
@@ -598,7 +598,7 @@ public class Saml2Settings {
 	 * @param wantNameId
 	 *            the wantNameId value to be set. Based on it the SP expects a NameID
 	 */
-	public void setWantNameId(Boolean wantNameId) {
+	public void setWantNameId(boolean wantNameId) {
 		this.wantNameId = wantNameId;
 	}
 
@@ -608,7 +608,7 @@ public class Saml2Settings {
 	 * @param wantNameIdEncrypted
 	 *            the wantNameIdEncrypted value to be set. Based on it the SP expects the NameID to be encrypted or not
 	 */
-	public void setWantNameIdEncrypted(Boolean wantNameIdEncrypted) {
+	public void setWantNameIdEncrypted(boolean wantNameIdEncrypted) {
 		this.wantNameIdEncrypted = wantNameIdEncrypted;
 	}
 
@@ -618,7 +618,7 @@ public class Saml2Settings {
 	 * @param signMetadata
 	 *            the signMetadata value to be set. Based on it the SP will sign or not the metadata with the SP PrivateKey/Certificate
 	 */
-	public void setSignMetadata(Boolean signMetadata) {
+	public void setSignMetadata(boolean signMetadata) {
 		this.signMetadata = signMetadata;
 	}
 
@@ -629,7 +629,9 @@ public class Saml2Settings {
 	 *            the requestedAuthnContext value to be set on the AuthNRequest.
 	 */
 	public void setRequestedAuthnContext(List<String> requestedAuthnContext) {
-		this.requestedAuthnContext = requestedAuthnContext;
+		if (requestedAuthnContext != null) {
+			this.requestedAuthnContext = requestedAuthnContext;
+		}
 	}
 
 	/**
@@ -648,7 +650,7 @@ public class Saml2Settings {
 	 * @param wantXMLValidation
 	 *            the wantXMLValidation value to be set. Based on it the SP will validate SAML messages against the XML scheme 
 	 */
-	public void setWantXMLValidation(Boolean wantXMLValidation) {
+	public void setWantXMLValidation(boolean wantXMLValidation) {
 		this.wantXMLValidation = wantXMLValidation;
 	}
 
@@ -744,7 +746,7 @@ public class Saml2Settings {
 	 * @return errors found on the settings data
 	 */
 	public List<String> checkSettings() {
-		List<String> errors = new ArrayList<String>(this.checkSPSettings());
+		List<String> errors = new ArrayList<>(this.checkSPSettings());
 		if (!spValidationOnly) { 
 			errors.addAll(this.checkIdPSettings());
 		}
@@ -758,7 +760,7 @@ public class Saml2Settings {
 	 * @return errors found on the IdP settings data
 	 */
 	public List<String> checkIdPSettings() {
-		List<String> errors = new ArrayList<String>();
+		List<String> errors = new ArrayList<>();
 		String errorMsg;
 
 		if (!checkRequired(getIdpEntityId())) {
@@ -794,7 +796,7 @@ public class Saml2Settings {
 	 * @return errors found on the SP settings data
 	 */
 	public List<String> checkSPSettings() {
-		List<String> errors = new ArrayList<String>();
+		List<String> errors = new ArrayList<>();
 		String errorMsg;
 
 		if (!checkRequired(getSpEntityId())) {
@@ -862,7 +864,7 @@ public class Saml2Settings {
 	 *
 	 * @return true if the SP settings are valid
 	 */
-	public Boolean checkSPCerts() {
+	public boolean checkSPCerts() {
 		X509Certificate cert = getSPcert();
 		PrivateKey key = getSPkey();
 
@@ -899,7 +901,7 @@ public class Saml2Settings {
 	 * @param spValidationOnly
 	 *            the spValidationOnly value to be set
 	 */
-	public void setSPValidationOnly(Boolean spValidationOnly)
+	public void setSPValidationOnly(boolean spValidationOnly)
 	{
 		this.spValidationOnly = spValidationOnly;
 	}
@@ -924,7 +926,7 @@ public class Saml2Settings {
 		String metadataString = metadataObj.getMetadataString();
 
 		// Check if must be signed
-		Boolean signMetadata = this.getSignMetadata();
+		boolean signMetadata = this.getSignMetadata();
 		if (signMetadata) {
 			// TODO Extend this in order to be able to read not only SP privateKey/certificate
 			try {
@@ -957,7 +959,7 @@ public class Saml2Settings {
 
 		Document metadataDocument = Util.loadXML(metadataString);
 
-		List<String> errors = new ArrayList<String>();
+		List<String> errors = new ArrayList<>();
 
 		if (!Util.validateXML(metadataDocument, SchemaFactory.SAML_SCHEMA_METADATA_2_0)) {
 			errors.add("Invalid SAML Metadata. Not match the saml-schema-metadata-2.0.xsd");

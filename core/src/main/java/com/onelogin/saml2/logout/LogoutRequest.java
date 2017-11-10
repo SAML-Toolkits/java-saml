@@ -241,7 +241,7 @@ public class LogoutRequest {
 		String nameIdFormat = null;
 		String spNameQualifier = null;
 		if (nameId != null) {
-			if (this.nameIdFormat == null) {
+			if (this.nameIdFormat == null && !settings.getSpNameIDFormat().equals(Constants.NAMEID_UNSPECIFIED)) {
 				nameIdFormat = settings.getSpNameIDFormat();
 			} else {
 				nameIdFormat = this.nameIdFormat;
