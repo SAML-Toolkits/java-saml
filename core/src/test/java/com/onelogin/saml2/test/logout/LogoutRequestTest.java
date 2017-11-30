@@ -327,10 +327,10 @@ public class LogoutRequestTest {
 	@Test
 	public void testGetNameIdDataWrongKey() throws Exception {
 		expectedEx.expect(Exception.class);
-		expectedEx.expectMessage("algid parse error, not a sequence");
+		expectedEx.expectMessage("Not able to decrypt the EncryptedID and get a NameID");
 
 		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_encrypted_nameid.xml");
-		String keyString = Util.getFileAsString("data/misc/sp3.key");
+		String keyString = Util.getFileAsString("data/misc/sp4.key");
 		PrivateKey key = Util.loadPrivateKey(keyString);
 		String nameIdDataStr = LogoutRequest.getNameIdData(logoutRequestStr, key).toString();
 	}

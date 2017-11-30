@@ -37,10 +37,13 @@ import java.util.Date;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.junit.rules.ExpectedException;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.signature.XMLSignatureException;
 import org.joda.time.DateTime;
+import org.junit.Rule;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -49,6 +52,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import com.onelogin.saml2.logout.LogoutRequest;
 import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.SchemaFactory;
 import com.onelogin.saml2.util.Util;
@@ -57,6 +61,9 @@ import com.onelogin.saml2.util.Util;
  * Tests the com.onelogin.saml2.util.Util class
  */
 public class UtilsTest {
+
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
 
 	/**
 	 * Tests the loadXML method for XXE/XEE attacks
@@ -613,6 +620,22 @@ public class UtilsTest {
 		// PKCS1 format not supported 
 		PrivateKey keyObject1 = Util.loadPrivateKey(key);
 		assertNull(keyObject1);
+	}
+
+	/**
+	 * Tests the loadPrivateKey method
+	 *
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.logout.LogoutRequest#getNameIdData
+	 */
+	@Test
+	public void testGetNameIdDataWrongKey() throws Exception {
+		expectedEx.expect(Exception.class);
+		expectedEx.expectMessage("algid parse error, not a sequence");
+
+		String keyString = Util.getFileAsString("data/misc/sp3.key");
+		PrivateKey key = Util.loadPrivateKey(keyString);
 	}
 	
 	/**

@@ -79,6 +79,23 @@ public class AuthnResponseTest {
 	}
 
 	/**
+	 * Tests that a invalid SAMLResponse with not expected elements fails
+	 *
+	 * @throws Exception 
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse
+	 */
+	@Test
+	public void testOInvalidResponseWithNonExpectedElementsFail() throws Exception {
+		expectedEx.expect(ValidationError.class);
+		expectedEx.expectMessage("SAML Response could not be processed");
+
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/wrapped_response_2.xml.base64");
+
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+	}
+	/**
 	 * Tests the constructor of SamlResponse
 	 * Case: Encrypted assertion but no key
 	 *
@@ -906,28 +923,28 @@ public class AuthnResponseTest {
 
 		HashMap<String, List<String>> attributes = samlResponse.getAttributes();
 	}
-	
+
 	/**
-	 * Tests the isValid method of SamlResponse
+	 * Tests that queryAssertion method of SamlResponse
+	 * Case: Elements retrieved are covered by a Signature 
 	 *
 	 * @throws Exception 
 	 *
-	 * @see com.onelogin.saml2.authn.SamlResponse#isValid
+	 * @see com.onelogin.saml2.authn.SamlResponse#queryAssertion
 	 */
 	@Test
-	public void testOnlyRetrieveAssertionWithIDThatMatchesSignatureReference() throws Exception {
-		expectedEx.expect(ValidationError.class);
-		expectedEx.expectMessage("SAML Response could not be processed");
-
+	public void testOnlyRetrieveAssertionWithIDThatMatchesSignatureReference() throws Exception {		
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
-		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/wrapped_response_2.xml.base64");
+		String samlResponseEncoded = Util.getFileAsString("data/responses/signed_assertion_response_with_2_assertions.xml.base64");
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
-
-		String nameID = samlResponse.getNameId();
-		assertFalse(samlResponse.isValid());
-		assertFalse("root@example.com".equals(nameID));
+		assertEquals("492882615acf31c8096b627245d76ae53036c090", samlResponse.getNameId());
+		
+		samlResponseEncoded = Util.getFileAsString("data/responses/signed_assertion_response_with_2_assertions_differrent_order.xml.base64");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertEquals("492882615acf31c8096b627245d76ae53036c090", samlResponse.getNameId());
 	}
-
+	
+	
 	/**
 	 * Tests the isValid method of SamlResponse
 	 *
