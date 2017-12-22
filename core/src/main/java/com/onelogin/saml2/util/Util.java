@@ -103,6 +103,7 @@ public final class Util {
 	public static final String UNIQUE_ID_PREFIX = "ONELOGIN_";
 	public static final String RESPONSE_SIGNATURE_XPATH = "/samlp:Response/ds:Signature";
 	public static final String ASSERTION_SIGNATURE_XPATH = "/samlp:Response/saml:Assertion/ds:Signature";
+	public static final String LOGOUT_RESPONSE_SIGNATURE_XPATH = "/samlp:LogoutResponse/ds:Signature";
 	/** Indicates if JAXP 1.5 support has been detected. */
 	private static boolean JAXP_15_SUPPORTED = isJaxp15Supported();
 

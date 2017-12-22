@@ -3,10 +3,7 @@ package com.onelogin.saml2.logout;
 import java.io.IOException;
 import java.net.URL;
 import java.security.cert.X509Certificate;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import javax.xml.xpath.XPathExpressionException;
 
@@ -15,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.onelogin.saml2.exception.SettingsException;
@@ -177,6 +175,13 @@ public class LogoutResponse {
 			}
 
 			String signature = request.getParameter("Signature");
+			boolean hasSignedResponse = false;
+			if (signature == null)
+			{
+				List<String> signedElements = processSignedElements();
+				String responseTag = "{" + Constants.NS_SAMLP + "}LogoutResponse";
+				hasSignedResponse = signedElements.contains(responseTag);
+			}
 
 			if (settings.isStrict()) {
 				Element rootElement = logoutResponseDocument.getDocumentElement();
@@ -220,7 +225,7 @@ public class LogoutResponse {
 					}
 				}
 
-                if (settings.getWantMessagesSigned() && (signature == null || signature.isEmpty())) {
+                if (settings.getWantMessagesSigned() && (signature == null || signature.isEmpty()) && !hasSignedResponse) {
                     throw new ValidationError("The Message of the Logout Response is not signed and the SP requires it", ValidationError.NO_SIGNED_MESSAGE);
                 }
 			}
@@ -249,6 +254,16 @@ public class LogoutResponse {
 					throw new ValidationError("Signature validation failed. Logout Response rejected", ValidationError.INVALID_SIGNATURE);
 				}
 			}
+			else if (hasSignedResponse)
+			{
+				X509Certificate cert = settings.getIdpx509cert();
+				String fingerprint = settings.getIdpCertFingerprint();
+				String alg = settings.getIdpCertFingerprintAlgorithm();
+
+				if (!Util.validateSign(logoutResponseDocument, cert, fingerprint, alg, Util.LOGOUT_RESPONSE_SIGNATURE_XPATH)) {
+					throw new ValidationError("Signature validation failed. Logout Response rejected", ValidationError.INVALID_SIGNATURE);
+				}
+			}
 
 			LOGGER.debug("LogoutRequest validated --> " + logoutResponseString);
 			return true;
@@ -260,7 +275,106 @@ public class LogoutResponse {
 		}
 	}
 
-	public Boolean isValid() {		
+	public ArrayList<String> processSignedElements() throws XPathExpressionException, ValidationError {
+		ArrayList<String> signedElements = new ArrayList<String>();
+		ArrayList<String> verifiedSeis = new ArrayList<String>();
+		ArrayList<String> verifiedIds = new ArrayList<String>();
+
+		NodeList signNodes = query("//ds:Signature");
+		for (int i = 0; i < signNodes.getLength(); i++) {
+			Node signNode = signNodes.item(i);
+			String signedElement = "{" + signNode.getParentNode().getNamespaceURI() + "}" + signNode.getParentNode().getLocalName();
+
+			String responseTag = "{" + Constants.NS_SAMLP + "}LogoutResponse";
+			if (!signedElement.equals(responseTag)) {
+				throw new ValidationError("Invalid Signature Element " + signedElement + " SAML Response rejected", ValidationError.WRONG_SIGNED_ELEMENT);
+			}
+
+			// Check that reference URI matches the parent ID and no duplicate References or IDs
+			Node idNode = signNode.getParentNode().getAttributes().getNamedItem("ID");
+			if (idNode == null || idNode.getNodeValue() == null || idNode.getNodeValue().isEmpty()) {
+				throw new ValidationError("Signed Element must contain an ID. SAML Response rejected", ValidationError.ID_NOT_FOUND_IN_SIGNED_ELEMENT);
+			}
+
+			String idValue = idNode.getNodeValue();
+			if (verifiedIds.contains(idValue)) {
+				throw new ValidationError("Duplicated ID. SAML Response rejected", ValidationError.DUPLICATED_ID_IN_SIGNED_ELEMENTS);
+			}
+			verifiedIds.add(idValue);
+
+			NodeList refNodes = Util.query(null, "ds:SignedInfo/ds:Reference", signNode);
+			if (refNodes.getLength() == 1) {
+				Node refNode = refNodes.item(0);
+				Node seiNode = refNode.getAttributes().getNamedItem("URI");
+				if (seiNode != null && seiNode.getNodeValue() != null && !seiNode.getNodeValue().isEmpty()) {
+					String sei = seiNode.getNodeValue().substring(1);
+					if (!sei.equals(idValue)) {
+						throw new ValidationError("Found an invalid Signed Element. SAML Response rejected", ValidationError.INVALID_SIGNED_ELEMENT);
+					}
+
+					if (verifiedSeis.contains(sei)) {
+						throw new ValidationError("Duplicated Reference URI. SAML Response rejected", ValidationError.DUPLICATED_REFERENCE_IN_SIGNED_ELEMENTS);
+					}
+					verifiedSeis.add(sei);
+				}
+			} else {
+				// Signatures MUST contain a single <ds:Reference> containing a same-document reference to the ID
+				// attribute value of the root element of the assertion or protocol message being signed
+				throw new ValidationError("Unexpected number of Reference nodes found for signature. SAML Response rejected.", ValidationError.UNEXPECTED_REFERENCE);
+			}
+
+			signedElements.add(signedElement);
+		}
+		if (!signedElements.isEmpty()) {
+			if (!validateSignedElements(signedElements)) {
+				throw new ValidationError("Found an unexpected Signature Element. SAML Response rejected", ValidationError.UNEXPECTED_SIGNED_ELEMENTS);
+			}
+		}
+		return signedElements;
+	}
+
+	/**
+	 * Verifies that the document has the expected signed nodes.
+	 *
+	 * @param signedElements
+	 *				the elements to be validated
+	 * @return true if is valid
+	 *
+	 * @throws XPathExpressionException
+	 * @throws ValidationError
+	 *
+	 */
+	public boolean validateSignedElements(ArrayList<String> signedElements) throws XPathExpressionException, ValidationError {
+		if (signedElements.size() > 2) {
+			return false;
+		}
+
+		Map<String, Integer> occurrences = new HashMap<String, Integer>();
+		for (String e : signedElements) {
+			if (occurrences.containsKey(e)) {
+				occurrences.put(e, occurrences.get(e) + 1);
+			} else {
+				occurrences.put(e, 1);
+			}
+		}
+
+		String responseTag = "{" + Constants.NS_SAMLP + "}LogoutResponse";
+		if (!occurrences.containsKey(responseTag) || occurrences.get(responseTag) > 1) {
+			return false;
+		}
+
+		// check that the signed elements found here, are the ones that will be verified
+		// by com.onelogin.saml2.util.Util.validateSign()
+		if (occurrences.containsKey(responseTag)) {
+			final NodeList expectedSignatureNode = query(Util.LOGOUT_RESPONSE_SIGNATURE_XPATH);
+			if (expectedSignatureNode.getLength() != 1) {
+				throw new ValidationError("Unexpected number of Response signatures found. SAML Response rejected.", ValidationError.WRONG_NUMBER_OF_SIGNATURES_IN_RESPONSE);
+			}
+		}
+		return true;
+	}
+
+	public Boolean isValid() {
 		return isValid(null);
 	}
 
