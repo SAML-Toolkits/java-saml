@@ -29,6 +29,7 @@ import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Calendar;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -849,6 +850,39 @@ public final class Util {
 			return signatures.getLength() == 1 && validateSignNode(signatures.item(0), cert, fingerprint, alg);
 		} catch (XPathExpressionException e) {
 			LOGGER.warn("Failed to find signature nodes", e);		
+		}
+		return false;
+	}
+	
+	/**
+	 * Validate the signature pointed to by the xpath
+	 *
+	 * @param doc The document we should validate
+	 * @param certs The public certificates
+	 * @param fingerprint The fingerprint of the public certificate
+	 * @param alg The signature algorithm method
+	 * @param xpath the xpath of the ds:Signture node to validate
+	 *
+	 * @return True if the signature exists and is valid, false otherwise.
+	 */
+	public static boolean validateSign(final Document doc, final List<X509Certificate> certList, final String fingerprint,
+									   final String alg, final String xpath) {
+		try {
+			final NodeList signatures = query(doc, xpath);
+
+			if (signatures.getLength() == 1) {
+				final Node signNode = signatures.item(0);
+				if (certList == null || certList.isEmpty()) {
+					return validateSignNode(signNode, null, fingerprint, alg);
+				} else {
+					for (X509Certificate cert : certList) {
+						if (validateSignNode(signNode, cert, fingerprint, alg))
+							return true;
+					}
+				}
+			}
+		} catch (XPathExpressionException e) {
+			LOGGER.warn("Failed to find signature nodes", e);
 		}
 		return false;
 	}

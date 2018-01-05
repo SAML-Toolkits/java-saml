@@ -548,6 +548,14 @@ You should be able to workaround this by configuring your server so that it is a
 For Apache Tomcat this is done by setting the proxyName, proxyPort, scheme and secure attributes for the Connector. See [here](http://serverfault.com/questions/774300/ssl-offloading-from-apache-to-tomcat-get-overwritten-somewhere) for an example.
 
 
+### IdP with multiple certificates
+ 
+ In some scenarios the IdP uses different certificates for
+ signing/encryption, or is under key rollover phase and more than one certificate is published on IdP metadata.
+ 
+ In order to handle that the toolkit offers the `onelogin.saml2.idp.x509certMulti` parameters where you can set additional certificates that will be used to validate IdP signature. However just the certificate setted in `onelogin.saml2.idp.x509cert` parameter will be used for encrypting.
+ 
+
 ### Replay attacks
 
 In order to avoid replay attacks, you can store the ID of the SAML messages already processed, to avoid processing them twice. Since the Messages expires and will be invalidated due that fact, you don't need to store those IDs longer than the time frame that you currently accepting.
