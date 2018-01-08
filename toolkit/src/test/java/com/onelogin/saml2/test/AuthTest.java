@@ -868,14 +868,10 @@ public class AuthTest {
 		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
 		when(request.getRequestURL()).thenReturn(new StringBuffer("https://pitbulk.no-ip.org/newonelogin/demo1/index.php?acs"));
 		settings.setStrict(false);
-		Auth auth = new Auth(settings, request, response);
-		
-		expectedEx.expect(SettingsException.class); // TODO check; new Auth() above throws, the code below is not called and does not test getNameId()
+
+		expectedEx.expect(SettingsException.class);
 		expectedEx.expectMessage("Invalid settings: idp_cert_not_found_and_required");
-		assertNull(auth.getNameId());
-		auth.processResponse();
-		assertFalse(auth.isAuthenticated());
-		assertNull(auth.getNameId());
+		Auth auth = new Auth(settings, request, response);
 	}
 
 	/**
@@ -894,13 +890,10 @@ public class AuthTest {
 		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
-		Auth auth = new Auth(settings, request, response);
 
-		expectedEx.expect(ValidationError.class); // TODO check; processResponse() throws, the asserts below are not called
+		expectedEx.expect(ValidationError.class);
 		expectedEx.expectMessage("SAML Response could not be processed");
-		auth.processResponse();
-//		assertFalse(auth.isAuthenticated());
-//		assertFalse("root@example.com".equals(auth.getNameId()));
+		Auth auth = new Auth(settings, request, response);
 	}
 
 	/**
@@ -1126,12 +1119,10 @@ public class AuthTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		settings.setAuthnRequestsSigned(true);
 		settings.setSignatureAlgorithm(Constants.RSA_SHA1);
-		Auth auth = new Auth(settings, request, response);
-		String relayState = "http://localhost:8080/expected.jsp";
-		
-		expectedEx.expect(SettingsException.class); // TODO check; the login() below is not called because new Auth() above throws
+
+		expectedEx.expect(SettingsException.class);
 		expectedEx.expectMessage("Invalid settings: sp_cert_not_found_and_required");
-		auth.login(relayState);
+		Auth auth = new Auth(settings, request, response);
 	}
 	
 	/**
@@ -1316,12 +1307,10 @@ public class AuthTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		settings.setLogoutRequestSigned(true);
 		settings.setSignatureAlgorithm(Constants.RSA_SHA1);
-		Auth auth = new Auth(settings, request, response);
-		String relayState = "http://localhost:8080/expected.jsp";
-		
-		expectedEx.expect(SettingsException.class); // TODO check; auth.logout() below is not called because new Auth() above throws 
+
+		expectedEx.expect(SettingsException.class);
 		expectedEx.expectMessage("Invalid settings: sp_cert_not_found_and_required");
-		auth.logout(relayState);
+		Auth auth = new Auth(settings, request, response);
 	}
 	
 	/**
