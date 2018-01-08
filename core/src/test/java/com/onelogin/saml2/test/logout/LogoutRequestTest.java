@@ -309,11 +309,11 @@ public class LogoutRequestTest {
 	 */
 	@Test
 	public void testGetNameIdDataNoKey() throws Exception {
+		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_encrypted_nameid.xml");
+		
 		expectedEx.expect(SettingsException.class);
 		expectedEx.expectMessage("Key is required in order to decrypt the NameID");
-
-		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_encrypted_nameid.xml");
-		String nameIdDataStr = LogoutRequest.getNameIdData(logoutRequestStr, null).toString();
+		LogoutRequest.getNameIdData(logoutRequestStr, null).toString();
 	}
 
 	/**
@@ -326,13 +326,13 @@ public class LogoutRequestTest {
 	 */
 	@Test
 	public void testGetNameIdDataWrongKey() throws Exception {
-		expectedEx.expect(Exception.class);
-		expectedEx.expectMessage("Not able to decrypt the EncryptedID and get a NameID");
-
 		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_encrypted_nameid.xml");
 		String keyString = Util.getFileAsString("data/misc/sp4.key");
 		PrivateKey key = Util.loadPrivateKey(keyString);
-		String nameIdDataStr = LogoutRequest.getNameIdData(logoutRequestStr, key).toString();
+		
+		expectedEx.expect(Exception.class);
+		expectedEx.expectMessage("Not able to decrypt the EncryptedID and get a NameID");
+		LogoutRequest.getNameIdData(logoutRequestStr, key).toString();
 	}
 
 	/**
@@ -345,11 +345,11 @@ public class LogoutRequestTest {
 	 */
 	@Test
 	public void testGetNameIdDataNoNameId() throws Exception {
+		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_no_nameid.xml");
+		
 		expectedEx.expect(ValidationError.class);
 		expectedEx.expectMessage("No name id found in Logout Request.");
-
-		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_no_nameid.xml");
-		String nameIdDataStr = LogoutRequest.getNameIdData(logoutRequestStr, null).toString();
+		LogoutRequest.getNameIdData(logoutRequestStr, null).toString();
 	}
 
 	/**
@@ -418,11 +418,11 @@ public class LogoutRequestTest {
 	 */
 	@Test
 	public void testGetNameIdNoKey() throws Exception {
+		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_encrypted_nameid.xml");
+		
 		expectedEx.expect(SettingsException.class);
 		expectedEx.expectMessage("Key is required in order to decrypt the NameID");
-
-		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_encrypted_nameid.xml");
-		String nameIdStr = LogoutRequest.getNameId(logoutRequestStr, null).toString();
+		LogoutRequest.getNameId(logoutRequestStr, null).toString();
 	}
 
 	/**
@@ -435,13 +435,13 @@ public class LogoutRequestTest {
 	 */
 	@Test
 	public void testGetNameIdWrongKey() throws Exception {
-		expectedEx.expect(Exception.class);
-		expectedEx.expectMessage("algid parse error, not a sequence");
-		
 		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_encrypted_nameid.xml");
-		String keyString = Util.getFileAsString("data/misc/sp3.key");
+		String keyString = Util.getFileAsString("data/misc/sp4.key");
 		PrivateKey key = Util.loadPrivateKey(keyString);
-		String nameIdStr = LogoutRequest.getNameIdData(logoutRequestStr, key).toString();
+		
+		expectedEx.expect(Exception.class);
+		expectedEx.expectMessage("Not able to decrypt the EncryptedID and get a NameID");
+		LogoutRequest.getNameIdData(logoutRequestStr, key).toString();
 	}
 
 	/**
