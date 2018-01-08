@@ -180,16 +180,16 @@ public class AuthTest {
 	 */
 	@Test
 	public void testConstructorInvalidSettings() throws IOException, SettingsException, URISyntaxException, Error {
-		expectedEx.expect(SettingsException.class);
-		expectedEx.expectMessage("Invalid settings: sp_entityId_not_found, sp_acs_not_found, sp_cert_not_found_and_required, contact_not_enought_data, organization_not_enought_data, idp_cert_or_fingerprint_not_found_and_required, idp_cert_not_found_and_required");
-		
 		HttpServletRequest request = mock(HttpServletRequest.class);
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
 		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.sperrors.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		
+		expectedEx.expect(SettingsException.class);
+		expectedEx.expectMessage("Invalid settings: sp_entityId_not_found, sp_acs_not_found, sp_cert_not_found_and_required, contact_not_enought_data, organization_not_enought_data, idp_cert_or_fingerprint_not_found_and_required, idp_cert_not_found_and_required");
+		new Auth(settings, request, response);
 	}
 
 	/**
@@ -861,9 +861,6 @@ public class AuthTest {
 	 */
 	@Test
 	public void testGetNameIDEncWithNoKey() throws Exception {
-		expectedEx.expect(SettingsException.class);
-		expectedEx.expectMessage("Invalid settings: idp_cert_not_found_and_required");
-
 		HttpServletRequest request = mock(HttpServletRequest.class);
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.mywithnocert.properties").build();
@@ -872,6 +869,9 @@ public class AuthTest {
 		when(request.getRequestURL()).thenReturn(new StringBuffer("https://pitbulk.no-ip.org/newonelogin/demo1/index.php?acs"));
 		settings.setStrict(false);
 		Auth auth = new Auth(settings, request, response);
+		
+		expectedEx.expect(SettingsException.class); // TODO check; new Auth() above throws, the code below is not called and does not test getNameId()
+		expectedEx.expectMessage("Invalid settings: idp_cert_not_found_and_required");
 		assertNull(auth.getNameId());
 		auth.processResponse();
 		assertFalse(auth.isAuthenticated());
@@ -887,9 +887,6 @@ public class AuthTest {
 	 */
 	@Test
 	public void testOnlyRetrieveAssertionWithIDThatMatchesSignatureReference() throws Exception {
-		expectedEx.expect(ValidationError.class);
-		expectedEx.expectMessage("SAML Response could not be processed");
-
 		HttpServletRequest request = mock(HttpServletRequest.class);
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/wrapped_response_2.xml.base64");
@@ -898,9 +895,12 @@ public class AuthTest {
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		Auth auth = new Auth(settings, request, response);
+
+		expectedEx.expect(ValidationError.class); // TODO check; processResponse() throws, the asserts below are not called
+		expectedEx.expectMessage("SAML Response could not be processed");
 		auth.processResponse();
-		assertFalse(auth.isAuthenticated());
-		assertFalse("root@example.com".equals(auth.getNameId()));
+//		assertFalse(auth.isAuthenticated());
+//		assertFalse("root@example.com".equals(auth.getNameId()));
 	}
 
 	/**
@@ -1116,9 +1116,6 @@ public class AuthTest {
 	 */
 	@Test
 	public void testLoginSignedFail() throws IOException, SettingsException, URISyntaxException, Error {
-		expectedEx.expect(SettingsException.class);
-		expectedEx.expectMessage("Invalid settings: sp_cert_not_found_and_required");
-
 		HttpServletRequest request = mock(HttpServletRequest.class);
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		when(request.getScheme()).thenReturn("http");
@@ -1131,6 +1128,9 @@ public class AuthTest {
 		settings.setSignatureAlgorithm(Constants.RSA_SHA1);
 		Auth auth = new Auth(settings, request, response);
 		String relayState = "http://localhost:8080/expected.jsp";
+		
+		expectedEx.expect(SettingsException.class); // TODO check; the login() below is not called because new Auth() above throws
+		expectedEx.expectMessage("Invalid settings: sp_cert_not_found_and_required");
 		auth.login(relayState);
 	}
 	
@@ -1306,9 +1306,6 @@ public class AuthTest {
 	 */
 	@Test
 	public void testLogoutSignedFail() throws IOException, SettingsException, XMLEntityException, Error {
-		expectedEx.expect(SettingsException.class);
-		expectedEx.expectMessage("Invalid settings: sp_cert_not_found_and_required");
-
 		HttpServletRequest request = mock(HttpServletRequest.class);
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		when(request.getScheme()).thenReturn("http");
@@ -1321,6 +1318,9 @@ public class AuthTest {
 		settings.setSignatureAlgorithm(Constants.RSA_SHA1);
 		Auth auth = new Auth(settings, request, response);
 		String relayState = "http://localhost:8080/expected.jsp";
+		
+		expectedEx.expect(SettingsException.class); // TODO check; auth.logout() below is not called because new Auth() above throws 
+		expectedEx.expectMessage("Invalid settings: sp_cert_not_found_and_required");
 		auth.logout(relayState);
 	}
 	
@@ -1371,15 +1371,15 @@ public class AuthTest {
 	 */
 	@Test
 	public void testBuildRequestSignatureInvalidSP() throws URISyntaxException, IOException, SettingsException, Error {
-		expectedEx.expect(SettingsException.class);
-		expectedEx.expectMessage("Trying to sign the SAMLRequest but can't load the SP private key");
-
 		String deflatedEncodedAuthNRequest = Util.getFileAsString("data/requests/authn_request.xml.deflated.base64");
 		String relayState = "http://example.com";
 		String signAlgorithm = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
 
 		Auth auth = new Auth("config/config.invalidspcertstring.properties");
-		String signature = auth.buildRequestSignature(deflatedEncodedAuthNRequest, relayState, signAlgorithm);
+		
+		expectedEx.expect(SettingsException.class);
+		expectedEx.expectMessage("Trying to sign the SAMLRequest but can't load the SP private key");
+		auth.buildRequestSignature(deflatedEncodedAuthNRequest, relayState, signAlgorithm);
 	}
 
 	/**

@@ -56,8 +56,7 @@ public class SettingBuilderTest {
 		expectedEx.expect(Error.class);
 		expectedEx.expectMessage("properties file 'config/config.notfound.properties' not found in the classpath");
 		
-		Saml2Settings setting = new SettingsBuilder().fromFile("config/config.notfound.properties").build();
-		assertNull(setting);
+		new SettingsBuilder().fromFile("config/config.notfound.properties").build();
 	}
 
 	/**

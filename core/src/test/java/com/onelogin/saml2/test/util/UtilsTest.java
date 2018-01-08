@@ -631,11 +631,11 @@ public class UtilsTest {
 	 */
 	@Test
 	public void testGetNameIdDataWrongKey() throws Exception {
+		String keyString = Util.getFileAsString("data/misc/sp3.key");
+		
 		expectedEx.expect(Exception.class);
 		expectedEx.expectMessage("algid parse error, not a sequence");
-
-		String keyString = Util.getFileAsString("data/misc/sp3.key");
-		PrivateKey key = Util.loadPrivateKey(keyString);
+		Util.loadPrivateKey(keyString);
 	}
 	
 	/**
