@@ -890,10 +890,11 @@ public class AuthTest {
 		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		Auth auth = new Auth(settings, request, response);
 
 		expectedEx.expect(ValidationError.class);
 		expectedEx.expectMessage("SAML Response could not be processed");
-		Auth auth = new Auth(settings, request, response);
+		auth.processResponse();
 	}
 
 	/**
