@@ -52,6 +52,7 @@ public class Saml2Settings {
 	private URL idpSingleLogoutServiceResponseUrl = null;
 	private String idpSingleLogoutServiceBinding = Constants.BINDING_HTTP_REDIRECT;
 	private X509Certificate idpx509cert = null;
+	private List<X509Certificate> idpx509certMulti = null;
 	private String idpCertFingerprint = null;
 	private String idpCertFingerprintAlgorithm = "sha1";
 
@@ -210,6 +211,13 @@ public class Saml2Settings {
 	 */
 	public final String getIdpCertFingerprintAlgorithm() {
 		return idpCertFingerprintAlgorithm;
+	}
+
+	/**
+	 * @return the idpx509certMulti setting value
+	 */
+	public List<X509Certificate> getIdpx509certMulti() {
+		return idpx509certMulti;
 	}
 
 	/**
@@ -520,6 +528,15 @@ public class Saml2Settings {
 	 */
 	protected final void setIdpCertFingerprintAlgorithm(String idpCertFingerprintAlgorithm) {
 		this.idpCertFingerprintAlgorithm = idpCertFingerprintAlgorithm;
+	}
+
+	/**
+	 * Set the idpx509certMulti setting value
+	 *
+	 * @param idpx509certMulti the idpx509certMulti to set
+	 */
+	public void setIdpx509certMulti(List<X509Certificate> idpx509certMulti) {
+		this.idpx509certMulti= idpx509certMulti;
 	}
 
 	/**

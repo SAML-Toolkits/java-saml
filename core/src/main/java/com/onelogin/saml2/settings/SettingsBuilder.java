@@ -7,6 +7,7 @@ import java.net.URL;
 import java.security.PrivateKey;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -67,6 +68,7 @@ public class SettingsBuilder {
 	public final static String IDP_SINGLE_LOGOUT_SERVICE_BINDING_PROPERTY_KEY = "onelogin.saml2.idp.single_logout_service.binding";
 
 	public final static String IDP_X509CERT_PROPERTY_KEY = "onelogin.saml2.idp.x509cert";
+	public final static String IDP_X509CERTMULTI_PROPERTY_KEY = "onelogin.saml2.idp.x509certMulti";
 	public final static String CERTFINGERPRINT_PROPERTY_KEY = "onelogin.saml2.idp.certfingerprint";
 	public final static String CERTFINGERPRINT_ALGORITHM_PROPERTY_KEY = "onelogin.saml2.idp.certfingerprint_algorithm";
 
@@ -222,9 +224,15 @@ public class SettingsBuilder {
 		if (idpSingleLogoutServiceBinding != null)
 			saml2Setting.setIdpSingleLogoutServiceBinding(idpSingleLogoutServiceBinding);
 
+		List<X509Certificate> idpX509certMulti = loadCertificateListFromProp(IDP_X509CERTMULTI_PROPERTY_KEY);
+		if (idpX509certMulti != null)
+			saml2Setting.setIdpx509certMulti(idpX509certMulti);
+
 		X509Certificate idpX509cert = loadCertificateFromProp(IDP_X509CERT_PROPERTY_KEY);
-		if (idpX509cert != null)
+		if (idpX509cert != null) {
 			saml2Setting.setIdpx509cert(idpX509cert);
+			idpX509certMulti.add(0, idpX509cert);
+		}
 
 		String idpCertFingerprint = loadStringProperty(CERTFINGERPRINT_PROPERTY_KEY);
 		if (idpCertFingerprint != null)
@@ -485,15 +493,14 @@ public class SettingsBuilder {
 	}
 	
 	/**
-	 * Loads a property of the type X509Certificate from the Properties object
+	 * Loads a property of the type X509Certificate from the property value
 	 *
-	 * @param propertyKey
-	 *            the property name
+	 * @param propValue
+	 *            the property value
 	 *
 	 * @return the X509Certificate object
 	 */
-	protected X509Certificate loadCertificateFromProp(String propertyKey) {
-		Object propValue = samlData.get(propertyKey);
+	protected X509Certificate loadCertificateFromProp(Object propValue) {
 
 		if (isString(propValue)) {
 			try {
@@ -509,6 +516,42 @@ public class SettingsBuilder {
 		}
 		
 		return null;
+	}
+
+	/**
+	 * Loads a property of the type X509Certificate from the Properties object
+	 *
+	 * @param propertyKey
+	 *            the property name
+	 *
+	 * @return the X509Certificate object
+	 */
+	protected X509Certificate loadCertificateFromProp(String propertyKey) {
+		return loadCertificateFromProp(samlData.get(propertyKey));
+	}
+
+	/**
+	 * Loads a property of the type List of X509Certificate from the Properties object
+	 *
+	 * @param propertyKey
+	 *            the property name
+	 *
+	 * @return the X509Certificate object list
+	 */
+	private List<X509Certificate> loadCertificateListFromProp(String propertyKey) {
+		List<X509Certificate> list = new ArrayList<X509Certificate>();
+
+		int i = 0;
+		while (true) {
+			Object propValue = samlData.get(propertyKey + "." + i++);
+
+			if (propValue == null)
+				break;
+
+			list.add(loadCertificateFromProp(propValue));
+		}
+
+		return list;
 	}
 
 	/**

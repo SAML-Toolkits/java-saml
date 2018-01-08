@@ -2299,6 +2299,57 @@ public class AuthnResponseTest {
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.isValid());		
 	}
+	
+	/**
+	 * Tests the isValid method of SamlResponse with idpx509certMulti
+	 * Case: valid sign response / sign assertion / both signed
+	 *
+	 * @throws ValidationError
+	 * @throws SettingsException
+	 * @throws IOException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws XPathExpressionException
+	 * @throws Error
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#isValid
+	 */
+	@Test
+	public void testIsValidSignWithCertMulti() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.mywithmulticert.properties").build();
+		settings.setWantAssertionsSigned(false);
+		settings.setWantMessagesSigned(false);
+		String samlResponseEncoded = Util.getFileAsString("data/responses/signed_message_response.xml.base64");
+
+		settings.setStrict(false);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertTrue(samlResponse.isValid());
+
+		settings.setStrict(true);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertTrue(samlResponse.isValid());
+
+		samlResponseEncoded = Util.getFileAsString("data/responses/signed_assertion_response.xml.base64");
+
+		settings.setStrict(false);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertTrue(samlResponse.isValid());
+
+		settings.setStrict(true);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertTrue(samlResponse.isValid());
+
+		samlResponseEncoded = Util.getFileAsString("data/responses/double_signed_response.xml.base64");
+
+		settings.setStrict(false);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertTrue(samlResponse.isValid());
+
+		settings.setStrict(true);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertTrue(samlResponse.isValid());		
+	}
+	
 
 	/**
 	 * Tests the processSignedElements method of SamlResponse
@@ -2505,6 +2556,75 @@ public class AuthnResponseTest {
 		assertFalse(samlResponse.isValid());
 		assertEquals("Found an invalid Signed Element. SAML Response rejected", samlResponse.getError());	
 	}
+	
+	
+
+	/**
+	 * Tests the isValid method of SamlResponse with Idpx509certMulti
+	 * Case: invalid signs
+	 *
+	 * @throws ValidationError
+	 * @throws SettingsException
+	 * @throws IOException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws XPathExpressionException
+	 * @throws Error
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#isValid
+	 */
+	@Test
+	public void testIsInValidSignWithCertMulti() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError { 
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		settings.setStrict(true);
+		String samlResponseEncoded = Util.getFileAsString("data/responses/unsigned_response.xml.base64");
+
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
+
+		settings = new SettingsBuilder().fromFile("config/config.mywithmulticert.properties").build();
+
+		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/triple_signed_response.xml.base64");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("Duplicated ID. SAML Response rejected", samlResponse.getError());
+
+		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/signed_assertion_response_with_2signatures.xml.base64");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("Duplicated ID. SAML Response rejected", samlResponse.getError());
+
+		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/signed_message_response_with_2signatures.xml.base64");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("Duplicated ID. SAML Response rejected", samlResponse.getError());
+
+		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/wrong_signed_element.xml.base64");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("Invalid Signature Element {urn:oasis:names:tc:SAML:2.0:assertion}Subject SAML Response rejected", samlResponse.getError());
+
+		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/wrong_signed_element2.xml.base64");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("Invalid Signature Element {urn:oasis:names:tc:SAML:2.0:assertion}Subject SAML Response rejected", samlResponse.getError());
+		
+		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/duplicate_reference_uri.xml.base64");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("Found an invalid Signed Element. SAML Response rejected", samlResponse.getError());
+		
+		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_assertion_id.xml.base64");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("Signed Element must contain an ID. SAML Response rejected", samlResponse.getError());
+
+		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/bad_reference.xml.base64");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("Found an invalid Signed Element. SAML Response rejected", samlResponse.getError());	
+	}	
 
 	/**
 	 * Tests the validateSignedElements method of SamlResponse
