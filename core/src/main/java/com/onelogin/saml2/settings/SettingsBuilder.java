@@ -173,9 +173,22 @@ public class SettingsBuilder {
 	 *
 	 */
 	public Saml2Settings build() {
+		return build(new Saml2Settings());
+	}
 
-		saml2Setting = new Saml2Settings();
-		
+	/**
+	 * Builds the Saml2Settings object. Read the Properties object and set all the SAML settings
+	 * 
+	 * @param saml2Setting
+	 *            an existing Saml2Settings
+	 * 
+	 * @return the Saml2Settings object with all the SAML settings loaded
+	 *
+	 */
+	public Saml2Settings build(Saml2Settings saml2Setting) {
+
+		this.saml2Setting = saml2Setting;
+
 		Boolean strict = loadBooleanProperty(STRICT_PROPERTY_KEY);
 		if (strict != null)
 			saml2Setting.setStrict(strict);

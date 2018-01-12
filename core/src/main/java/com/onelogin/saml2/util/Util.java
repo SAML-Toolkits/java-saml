@@ -292,6 +292,22 @@ public final class Util {
 	 * @throws IOException 
 	 */
 	public static Document convertStringToDocument(String xmlStr) throws ParserConfigurationException, SAXException, IOException {
+		return parseXML(new InputSource(new StringReader(xmlStr)));
+	}
+
+	/**
+	 * Parse an XML from input source to a Document object
+	 *
+	 * @param xmlStr
+	 * 				The XML string which should be converted
+	 *
+	 * @return the Document object
+	 *
+	 * @throws ParserConfigurationException 
+	 * @throws SAXException 
+	 * @throws IOException 
+	 */
+	public static Document parseXML(InputSource inputSource) throws ParserConfigurationException, SAXException, IOException {
 		DocumentBuilderFactory docfactory = DocumentBuilderFactory.newInstance();
 		docfactory.setNamespaceAware(true);
 		
@@ -329,7 +345,7 @@ public final class Util {
 		} catch (Throwable e) {}
 
 		DocumentBuilder builder = docfactory.newDocumentBuilder();
-		Document doc = builder.parse(new InputSource(new StringReader(xmlStr)));
+		Document doc = builder.parse(inputSource);
 
 		// Loop through the doc and tag every element with an ID attribute
 		// as an XML ID node.
