@@ -675,13 +675,11 @@ public class SettingBuilderTest {
 		assertNotNull(setting.getIdpx509cert());
 		assertEquals(Util.loadCert(Util.getFileAsString("certs/certificate1")), setting.getIdpx509cert());
 		assertNotNull(setting.getIdpx509certMulti());
-		assertEquals(setting.getIdpx509certMulti().size(), 3);
+		assertEquals(setting.getIdpx509certMulti().size(), 2);
 		assertNotNull(setting.getIdpx509certMulti().get(0));
-		assertEquals(Util.loadCert(Util.getFileAsString("certs/certificate1")), setting.getIdpx509certMulti().get(0));
+		assertEquals(Util.loadCert(Util.getFileAsString("certs/certificate2")), setting.getIdpx509certMulti().get(0));
 		assertNotNull(setting.getIdpx509certMulti().get(1));
-		assertEquals(Util.loadCert(Util.getFileAsString("certs/certificate2")), setting.getIdpx509certMulti().get(1));
-		assertNotNull(setting.getIdpx509certMulti().get(2));
-		assertEquals(Util.loadCert(Util.getFileAsString("certs/certificate3")), setting.getIdpx509certMulti().get(2));
+		assertEquals(Util.loadCert(Util.getFileAsString("certs/certificate3")), setting.getIdpx509certMulti().get(1));
 		assertEquals("4b6f70bb2cab82c86a8270f71a880b62e25bc2b3", setting.getIdpCertFingerprint());
 		assertEquals("sha1", setting.getIdpCertFingerprintAlgorithm());
 

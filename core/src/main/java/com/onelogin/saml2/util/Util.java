@@ -1220,6 +1220,47 @@ public final class Util {
 	}
 
 	/**
+	 * Validates signed binary data (Used to validate GET Signature).
+	 *
+	 * @param signedQuery
+	 * 				 The element we should validate
+	 * @param signature
+	 * 				 The signature that will be validate
+	 * @param certList
+	 * 				 The List of certificates
+	 * @param signAlg
+	 * 				 Signature Algorithm
+	 * 
+	 * @return the signed document in string format
+	 *
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchProviderException 
+	 * @throws InvalidKeyException 
+	 * @throws SignatureException 
+	 */
+	public static Boolean validateBinarySignature(String signedQuery, byte[] signature, List<X509Certificate> certList, String signAlg) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException {
+		Boolean valid = false;
+
+		org.apache.xml.security.Init.init();
+		String convertedSigAlg = signatureAlgConversion(signAlg);
+		Signature sig = Signature.getInstance(convertedSigAlg); //, provider);
+
+		for (X509Certificate cert : certList) {
+			try {	
+				sig.initVerify(cert.getPublicKey());
+				sig.update(signedQuery.getBytes());
+				valid = sig.verify(signature);
+				if (valid) {
+					break;
+				}
+			} catch (Exception e) {
+				LOGGER.warn("Error executing validateSign: " + e.getMessage(), e);
+			}
+		}
+		return valid;
+	}
+
+	/**
 	 * Generates a nameID.
 	 *
 	 * @param value

@@ -244,7 +244,6 @@ public class SettingsBuilder {
 		X509Certificate idpX509cert = loadCertificateFromProp(IDP_X509CERT_PROPERTY_KEY);
 		if (idpX509cert != null) {
 			saml2Setting.setIdpx509cert(idpX509cert);
-			idpX509certMulti.add(0, idpX509cert);
 		}
 
 		String idpCertFingerprint = loadStringProperty(CERTFINGERPRINT_PROPERTY_KEY);
