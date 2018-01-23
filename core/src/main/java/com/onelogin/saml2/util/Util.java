@@ -292,6 +292,22 @@ public final class Util {
 	 * @throws IOException 
 	 */
 	public static Document convertStringToDocument(String xmlStr) throws ParserConfigurationException, SAXException, IOException {
+		return parseXML(new InputSource(new StringReader(xmlStr)));
+	}
+
+	/**
+	 * Parse an XML from input source to a Document object
+	 *
+	 * @param xmlStr
+	 * 				The XML string which should be converted
+	 *
+	 * @return the Document object
+	 *
+	 * @throws ParserConfigurationException 
+	 * @throws SAXException 
+	 * @throws IOException 
+	 */
+	public static Document parseXML(InputSource inputSource) throws ParserConfigurationException, SAXException, IOException {
 		DocumentBuilderFactory docfactory = DocumentBuilderFactory.newInstance();
 		docfactory.setNamespaceAware(true);
 		
@@ -329,7 +345,7 @@ public final class Util {
 		} catch (Throwable e) {}
 
 		DocumentBuilder builder = docfactory.newDocumentBuilder();
-		Document doc = builder.parse(new InputSource(new StringReader(xmlStr)));
+		Document doc = builder.parse(inputSource);
 
 		// Loop through the doc and tag every element with an ID attribute
 		// as an XML ID node.
@@ -1199,6 +1215,47 @@ public final class Util {
 			valid = sig.verify(signature);
 		} catch (Exception e) {
 			LOGGER.warn("Error executing validateSign: " + e.getMessage(), e);
+		}
+		return valid;
+	}
+
+	/**
+	 * Validates signed binary data (Used to validate GET Signature).
+	 *
+	 * @param signedQuery
+	 * 				 The element we should validate
+	 * @param signature
+	 * 				 The signature that will be validate
+	 * @param certList
+	 * 				 The List of certificates
+	 * @param signAlg
+	 * 				 Signature Algorithm
+	 * 
+	 * @return the signed document in string format
+	 *
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchProviderException 
+	 * @throws InvalidKeyException 
+	 * @throws SignatureException 
+	 */
+	public static Boolean validateBinarySignature(String signedQuery, byte[] signature, List<X509Certificate> certList, String signAlg) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException {
+		Boolean valid = false;
+
+		org.apache.xml.security.Init.init();
+		String convertedSigAlg = signatureAlgConversion(signAlg);
+		Signature sig = Signature.getInstance(convertedSigAlg); //, provider);
+
+		for (X509Certificate cert : certList) {
+			try {	
+				sig.initVerify(cert.getPublicKey());
+				sig.update(signedQuery.getBytes());
+				valid = sig.verify(signature);
+				if (valid) {
+					break;
+				}
+			} catch (Exception e) {
+				LOGGER.warn("Error executing validateSign: " + e.getMessage(), e);
+			}
 		}
 		return valid;
 	}

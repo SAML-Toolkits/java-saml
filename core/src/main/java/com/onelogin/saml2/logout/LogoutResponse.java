@@ -3,8 +3,10 @@ package com.onelogin.saml2.logout;
 import java.io.IOException;
 import java.net.URL;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -231,6 +233,17 @@ public class LogoutResponse {
 					throw new SettingsException("In order to validate the sign on the Logout Response, the x509cert of the IdP is required", SettingsException.CERT_NOT_FOUND);
 				}
 
+				List<X509Certificate> certList = new ArrayList<X509Certificate>();
+				List<X509Certificate> multipleCertList = settings.getIdpx509certMulti();
+
+				if (multipleCertList != null && multipleCertList.size() != 0) {
+					certList.addAll(multipleCertList);
+				}
+
+				if (certList.isEmpty() || !certList.contains(cert)) {
+					certList.add(0, cert);
+				}
+
 				String signAlg = request.getParameter("SigAlg");
 				if (signAlg == null || signAlg.isEmpty()) {
 					signAlg = Constants.RSA_SHA1;
@@ -245,7 +258,7 @@ public class LogoutResponse {
 
 				signedQuery += "&SigAlg=" + request.getEncodedParameter("SigAlg", signAlg);
 
-				if (!Util.validateBinarySignature(signedQuery, Util.base64decoder(signature), cert, signAlg)) {
+				if (!Util.validateBinarySignature(signedQuery, Util.base64decoder(signature), certList, signAlg)) {
 					throw new ValidationError("Signature validation failed. Logout Response rejected", ValidationError.INVALID_SIGNATURE);
 				}
 			}

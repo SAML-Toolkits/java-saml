@@ -281,19 +281,30 @@ public class SamlResponse {
 
 				validateSubjectConfirmation(responseInResponseTo);
 
-                if (settings.getWantAssertionsSigned() && !hasSignedAssertion) {
-                	throw new ValidationError("The Assertion of the Response is not signed and the SP requires it", ValidationError.NO_SIGNED_ASSERTION);
-                }
+				if (settings.getWantAssertionsSigned() && !hasSignedAssertion) {
+					throw new ValidationError("The Assertion of the Response is not signed and the SP requires it", ValidationError.NO_SIGNED_ASSERTION);
+				}
 
-                if (settings.getWantMessagesSigned() && !hasSignedResponse) {
-                	throw new ValidationError("The Message of the Response is not signed and the SP requires it", ValidationError.NO_SIGNED_MESSAGE);
-                }
+				if (settings.getWantMessagesSigned() && !hasSignedResponse) {
+					throw new ValidationError("The Message of the Response is not signed and the SP requires it", ValidationError.NO_SIGNED_MESSAGE);
+				}
 			}
 
 			if (signedElements.isEmpty() || (!hasSignedAssertion && !hasSignedResponse)) {
 				throw new ValidationError("No Signature found. SAML Response rejected", ValidationError.NO_SIGNATURE_FOUND);
 			} else {				 
-				List<X509Certificate> certList = settings.getIdpx509certMulti();
+				X509Certificate cert = settings.getIdpx509cert();
+				List<X509Certificate> certList = new ArrayList<X509Certificate>();
+				List<X509Certificate> multipleCertList = settings.getIdpx509certMulti();
+
+				if (multipleCertList != null && multipleCertList.size() != 0) {
+					certList.addAll(multipleCertList);
+				}
+
+				if (cert != null && !certList.contains(cert)) {
+					certList.add(0, cert);
+				}
+
 				String fingerprint = settings.getIdpCertFingerprint();
 				String alg = settings.getIdpCertFingerprintAlgorithm();
 
