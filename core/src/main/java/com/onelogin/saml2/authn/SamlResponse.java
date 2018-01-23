@@ -298,7 +298,7 @@ public class SamlResponse {
 				List<X509Certificate> multipleCertList = settings.getIdpx509certMulti();
 
 				if (multipleCertList != null && multipleCertList.size() != 0) {
-					certList = multipleCertList;
+					certList.addAll(multipleCertList);
 				}
 
 				if (cert != null && !certList.contains(cert)) {
