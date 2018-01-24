@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>%s</title>
+</head>
+<body>
+<form method="POST" name="hiddenform" action="%s">
+    <input type="hidden" name="%s" value="%s" />
+    <input type="hidden" name="RelayState" value="%s" />
+    <noscript>
+        <p>Script is disabled. Click Submit to continue.</p>
+        <input type="submit" value="Submit" />
+    </noscript>
+</form>
+<script language="javascript">window.setTimeout('document.forms[0].submit()', 0);</script>
+</body>
+</html>

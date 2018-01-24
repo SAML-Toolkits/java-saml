@@ -1081,6 +1081,29 @@ public final class Util {
 	 * @throws XPathExpressionException
 	 */
 	public static String addSign(Document document, PrivateKey key, X509Certificate certificate, String signAlgorithm) throws XMLSecurityException, XPathExpressionException {
+		return addSign(document, key, certificate, signAlgorithm, Constants.C14N_WC);
+	}
+
+	/**
+	 * Signs the Document using the specified signature algorithm with the private key and the public certificate.
+	 *
+	 * @param document
+	 * 				 The document to be signed
+	 * @param key
+	 * 				 The private key
+	 * @param certificate
+	 * 				 The public certificate
+	 * @param signAlgorithm
+	 * 				 Signature Algorithm
+	 * @param c14nMethod
+	 * 				 Canonicalization method
+	 *
+	 * @return the signed document in string format
+	 *
+	 * @throws XMLSecurityException
+	 * @throws XPathExpressionException
+	 */
+	public static String addSign(Document document, PrivateKey key, X509Certificate certificate, String signAlgorithm, String c14nMethod) throws XMLSecurityException, XPathExpressionException {
 		org.apache.xml.security.Init.init();
 
 		// Check arguments.
@@ -1095,7 +1118,7 @@ public final class Util {
 		if (key == null) {
 			throw new IllegalArgumentException("Provided key was null");
 		}
-		
+
 		if (certificate == null) {
 			throw new IllegalArgumentException("Provided certificate was null");
 		}
@@ -1104,17 +1127,13 @@ public final class Util {
 			signAlgorithm = Constants.RSA_SHA1;
 		}
 
-		// document.normalizeDocument();
-
-		String c14nMethod = Constants.C14N_WC;
-
 		// Signature object
 		XMLSignature sig = new XMLSignature(document, null, signAlgorithm, c14nMethod);
 
 		// Including the signature into the document before sign, because
 		// this is an envelop signature
 		Element root = document.getDocumentElement();
-		document.setXmlStandalone(false);		
+		document.setXmlStandalone(false);
 
 		// If Issuer, locate Signature after Issuer, Otherwise as first child.
 		NodeList issuerNodes = Util.query(document, "//saml:Issuer", null);
@@ -1141,7 +1160,7 @@ public final class Util {
 		sig.addDocument(reference, transforms, Constants.SHA1);
 
 		// Add the certification info
-		sig.addKeyInfo(certificate);			
+		sig.addKeyInfo(certificate);
 
 		// Sign the document
 		sig.sign(key);
@@ -1553,5 +1572,5 @@ public final class Util {
 		}
 	}
 
-	
+
 }
