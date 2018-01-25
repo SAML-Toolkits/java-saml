@@ -218,7 +218,7 @@ onelogin.saml2.sp.single_logout_service.binding = urn:oasis:names:tc:SAML:2.0:bi
 
 # Specifies constraints on the name identifier to be used to
 # represent the requested subject.
-# Take a look on lib/Saml2/Constants.php to see the NameIdFormat supported
+# Take a look on core/src/main/java/com/onelogin/saml2/util/Constants.java to see the NameIdFormat supported
 onelogin.saml2.sp.nameidformat = urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified
 
 # Usually x509cert and privateKey of the SP are provided by files placed at
