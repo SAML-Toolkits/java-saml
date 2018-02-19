@@ -69,7 +69,7 @@ In production, the **onelogin.saml2.strict** setting parameter MUST be set as **
 ### Hosting
 #### Github
 The toolkit is hosted on github. You can download it from:
-* Lastest release: https://github.com/onelogin/java-saml/releases/latest
+* Latest release: https://github.com/onelogin/java-saml/releases/latest
 * Master repo: https://github.com/onelogin/java-saml/tree/master
 
 #### Maven
@@ -536,7 +536,7 @@ if a match on the future LogoutResponse ID and the LogoutRequest ID to be sent i
 ```
 auth.getLastRequestId()
 ```
-and later excuting the redirection manually.
+and later executing the redirection manually.
 
 
 ### Working behind load balancer
@@ -553,7 +553,7 @@ For Apache Tomcat this is done by setting the proxyName, proxyPort, scheme and s
  In some scenarios the IdP uses different certificates for
  signing/encryption, or is under key rollover phase and more than one certificate is published on IdP metadata.
  
- In order to handle that the toolkit offers the `onelogin.saml2.idp.x509certMulti` parameters where you can set additional certificates that will be used to validate IdP signature. However just the certificate setted in `onelogin.saml2.idp.x509cert` parameter will be used for encrypting.
+ In order to handle that the toolkit offers the `onelogin.saml2.idp.x509certMulti` parameters where you can set additional certificates that will be used to validate IdP signature. However just the certificate set in `onelogin.saml2.idp.x509cert` parameter will be used for encrypting.
  
 
 ### Replay attacks
@@ -583,7 +583,7 @@ Lets imagine we deploy the jsp example project at *http://localhost:8080/java-sa
 
   2.2. In the second link we are redirected to the */dologin.jsp* view with a 'attrs' GET parameter. An AuthNRequest is sent to the IdP with the /attrs.jsp view as RelayState parameter, we authenticate at the IdP and then a Response is sent to the SP, specifically to the Assertion Consumer Service view: /acs.jsp. There the SAMLResponse is validated, the NameID and user attributes extracted and stored in the session and we are redirected to the RelayState view, the attrs.jsp view where user data is read from session and prompted.
 
-3. The single log out funcionality could be tested by 2 ways.
+3. The single log out functionality could be tested by 2 ways.
 
   3.1. SLO Initiated by SP. Click on the "logout" link at the SP, after that we are redirected to the /dologout.jsp view where a Logout Request is sent to the IdP, the session at the IdP is closed and replies to the SP a Logout Response (sent to the Single Logout Service endpoint). The SLS endpoint /sls.jsp of the SP process the Logout Response and if is valid, close the user session of the local app. Notice that the SLO Workflow starts and ends at the SP.
 
