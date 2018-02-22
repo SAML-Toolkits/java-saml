@@ -19,18 +19,27 @@ import javax.xml.xpath.XPathExpressionException;
 import java.security.PrivateKey;
 
 import org.w3c.dom.Document;
-
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import com.onelogin.saml2.logout.LogoutRequest;
 import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.exception.XMLEntityException;
+import com.onelogin.saml2.exception.Error;
+import com.onelogin.saml2.exception.SettingsException;
+import com.onelogin.saml2.exception.ValidationError;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
+import com.onelogin.saml2.test.NaiveUrlEncoder;
+import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.Util;
 
 public class LogoutRequestTest {
 
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
+	
 	/**
 	 * Tests the constructor and the getEncodedLogoutRequest method of LogoutRequest
 	 *
@@ -45,7 +54,7 @@ public class LogoutRequestTest {
 		final String logoutRequestString = Util.getFileAsString("data/logout_requests/logout_request.xml");
 		LogoutRequest logoutRequest = new LogoutRequest(settings) {
 			@Override
-			protected String getLogoutRequestXml() {
+			public String getLogoutRequestXml() {
 				return logoutRequestString;
 			}
 		};
@@ -69,7 +78,7 @@ public class LogoutRequestTest {
 		settings.setCompressRequest(true);
 		logoutRequest = new LogoutRequest(settings) {
 			@Override
-			protected String getLogoutRequestXml() {
+			public String getLogoutRequestXml() {
 				return logoutRequestString;
 			}
 		};
@@ -79,7 +88,7 @@ public class LogoutRequestTest {
 		settings.setCompressRequest(false);
 		logoutRequest = new LogoutRequest(settings) {
 			@Override
-			protected String getLogoutRequestXml() {
+			public String getLogoutRequestXml() {
 				return logoutRequestString;
 			}
 		};
@@ -168,7 +177,7 @@ public class LogoutRequestTest {
 	@Test
 	public void testConstructorWithEncryptedNameID() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
-		LogoutRequest logoutRequest = new LogoutRequest(settings); 
+		LogoutRequest logoutRequest = new LogoutRequest(settings);
 		String logoutRequestStringBase64 = logoutRequest.getEncodedLogoutRequest();
 		String logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		assertThat(logoutRequestStr, containsString("<saml:EncryptedID><xenc:EncryptedData"));
@@ -179,7 +188,30 @@ public class LogoutRequestTest {
 		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		assertThat(logoutRequestStr, not(containsString("<saml:EncryptedID><xenc:EncryptedData")));
 	}
-	
+
+	/**
+	 * Tests the getLogoutRequestXml method of LogoutRequest
+	 *
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.logout.LogoutRequest#getLogoutRequestXml
+	 */
+	@Test
+	public void testGetLogoutRequestXml() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		LogoutRequest logoutRequest = new LogoutRequest(settings);
+		String logoutRequestXML = logoutRequest.getLogoutRequestXml();
+		assertThat(logoutRequestXML, containsString("<samlp:LogoutRequest"));
+
+		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request.xml.base64");
+		String requestURL = "/";
+		HttpRequest httpRequest = newHttpRequest(requestURL, samlRequestEncoded);
+		logoutRequest = new LogoutRequest(settings, httpRequest);
+		logoutRequestXML = logoutRequest.getLogoutRequestXml();
+		assertThat(logoutRequestXML, containsString("<samlp:LogoutRequest"));
+		
+	}
+
 	/**
 	 * Tests the getNameIdData method of LogoutRequest
 	 * Case: Able to get the NameIdData
@@ -196,7 +228,6 @@ public class LogoutRequestTest {
 		String logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		assertThat(logoutRequestStr, containsString("<samlp:LogoutRequest"));
 		String nameIdDataStr = LogoutRequest.getNameIdData(logoutRequestStr, null).toString();
-		assertThat(nameIdDataStr, containsString("Format=urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"));
 		assertThat(nameIdDataStr, containsString("Value=ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c"));
 		assertThat(nameIdDataStr, not(containsString("SPNameQualifier")));
 
@@ -217,10 +248,17 @@ public class LogoutRequestTest {
 		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		PrivateKey key = settings.getSPkey();
 		nameIdDataStr = LogoutRequest.getNameIdData(logoutRequestStr, key).toString();
-		assertThat(nameIdDataStr, containsString("Format=urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"));
 		assertThat(nameIdDataStr, containsString("Value=ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c"));
 		assertThat(nameIdDataStr, not(containsString("SPNameQualifier")));	
 
+		logoutRequest = new LogoutRequest(settings, null, "ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c", null, "urn:oasis:names:tc:SAML:2.0:nameid-format:emailAddress");
+		logoutRequestStringBase64 = logoutRequest.getEncodedLogoutRequest();
+		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
+		nameIdDataStr = LogoutRequest.getNameIdData(logoutRequestStr, key).toString();
+		assertThat(nameIdDataStr, containsString("urn:oasis:names:tc:SAML:2.0:nameid-format:emailAddress"));
+		assertThat(nameIdDataStr, containsString("Value=ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c"));
+		assertThat(nameIdDataStr, not(containsString("SPNameQualifier")));	
+		
   	    String keyString = Util.getFileAsString("data/customPath/certs/sp.pem");
   	    key = Util.loadPrivateKey(keyString);
 		logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_encrypted_nameid.xml");
@@ -228,6 +266,16 @@ public class LogoutRequestTest {
 		assertThat(nameIdDataStr, containsString("Format=urn:oasis:names:tc:SAML:2.0:nameid-format:emailAddress"));
 		assertThat(nameIdDataStr, containsString("Value=ONELOGIN_9c86c4542ab9d6fce07f2f7fd335287b9b3cdf69"));
 		assertThat(nameIdDataStr, containsString("SPNameQualifier=https://pitbulk.no-ip.org/newonelogin/demo1/metadata.php"));
+	
+		settings = new SettingsBuilder().fromFile("config/config.emailaddressformat.properties").build();
+		logoutRequest = new LogoutRequest(settings, null, "ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c", null); 
+		logoutRequestStringBase64 = logoutRequest.getEncodedLogoutRequest();
+		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
+		assertThat(logoutRequestStr, containsString("<samlp:LogoutRequest"));
+		nameIdDataStr = LogoutRequest.getNameIdData(logoutRequestStr, null).toString();
+		assertThat(nameIdDataStr, containsString("Value=ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c"));
+		assertThat(nameIdDataStr, containsString("Format=urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"));
+		assertThat(nameIdDataStr, not(containsString("SPNameQualifier")));		
 	}
 
 	/**
@@ -259,10 +307,13 @@ public class LogoutRequestTest {
 	 * 
 	 * @see com.onelogin.saml2.logout.LogoutRequest#getNameIdData
 	 */
-	@Test(expected=IllegalArgumentException.class)
+	@Test
 	public void testGetNameIdDataNoKey() throws Exception {
 		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_encrypted_nameid.xml");
-		String nameIdDataStr = LogoutRequest.getNameIdData(logoutRequestStr, null).toString();
+		
+		expectedEx.expect(SettingsException.class);
+		expectedEx.expectMessage("Key is required in order to decrypt the NameID");
+		LogoutRequest.getNameIdData(logoutRequestStr, null).toString();
 	}
 
 	/**
@@ -273,12 +324,15 @@ public class LogoutRequestTest {
 	 * 
 	 * @see com.onelogin.saml2.logout.LogoutRequest#getNameIdData
 	 */
-	@Test(expected=Exception.class)
+	@Test
 	public void testGetNameIdDataWrongKey() throws Exception {
 		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_encrypted_nameid.xml");
-		String keyString = Util.getFileAsString("data/misc/sp3.key");
+		String keyString = Util.getFileAsString("data/misc/sp4.key");
 		PrivateKey key = Util.loadPrivateKey(keyString);
-		String nameIdDataStr = LogoutRequest.getNameIdData(logoutRequestStr, key).toString();
+		
+		expectedEx.expect(Exception.class);
+		expectedEx.expectMessage("Not able to decrypt the EncryptedID and get a NameID");
+		LogoutRequest.getNameIdData(logoutRequestStr, key).toString();
 	}
 
 	/**
@@ -289,10 +343,13 @@ public class LogoutRequestTest {
 	 * 
 	 * @see com.onelogin.saml2.logout.LogoutRequest#getNameIdData
 	 */
-	@Test(expected=Exception.class)
+	@Test
 	public void testGetNameIdDataNoNameId() throws Exception {
 		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_no_nameid.xml");
-		String nameIdDataStr = LogoutRequest.getNameIdData(logoutRequestStr, null).toString();
+		
+		expectedEx.expect(ValidationError.class);
+		expectedEx.expectMessage("No name id found in Logout Request.");
+		LogoutRequest.getNameIdData(logoutRequestStr, null).toString();
 	}
 
 	/**
@@ -359,10 +416,13 @@ public class LogoutRequestTest {
 	 * 
 	 * @see com.onelogin.saml2.logout.LogoutRequest#getNameId
 	 */
-	@Test(expected=IllegalArgumentException.class)
+	@Test
 	public void testGetNameIdNoKey() throws Exception {
 		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_encrypted_nameid.xml");
-		String nameIdStr = LogoutRequest.getNameId(logoutRequestStr, null).toString();
+		
+		expectedEx.expect(SettingsException.class);
+		expectedEx.expectMessage("Key is required in order to decrypt the NameID");
+		LogoutRequest.getNameId(logoutRequestStr, null).toString();
 	}
 
 	/**
@@ -373,12 +433,15 @@ public class LogoutRequestTest {
 	 * 
 	 * @see com.onelogin.saml2.logout.LogoutRequest#getNameId
 	 */
-	@Test(expected=Exception.class)
+	@Test
 	public void testGetNameIdWrongKey() throws Exception {
 		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_encrypted_nameid.xml");
-		String keyString = Util.getFileAsString("data/misc/sp3.key");
+		String keyString = Util.getFileAsString("data/misc/sp4.key");
 		PrivateKey key = Util.loadPrivateKey(keyString);
-		String nameIdStr = LogoutRequest.getNameIdData(logoutRequestStr, key).toString();
+		
+		expectedEx.expect(Exception.class);
+		expectedEx.expectMessage("Not able to decrypt the EncryptedID and get a NameID");
+		LogoutRequest.getNameIdData(logoutRequestStr, key).toString();
 	}
 
 	/**
@@ -386,13 +449,12 @@ public class LogoutRequestTest {
 	 *
 	 * @throws IOException
 	 * @throws URISyntaxException 
-	 * @throws XMLEntityException
 	 * @throws XPathExpressionException 
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutRequest#getIssuer
 	 */
 	@Test
-	public void testGetIssuer() throws URISyntaxException, IOException, XPathExpressionException, XMLEntityException {
+	public void testGetIssuer() throws URISyntaxException, IOException, XPathExpressionException {
 		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request.xml");
 		String expectedIssuer = "http://idp.example.com/";
 		String issuer = LogoutRequest.getIssuer(logoutRequestStr);
@@ -408,13 +470,14 @@ public class LogoutRequestTest {
 	 *
 	 * @throws IOException
 	 * @throws URISyntaxException
-	 * @throws XMLEntityException
 	 * @throws XPathExpressionException
+	 * @throws XMLEntityException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutRequest#getSessionIndexes
 	 */
 	@Test
-	public void testGetSessionIndexes() throws URISyntaxException, IOException, XPathExpressionException, XMLEntityException {
+	public void testGetSessionIndexes() throws URISyntaxException, IOException, XPathExpressionException, XMLEntityException, Error {
 		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request.xml");
 		List<String> expectedIndexes = new ArrayList<String>();
 		List <String> indexes = LogoutRequest.getSessionIndexes(logoutRequestStr);
@@ -434,14 +497,12 @@ public class LogoutRequestTest {
 	 * Tests the isValid method of LogoutRequest
 	 * Case: Invalid Issuer
 	 *
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 * @throws XMLEntityException
+	 * @throws Exception 
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutRequest#isValid
 	 */
 	@Test
-	public void testIsInvalidIssuer() throws URISyntaxException, IOException, XMLEntityException {
+	public void testIsInvalidIssuer() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/invalids/invalid_issuer.xml.base64");
 		final String requestURL = "http://stuff.com/endpoints/endpoints/sls.php";
@@ -454,21 +515,19 @@ public class LogoutRequestTest {
 		settings.setStrict(true);
 		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertFalse(logoutRequest.isValid());
-		assertEquals("Invalid issuer in the Logout Request", logoutRequest.getError());
+		assertEquals("Invalid issuer in the Logout Request. Was 'https://example.hello.com/access/saml', but expected 'http://idp.example.com/'", logoutRequest.getError());
 	}
 
 	/**
 	 * Tests the isValid method of LogoutRequest
 	 * Case: Invalid XML
 	 *
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 * @throws XMLEntityException
+	 * @throws Exception 
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutRequest#isValid
 	 */
 	@Test
-	public void testIsInValidWrongXML() throws URISyntaxException, IOException, XMLEntityException {
+	public void testIsInValidWrongXML() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/invalids/invalid_xml.xml.base64");
 		final String requestURL = "http://stuff.com/endpoints/endpoints/sls.php";
@@ -497,14 +556,12 @@ public class LogoutRequestTest {
 	 * Tests the isValid method of LogoutRequest
 	 * Case: Invalid Destination
 	 *
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 * @throws XMLEntityException
+	 * @throws Exception 
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutRequest#isValid
 	 */
 	@Test
-	public void testIsInvalidDestination() throws URISyntaxException, IOException, XMLEntityException {
+	public void testIsInvalidDestination() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
 		final String requestURL = "/";
@@ -524,14 +581,12 @@ public class LogoutRequestTest {
 	 * Tests the isValid method of LogoutRequest
 	 * Case: Invalid NotOnOrAfter
 	 *
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 * @throws XMLEntityException
+	 * @throws Exception 
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutRequest#isValid
 	 */
 	@Test
-	public void testIsInvalidNotOnOrAfter() throws URISyntaxException, IOException, XMLEntityException {
+	public void testIsInvalidNotOnOrAfter() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/invalids/not_after_failed.xml.base64");
 		final String requestURL = "http://stuff.com/endpoints/endpoints/sls.php";
@@ -544,20 +599,18 @@ public class LogoutRequestTest {
 		settings.setStrict(true);
 		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertFalse(logoutRequest.isValid());
-		assertEquals("Timing issues (please check your clock settings)", logoutRequest.getError());
+		assertEquals("Could not validate timestamp: expired. Check system clock.", logoutRequest.getError());
 	}
 
 	/**
 	 * Tests the isValid method of LogoutRequest
 	 *
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 * @throws XMLEntityException
+	 * @throws Exception 
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutRequest#isValid
 	 */
 	@Test
-	public void testIsValid() throws URISyntaxException, IOException, XMLEntityException {
+	public void testIsValid() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
 		String requestURL = "/";
@@ -583,17 +636,71 @@ public class LogoutRequestTest {
 		assertTrue(logoutRequest.isValid());
 	}
 
+	@Test
+	public void testIsInValidSign_defaultUrlEncode() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.knownIdpPrivateKey.properties").build();
+		settings.setStrict(true);
+		settings.setWantMessagesSigned(true);
+
+		final String requestURL = "https://pitbulk.no-ip.org/newonelogin/demo1/index.php?sls";
+		String samlRequestEncoded = "lVLBitswEP0Vo7tjeWzJtki8LIRCYLvbNksPewmyPc6K2pJqyXQ/v1LSQlroQi/DMJr33rwZbZ2cJysezNms/gt+X9H55G2etBOXlx1ZFy2MdMoJLWd0wvfieP/xQcCGCrsYb3ozkRvI+wjpHC5eGU2Sw35HTg3lA8hqZFwWFcMKsStpxbEsxoLXeQN9OdY1VAgk+YqLC8gdCUQB7tyKB+281D6UaF6mtEiBPudcABcMXkiyD26Ulv6CevXeOpFlVvlunb5ttEmV3ZjlnGn8YTRO5qx0NuBs8kzpAd829tXeucmR5NH4J/203I8el6gFRUqbFPJnyEV51Wq30by4TLW0/9ZyarYTxt4sBsjUYLMZvRykl1Fxm90SXVkfwx4P++T4KSafVzmpUcVJ/sfSrQZJPphllv79W8WKGtLx0ir8IrVTqD1pT2MH3QAMSs4KTvui71jeFFiwirOmprwPkYW063+5uRq4urHiiC4e8hCX3J5wqAEGaPpw9XB5JmkBdeDqSlkz6CmUXdl0Qae5kv2F/1384wu3PwE=";
+		String relayState = "_1037fbc88ec82ce8e770b2bed1119747bb812a07e6";
+		String sigAlg = Constants.SHA256;
+
+		String queryString = "SAMLRequest=" + Util.urlEncoder(samlRequestEncoded);
+		queryString += "&RelayState=" + Util.urlEncoder(relayState);
+		queryString += "&SigAlg=" + Util.urlEncoder(sigAlg);
+
+		//This signature is based on the query string above
+		String signature = "cxDTcLRHhXJKGYcjZE2RRz5p7tVg/irNimq48KkJ0n10wiGwAmuzUByxEm4OHbetDrHGtxI5ygjrR0/HcrD8IkYyI5Ie4r5tJYkfdtpUrvOQ7khbBvP9GzEbZIrz7eH1ALdCDchORaRB/cs6v+OZbBj5uPTrN//wOhZl2k9H2xVW/SYy17jDoIKh/wvqtQ9FF+h2UxdUEhxeB/UUXOC6nVLMo+RGaamSviYkUE1Zu1tmalO+F6FivNQ31T/TkqzWz0KEjmnFs3eKbHakPVuUHpDQm7Gf2gBS1TXwVQsL7e2axtvv4RH5djlq1Z2WH2V+PwGOkIvLxf3igGUSR1A8bw==";
+
+		HttpRequest httpRequest = new HttpRequest(requestURL, queryString)
+				.addParameter("SAMLRequest", samlRequestEncoded)
+				.addParameter("RelayState", relayState)
+				.addParameter("SigAlg", sigAlg)
+				.addParameter("Signature", signature);
+
+		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
+		assertTrue("Signature validation failed", logoutRequest.isValid());
+	}
+
+	@Test
+	public void testIsInValidSign_naiveUrlEncoding() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.knownIdpPrivateKey.properties").build();
+		settings.setStrict(true);
+		settings.setWantMessagesSigned(true);
+
+		final String requestURL = "https://pitbulk.no-ip.org/newonelogin/demo1/index.php?sls";
+		String samlRequestEncoded = "lVLBitswEP0Vo7tjeWzJtki8LIRCYLvbNksPewmyPc6K2pJqyXQ/v1LSQlroQi/DMJr33rwZbZ2cJysezNms/gt+X9H55G2etBOXlx1ZFy2MdMoJLWd0wvfieP/xQcCGCrsYb3ozkRvI+wjpHC5eGU2Sw35HTg3lA8hqZFwWFcMKsStpxbEsxoLXeQN9OdY1VAgk+YqLC8gdCUQB7tyKB+281D6UaF6mtEiBPudcABcMXkiyD26Ulv6CevXeOpFlVvlunb5ttEmV3ZjlnGn8YTRO5qx0NuBs8kzpAd829tXeucmR5NH4J/203I8el6gFRUqbFPJnyEV51Wq30by4TLW0/9ZyarYTxt4sBsjUYLMZvRykl1Fxm90SXVkfwx4P++T4KSafVzmpUcVJ/sfSrQZJPphllv79W8WKGtLx0ir8IrVTqD1pT2MH3QAMSs4KTvui71jeFFiwirOmprwPkYW063+5uRq4urHiiC4e8hCX3J5wqAEGaPpw9XB5JmkBdeDqSlkz6CmUXdl0Qae5kv2F/1384wu3PwE=";
+		String relayState = "_1037fbc88ec82ce8e770b2bed1119747bb812a07e6";
+		String sigAlg = Constants.SHA256;
+
+		String queryString = "SAMLRequest=" + NaiveUrlEncoder.encode(samlRequestEncoded);
+		queryString += "&RelayState=" + NaiveUrlEncoder.encode(relayState);
+		queryString += "&SigAlg=" + NaiveUrlEncoder.encode(sigAlg);
+
+		//This signature is based on the query string above
+		String signatureNaiveEncoding = "Gj2mUq6RBPAPXI9VjDDlwAxueSEBlOfgpWKLpsQbqIp+2XPFtC/vPAZpuPjHCDNNnAI3WKZa4l8ijwQBTqQwKz88k9gTx6vcLxPl2L4SrWdLOokiGrIVYJ+0sK2hapHHMa7WzGiTgpeTuejHbD4ptneaRXl4nrJAEo0WJ/rNTSWbJpnb+ENtgBnsfkmj+6z1KFY70ruo7W/vme21Jg+4XNfBSGl6LLSjEnZHJG0ET80HKvJEZayv4BQGZ3MShcSMyab/w+rLfDvDRA5RcRxw+NHOXo/kxZ3qhpa6daOwG69+PiiWmusmB2gaSq6jy2L55zFks9a36Pt5l5fYA2dE4g==";
+
+		HttpRequest httpRequest = new HttpRequest(requestURL, queryString)
+				.addParameter("SAMLRequest", samlRequestEncoded)
+				.addParameter("RelayState", relayState)
+				.addParameter("SigAlg", sigAlg)
+				.addParameter("Signature", signatureNaiveEncoding);
+
+		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
+		assertTrue("Signature validation failed", logoutRequest.isValid());
+	}
+
 	/**
 	 * Tests the isValid method of LogoutRequest
 	 *
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 * @throws XMLEntityException
+	 * @throws Exception 
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutRequest#isValid
 	 */
 	@Test
-	public void testIsInValidSign() throws URISyntaxException, IOException, XMLEntityException {
+	public void testIsInValidSign() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		settings.setStrict(false);
 		settings.setWantMessagesSigned(true);
@@ -653,13 +760,12 @@ public class LogoutRequestTest {
 	 * Tests the isValid method of LogoutRequest
 	 * Case: No SAML Logout Request
 	 *
-	 * @throws IOException
-	 * @throws XMLEntityException
-	 * 
+	 * @throws Exception 
+	 *
 	 * @see com.onelogin.saml2.logout.LogoutRequest#isValid
 	 */
 	@Test
-	public void testIsValidNoLogoutRequest() throws IOException, XMLEntityException {
+	public void testIsValidNoLogoutRequest() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlRequestEncoded = "";
 		final String requestURL = "/";
@@ -674,14 +780,12 @@ public class LogoutRequestTest {
 	 * Tests the isValid method of LogoutRequest
 	 * Case: No current URL
 	 *
-	 * @throws IOException
-	 * @throws XMLEntityException
-	 * @throws URISyntaxException
-	 * 
+	 * @throws Exception 
+	 *
 	 * @see com.onelogin.saml2.logout.LogoutRequest#isValid
 	 */
 	@Test
-	public void testIsValidNoCurrentURL() throws IOException, XMLEntityException, URISyntaxException {
+	public void testIsValidNoCurrentURL() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
 		
@@ -700,14 +804,12 @@ public class LogoutRequestTest {
 	/**
 	 * Tests the getError method of LogoutRequest
 	 *
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 * @throws XMLEntityException
+	 * @throws Exception 
 	 *
 	 * @see com.onelogin.saml2.logout.LogoutRequest#getError
 	 */
 	@Test
-	public void testGetError() throws URISyntaxException, IOException, XMLEntityException {
+	public void testGetError() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		settings.setStrict(true);
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");

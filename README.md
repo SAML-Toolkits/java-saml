@@ -1,21 +1,23 @@
 # OneLogin's SAML Java Toolkit
 
-[![Build Status](https://travis-ci.org/onelogin/java-saml.svg?branch=v2.0.0)](https://travis-ci.org/onelogin/java-saml) [![Coverage Status](https://coveralls.io/repos/github/onelogin/java-saml/badge.svg?branch=v2.0.0)](https://coveralls.io/github/onelogin/java-saml?branch=v2.0.0)
+[![Build Status](https://travis-ci.org/onelogin/java-saml.svg?branch=master)](https://travis-ci.org/onelogin/java-saml) [![Coverage Status](https://coveralls.io/repos/github/onelogin/java-saml/badge.svg?branch=master)](https://coveralls.io/github/onelogin/java-saml?branch=master)
 
 Add SAML support to your Java applications using this library.
 Forget those complicated libraries and use that open source library provided and supported by OneLogin Inc.
 
-This is the Version 2.0.0, compatible with java6 / java7 / java8.
+Version 2.X.X, compatible with java7 / java8.
 
-The 1.1.2 is consider deprecated. If you used it, we strongly recommend to migrate to that new version. 
-We rebuilt the toolkit on 2.0.0 so code/settings that you had will not be compatible.
+We [introduced some incompatibilities](https://github.com/onelogin/java-saml/issues/90), that could be fixed and make it compatible with java6.
+
+Version 1.1.2 is considered to be deprecated. If you have used it, we strongly recommend that you migrate to the new version. 
+We rebuilt the toolkit on 2.0.0, so code/settings that you had been using in the previous version will no longer be compatible.
 
 
 ## Why add SAML support to my software?
 
 SAML is an XML-based standard for web browser single sign-on and is defined by
 the OASIS Security Services Technical Committee. The standard has been around 
-since 2002, but lately it is becoming popular due its advantages:
+since 2002, but lately it has become popular due to its advantages as follows:
 
  * **Usability** - One-click access from portals or intranets, deep linking, 
    password elimination and automatically renewing sessions make life
@@ -53,9 +55,9 @@ Key features:
 
  * **saml2int** - Implements the SAML 2.0 Web Browser SSO Profile.
  * **Session-less** - Forget those common conflicts between the SP and
-   the final app, the toolkit delegate session in the final app.
+   the final app; the toolkit delegates session in the final app.
  * **Easy to use** - Programmer will be allowed to code high-level and
-   low-level programming, 2 easy to use APIs are available.
+   low-level programming; 2 easy-to-use APIs are available.
  * **Tested** - Thoroughly tested.
  * **Popular** - OneLogin's customers use it. Add easy support to your java web projects.
 
@@ -67,7 +69,7 @@ In production, the **onelogin.saml2.strict** setting parameter MUST be set as **
 ### Hosting
 #### Github
 The toolkit is hosted on github. You can download it from:
-* Lastest release: https://github.com/onelogin/java-saml/releases/latest
+* Latest release: https://github.com/onelogin/java-saml/releases/latest
 * Master repo: https://github.com/onelogin/java-saml/tree/master
 
 #### Maven
@@ -78,7 +80,7 @@ Install it as a maven dependecy:
   <dependency>
       <groupId>com.onelogin</groupId>
       <artifactId>java-saml</artifactId>
-      <version>2.0.0</version>
+      <version>2.2.0</version>
   </dependency>
 ```
 
@@ -114,7 +116,7 @@ also the [Java Cryptography Extension (JCE)](https://en.wikipedia.org/wiki/Java_
 * org.apache.maven.plugins:maven-enforcer-plugin
 
 For more info, open and read the different pom.xml files:
-[core/pom.xml](https://github.com/onelogin/java-saml/blob/v2.0.0/core/pom.xml), [toolkit/pom.xml](https://github.com/onelogin/java-saml/blob/v2.0.0/toolkit/pom.xml)
+[core/pom.xml](https://github.com/onelogin/java-saml/blob/v2.2.0/core/pom.xml), [toolkit/pom.xml](https://github.com/onelogin/java-saml/blob/v2.2.0/toolkit/pom.xml)
 
 ## Working with the github repository code and Eclipse.
 ### Get the toolkit.
@@ -136,16 +138,16 @@ At the Package Explorer, select the jsp-sample project, 2nd bottom of the mouse 
 Select a [Tomcat Server](http://crunchify.com/step-by-step-guide-to-setup-and-install-apache-tomcat-server-in-eclipse-development-environment-ide/) in order to deploy the server.
 
 ## Getting started
-### Knowing the toolkit
+### Learning the toolkit
 
-The new OneLogin's SAML Java SAML Toolkit contains different folders (core, toolkit, samples) and some files.
+OneLogin's new SAML Java SAML Toolkit contains different folders (core, toolkit, samples) and some files.
 
 Let's start describing them:
 
 #### core (com.onelogin:java-saml-core) ####
-This folder contains a maven project with the heart of java-saml, classes and methods to handle AuthNRequest, SAMLResponse, LogoutRequest, LogoutResponse and Metadata (low level API). In addition contains classes to load the settings of the toolkit and the HttpRequest class, a framework-agnostic representation of an HTTP request.
+This folder contains a maven project with the heart of java-saml, classes and methods to handle AuthNRequest, SAMLResponse, LogoutRequest, LogoutResponse and Metadata (low level API). In addition, it contains classes to load the settings of the toolkit and the HttpRequest class, a framework-agnostic representation of an HTTP request.
 
-In the repo, at *src/main/java* you will find the source, at *src/main/resources/schemas* there are xsd schemas used to validate the SAML messages, at *src/test/java* are the tests for its classes and at *src/test/resources* different settings, SAML messages and certificates used on the junit tests.
+In the repo, at *src/main/java* you will find the source; at *src/main/resources/schemas*, there are xsd schemas used to validate the SAML messages; at *src/test/java* are the tests for its classes; and at *src/test/resources* can be found different settings, SAML messages and certificates used by the junit tests.
 
 
 #### toolkit (com.onelogin:java-saml) ####
@@ -155,7 +157,7 @@ In the repo, at *src/main/java* you will find the source and at *src/test/java* 
 #### samples (com.onelogin:java-saml-tookit-samples) ####
 This folder contains a maven project with a jsp app used to learn how the java-saml toolkit works.
 
-At *java-saml-tookit-jspsample/src/main/webapp* folder we will find several jsp files, each one represent a different endpoint:
+Within the *java-saml-tookit-jspsample/src/main/webapp* folder are several jsp files, each one representing a different endpoint:
 - *index.jsp* Index of the webapp.
 - *dologin.jsp* SP-initiated SSO endpoint.
 - *dologout.jsp* SP-initiated SLO endpoint.
@@ -164,14 +166,20 @@ At *java-saml-tookit-jspsample/src/main/webapp* folder we will find several jsp 
 - *sls.jsp* Service Provider Single Logout Service endpoint.
 - *metadata.jsp* Publish SP metadata.
 
-At *java-saml-tookit-jspsample/src/main/resources* folder is the *onelogin.saml.properties* file that contains the SAML settings.
+At *java-saml-tookit-jspsample/src/main/resources* folder is the *onelogin.saml.properties* file which contains the SAML settings.
 
 ### How it works
 
-#### Settings
-First of all we need to configure the toolkit. The SP's info, the IdP's info, and in some cases, configure advanced security issues like signatures and encryption.
+#### Javadocs
 
-All the settings are defined in one unique file, by default the Auth class loads a *onelogin.saml.properties* file with the Auth() method, but if we named it in a differnt way we can use Auth(filename);
+* [toolkit (com.onelogin:java-saml)](https://onelogin.github.io/java-saml/toolkit/index.html)
+* [core (com.onelogin:java-saml-core)](https://onelogin.github.io/java-saml/core/index.html)
+
+#### Settings
+First of all we need to configure the toolkit. The SP's info, the IdP's info, and in some cases, configuration for advanced security issues, such as signatures and encryption.
+
+##### Properties File
+All the settings are defined in one unique file; by default, the Auth class loads a *onelogin.saml.properties* file with the Auth() method, but if we named it in a different way, we can use Auth(filename);
 
 Here are the list of properties to be defined on the settings file:
 ```properties
@@ -210,7 +218,7 @@ onelogin.saml2.sp.single_logout_service.binding = urn:oasis:names:tc:SAML:2.0:bi
 
 # Specifies constraints on the name identifier to be used to
 # represent the requested subject.
-# Take a look on lib/Saml2/Constants.php to see the NameIdFormat supported
+# Take a look on core/src/main/java/com/onelogin/saml2/util/Constants.java to see the NameIdFormat supported
 onelogin.saml2.sp.nameidformat = urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified
 
 # Usually x509cert and privateKey of the SP are provided by files placed at
@@ -324,12 +332,33 @@ onelogin.saml2.security.signature_algorithm = http://www.w3.org/2000/09/xmldsig#
 onelogin.saml2.organization.name = SP Java 
 onelogin.saml2.organization.displayname = SP Java Example
 onelogin.saml2.organization.url = http://sp.example.com
+onelogin.saml2.organization.lang = en
 
 # Contacts
 onelogin.saml2.contacts.technical.given_name = Technical Guy
 onelogin.saml2.contacts.technical.email_address = technical@example.com
 onelogin.saml2.contacts.support.given_name = Support Guy
-onelogin.saml2.contacts.support.email_address = support@@example.com
+onelogin.saml2.contacts.support.email_address = support@example.com
+```
+
+##### Dynamic Settings
+It is possible to build settings programatically. You can load your values from different sources such as files, databases, or generated values.
+
+The `SettingsBuilder` class exposes the method `fromValues(Map<String, Object> samlData)` which let you build your settings dynamically. The `key` strings are the same from the *Properties file*
+```java
+Map<String, Object> samlData = new HashMap<>();
+samlData.put("onelogin.saml2.sp.entityid", "http://localhost:8080/java-saml-tookit-jspsample/metadata.jsp");
+samlData.put("onelogin.saml2.sp.assertion_consumer_service.url", new URL("http://localhost:8080/java-saml-tookit-jspsample/acs.jsp"));
+samlData.put("onelogin.saml2.security.want_xml_validation",true);
+samlData.put("onelogin.saml2.sp.x509cert", myX509CertInstance);
+
+SettingsBuilder builder = new SettingsBuilder();
+Saml2Settings settings = builder.fromValues(samlData).build();
+```
+
+To instantiate the `Auth` class you write
+```java
+Auth auth = new Auth(settings, request, response);
 ```
 
 #### The HttpRequest
@@ -354,18 +383,17 @@ We can set a 'returnTo' url parameter to the login function and that will be con
 String targetUrl = 'https://example.com';
 auth.login(returnTo=targetUrl)
 ```
-The login method can recieve 4 more optional parameters:
-- forceAuthn When true the AuthNReuqest will set the ForceAuthn='true'
-- isPassive When true the AuthNReuqest will set the Ispassive='true'
-- setNameIdPolicy When true the AuthNReuqest will set a nameIdPolicy element.
-- stay True if we want to stay (returns the url string) False to execute a redirection to that url (IdP SSO URL)
+The login method can receive 4 more optional parameters:
+- *forceAuthn* When true the AuthNRequest will have the 'ForceAuthn' attribute set to 'true'
+- *isPassive* When true the AuthNRequest will have the 'Ispassive' attribute set to 'true'
+- *setNameIdPolicy* When true the AuthNRequest will set a nameIdPolicy element.
+- *stay* Set to true to stay (returns the url string), otherwise set to false to execute a redirection to that url (IdP SSO URL)
 
-By default the login method initiates a redirect to the SAML Identity Provider. You can use the stay parameter, to prevent that, and execute the redirection manually. We need to use that
-if a match on the future SAMLResponse ID and the AuthNRequest ID to be sent is required, that AuthNRequest ID must be extracted and stored for future validation so we can't execute the redirection on the login, instead set stay to true, then get that ID by
+By default, the login method initiates a redirect to the SAML Identity Provider. You can use the *stay* parameter, to prevent that, and execute the redirection manually. We need to use that if a match on the future SAMLResponse ID and the AuthNRequest ID to be sent is required.  That AuthNRequest ID must be extracted and stored for future validation, so we can't execute the redirection on the login.  Instead, set *stay* to true, then get that ID by
 ```
 auth.getLastRequestId()
 ```
-and later excuting the redirection manually.
+and later executing the redirection manually.
 
 
 #### The SP Endpoints
@@ -436,7 +464,7 @@ if (!errors.isEmpty()) {
     }
 }
 ```
-The SAML response is processed and then checked that there are no errors. It also verifies that the user is authenticated and stored the userdata in session.
+The SAML response is processed and then checked to ensure that there are no errors. It also verifies that the user is authenticated, and then the userdata is stored in the session.
 At that point there are 2 possible alternatives:
 - If no RelayState is provided, we could show the user data in this view or however we wanted.
 - If RelayState is provided, a redirection take place.
@@ -508,8 +536,31 @@ if a match on the future LogoutResponse ID and the LogoutRequest ID to be sent i
 ```
 auth.getLastRequestId()
 ```
-and later excuting the redirection manually.
+and later executing the redirection manually.
 
+
+### Working behind load balancer
+
+Is possible that asserting request URL and Destination attribute of SAML response fails when working behind load balancer with SSL offload.
+
+You should be able to workaround this by configuring your server so that it is aware of the proxy and returns the original url when requested.
+
+For Apache Tomcat this is done by setting the proxyName, proxyPort, scheme and secure attributes for the Connector. See [here](http://serverfault.com/questions/774300/ssl-offloading-from-apache-to-tomcat-get-overwritten-somewhere) for an example.
+
+
+### IdP with multiple certificates
+ 
+ In some scenarios the IdP uses different certificates for
+ signing/encryption, or is under key rollover phase and more than one certificate is published on IdP metadata.
+ 
+ In order to handle that the toolkit offers the `onelogin.saml2.idp.x509certMulti` parameters where you can set additional certificates that will be used to validate IdP signature. However just the certificate set in `onelogin.saml2.idp.x509cert` parameter will be used for encrypting.
+ 
+
+### Replay attacks
+
+In order to avoid replay attacks, you can store the ID of the SAML messages already processed, to avoid processing them twice. Since the Messages expires and will be invalidated due that fact, you don't need to store those IDs longer than the time frame that you currently accepting.
+
+Get the ID of the last processed message with the getLastMessageId method of the Auth object.
 
 ## Demo included in the toolkit
 The Onelogin's Java Toolkit allows you to provide the settings in a unique file as described at the [Settings  section](https://github.com/onelogin/java-saml/#Settings).
@@ -532,7 +583,7 @@ Lets imagine we deploy the jsp example project at *http://localhost:8080/java-sa
 
   2.2. In the second link we are redirected to the */dologin.jsp* view with a 'attrs' GET parameter. An AuthNRequest is sent to the IdP with the /attrs.jsp view as RelayState parameter, we authenticate at the IdP and then a Response is sent to the SP, specifically to the Assertion Consumer Service view: /acs.jsp. There the SAMLResponse is validated, the NameID and user attributes extracted and stored in the session and we are redirected to the RelayState view, the attrs.jsp view where user data is read from session and prompted.
 
-3. The single log out funcionality could be tested by 2 ways.
+3. The single log out functionality could be tested by 2 ways.
 
   3.1. SLO Initiated by SP. Click on the "logout" link at the SP, after that we are redirected to the /dologout.jsp view where a Logout Request is sent to the IdP, the session at the IdP is closed and replies to the SP a Logout Response (sent to the Single Logout Service endpoint). The SLS endpoint /sls.jsp of the SP process the Logout Response and if is valid, close the user session of the local app. Notice that the SLO Workflow starts and ends at the SP.
 

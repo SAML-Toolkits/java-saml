@@ -14,7 +14,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -25,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import com.onelogin.saml2.authn.AuthnRequest;
 import com.onelogin.saml2.authn.SamlResponse;
 import com.onelogin.saml2.exception.SettingsException;
+import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.logout.LogoutRequest;
@@ -72,6 +72,11 @@ public class Auth {
 	private String nameid;
 
 	/**
+     * NameIDFormat.
+     */
+	private String nameidFormat;
+
+	/**
      * SessionIndex. When the user is logged, this stored it from the AuthnStatement of the SAML Response
      */
 	private String sessionIndex;
@@ -80,6 +85,11 @@ public class Auth {
      * SessionNotOnOrAfter. When the user is logged, this stored it from the AuthnStatement of the SAML Response
 	 */
 	private DateTime sessionExpiration;
+
+	/**
+	 * The ID of the last message processed
+	 */
+	private String lastMessageId;
 
 	/**
 	 * The ID of the last assertion processed
@@ -117,12 +127,26 @@ public class Auth {
 	private String lastRequestId;
 
 	/**
+	 * The most recently-constructed/processed XML SAML request
+     * (AuthNRequest, LogoutRequest) 
+	 */
+	private String lastRequest;
+
+	/**
+     * The most recently-constructed/processed XML SAML response
+     * (SAMLResponse, LogoutResponse). If the SAMLResponse was
+     * encrypted, by default tries to return the decrypted XML 
+	 */
+	private String lastResponse;
+
+	/**
 	 * Initializes the SP SAML instance.
 	 *
 	 * @throws IOException
 	 * @throws SettingsException 
+	 * @throws Error
 	 */
-	public Auth() throws IOException, SettingsException {
+	public Auth() throws IOException, SettingsException, Error {
 		this(new SettingsBuilder().fromFile("onelogin.saml.properties").build(), null, null);
 	}
 
@@ -134,8 +158,9 @@ public class Auth {
 	 *
 	 * @throws IOException
 	 * @throws SettingsException 
+	 * @throws Error
 	 */
-	public Auth(String filename) throws IOException, SettingsException {
+	public Auth(String filename) throws IOException, SettingsException, Error {
 		this(new SettingsBuilder().fromFile(filename).build(), null, null);
 	}
 	
@@ -149,8 +174,9 @@ public class Auth {
 	 *
 	 * @throws IOException
 	 * @throws SettingsException 
+	 * @throws Error
 	 */
-	public Auth(HttpServletRequest request, HttpServletResponse response) throws IOException, SettingsException {
+	public Auth(HttpServletRequest request, HttpServletResponse response) throws IOException, SettingsException, Error {
 		this(new SettingsBuilder().fromFile("onelogin.saml.properties").build(), request, response);
 	}
 
@@ -166,8 +192,9 @@ public class Auth {
 	 *
 	 * @throws SettingsException 
 	 * @throws IOException
+	 * @throws Error
 	 */
-	public Auth(String filename, HttpServletRequest request, HttpServletResponse response) throws SettingsException, IOException {
+	public Auth(String filename, HttpServletRequest request, HttpServletResponse response) throws SettingsException, IOException, Error {
 		this(new SettingsBuilder().fromFile(filename).build(), request, response);
 	}
 	
@@ -181,7 +208,7 @@ public class Auth {
 	 * @param response
 	 * 				HttpServletResponse object to be used
 	 *
-	 * @throws SettingsException 
+	 * @throws SettingsException
 	 */
 	public Auth(Saml2Settings settings, HttpServletRequest request, HttpServletResponse response) throws SettingsException {
 		this.settings = settings;
@@ -193,8 +220,8 @@ public class Auth {
 		if (!settingsErrors.isEmpty()) {
 			String errorMsg = "Invalid settings: ";
 			errorMsg += StringUtils.join(settingsErrors, ", ");
-			LOGGER.debug(errorMsg);
-			throw new SettingsException(errorMsg);
+			LOGGER.error(errorMsg);
+			throw new SettingsException(errorMsg, SettingsException.SETTINGS_INVALID);
 		}
 		LOGGER.debug("Settings validated");
 	}
@@ -226,14 +253,17 @@ public class Auth {
 	 *            True if we want to stay (returns the url string) False to execute redirection
 	 *
 	 * @return the SSO URL with the AuthNRequest if stay = True
+	 *
 	 * @throws IOException
+	 * @throws SettingsException
 	 */
-	public String login(String returnTo, Boolean forceAuthn, Boolean isPassive, Boolean setNameIdPolicy, Boolean stay) throws IOException {
+	public String login(String returnTo, Boolean forceAuthn, Boolean isPassive, Boolean setNameIdPolicy, Boolean stay) throws IOException, SettingsException {
 		Map<String, String> parameters = new HashMap<String, String>();
 
 		AuthnRequest authnRequest = new AuthnRequest(settings, forceAuthn, isPassive, setNameIdPolicy);
 
 		String samlRequest = authnRequest.getEncodedAuthnRequest();
+		
 		parameters.put("SAMLRequest", samlRequest);
 
 		String relayState;
@@ -256,8 +286,8 @@ public class Auth {
 		}
 
 		String ssoUrl = getSSOurl();
-
 		lastRequestId = authnRequest.getId();
+		lastRequest = authnRequest.getAuthnRequestXml();
 
 		if (!stay) {
 			LOGGER.debug("AuthNRequest sent to " + ssoUrl + " --> " + samlRequest);
@@ -277,9 +307,11 @@ public class Auth {
 	 *				When true the AuthNRequest will set the IsPassive='true'
 	 * @param setNameIdPolicy
 	 *            When true the AuthNRequest will set a nameIdPolicy
+	 *
 	 * @throws IOException
+	 * @throws SettingsException
 	 */
-	public void login(String returnTo, Boolean forceAuthn, Boolean isPassive, Boolean setNameIdPolicy) throws IOException {
+	public void login(String returnTo, Boolean forceAuthn, Boolean isPassive, Boolean setNameIdPolicy) throws IOException, SettingsException {
 		login(returnTo ,forceAuthn, isPassive, setNameIdPolicy, false);
 	}
 		
@@ -287,8 +319,9 @@ public class Auth {
 	 * Initiates the SSO process.
 	 *
 	 * @throws IOException
+	 * @throws SettingsException
 	 */
-	public void login() throws IOException {
+	public void login() throws IOException, SettingsException {
 		login(null ,false, false, true);
 	}
 
@@ -300,8 +333,9 @@ public class Auth {
 	 *				Will be a self-routed URL when null, or not be appended at all when an empty string is provided.
      *
 	 * @throws IOException
+	 * @throws SettingsException
 	 */
-	public void login(String returnTo) throws IOException {
+	public void login(String returnTo) throws IOException, SettingsException {
 		login(returnTo ,false, false, true);
 	}
 
@@ -316,17 +350,20 @@ public class Auth {
 	 * @param sessionIndex 
      *				The SessionIndex (taken from the SAML Response in the SSO process).
 	 * @param stay
-	 *            True if we want to stay (returns the url string) False to execute redirection
+	 *            	True if we want to stay (returns the url string) False to execute redirection
+	 * @param nameidFormat
+	 *            	The NameID Format will be set in the LogoutRequest.
 	 *
 	 * @return the SLO URL with the LogoutRequest if stay = True
 	 *
 	 * @throws IOException
 	 * @throws XMLEntityException
+	 * @throws SettingsException
 	 */
-	public String logout(String returnTo, String nameId, String sessionIndex, Boolean stay) throws IOException, XMLEntityException {
+	public String logout(String returnTo, String nameId, String sessionIndex, Boolean stay, String nameidFormat) throws IOException, XMLEntityException, SettingsException {
 		Map<String, String> parameters = new HashMap<String, String>();
 
-		LogoutRequest logoutRequest = new LogoutRequest(settings, null, nameId, sessionIndex);
+		LogoutRequest logoutRequest = new LogoutRequest(settings, null, nameId, sessionIndex, nameidFormat);
 		String samlLogoutRequest = logoutRequest.getEncodedLogoutRequest();
 		parameters.put("SAMLRequest", samlLogoutRequest);
 
@@ -351,6 +388,7 @@ public class Auth {
 
 		String sloUrl = getSLOurl();
 		lastRequestId = logoutRequest.getId();
+		lastRequest = logoutRequest.getLogoutRequestXml();
 
 		if (!stay) {
 			LOGGER.debug("Logout request sent to " + sloUrl + " --> " + samlLogoutRequest);
@@ -368,12 +406,56 @@ public class Auth {
      *				The NameID that will be set in the LogoutRequest.
 	 * @param sessionIndex 
      *				The SessionIndex (taken from the SAML Response in the SSO process).
+	 * @param stay
+	 *            	True if we want to stay (returns the url string) False to execute redirection
+	 *
+	 * @return the SLO URL with the LogoutRequest if stay = True
 	 *
 	 * @throws IOException
 	 * @throws XMLEntityException
+	 * @throws SettingsException
 	 */
-	public void logout(String returnTo, String nameId, String sessionIndex) throws IOException, XMLEntityException {
-		logout(returnTo, nameId, sessionIndex, false);
+	public String logout(String returnTo, String nameId, String sessionIndex, Boolean stay) throws IOException, XMLEntityException, SettingsException {
+		return logout(returnTo, nameId, sessionIndex, stay, null);
+	}
+
+	/**
+	 * Initiates the SLO process.
+	 *
+	 * @param returnTo
+     *				The target URL the user should be returned to after logout (relayState).
+	 *				Will be a self-routed URL when null, or not be appended at all when an empty string is provided
+	 * @param nameId
+     *				The NameID that will be set in the LogoutRequest.
+	 * @param sessionIndex
+     *				The SessionIndex (taken from the SAML Response in the SSO process).
+	 * @param nameidFormat
+	 *            	The NameID Format will be set in the LogoutRequest.
+	 * @throws IOException
+	 * @throws XMLEntityException
+	 * @throws SettingsException
+	 */
+	public void logout(String returnTo, String nameId, String sessionIndex, String nameidFormat) throws IOException, XMLEntityException, SettingsException {
+		logout(returnTo, nameId, sessionIndex, false, nameidFormat);
+	}
+
+	/**
+	 * Initiates the SLO process.
+	 *
+	 * @param returnTo
+     *				The target URL the user should be returned to after logout (relayState).
+	 *				Will be a self-routed URL when null, or not be appended at all when an empty string is provided
+	 * @param nameId
+     *				The NameID that will be set in the LogoutRequest.
+	 * @param sessionIndex
+     *				The SessionIndex (taken from the SAML Response in the SSO process).
+     *
+	 * @throws IOException
+	 * @throws XMLEntityException
+	 * @throws SettingsException
+	 */
+	public void logout(String returnTo, String nameId, String sessionIndex) throws IOException, XMLEntityException, SettingsException {
+		logout(returnTo, nameId, sessionIndex, false, null);
 	}
 
 	/**
@@ -381,9 +463,10 @@ public class Auth {
 	 * 
 	 * @throws IOException
 	 * @throws XMLEntityException
+	 * @throws SettingsException
 	 */
-	public void logout() throws IOException, XMLEntityException {		
-		logout(null, null, null);
+	public void logout() throws IOException, XMLEntityException, SettingsException {		
+		logout(null, null, null, false);
 	}
 
 	/**
@@ -395,8 +478,9 @@ public class Auth {
 	 *
 	 * @throws IOException
 	 * @throws XMLEntityException
+	 * @throws SettingsException
 	 */
-	public void logout(String returnTo) throws IOException, XMLEntityException {		
+	public void logout(String returnTo) throws IOException, XMLEntityException, SettingsException {		
 		logout(returnTo, null, null);
 	}
 
@@ -437,13 +521,16 @@ public class Auth {
 
 		if (samlResponseParameter != null) {
 			SamlResponse samlResponse = new SamlResponse(settings, httpRequest);
+			lastResponse = samlResponse.getSAMLResponseXml();
 
 			if (samlResponse.isValid(requestId)) {
 				nameid = samlResponse.getNameId();
+				nameidFormat = samlResponse.getNameIdFormat();
 				authenticated = true;
 				attributes = samlResponse.getAttributes();
 				sessionIndex = samlResponse.getSessionIndex();
 				sessionExpiration = samlResponse.getSessionNotOnOrAfter();
+				lastMessageId = samlResponse.getId();
 				lastAssertionId = samlResponse.getAssertionId();
 				lastAssertionNotOnOrAfter = samlResponse.getAssertionNotOnOrAfter();
 				LOGGER.debug("processResponse success --> " + samlResponseParameter);
@@ -457,7 +544,7 @@ public class Auth {
 			errors.add("invalid_binding");
 			String errorMsg = "SAML Response not found, Only supported HTTP_POST Binding";
 			LOGGER.error("processResponse error." + errorMsg);
-			throw new IllegalArgumentException(errorMsg);
+			throw new Error(errorMsg, Error.SAML_RESPONSE_NOT_FOUND);
 		}
 	}
 
@@ -478,11 +565,9 @@ public class Auth {
      * @param requestId
      *				The ID of the LogoutRequest sent by this SP to the IdP
      *
-     * @throws XMLEntityException 
-     * @throws XPathExpressionException 
-     * @throws IOException
+     * @throws Exception 
      */
-	public void processSLO(Boolean keepLocalSession, String requestId) throws XMLEntityException, XPathExpressionException, IOException {
+	public void processSLO(Boolean keepLocalSession, String requestId) throws Exception {
 		final HttpRequest httpRequest = ServletUtils.makeHttpRequest(this.request);
 		
 		final String samlRequestParameter = httpRequest.getParameter("SAMLRequest");
@@ -490,6 +575,7 @@ public class Auth {
 
 		if (samlResponseParameter != null) {
 			LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
+			lastResponse = logoutResponse.getLogoutResponseXml();
 			if (!logoutResponse.isValid(requestId)) {
 				errors.add("invalid_logout_response");
 				LOGGER.error("processSLO error. invalid_logout_response");
@@ -502,6 +588,7 @@ public class Auth {
 					LOGGER.error("processSLO error. logout_not_success");
 					LOGGER.debug(" --> " + samlResponseParameter);
 				} else {
+					lastMessageId = logoutResponse.getId();
 					LOGGER.debug("processSLO success --> " + samlResponseParameter);
 					if (!keepLocalSession) {
 						request.getSession().invalidate();
@@ -510,13 +597,14 @@ public class Auth {
 			}
 		} else if (samlRequestParameter != null) {
 			LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
-
+			lastRequest = logoutRequest.getLogoutRequestXml();
 			if (!logoutRequest.isValid()) {
 				errors.add("invalid_logout_request");
 				LOGGER.error("processSLO error. invalid_logout_request");
 				LOGGER.debug(" --> " + samlRequestParameter);
 				errorReason = logoutRequest.getError();
 			} else {
+				lastMessageId = logoutRequest.getId();
 				LOGGER.debug("processSLO success --> " + samlRequestParameter);
 				if (!keepLocalSession) {
 					request.getSession().invalidate();
@@ -525,6 +613,8 @@ public class Auth {
 				String inResponseTo = logoutRequest.id;
 				LogoutResponse logoutResponseBuilder = new LogoutResponse(settings, httpRequest);
 				logoutResponseBuilder.build(inResponseTo);
+				lastResponse = logoutResponseBuilder.getLogoutResponseXml();
+
 				String samlLogoutResponse = logoutResponseBuilder.getEncodedLogoutResponse();
 
 				Map<String, String> parameters = new LinkedHashMap<String, String>();
@@ -536,7 +626,7 @@ public class Auth {
 					parameters.put("RelayState", relayState);
 				}
 
-				if (settings.getLogoutRequestSigned()) {
+				if (settings.getLogoutResponseSigned()) {
 					String sigAlg = settings.getSignatureAlgorithm();
 					String signature = this.buildResponseSignature(samlLogoutResponse, relayState, sigAlg);
 
@@ -552,18 +642,16 @@ public class Auth {
 			errors.add("invalid_binding");
 			String errorMsg = "SAML LogoutRequest/LogoutResponse not found. Only supported HTTP_REDIRECT Binding";
 			LOGGER.error("processSLO error." + errorMsg);
-			throw new IllegalArgumentException(errorMsg);
+			throw new Error(errorMsg, Error.SAML_LOGOUTMESSAGE_NOT_FOUND);
 		}
 	}	
 
     /**
      * Process the SAML Logout Response / Logout Request sent by the IdP.
      *
-     * @throws IOException 
-     * @throws XMLEntityException 
-     * @throws XPathExpressionException 
+     * @throws Exception
      */
-	public void processSLO() throws XPathExpressionException, XMLEntityException, IOException {
+	public void processSLO() throws Exception {
 		processSLO(false, null);
 	}
 
@@ -607,6 +695,14 @@ public class Auth {
     }
 
     /**
+     * @return the nameID Format of the assertion
+     */
+    public final String getNameIdFormat()
+    {
+        return nameidFormat;
+    }
+
+    /**
      * @return the SessionIndex of the assertion
      */
     public final String getSessionIndex()    
@@ -620,6 +716,13 @@ public class Auth {
 	public final DateTime getSessionExpiration()
 	{
 	    return sessionExpiration;
+	}
+
+	/**
+	 * @return The ID of the last message processed
+	 */
+	public String getLastMessageId() {
+		return lastMessageId;
 	}
 
 	/**
@@ -686,8 +789,10 @@ public class Auth {
 	 *				Signature algorithm method
 	 *
 	 * @return a base64 encoded signature
+	 *
+	 * @throws SettingsException
 	 */
-    public String buildRequestSignature(String samlRequest, String relayState, String signAlgorithm)
+    public String buildRequestSignature(String samlRequest, String relayState, String signAlgorithm) throws SettingsException
     {
     	return buildSignature(samlRequest, relayState, signAlgorithm, "SAMLRequest");
     }
@@ -702,9 +807,11 @@ public class Auth {
 	 * @param signAlgorithm
 	 *				Signature algorithm method
 	 *
-	 * @return the base64 encoded signature 
+	 * @return the base64 encoded signature
+	 *
+	 * @throws SettingsException
 	 */
-	public String buildResponseSignature(String samlResponse, String relayState, String signAlgorithm)
+	public String buildResponseSignature(String samlResponse, String relayState, String signAlgorithm) throws SettingsException
 	{
 		return buildSignature(samlResponse, relayState, signAlgorithm, "SAMLResponse");
 	}
@@ -722,15 +829,18 @@ public class Auth {
 	 *              The type of the message
 	 *
 	 * @return the base64 encoded signature
+	 *
+	 * @throws SettingsException
+	 * @throws IllegalArgumentException
 	 */
-	private String buildSignature(String samlMessage, String relayState, String signAlgorithm, String type)
+	private String buildSignature(String samlMessage, String relayState, String signAlgorithm, String type) throws SettingsException, IllegalArgumentException
 	{
 		 String signature = "";
 		 
 		 if (!settings.checkSPCerts()) {
-			 String errorMsg = "Trying to sign the " + type + " but can't load the SP certs";
+			 String errorMsg = "Trying to sign the " + type + " but can't load the SP private key";
 			 LOGGER.error("buildSignature error. " + errorMsg);
-			 throw new IllegalArgumentException(errorMsg);
+			 throw new SettingsException(errorMsg, SettingsException.PRIVATE_KEY_NOT_FOUND);
 		 }
 
 		 PrivateKey key = settings.getSPkey();
@@ -749,7 +859,8 @@ public class Auth {
 		 try {
 			signature = Util.base64encoder(Util.sign(msg, key, signAlgorithm));
 		} catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
-			LOGGER.error("buildSignature error." + e.getMessage());
+			String errorMsg = "buildSignature error." + e.getMessage();
+			LOGGER.error(errorMsg);
 		}
 
 		 if (signature.isEmpty()) {
@@ -760,5 +871,29 @@ public class Auth {
 
 		 LOGGER.debug("buildResponseSignature success. --> " + signature);
 		 return signature;
+	}
+
+	/**
+	 * Returns the most recently-constructed/processed
+     * XML SAML request (AuthNRequest, LogoutRequest)
+     *
+	 * @return the last Request XML 
+	 */
+	public String getLastRequestXML()
+	{
+		return lastRequest;
+	}
+
+	/**
+     * Returns the most recently-constructed/processed
+     * XML SAML response (SAMLResponse, LogoutResponse).
+     * If the SAMLResponse was encrypted, by default tries
+     * to return the decrypted XML.
+     *
+	 * @return the last Response XML 
+	 */
+	public String getLastResponseXML()
+	{
+		return lastResponse;
 	}
 }

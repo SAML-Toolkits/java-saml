@@ -32,7 +32,7 @@ public class AuthnRequestTest {
 		final String authnRequestString = Util.getFileAsString("data/requests/authn_request.xml");
 		AuthnRequest authnRequest = new AuthnRequest(settings) {
 			@Override
-			protected String getAuthnRequestXml() {
+			public String getAuthnRequestXml() {
 				return authnRequestString;
 			}
 		};
@@ -56,7 +56,7 @@ public class AuthnRequestTest {
 		settings.setCompressRequest(true);		
 		authnRequest = new AuthnRequest(settings) {
 			@Override
-			protected String getAuthnRequestXml() {
+			public String getAuthnRequestXml() {
 				return authnRequestString;
 			}
 		};
@@ -66,7 +66,7 @@ public class AuthnRequestTest {
 		settings.setCompressRequest(false);
 		authnRequest = new AuthnRequest(settings) {
 			@Override
-			protected String getAuthnRequestXml() {
+			public String getAuthnRequestXml() {
 				return authnRequestString;
 			}
 		};
@@ -98,6 +98,21 @@ public class AuthnRequestTest {
 		authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);
 		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
 		assertThat(authnRequestStr, containsString("ProviderName=\"SP Java Example\""));
+	}
+
+	/**
+	 * Tests the getAuthnRequestXml method of AuthnRequest
+	 *
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.authn.getAuthnRequestXml
+	 */
+	@Test
+	public void testGetAuthnRequestXml() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		AuthnRequest authnRequest = new AuthnRequest(settings);
+		String authnRequestXML = authnRequest.getAuthnRequestXml();
+		assertThat(authnRequestXML, containsString("<samlp:AuthnRequest"));
 	}
 
 	/**
@@ -257,8 +272,15 @@ public class AuthnRequestTest {
 		assertThat(authnRequestStr, containsString("<saml:AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:X509</saml:AuthnContextClassRef>"));
 	}
 
+	/**
+	 * Tests the getId method of AuthnRequest
+	 *
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.authn.getId
+	 */
 	@Test
-	public void testAuthNId() throws Exception
+	public void testGetId() throws Exception
 	{
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 

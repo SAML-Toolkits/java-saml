@@ -20,6 +20,7 @@ import org.junit.Test;
 
 import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.servlet.ServletUtils;
+import com.onelogin.saml2.test.NaiveUrlEncoder;
 
 public class ServletUtilsTest {
     /**
@@ -266,9 +267,13 @@ public class ServletUtilsTest {
         when(servletRequest.getRequestURL()).thenReturn(new StringBuffer(url));
         when(servletRequest.getParameterMap()).thenReturn(paramAsArray);
 
+        final String barNaiveEncoded = NaiveUrlEncoder.encode("bar"); //must differ from normal url encode
+		when(servletRequest.getQueryString()).thenReturn("foo=" + barNaiveEncoded);
+
         final HttpRequest httpRequest = ServletUtils.makeHttpRequest(servletRequest);
         assertThat(httpRequest.getRequestURL(), equalTo(url));
         assertThat(httpRequest.getParameters(), equalTo(singletonMap("name", singletonList("a"))));
+        assertThat(httpRequest.getEncodedParameter("foo"), equalTo(barNaiveEncoded));
     }
 
 	@Test

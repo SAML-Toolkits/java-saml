@@ -13,12 +13,13 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.Key;
 import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.SignatureException;
@@ -28,18 +29,23 @@ import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Calendar;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.UUID;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.Inflater;
+
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.validation.Schema;
@@ -49,7 +55,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-import javax.xml.XMLConstants;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -79,6 +84,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import com.onelogin.saml2.exception.ValidationError;
 import com.onelogin.saml2.exception.XMLEntityException;
 
 
@@ -98,11 +104,41 @@ public final class Util {
 	public static final String UNIQUE_ID_PREFIX = "ONELOGIN_";
 	public static final String RESPONSE_SIGNATURE_XPATH = "/samlp:Response/ds:Signature";
 	public static final String ASSERTION_SIGNATURE_XPATH = "/samlp:Response/saml:Assertion/ds:Signature";
-
-	private static final Logger log = LoggerFactory.getLogger(Util.class);
+	/** Indicates if JAXP 1.5 support has been detected. */
+	private static boolean JAXP_15_SUPPORTED = isJaxp15Supported();
 
 	private Util() {
 	      //not called
+	}
+
+	/**
+	 * Method which uses the recommended way ( https://docs.oracle.com/javase/tutorial/jaxp/properties/error.html ) 
+	 * of checking if JAXP >= 1.5 options are supported. Needed if the project which uses this library also has
+	 * Xerces in it's classpath. 
+	 * 
+	 * If for whatever reason this method cannot determine if JAXP 1.5 properties are supported it will indicate the
+	 * options are supported. This way we don't accidentally disable configuration options.
+	 *
+	 * @return
+	 */
+	public static boolean isJaxp15Supported() {
+		boolean supported = true;		
+		
+		try {
+			SAXParserFactory spf = SAXParserFactory.newInstance();
+			SAXParser parser = spf.newSAXParser();
+			parser.setProperty("http://javax.xml.XMLConstants/property/accessExternalDTD", "file");
+		} catch (SAXException ex) {
+			String err = ex.getMessage();
+			if (err.contains("Property 'http://javax.xml.XMLConstants/property/accessExternalDTD' is not recognized.")) {
+				//expected, jaxp 1.5 not supported
+				supported = false;
+			}
+		} catch (Exception e) {
+			LOGGER.info("An exception occurred while trying to determine if JAXP 1.5 options are supported.", e);
+		}
+		
+		return supported;
 	}
 	
 	/**
@@ -125,7 +161,7 @@ public final class Util {
 			LOGGER.debug("Load XML error: " + e.getMessage(), e);
 		}
 
-		return null;		
+		return null;
 	}
 
 	/**
@@ -209,10 +245,8 @@ public final class Util {
 	 *              The schema filename which should be used
 	 *
 	 * @return found errors after validation
-	 *
-	 * @throws Exception
 	 */
-	public static boolean validateXML(Document xmlDocument, URL schemaUrl) throws Exception {
+	public static boolean validateXML(Document xmlDocument, URL schemaUrl) {
 		try {
 
 			if (xmlDocument == null) {
@@ -221,9 +255,12 @@ public final class Util {
 
 			Schema schema = SchemaFactory.loadFromUrl(schemaUrl);
 			Validator validator = schema.newValidator();
-			// Prevent XXE attacks
-			validator.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-			validator.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+			
+			if (JAXP_15_SUPPORTED) {
+				// Prevent XXE attacks
+				validator.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+				validator.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+			}
 
 			XMLErrorAccumulatorHandler errorAcumulator = new XMLErrorAccumulatorHandler();
 			validator.setErrorHandler(errorAcumulator);
@@ -255,6 +292,22 @@ public final class Util {
 	 * @throws IOException 
 	 */
 	public static Document convertStringToDocument(String xmlStr) throws ParserConfigurationException, SAXException, IOException {
+		return parseXML(new InputSource(new StringReader(xmlStr)));
+	}
+
+	/**
+	 * Parse an XML from input source to a Document object
+	 *
+	 * @param xmlStr
+	 * 				The XML string which should be converted
+	 *
+	 * @return the Document object
+	 *
+	 * @throws ParserConfigurationException 
+	 * @throws SAXException 
+	 * @throws IOException 
+	 */
+	public static Document parseXML(InputSource inputSource) throws ParserConfigurationException, SAXException, IOException {
 		DocumentBuilderFactory docfactory = DocumentBuilderFactory.newInstance();
 		docfactory.setNamespaceAware(true);
 		
@@ -268,31 +321,31 @@ public final class Util {
 		try {
 			// do not include external general entities
 			docfactory.setAttribute("http://xml.org/sax/features/external-general-entities", Boolean.FALSE);
-		} catch (Exception e) {}
+		} catch (Throwable e) {}
 		try {
 			// do not include external parameter entities or the external DTD subset
 			docfactory.setAttribute("http://xml.org/sax/features/external-parameter-entities", Boolean.FALSE);
-		} catch (Exception e) {}
+		} catch (Throwable e) {}
 		try {
 			docfactory.setAttribute("http://apache.org/xml/features/disallow-doctype-decl", Boolean.TRUE);
-		} catch (Exception e) {}
+		} catch (Throwable e) {}
 		try {
 			docfactory.setAttribute("http://javax.xml.XMLConstants/feature/secure-processing", Boolean.TRUE);
-		} catch (Exception e) {}
+		} catch (Throwable e) {}
 		try {
 			// ignore the external DTD completely
 			docfactory.setAttribute("http://apache.org/xml/features/nonvalidating/load-external-dtd", Boolean.FALSE);
-		} catch (Exception e) {}
+		} catch (Throwable e) {}
 		try {
 			// build the grammar but do not use the default attributes and attribute types information it contains
 			docfactory.setAttribute("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", Boolean.FALSE);
-		} catch (Exception e) {}
+		} catch (Throwable e) {}
 		try {
 			docfactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-		} catch (Exception e) {}
+		} catch (Throwable e) {}
 
 		DocumentBuilder builder = docfactory.newDocumentBuilder();
-		Document doc = builder.parse(new InputSource(new StringReader(xmlStr)));
+		Document doc = builder.parse(inputSource);
 
 		// Loop through the doc and tag every element with an ID attribute
 		// as an XML ID node.
@@ -332,9 +385,10 @@ public final class Util {
 		} else {
 			XMLUtils.outputDOM(doc, baos);
 		}
-		return baos.toString();
+		
+		return Util.toStringUtf8(baos.toByteArray());
 	}
-
+	
 	/**
 	 * Converts an XML in Document format in a String without applying the c14n transformation 
 	 *
@@ -441,17 +495,17 @@ public final class Util {
 	 * 				 certificate in string format
 	 *
 	 * @return Loaded Certificate. X509Certificate object
-	 * @throws UnsupportedEncodingException 
+	 *
 	 * @throws CertificateException 
 	 *
 	 */
-	public static X509Certificate loadCert(String certString) throws CertificateException, UnsupportedEncodingException {
+	public static X509Certificate loadCert(String certString) throws CertificateException {
 		certString = formatCert(certString, true);
 		X509Certificate cert;
 		
 		try {
 			cert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(
-				new ByteArrayInputStream(certString.getBytes("utf-8")));
+				new ByteArrayInputStream(certString.getBytes(StandardCharsets.UTF_8)));
 		} catch (IllegalArgumentException e){
 			cert = null;
 		}
@@ -467,24 +521,22 @@ public final class Util {
 	 * @return Loaded private key. PrivateKey object
 	 *
 	 * @throws GeneralSecurityException 
-	 * @throws IOException 
 	 */
-	public static PrivateKey loadPrivateKey(String keyString) throws GeneralSecurityException, IOException {
+	public static PrivateKey loadPrivateKey(String keyString) throws GeneralSecurityException {
 		org.apache.xml.security.Init.init();
 
-		keyString = formatPrivateKey(keyString, false);
-		keyString = chunkString(keyString, 64);		
+		String extractedKey = formatPrivateKey(keyString, false);
+		extractedKey = chunkString(extractedKey, 64);
 		KeyFactory kf = KeyFactory.getInstance("RSA");
 		
-		PrivateKey privKey = null;
+		PrivateKey privKey;
 		try {
-			byte[] encoded = Base64.decodeBase64(keyString);
+			byte[] encoded = Base64.decodeBase64(extractedKey);
 			PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
-			privKey = (PrivateKey) kf.generatePrivate(keySpec);
+			privKey = kf.generatePrivate(keySpec);
 		}
-		catch(Exception e) {
-			LOGGER.debug("Private Key not loaded: "+ e.getMessage(), e);
-			throw e;
+		catch(IllegalArgumentException e) {
+			privKey = null;
 		}
 
 		return privKey;
@@ -602,6 +654,9 @@ public final class Util {
 	 * @return the base64 decoded and inflated string
 	 */
 	public static String base64decodedInflated(String input) {
+		if (input.isEmpty()) {
+			return input;
+		}
 		// Base64 decoder
 		byte[] decoded = Base64.decodeBase64(input);
 		
@@ -609,11 +664,15 @@ public final class Util {
 		try {
 			Inflater decompresser = new Inflater(true);
 		    decompresser.setInput(decoded);
-		    byte[] result = new byte[2048];
-		    int resultLength = decompresser.inflate(result);
+		    byte[] result = new byte[1024];
+		    String inflated = "";
+		    long limit = 0;
+		    while(!decompresser.finished() && limit < 150) {
+		    	int resultLength = decompresser.inflate(result);
+		    	limit += 1; 
+		    	inflated += new String(result, 0, resultLength, "UTF-8");
+		    }
 		    decompresser.end();
-
-		    String inflated =  new String(result, 0, resultLength, "UTF-8");
 		    return inflated;
 		} catch (Exception e) {
 			return new String(decoded);
@@ -649,7 +708,7 @@ public final class Util {
 	 * @return the base64 encoded string
 	 */
 	public static String base64encoder(byte [] input) {
-		return new String(Base64.encodeBase64(input));
+		return toStringUtf8(Base64.encodeBase64(input));
 	}
 
 	/**
@@ -661,7 +720,7 @@ public final class Util {
 	 * @return the base64 encoded string
 	 */
 	public static String base64encoder(String input) {		
-		return base64encoder(input.getBytes());
+		return base64encoder(toBytesUtf8(input));
 	}
 
 	/**
@@ -685,7 +744,7 @@ public final class Util {
 	 * @return the base64 decoded bytes
 	 */
 	public static byte[] base64decoder(String input) {		
-		return base64decoder(input.getBytes());
+		return base64decoder(toBytesUtf8(input));
 	}
 
 	/**
@@ -806,9 +865,42 @@ public final class Util {
 			final NodeList signatures = query(doc, xpath);
 			return signatures.getLength() == 1 && validateSignNode(signatures.item(0), cert, fingerprint, alg);
 		} catch (XPathExpressionException e) {
-			log.warn("Failed to find signature nodes", e);
-			return false;
+			LOGGER.warn("Failed to find signature nodes", e);		
 		}
+		return false;
+	}
+	
+	/**
+	 * Validate the signature pointed to by the xpath
+	 *
+	 * @param doc The document we should validate
+	 * @param certs The public certificates
+	 * @param fingerprint The fingerprint of the public certificate
+	 * @param alg The signature algorithm method
+	 * @param xpath the xpath of the ds:Signture node to validate
+	 *
+	 * @return True if the signature exists and is valid, false otherwise.
+	 */
+	public static boolean validateSign(final Document doc, final List<X509Certificate> certList, final String fingerprint,
+									   final String alg, final String xpath) {
+		try {
+			final NodeList signatures = query(doc, xpath);
+
+			if (signatures.getLength() == 1) {
+				final Node signNode = signatures.item(0);
+				if (certList == null || certList.isEmpty()) {
+					return validateSignNode(signNode, null, fingerprint, alg);
+				} else {
+					for (X509Certificate cert : certList) {
+						if (validateSignNode(signNode, cert, fingerprint, alg))
+							return true;
+					}
+				}
+			}
+		} catch (XPathExpressionException e) {
+			LOGGER.warn("Failed to find signature nodes", e);
+		}
+		return false;
 	}
 
 	/**
@@ -848,7 +940,7 @@ public final class Util {
 				return true;
 			}
 		} catch (XPathExpressionException e) {
-			String er = e.getMessage(); 
+			LOGGER.warn("Failed to find signature nodes", e);
 		}
 		return false;
     }
@@ -873,21 +965,24 @@ public final class Util {
 			org.apache.xml.security.Init.init();
 
 			Element sigElement = (Element) signNode;
-			XMLSignature signature = new XMLSignature(sigElement, "");
+			XMLSignature signature = new XMLSignature(sigElement, "", true);
 
 			if (cert != null) {
 				res = signature.checkSignatureValue(cert);
 			} else {
 				KeyInfo keyInfo = signature.getKeyInfo();
-				if (keyInfo != null && keyInfo.containsX509Data()) {
+				if (fingerprint != null && keyInfo != null && keyInfo.containsX509Data()) {
 					X509Certificate providedCert = keyInfo.getX509Certificate();
-					if (fingerprint.equals(calculateX509Fingerprint(providedCert, alg))) {						
-						res = signature.checkSignatureValue(providedCert);
+					String calculatedFingerprint = calculateX509Fingerprint(providedCert, alg);
+					for (String fingerprintStr : fingerprint.split(",")) {
+						if (calculatedFingerprint.equals(fingerprintStr.trim())) {
+							res = signature.checkSignatureValue(providedCert);
+						}
 					}
 				}
 			}
 		} catch (Exception e) {
-			LOGGER.debug("Error executing validateSignNode: " + e.getMessage(), e);
+			LOGGER.warn("Error executing validateSignNode: " + e.getMessage(), e);
 		}
 		return res;
 	}
@@ -914,7 +1009,7 @@ public final class Util {
 
 			NodeList keyInfoInEncData = encryptedDataElement.getElementsByTagNameNS(Constants.NS_DS, "KeyInfo");
 			if (keyInfoInEncData.getLength() == 0) {
-				throw new Exception("No KeyInfo inside EncryptedData element");
+				throw new ValidationError("No KeyInfo inside EncryptedData element", ValidationError.KEYINFO_NOT_FOUND_IN_ENCRYPTED_DATA);
 			}
 
 			NodeList childs = keyInfoInEncData.item(0).getChildNodes();
@@ -922,7 +1017,7 @@ public final class Util {
 				if (childs.item(i).getLocalName() != null && childs.item(i).getLocalName().equals("RetrievalMethod")) {
 					Element retrievalMethodElem = (Element)childs.item(i);
 					if (!retrievalMethodElem.getAttribute("Type").equals("http://www.w3.org/2001/04/xmlenc#EncryptedKey")) {
-						throw new Exception("Unsupported Retrieval Method found");
+						throw new ValidationError("Unsupported Retrieval Method found", ValidationError.UNSUPPORTED_RETRIEVAL_METHOD);
 					}
 
 					String uri = retrievalMethodElem.getAttribute("URI").substring(1);
@@ -939,7 +1034,7 @@ public final class Util {
 			xmlCipher.setKEK(inputKey);
 			xmlCipher.doFinal(encryptedDataElement.getOwnerDocument(), encryptedDataElement, false);
 		} catch (Exception e) {
-			LOGGER.debug("Error executing decryption: " + e.getMessage(), e);
+			LOGGER.warn("Error executing decryption: " + e.getMessage(), e);
 		}
 	}
 
@@ -1119,7 +1214,48 @@ public final class Util {
 			
 			valid = sig.verify(signature);
 		} catch (Exception e) {
-			LOGGER.debug("Error executing validateSign: " + e.getMessage(), e);
+			LOGGER.warn("Error executing validateSign: " + e.getMessage(), e);
+		}
+		return valid;
+	}
+
+	/**
+	 * Validates signed binary data (Used to validate GET Signature).
+	 *
+	 * @param signedQuery
+	 * 				 The element we should validate
+	 * @param signature
+	 * 				 The signature that will be validate
+	 * @param certList
+	 * 				 The List of certificates
+	 * @param signAlg
+	 * 				 Signature Algorithm
+	 * 
+	 * @return the signed document in string format
+	 *
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchProviderException 
+	 * @throws InvalidKeyException 
+	 * @throws SignatureException 
+	 */
+	public static Boolean validateBinarySignature(String signedQuery, byte[] signature, List<X509Certificate> certList, String signAlg) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException {
+		Boolean valid = false;
+
+		org.apache.xml.security.Init.init();
+		String convertedSigAlg = signatureAlgConversion(signAlg);
+		Signature sig = Signature.getInstance(convertedSigAlg); //, provider);
+
+		for (X509Certificate cert : certList) {
+			try {	
+				sig.initVerify(cert.getPublicKey());
+				sig.update(signedQuery.getBytes());
+				valid = sig.verify(signature);
+				if (valid) {
+					break;
+				}
+			} catch (Exception e) {
+				LOGGER.warn("Error executing validateSign: " + e.getMessage(), e);
+			}
 		}
 		return valid;
 	}
@@ -1149,7 +1285,7 @@ public final class Util {
 				nameId.setAttribute("SPNameQualifier", spnq);
 			}
 			if (format != null && !format.isEmpty()) {
-			nameId.setAttribute("Format", format);
+				nameId.setAttribute("Format", format);
 			}
 			nameId.appendChild(doc.createTextNode(value));
 			doc.appendChild(nameId);
@@ -1203,6 +1339,18 @@ public final class Util {
 	 */
 	public static String generateNameId(String value, String spnq, String format) {
 		return generateNameId(value, spnq, format, null);
+	}
+
+	/**
+	 * Generates a nameID.
+	 *
+	 * @param value
+	 * 				 The value
+	 *
+	 * @return Xml contained in the document.
+	 */
+	public static String generateNameId(String value) {
+		return generateNameId(value, null, null, null);
 	}
 	
 	/**
@@ -1389,4 +1537,21 @@ public final class Util {
 		return parsedData;
 	}
 
+	private static String toStringUtf8(byte[] bytes) {
+		try {
+			return new String(bytes, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	private static byte[] toBytesUtf8(String str) {
+		try {
+			return str.getBytes("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	
 }

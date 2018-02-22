@@ -10,6 +10,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.onelogin.saml2.util.Util;
 
 /**
  * Framework-agnostic representation of an HTTP request.
@@ -17,17 +23,33 @@ import java.util.Objects;
  * @since 2.0.0
  */
 public final class HttpRequest {
+
+    public static final Map<String, List<String>> EMPTY_PARAMETERS = Collections.<String, List<String>>emptyMap();
+
     private final String requestURL;
     private final Map<String, List<String>> parameters;
+    private final String queryString;
 
     /**
      * Creates a new HttpRequest.
      *
      * @param requestURL the request URL (up to but not including query parameters)
      * @throws NullPointerException if requestURL is null
+     * @deprecated Not providing a queryString can cause HTTP Redirect binding to fail.
      */
+    @Deprecated
     public HttpRequest(String requestURL) {
-        this(requestURL, Collections.<String, List<String>>emptyMap());
+        this(requestURL, EMPTY_PARAMETERS);
+    }
+
+    /**
+     * Creates a new HttpRequest.
+     *
+     * @param requestURL  the request URL (up to but not including query parameters)
+     * @param queryString string that is contained in the request URL after the path
+     */
+    public HttpRequest(String requestURL, String queryString) {
+        this(requestURL, EMPTY_PARAMETERS, queryString);
     }
 
     /**
@@ -36,10 +58,25 @@ public final class HttpRequest {
      * @param requestURL  the request URL (up to but not including query parameters)
      * @param parameters the request query parameters
      * @throws NullPointerException if any of the parameters is null
+     * @deprecated Not providing a queryString can cause HTTP Redirect binding to fail.
      */
+    @Deprecated
     public HttpRequest(String requestURL, Map<String, List<String>> parameters) {
+        this(requestURL, parameters, null);
+    }
+
+    /**
+     * Creates a new HttpRequest.
+     *
+     * @param requestURL  the request URL (up to but not including query parameters)
+     * @param parameters the request query parameters
+     * @param queryString string that is contained in the request URL after the path
+     * @throws NullPointerException if any of the parameters is null
+     */
+    public HttpRequest(String requestURL, Map<String, List<String>> parameters, String queryString) {
         this.requestURL = checkNotNull(requestURL, "requestURL");
         this.parameters = unmodifiableCopyOf(checkNotNull(parameters, "queryParams"));
+        this.queryString = StringUtils.trimToEmpty(queryString);
     }
 
     /**
@@ -58,7 +95,7 @@ public final class HttpRequest {
         final Map<String, List<String>> params = new HashMap<>(parameters);
         params.put(name, newValues);
 
-        return new HttpRequest(requestURL, params);
+        return new HttpRequest(requestURL, params, queryString);
     }
 
     /**
@@ -72,7 +109,7 @@ public final class HttpRequest {
         final Map<String, List<String>> params = new HashMap<>(parameters);
         params.remove(name);
 
-        return new HttpRequest(requestURL, params);
+        return new HttpRequest(requestURL, params, queryString);
     }
     
     /**
@@ -110,6 +147,37 @@ public final class HttpRequest {
         return parameters;
     }
 
+    /**
+     * Return an url encoded get parameter value
+     * Prefer to extract the original encoded value directly from queryString since url
+     * encoding is not canonical.
+     *
+     * @param name
+     * @return the first value for the parameter, or null
+     */
+    public String getEncodedParameter(String name) {
+        Matcher matcher = Pattern.compile(Pattern.quote(name) + "=([^&#]+)").matcher(queryString);
+        if (matcher.find()) {
+            return matcher.group(1);
+        } else {
+            return Util.urlEncoder(getParameter(name));
+        }
+    }
+
+    /**
+     * Return an url encoded get parameter value
+     * Prefer to extract the original encoded value directly from queryString since url
+     * encoding is not canonical.
+     *
+     * @param name
+     * @param defaultValue
+     * @return the first value for the parameter, or url encoded default value
+     */
+    public String getEncodedParameter(String name, String defaultValue) {
+            String value = getEncodedParameter(name);
+            return (value != null ? value : Util.urlEncoder(defaultValue));
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -122,12 +190,13 @@ public final class HttpRequest {
 
         HttpRequest that = (HttpRequest) o;
         return Objects.equals(requestURL, that.requestURL) &&
-                Objects.equals(parameters, that.parameters);
+                Objects.equals(parameters, that.parameters) &&
+                Objects.equals(queryString, that.queryString);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(requestURL, parameters);
+        return Objects.hash(requestURL, parameters, queryString);
     }
 
     @Override
@@ -135,6 +204,7 @@ public final class HttpRequest {
         return "HttpRequest{" +
                 "requestURL='" + requestURL + '\'' +
                 ", parameters=" + parameters +
+                ", queryString=" + queryString +
                 '}';
     }
 
@@ -146,4 +216,6 @@ public final class HttpRequest {
 
         return unmodifiableMap(copy);
     }
+
+
 }

@@ -19,6 +19,7 @@ import org.junit.Test;
 
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
+import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.model.AttributeConsumingService;
 import com.onelogin.saml2.model.RequestedAttribute;
 import com.onelogin.saml2.settings.Metadata;
@@ -66,11 +67,12 @@ public class MetadataTest {
      *
 	 * @throws IOException 
 	 * @throws CertificateEncodingException 
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.settings.Metadata
 	 */
 	@Test
-	public void testMetadataExpiration() throws IOException, CertificateEncodingException {
+	public void testMetadataExpiration() throws IOException, CertificateEncodingException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
 		Metadata metadataObj = new Metadata(settings);
@@ -97,11 +99,12 @@ public class MetadataTest {
 	 *
 	 * @throws IOException
 	 * @throws CertificateEncodingException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.settings.Metadata#toContactsXml
 	 */
 	@Test
-	public void testToContactsXml() throws IOException, CertificateEncodingException {
+	public void testToContactsXml() throws IOException, CertificateEncodingException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
 		Metadata metadataObj = new Metadata(settings);
 		String metadataStr = metadataObj.getMetadataString();
@@ -121,16 +124,68 @@ public class MetadataTest {
 	 *
 	 * @throws IOException
 	 * @throws CertificateEncodingException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.settings.Metadata#toOrganizationXml
 	 */
 	@Test
-	public void testToOrganizationXml() throws IOException, CertificateEncodingException {
+	public void testToOrganizationXml() throws IOException, CertificateEncodingException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
 		Metadata metadataObj = new Metadata(settings);
 		String metadataStr = metadataObj.getMetadataString();
 		
 		String orgStr = "<md:Organization><md:OrganizationName xml:lang=\"en\">SP Java</md:OrganizationName><md:OrganizationDisplayName xml:lang=\"en\">SP Java Example</md:OrganizationDisplayName><md:OrganizationURL xml:lang=\"en\">http://sp.example.com</md:OrganizationURL></md:Organization>";
+		assertThat(metadataStr, containsString(orgStr));
+
+		Saml2Settings settings2 = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		Metadata metadataObj2 = new Metadata(settings2);
+		String metadataStr2 = metadataObj2.getMetadataString();
+
+		assertThat(metadataStr2, not(containsString(orgStr)));
+	}
+	
+	/**
+	 * Tests the toOrganizationXml method of Metadata without any "lang" attribute
+	 *
+	 * @throws IOException
+	 * @throws CertificateEncodingException
+	 * @throws Error
+	 *
+	 * @see com.onelogin.saml2.settings.Metadata#toOrganizationXml
+	 */
+	@Test
+	public void testToNonLocalizedOrganizationXml() throws IOException, CertificateEncodingException, Error {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.org.properties").build();
+		Metadata metadataObj = new Metadata(settings);
+		String metadataStr = metadataObj.getMetadataString();
+		
+		String orgStr = "<md:Organization><md:OrganizationName xml:lang=\"en\">SP Java</md:OrganizationName><md:OrganizationDisplayName xml:lang=\"en\">SP Java Example</md:OrganizationDisplayName><md:OrganizationURL xml:lang=\"en\">http://sp.example.com</md:OrganizationURL></md:Organization>";
+		assertThat(metadataStr, containsString(orgStr));
+
+		Saml2Settings settings2 = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		Metadata metadataObj2 = new Metadata(settings2);
+		String metadataStr2 = metadataObj2.getMetadataString();
+
+		assertThat(metadataStr2, not(containsString(orgStr)));
+	}
+
+	
+	/**
+	 * Tests the toOrganizationXml method of Metadata using a non default "lang" attribute
+	 *
+	 * @throws IOException
+	 * @throws CertificateEncodingException
+	 * @throws Error
+	 *
+	 * @see com.onelogin.saml2.settings.Metadata#toOrganizationXml
+	 */
+	@Test
+	public void testToLocalizedOrganizationXml() throws IOException, CertificateEncodingException, Error {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.org.localized.properties").build();
+		Metadata metadataObj = new Metadata(settings);
+		String metadataStr = metadataObj.getMetadataString();
+		
+		String orgStr = "<md:Organization><md:OrganizationName xml:lang=\"fr\">SP Java</md:OrganizationName><md:OrganizationDisplayName xml:lang=\"fr\">SP Exemple Java</md:OrganizationDisplayName><md:OrganizationURL xml:lang=\"fr\">http://sp.example.com/fr</md:OrganizationURL></md:Organization>";
 		assertThat(metadataStr, containsString(orgStr));
 
 		Saml2Settings settings2 = new SettingsBuilder().fromFile("config/config.min.properties").build();
@@ -145,11 +200,12 @@ public class MetadataTest {
 	 *
 	 * @throws IOException
 	 * @throws CertificateEncodingException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.settings.Metadata#toSLSXml
 	 */
 	@Test
-	public void testToSLSXml() throws IOException, CertificateEncodingException {
+	public void testToSLSXml() throws IOException, CertificateEncodingException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
 		Metadata metadataObj = new Metadata(settings);
 		String metadataStr = metadataObj.getMetadataString();
@@ -170,11 +226,12 @@ public class MetadataTest {
 	 *
 	 * @throws IOException
 	 * @throws CertificateEncodingException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.settings.Metadata#toX509KeyDescriptorsXML
 	 */
 	@Test
-	public void testToX509KeyDescriptorsXML() throws IOException, CertificateEncodingException {
+	public void testToX509KeyDescriptorsXML() throws IOException, CertificateEncodingException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
 		Metadata metadataObj = new Metadata(settings);
 		String metadataStr = metadataObj.getMetadataString();
@@ -192,17 +249,58 @@ public class MetadataTest {
 		assertThat(metadataStr2, not(containsString(keyDescriptorSignStr)));
 		assertThat(metadataStr2, not(containsString(keyDescriptorEncStr)));
 	}
-	
+
+	/**
+	 * Tests the toX509KeyDescriptorsXML method of Metadata
+	 * Case: Check where to add or not md:KeyDescriptor encryption
+	 *
+	 * @throws IOException
+	 * @throws CertificateEncodingException
+	 * @throws Error
+	 *
+	 * @see com.onelogin.saml2.settings.Metadata#toX509KeyDescriptorsXML
+	 */
+	@Test
+	public void testToX509KeyDescriptorsXMLEncryption() throws IOException, CertificateEncodingException, Error {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
+		String keyDescriptorEncStr = "<md:KeyDescriptor use=\"encryption\"><ds:KeyInfo xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\"><ds:X509Data><ds:X509Certificate>MIICeDCCAeGgAwIBAgIBADANBgkqhkiG9w0BAQ0FADBZMQswCQYDVQQGEwJ1czET";
+
+		settings.setWantAssertionsEncrypted(false);
+		settings.setWantNameIdEncrypted(false);
+		Metadata metadataObj = new Metadata(settings);
+		String metadataStr = metadataObj.getMetadataString();
+		assertThat(metadataStr, not(containsString(keyDescriptorEncStr)));
+
+		settings.setWantAssertionsEncrypted(true);
+		settings.setWantNameIdEncrypted(false);
+		metadataObj = new Metadata(settings);
+		metadataStr = metadataObj.getMetadataString();
+		assertThat(metadataStr, containsString(keyDescriptorEncStr));
+
+		settings.setWantAssertionsEncrypted(false);
+		settings.setWantNameIdEncrypted(true);
+		metadataObj = new Metadata(settings);
+		metadataStr = metadataObj.getMetadataString();
+		assertThat(metadataStr, containsString(keyDescriptorEncStr));
+
+		settings.setWantAssertionsEncrypted(true);
+		settings.setWantNameIdEncrypted(true);
+		metadataObj = new Metadata(settings);
+		metadataStr = metadataObj.getMetadataString();
+		assertThat(metadataStr, containsString(keyDescriptorEncStr));
+	}
+		
 	/**
 	 * Tests the getAttributeConsumingServiceXml method of Metadata
      *
 	 * @throws IOException
 	 * @throws CertificateEncodingException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.settings.Metadata#getAttributeConsumingServiceXml
 	 */
 	@Test
-	public void testGetAttributeConsumingServiceXml() throws IOException, CertificateEncodingException {
+	public void testGetAttributeConsumingServiceXml() throws IOException, CertificateEncodingException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
 		
 		AttributeConsumingService attributeConsumingService = new AttributeConsumingService("Test Service", "Test Service Desc");
@@ -240,11 +338,12 @@ public class MetadataTest {
      *
 	 * @throws IOException
 	 * @throws CertificateEncodingException
+	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.settings.Metadata#getAttributeConsumingServiceXml
 	 */
 	@Test
-	public void testGetAttributeConsumingServiceXmlWithMultipleAttributeValue() throws IOException, CertificateEncodingException {
+	public void testGetAttributeConsumingServiceXmlWithMultipleAttributeValue() throws IOException, CertificateEncodingException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
 		
 		AttributeConsumingService attributeConsumingService = new AttributeConsumingService("Test Service", "Test Service Desc");

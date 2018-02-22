@@ -39,7 +39,7 @@ public class ServletUtils {
             paramsAsList.put(param.getKey(), Arrays.asList(param.getValue()));
         }
 
-        return new HttpRequest(req.getRequestURL().toString(), paramsAsList);
+        return new HttpRequest(req.getRequestURL().toString(), paramsAsList, req.getQueryString());
     }
 
     /**
