@@ -118,7 +118,18 @@ public class AuthnResponseTest {
 		expectedEx.expectMessage("No private key available for decrypt, check settings");
 		new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 	}
-	
+
+	@Test
+	public void testTextWithCommentAttack() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/response_node_test_attack.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		HashMap<String, List<String>> attributes = samlResponse.getAttributes();
+		String nameId = samlResponse.getNameId();
+		assertEquals("smith", attributes.get("surname").get(0));
+		assertEquals("support@onelogin.com", nameId);
+	}
+
 	/**
 	 * Tests the constructor of SamlResponse
 	 * Case test namespaces
