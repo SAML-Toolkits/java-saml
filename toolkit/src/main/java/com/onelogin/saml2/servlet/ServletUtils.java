@@ -214,4 +214,21 @@ public class ServletUtils {
         Map<String, String> parameters  =new HashMap<String, String>();
         sendRedirect(response, location, parameters);
     }
+
+    /**
+     * Respond to a request with a given {@link String}.
+     *
+     * @param response          The response.
+     * @param contentToWrite    The content to write in the {@code response}.
+     * @param contentType       The content type of the content to be written.
+     * @throws IOException  If it fails to write in the {@code response}.
+     */
+    public static void respondWithContentString(HttpServletResponse response, String contentToWrite, String contentType) throws IOException {
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType(contentType);
+        response.setContentLength(contentToWrite.getBytes("UTF-8").length);
+        response.getWriter().write(contentToWrite);
+        response.getWriter().flush();
+        response.getWriter().close();
+    }
 }

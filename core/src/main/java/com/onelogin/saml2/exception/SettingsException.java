@@ -10,7 +10,8 @@ public class SettingsException extends Exception {
     public static final int PRIVATE_KEY_NOT_FOUND = 4;
     public static final int PUBLIC_CERT_FILE_NOT_FOUND = 5;    
     public static final int PRIVATE_KEY_FILE_NOT_FOUND = 6;
-    
+    public static final int UNSUPPORTED_BINDING = 7;
+
     private int errorCode;
 	
 	public SettingsException(String message, int errorCode) {

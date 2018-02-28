@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -139,6 +140,8 @@ public class Auth {
 	 */
 	private String lastResponse;
 
+	private String requestPostBindingHTML;
+
 	/**
 	 * Initializes the SP SAML instance.
 	 *
@@ -224,6 +227,13 @@ public class Auth {
 			throw new SettingsException(errorMsg, SettingsException.SETTINGS_INVALID);
 		}
 		LOGGER.debug("Settings validated");
+
+
+		if (Constants.BINDING_HTTP_POST.equals(settings.getIdpSingleSignOnServiceBinding())
+				|| Constants.BINDING_HTTP_POST.equals(settings.getIdpSingleLogoutServiceBinding())) {
+			Scanner s = new Scanner(getClass().getClassLoader().getResourceAsStream("request-post-binding.html")).useDelimiter("\\A");
+			this.requestPostBindingHTML = s.hasNext() ? s.next() : "";
+		}
 	}
 
 	/**
@@ -258,13 +268,7 @@ public class Auth {
 	 * @throws SettingsException
 	 */
 	public String login(String returnTo, Boolean forceAuthn, Boolean isPassive, Boolean setNameIdPolicy, Boolean stay) throws IOException, SettingsException {
-		Map<String, String> parameters = new HashMap<String, String>();
-
 		AuthnRequest authnRequest = new AuthnRequest(settings, forceAuthn, isPassive, setNameIdPolicy);
-
-		String samlRequest = authnRequest.getEncodedAuthnRequest();
-		
-		parameters.put("SAMLRequest", samlRequest);
 
 		String relayState;
 		if (returnTo == null) {
@@ -273,26 +277,72 @@ public class Auth {
 			relayState = returnTo;
 		}
 
-		if (!relayState.isEmpty()) {
-			parameters.put("RelayState", relayState);
+		if (Constants.BINDING_HTTP_REDIRECT.equals(settings.getIdpSingleSignOnServiceBinding())) {
+			Map<String, String> parameters = new HashMap<>();
+			String samlRequest = authnRequest.getEncodedAuthnRequest();
+
+			parameters.put("SAMLRequest", samlRequest);
+
+			if (!relayState.isEmpty()) {
+				parameters.put("RelayState", relayState);
+			}
+
+			if (settings.getAuthnRequestsSigned()) {
+				String sigAlg = settings.getSignatureAlgorithm();
+				String signature = this.buildRequestSignature(samlRequest, relayState, sigAlg);
+
+				parameters.put("SigAlg", sigAlg);
+				parameters.put("Signature", signature);
+			}
+
+			String ssoUrl = getSSOurl();
+			lastRequestId = authnRequest.getId();
+			lastRequest = authnRequest.getAuthnRequestXml();
+
+			if (!stay) {
+				LOGGER.debug("AuthNRequest sent to {} --> {}", ssoUrl, samlRequest);
+			}
+			return ServletUtils.sendRedirect(response, ssoUrl, parameters, stay);
+		} else if (Constants.BINDING_HTTP_POST.equals(settings.getIdpSingleSignOnServiceBinding())) {
+			String requestPostBinding = null;
+
+			try {
+				String authnRequestXML;
+
+				if (settings.getAuthnRequestsSigned()) {
+					authnRequestXML = Util.addSign(
+							Util.convertStringToDocument(authnRequest.getAuthnRequestXml()),
+							settings.getSPkey(),
+							settings.getSPcert(),
+							settings.getSignatureAlgorithm(),
+							Constants.C14NEXC);
+
+					LOGGER.debug("Signed XML: {}", authnRequestXML);
+				} else {
+					authnRequestXML = authnRequest.getEncodedAuthnRequest(false);
+				}
+
+				requestPostBinding = String.format(
+                        this.requestPostBindingHTML,
+                        settings.getOrganization().getOrgDisplayName(),
+                        settings.getIdpSingleSignOnServiceUrl(),
+						"SAMLRequest",
+						Util.base64encoder(authnRequestXML),
+						relayState != null ? relayState : ""
+                );
+
+				if (!stay) {
+					ServletUtils.respondWithContentString(response, requestPostBinding, "text/html; charset=utf-8");
+				}
+
+			} catch (Exception e) {
+				LOGGER.error("Error {}", e.getMessage(), e);
+			}
+
+			return requestPostBinding;
+		} else {
+			throw new SettingsException("Unsupported SSO binding: " + settings.getIdpSingleSignOnServiceBinding(), SettingsException.UNSUPPORTED_BINDING);
 		}
-
-		if (settings.getAuthnRequestsSigned()) {
-			String sigAlg = settings.getSignatureAlgorithm();
-			String signature = this.buildRequestSignature(samlRequest, relayState, sigAlg);
-
-			parameters.put("SigAlg", sigAlg);
-			parameters.put("Signature", signature);
-		}
-
-		String ssoUrl = getSSOurl();
-		lastRequestId = authnRequest.getId();
-		lastRequest = authnRequest.getAuthnRequestXml();
-
-		if (!stay) {
-			LOGGER.debug("AuthNRequest sent to " + ssoUrl + " --> " + samlRequest);
-		}
-		return ServletUtils.sendRedirect(response, ssoUrl, parameters, stay);
 	}
 
 	/**
@@ -361,11 +411,7 @@ public class Auth {
 	 * @throws SettingsException
 	 */
 	public String logout(String returnTo, String nameId, String sessionIndex, Boolean stay, String nameidFormat) throws IOException, XMLEntityException, SettingsException {
-		Map<String, String> parameters = new HashMap<String, String>();
-
 		LogoutRequest logoutRequest = new LogoutRequest(settings, null, nameId, sessionIndex, nameidFormat);
-		String samlLogoutRequest = logoutRequest.getEncodedLogoutRequest();
-		parameters.put("SAMLRequest", samlLogoutRequest);
 
 		String relayState;
 		if (returnTo == null) {
@@ -374,26 +420,71 @@ public class Auth {
 			relayState = returnTo;
 		}
 
-		if (!relayState.isEmpty()) {
-			parameters.put("RelayState", relayState);
+		if (Constants.BINDING_HTTP_REDIRECT.equals(settings.getIdpSingleSignOnServiceBinding())) {
+			Map<String, String> parameters = new HashMap<>();
+
+			String samlLogoutRequest = logoutRequest.getEncodedLogoutRequest();
+			parameters.put("SAMLRequest", samlLogoutRequest);
+
+			if (!relayState.isEmpty()) {
+				parameters.put("RelayState", relayState);
+			}
+
+			if (settings.getLogoutRequestSigned()) {
+				String sigAlg = settings.getSignatureAlgorithm();
+				String signature = this.buildRequestSignature(samlLogoutRequest, relayState, sigAlg);
+
+				parameters.put("SigAlg", sigAlg);
+				parameters.put("Signature", signature);
+			}
+
+			String sloUrl = getSLOurl();
+			lastRequestId = logoutRequest.getId();
+			lastRequest = logoutRequest.getLogoutRequestXml();
+
+			if (!stay) {
+				LOGGER.debug("Logout request sent to {} --> {}", sloUrl, samlLogoutRequest);
+			}
+			return ServletUtils.sendRedirect(response, sloUrl, parameters, stay);
+		} else if (Constants.BINDING_HTTP_POST.equals(settings.getIdpSingleSignOnServiceBinding())) {
+			String requestPostBinding = null;
+
+			try {
+				String logoutRequestXML;
+
+				if (settings.getLogoutRequestSigned()) {
+					logoutRequestXML = Util.addSign(
+							Util.convertStringToDocument(logoutRequest.getLogoutRequestXml()),
+							settings.getSPkey(),
+							settings.getSPcert(),
+							settings.getSignatureAlgorithm(),
+							Constants.C14NEXC);
+
+					LOGGER.debug("Signed XML: {}", logoutRequestXML);
+				} else {
+					logoutRequestXML = logoutRequest.getEncodedLogoutRequest(false);
+				}
+
+				requestPostBinding = String.format(
+						this.requestPostBindingHTML,
+						settings.getOrganization().getOrgDisplayName(),
+						settings.getIdpSingleSignOnServiceUrl(),
+						"SAMLRequest",
+						Util.base64encoder(logoutRequestXML),
+						relayState != null ? relayState : ""
+				);
+
+				if (!stay) {
+					ServletUtils.respondWithContentString(response, requestPostBinding, "text/html; charset=utf-8");
+				}
+			} catch (Exception e) {
+				LOGGER.error("Error {}", e.getMessage(), e);
+			}
+
+			return requestPostBinding;
+		} else {
+			throw new SettingsException("Unsupported SSO binding: " + settings.getIdpSingleSignOnServiceBinding(), SettingsException.UNSUPPORTED_BINDING);
 		}
-
-		if (settings.getLogoutRequestSigned()) {
-			String sigAlg = settings.getSignatureAlgorithm();
-			String signature = this.buildRequestSignature(samlLogoutRequest, relayState, sigAlg);
-
-			parameters.put("SigAlg", sigAlg);
-			parameters.put("Signature", signature);
-		}
-
-		String sloUrl = getSLOurl();
-		lastRequestId = logoutRequest.getId();
-		lastRequest = logoutRequest.getLogoutRequestXml();
-
-		if (!stay) {
-			LOGGER.debug("Logout request sent to " + sloUrl + " --> " + samlLogoutRequest);
-		}
-		return ServletUtils.sendRedirect(response, sloUrl, parameters, stay);
 	}
 
 	/**
@@ -435,8 +526,8 @@ public class Auth {
 	 * @throws XMLEntityException
 	 * @throws SettingsException
 	 */
-	public void logout(String returnTo, String nameId, String sessionIndex, String nameidFormat) throws IOException, XMLEntityException, SettingsException {
-		logout(returnTo, nameId, sessionIndex, false, nameidFormat);
+	public String logout(String returnTo, String nameId, String sessionIndex, String nameidFormat) throws IOException, XMLEntityException, SettingsException {
+		return logout(returnTo, nameId, sessionIndex, false, nameidFormat);
 	}
 
 	/**
@@ -454,8 +545,8 @@ public class Auth {
 	 * @throws XMLEntityException
 	 * @throws SettingsException
 	 */
-	public void logout(String returnTo, String nameId, String sessionIndex) throws IOException, XMLEntityException, SettingsException {
-		logout(returnTo, nameId, sessionIndex, false, null);
+	public String logout(String returnTo, String nameId, String sessionIndex) throws IOException, XMLEntityException, SettingsException {
+		return logout(returnTo, nameId, sessionIndex, false, null);
 	}
 
 	/**
@@ -465,8 +556,8 @@ public class Auth {
 	 * @throws XMLEntityException
 	 * @throws SettingsException
 	 */
-	public void logout() throws IOException, XMLEntityException, SettingsException {		
-		logout(null, null, null, false);
+	public String logout() throws IOException, XMLEntityException, SettingsException {
+		return logout(null, null, null, false);
 	}
 
 	/**
@@ -480,8 +571,8 @@ public class Auth {
 	 * @throws XMLEntityException
 	 * @throws SettingsException
 	 */
-	public void logout(String returnTo) throws IOException, XMLEntityException, SettingsException {		
-		logout(returnTo, null, null);
+	public String logout(String returnTo) throws IOException, XMLEntityException, SettingsException {
+		return logout(returnTo, null, null);
 	}
 
 
@@ -533,17 +624,17 @@ public class Auth {
 				lastMessageId = samlResponse.getId();
 				lastAssertionId = samlResponse.getAssertionId();
 				lastAssertionNotOnOrAfter = samlResponse.getAssertionNotOnOrAfter();
-				LOGGER.debug("processResponse success --> " + samlResponseParameter);
+				LOGGER.debug("processResponse success --> {}", samlResponseParameter);
 			} else {
 				errors.add("invalid_response");
 				LOGGER.error("processResponse error. invalid_response");
-				LOGGER.debug(" --> " + samlResponseParameter);
+				LOGGER.debug(" --> {}", samlResponseParameter);
 				errorReason = samlResponse.getError();
 			}
 		} else {
 			errors.add("invalid_binding");
 			String errorMsg = "SAML Response not found, Only supported HTTP_POST Binding";
-			LOGGER.error("processResponse error." + errorMsg);
+			LOGGER.error("processResponse error. {}", errorMsg);
 			throw new Error(errorMsg, Error.SAML_RESPONSE_NOT_FOUND);
 		}
 	}
@@ -567,7 +658,7 @@ public class Auth {
      *
      * @throws Exception 
      */
-	public void processSLO(Boolean keepLocalSession, String requestId) throws Exception {
+	public String processSLO(Boolean keepLocalSession, String requestId, boolean stay) throws Exception {
 		final HttpRequest httpRequest = ServletUtils.makeHttpRequest(this.request);
 		
 		final String samlRequestParameter = httpRequest.getParameter("SAMLRequest");
@@ -579,11 +670,11 @@ public class Auth {
 			if (!logoutResponse.isValid(requestId)) {
 				errors.add("invalid_logout_response");
 				LOGGER.error("processSLO error. invalid_logout_response");
-				LOGGER.debug(" --> " + samlResponseParameter);
-				errorReason = logoutResponse.getError();				
+				LOGGER.debug(" --> {}", samlResponseParameter);
+				errorReason = logoutResponse.getError();
 			} else {
 				String status = logoutResponse.getStatus();				
-				if (status == null || !status.equals(Constants.STATUS_SUCCESS)) {
+				if (!Constants.STATUS_SUCCESS.equals(status)) {
 					errors.add("logout_not_success");
 					LOGGER.error("processSLO error. logout_not_success");
 					LOGGER.debug(" --> " + samlResponseParameter);
@@ -601,11 +692,11 @@ public class Auth {
 			if (!logoutRequest.isValid()) {
 				errors.add("invalid_logout_request");
 				LOGGER.error("processSLO error. invalid_logout_request");
-				LOGGER.debug(" --> " + samlRequestParameter);
+				LOGGER.debug(" --> {}", samlRequestParameter);
 				errorReason = logoutRequest.getError();
 			} else {
 				lastMessageId = logoutRequest.getId();
-				LOGGER.debug("processSLO success --> " + samlRequestParameter);
+				LOGGER.debug("processSLO success --> {}", samlRequestParameter);
 				if (!keepLocalSession) {
 					request.getSession().invalidate();
 				}
@@ -615,44 +706,94 @@ public class Auth {
 				logoutResponseBuilder.build(inResponseTo);
 				lastResponse = logoutResponseBuilder.getLogoutResponseXml();
 
-				String samlLogoutResponse = logoutResponseBuilder.getEncodedLogoutResponse();
-
-				Map<String, String> parameters = new LinkedHashMap<String, String>();
-
-				parameters.put("SAMLResponse", samlLogoutResponse);
-
 				String relayState = request.getParameter("RelayState");
-				if (relayState != null) {
-					parameters.put("RelayState", relayState);
+
+				if (Constants.BINDING_HTTP_REDIRECT.equals(settings.getIdpSingleLogoutServiceBinding())) {
+					String samlLogoutResponse = logoutResponseBuilder.getEncodedLogoutResponse();
+
+					Map<String, String> parameters = new LinkedHashMap<>();
+
+					parameters.put("SAMLResponse", samlLogoutResponse);
+
+					if (relayState != null) {
+						parameters.put("RelayState", relayState);
+					}
+
+					if (settings.getLogoutResponseSigned()) {
+						String sigAlg = settings.getSignatureAlgorithm();
+						String signature = this.buildResponseSignature(samlLogoutResponse, relayState, sigAlg);
+
+						parameters.put("SigAlg", sigAlg);
+						parameters.put("Signature", signature);
+					}
+
+					String sloUrl = getSLOResponseUrl();
+
+					if (!stay) {
+						LOGGER.debug("Logout response sent to {} --> {}", sloUrl, samlLogoutResponse);
+					}
+					return ServletUtils.sendRedirect(response, sloUrl, parameters, stay);
+				} else if (Constants.BINDING_HTTP_POST.equals(settings.getIdpSingleLogoutServiceBinding())) {
+					String requestPostBinding = null;
+
+					try {
+						String logoutResponseXML;
+
+						if (settings.getLogoutResponseSigned()) {
+							logoutResponseXML = Util.addSign(
+									Util.convertStringToDocument(logoutResponseBuilder.getLogoutResponseXml()),
+									settings.getSPkey(),
+									settings.getSPcert(),
+									settings.getSignatureAlgorithm(),
+									Constants.C14NEXC);
+
+							LOGGER.debug("Signed XML: {}", logoutResponseXML);
+						} else {
+							logoutResponseXML = logoutResponseBuilder.getEncodedLogoutResponse(false);
+						}
+
+						requestPostBinding = String.format(
+								this.requestPostBindingHTML,
+								settings.getOrganization().getOrgDisplayName(),
+								settings.getIdpSingleSignOnServiceUrl(),
+								"SAMLResponse",
+								Util.base64encoder(logoutResponseXML),
+								relayState != null ? relayState : ""
+						);
+
+						if (!stay) {
+							ServletUtils.respondWithContentString(response, requestPostBinding, "text/html; charset=utf-8");
+						}
+
+						return requestPostBinding;
+					} catch (Exception e) {
+						LOGGER.error("Error {}", e.getMessage(), e);
+					}
+				} else {
+					throw new SettingsException("Unsupported SSO binding: " + settings.getIdpSingleLogoutServiceBinding(), SettingsException.UNSUPPORTED_BINDING);
 				}
-
-				if (settings.getLogoutResponseSigned()) {
-					String sigAlg = settings.getSignatureAlgorithm();
-					String signature = this.buildResponseSignature(samlLogoutResponse, relayState, sigAlg);
-
-					parameters.put("SigAlg", sigAlg);
-					parameters.put("Signature", signature);
-				}
-
-				String sloUrl = getSLOResponseUrl();
-				LOGGER.debug("Logout response sent to " + sloUrl + " --> " + samlLogoutResponse);
-				ServletUtils.sendRedirect(response, sloUrl, parameters);
 			}
 		} else {
 			errors.add("invalid_binding");
 			String errorMsg = "SAML LogoutRequest/LogoutResponse not found. Only supported HTTP_REDIRECT Binding";
-			LOGGER.error("processSLO error." + errorMsg);
+			LOGGER.error("processSLO error. {}", errorMsg);
 			throw new Error(errorMsg, Error.SAML_LOGOUTMESSAGE_NOT_FOUND);
 		}
-	}	
+
+		return null;
+	}
+
+	public String processSLO(Boolean keepLocalSession, String requestId) throws Exception {
+		return processSLO(keepLocalSession, requestId, false);
+	}
 
     /**
      * Process the SAML Logout Response / Logout Request sent by the IdP.
      *
      * @throws Exception
      */
-	public void processSLO() throws Exception {
-		processSLO(false, null);
+	public String processSLO() throws Exception {
+		return processSLO(false, null, false);
 	}
 
 	/**
@@ -819,8 +960,8 @@ public class Auth {
 	/**
 	 * Generates the Signature for a SAML Response
 	 *
-	 * @param samlResponse
-	 *				The SAML Response
+	 * @param samlMessage
+	 *				The SAML message
 	 * @param relayState
 	 *				The RelayState
 	 * @param signAlgorithm
@@ -839,7 +980,7 @@ public class Auth {
 		 
 		 if (!settings.checkSPCerts()) {
 			 String errorMsg = "Trying to sign the " + type + " but can't load the SP private key";
-			 LOGGER.error("buildSignature error. " + errorMsg);
+			 LOGGER.error("buildSignature error. {}", errorMsg);
 			 throw new SettingsException(errorMsg, SettingsException.PRIVATE_KEY_NOT_FOUND);
 		 }
 
@@ -859,17 +1000,16 @@ public class Auth {
 		 try {
 			signature = Util.base64encoder(Util.sign(msg, key, signAlgorithm));
 		} catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
-			String errorMsg = "buildSignature error." + e.getMessage();
-			LOGGER.error(errorMsg);
+			LOGGER.error("buildSignature error. {}", e.getMessage());
 		}
 
 		 if (signature.isEmpty()) {
 			 String errorMsg = "There was a problem when calculating the Signature of the " + type;
-			 LOGGER.error("buildSignature error. " + errorMsg);
+			 LOGGER.error("buildSignature error. {}", errorMsg);
 			 throw new IllegalArgumentException(errorMsg);
 		 }
 
-		 LOGGER.debug("buildResponseSignature success. --> " + signature);
+		 LOGGER.debug("buildResponseSignature success. --> {}", signature);
 		 return signature;
 	}
 
