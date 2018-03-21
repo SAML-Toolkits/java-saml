@@ -309,12 +309,12 @@ public class SamlResponse {
 				String alg = settings.getIdpCertFingerprintAlgorithm();
 
 				if (hasSignedResponse && !Util.validateSign(samlResponseDocument, certList, fingerprint, alg, Util.RESPONSE_SIGNATURE_XPATH)) {
-					throw new ValidationError("Signature validation failed. SAML Response rejected", ValidationError.INVALID_SIGNATURE);
+					throw new ValidationError("Certificate comparison or signature validation failed. SAML Response rejected", ValidationError.INVALID_SIGNATURE);
 				}
 
 				final Document documentToCheckAssertion = encrypted ? decryptedDocument : samlResponseDocument;
 				if (hasSignedAssertion && !Util.validateSign(documentToCheckAssertion, certList, fingerprint, alg, Util.ASSERTION_SIGNATURE_XPATH)) {
-					throw new ValidationError("Signature validation failed. SAML Response rejected", ValidationError.INVALID_SIGNATURE);
+					throw new ValidationError("Certificate comparison or signature validation failed. SAML Response rejected", ValidationError.INVALID_SIGNATURE);
 				}
 			}
 

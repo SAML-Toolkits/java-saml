@@ -1351,7 +1351,7 @@ public class AuthnResponseTest {
 		settings.setStrict(false);
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
-		assertEquals("Signature validation failed. SAML Response rejected", samlResponse.getError());
+		assertEquals("Certificate comparison or signature validation failed. SAML Response rejected", samlResponse.getError());
 	}
 
 	/**
@@ -2097,7 +2097,7 @@ public class AuthnResponseTest {
 		String samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
-		assertEquals("Signature validation failed. SAML Response rejected", samlResponse.getError());
+		assertEquals("Certificate comparison or signature validation failed. SAML Response rejected", samlResponse.getError());
 	}
 
 	/**
@@ -2793,6 +2793,23 @@ public class AuthnResponseTest {
 		assertNull(samlResponse.getError());
 		samlResponse.isValid();
 		assertNull(samlResponse.getError());
+	}
+
+	/**
+	 * Tests how the validation fails when the certificate in the response
+	 * doesn't match configured IdP certificate.
+	 */
+	@Test
+	public void testWrongCertificateError() throws Error, IOException, ParserConfigurationException, SettingsException, ValidationError, SAXException, XPathExpressionException {
+
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		settings.setStrict(true);
+		String samlResponseEncoded = Util.getFileAsString("data/responses/response6.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertNull(samlResponse.getError());
+		assertFalse(samlResponse.isValid());
+		assertThat(samlResponse.getError(), containsString("Certificate comparison or signature validation failed."));
+
 	}
 
 	private String loadAndEncode(String path) throws Exception

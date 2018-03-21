@@ -64,6 +64,7 @@ import org.apache.xml.security.encryption.EncryptedKey;
 import org.apache.xml.security.encryption.XMLCipher;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.keys.KeyInfo;
+import org.apache.xml.security.keys.keyresolver.KeyResolverException;
 import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.transforms.Transforms;
 import org.apache.xml.security.utils.XMLUtils;
@@ -944,6 +945,19 @@ public final class Util {
 		}
 		return false;
     }
+
+	private static X509Certificate extractCertificate(XMLSignature xmlSignature) throws KeyResolverException {
+
+		X509Certificate res = null;
+
+		KeyInfo keyInfo = xmlSignature.getKeyInfo();
+		if (keyInfo != null && keyInfo.containsX509Data()) {
+			res = keyInfo.getX509Certificate();
+		}
+
+		return res;
+
+	}
     
 	/**
 	 * Validate signature of the Node.
@@ -967,19 +981,35 @@ public final class Util {
 			Element sigElement = (Element) signNode;
 			XMLSignature signature = new XMLSignature(sigElement, "", true);
 
-			if (cert != null) {
-				res = signature.checkSignatureValue(cert);
+			String extractedFingerprint;
+			X509Certificate extractedCert = extractCertificate(signature);
+			if (extractedCert != null) {
+				extractedFingerprint = calculateX509Fingerprint(extractedCert, alg);
 			} else {
-				KeyInfo keyInfo = signature.getKeyInfo();
-				if (fingerprint != null && keyInfo != null && keyInfo.containsX509Data()) {
-					X509Certificate providedCert = keyInfo.getX509Certificate();
-					String calculatedFingerprint = calculateX509Fingerprint(providedCert, alg);
+				extractedFingerprint = null;
+			}
+
+			if (cert != null) {
+
+				// Issue #149, don't check signature if the certificate doesn't match the certificate in the XML
+
+				if (extractedFingerprint != null && !calculateX509Fingerprint(cert, alg).equals(extractedFingerprint)) {
+					// certificate is present in the signature, it must match the certificate that we have.
+					LOGGER.warn("Certificate used in the document does not match one of configured certificates");
+				} else {
+					res = signature.checkSignatureValue(cert);
+				}
+
+			} else {
+
+				if (extractedFingerprint != null && fingerprint != null) {
 					for (String fingerprintStr : fingerprint.split(",")) {
-						if (calculatedFingerprint.equals(fingerprintStr.trim())) {
-							res = signature.checkSignatureValue(providedCert);
+						if (extractedFingerprint.equals(fingerprintStr.trim())) {
+							res = signature.checkSignatureValue(extractedCert);
 						}
 					}
 				}
+
 			}
 		} catch (Exception e) {
 			LOGGER.warn("Error executing validateSignNode: " + e.getMessage(), e);
