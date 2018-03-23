@@ -1106,7 +1106,7 @@ public final class Util {
 
 		// document.normalizeDocument();
 
-		String c14nMethod = Constants.C14N_WC;
+		String c14nMethod = Constants.C14NEXC_WC;
 
 		// Signature object
 		XMLSignature sig = new XMLSignature(document, null, signAlgorithm, c14nMethod);
