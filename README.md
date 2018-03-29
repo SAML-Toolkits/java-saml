@@ -403,7 +403,7 @@ Related to the SP there are 3 important endpoints: The metadata view, the ACS vi
 This code will provide the XML metadata file of our SP, based on the info that we provided in the settings files.
 ```
 Auth auth = new Auth();
-Saml2Settings settings = auth.getSettings();
+Saml2Settings settings = gegetSettings();
 String metadata = settings.getSPMetadata();
 List<String> errors = Saml2Settings.validateMetadata(metadata);
 if (errors.isEmpty()) {
@@ -438,7 +438,7 @@ if (!errors.isEmpty()) {
         }
     }
 } else {
-    HashMap<String, List<String>> attributes = auth.getAttributes();
+    Map<String, List<String>> attributes = auth.getAttributes();
     String nameId = auth.getNameId();
     session.setAttribute("attributes", attributes);
     session.setAttribute("nameId", nameId);
