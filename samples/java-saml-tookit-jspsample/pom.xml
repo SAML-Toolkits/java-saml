@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>com.onelogin</groupId>
 		<artifactId>java-saml-tookit-samples</artifactId>
-		<version>2.2.1-SNAPSHOT</version>
+		<version>2.3.0</version>
 	</parent>
 
 	<artifactId>java-saml-tookit-jspsample</artifactId>
