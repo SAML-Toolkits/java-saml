@@ -28,9 +28,11 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
 import java.util.zip.Deflater;
@@ -967,6 +969,11 @@ public final class Util {
 			Element sigElement = (Element) signNode;
 			XMLSignature signature = new XMLSignature(sigElement, "", true);
 
+			String sigMethodAlg = signature.getSignedInfo().getSignatureMethodURI();
+			if (!isAlgorithmWhitelisted(sigMethodAlg)){
+				throw new Exception(sigMethodAlg + " is not a valid supported algorithm");
+			}
+
 			if (cert != null) {
 				res = signature.checkSignatureValue(cert);
 			} else {
@@ -985,6 +992,36 @@ public final class Util {
 			LOGGER.warn("Error executing validateSignNode: " + e.getMessage(), e);
 		}
 		return res;
+	}
+
+	/**
+	 * Whitelist the XMLSignature algorithm
+	 *
+	 * @param signNode
+	 * 				 The document we should validate
+	 * @param cert
+	 * 				 The public certificate
+	 * @param fingerprint
+	 * 				 The fingerprint of the public certificate
+	 * @param alg
+	 * 				 The signature algorithm method
+	 *
+	 * @return True if the sign is valid, false otherwise.
+	 */
+	public static boolean isAlgorithmWhitelisted(String alg) {
+		Set<String> whiteListedAlgorithm = new HashSet<String>();
+		whiteListedAlgorithm.add(Constants.DSA_SHA1);
+		whiteListedAlgorithm.add(Constants.RSA_SHA1);
+		whiteListedAlgorithm.add(Constants.RSA_SHA256);
+		whiteListedAlgorithm.add(Constants.RSA_SHA384);
+		whiteListedAlgorithm.add(Constants.RSA_SHA512);
+
+		Boolean whitelisted = false;
+		if (whiteListedAlgorithm.contains(alg)) {
+			whitelisted = true;
+		}
+
+		return whitelisted;
 	}
 
 	/**
