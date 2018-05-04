@@ -57,8 +57,8 @@
 
 			String relayState = request.getParameter("RelayState");
 
-			if (relayState != null && relayState != ServletUtils.getSelfRoutedURLNoQuery(request) &&
-				!relayState.contains("/dologin.jsp") ) { // We don't want to be redirected to login.jsp neither
+			if (relayState != null && !relayState.isEmpty() && !relayState.equals(ServletUtils.getSelfRoutedURLNoQuery(request)) &&
+				!relayState.contains("/dologin.jsp")) { // We don't want to be redirected to login.jsp neither
 				response.sendRedirect(request.getParameter("RelayState"));
 			} else {
 				
