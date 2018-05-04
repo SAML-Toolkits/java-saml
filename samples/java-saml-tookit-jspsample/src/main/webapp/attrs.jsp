@@ -33,7 +33,7 @@
 	
 		while (elems.hasMoreElements() && !found) {
 			String value = (String) elems.nextElement();
-			if (value == "attributes" || value == "nameId") {
+			if (value.equals("attributes") || value.equals("nameId")) {
 				found = true;
 			}
 		}
