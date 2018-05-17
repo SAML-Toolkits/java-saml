@@ -438,7 +438,7 @@ if (!errors.isEmpty()) {
         }
     }
 } else {
-    HashMap<String, List<String>> attributes = auth.getAttributes();
+    Map<String, List<String>> attributes = auth.getAttributes();
     String nameId = auth.getNameId();
     session.setAttribute("attributes", attributes);
     session.setAttribute("nameId", nameId);
