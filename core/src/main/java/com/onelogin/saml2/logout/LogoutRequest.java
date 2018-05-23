@@ -1,5 +1,6 @@
 package com.onelogin.saml2.logout;
 
+import com.onelogin.saml2.authn.NameID;
 import java.io.IOException;
 import java.net.URL;
 import java.security.PrivateKey;
@@ -24,6 +25,7 @@ import com.onelogin.saml2.exception.ValidationError;
 import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.exception.SettingsException;
 import com.onelogin.saml2.http.HttpRequest;
+import static com.onelogin.saml2.logout.LogoutRequest.getId;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.util.Util;
 import com.onelogin.saml2.util.Constants;
@@ -60,17 +62,20 @@ public class LogoutRequest {
      */
 	private final HttpRequest request;
 
-	/**
+	/** Variables nameId and nameIdFormat have been removed in favor of the variable subject
+	 * that carries equivalent information along with two additional properties that are required
+	 * by Shibboleth IdP3 to perform SLO successfully.
      * NameID.
-     */	
-	private String nameId;
+     private String nameId;
 
 	/**
      * NameID Format.
-     */
-	private String nameIdFormat;
+     private String nameIdFormat;
 
-	/**
+	*/
+	/** The NameId of the subject that has been supplied in the AuthnStatement upon login */
+       private NameID subject;
+/**
      * SessionIndex. When the user is logged, this stored it from the AuthnStatement of the SAML Response
      */
 	private String sessionIndex;
@@ -120,8 +125,38 @@ public class LogoutRequest {
 		if (samlLogoutRequest == null) {
 			id = Util.generateUniqueID();
 			issueInstant = Calendar.getInstance();
-			this.nameId = nameId;
-			this.nameIdFormat = nameIdFormat;
+			// store the nameIdFormat and nameId in an instance of NameID
+			this.subject = new  NameID(nameIdFormat, null, null, nameId);
+			this.sessionIndex = sessionIndex;
+
+			StrSubstitutor substitutor = generateSubstitutor(settings);
+			logoutRequestString = substitutor.replace(getLogoutRequestTemplate());
+		} else {
+			logoutRequestString = Util.base64decodedInflated(samlLogoutRequest);
+			id = getId(logoutRequestString);
+		}
+	}
+	
+	/** 
+	 * 	Construct a LogoutRequest using a stored NameID.
+	 * 	This method has been added for handling of Shibboleth IdP3 SLO request.
+	 */
+	public LogoutRequest(Saml2Settings settings, HttpRequest request, NameID subject, String sessionIndex) throws XMLEntityException 
+	{
+		this.settings = settings;
+		this.request = request;
+
+		String samlLogoutRequest = null;
+
+		if (request != null) {
+			samlLogoutRequest = request.getParameter("SAMLRequest");
+			currentUrl = request.getRequestURL();
+		}
+
+		if (samlLogoutRequest == null) {
+			id = Util.generateUniqueID();
+			issueInstant = Calendar.getInstance();
+			this.subject = subject;
 			this.sessionIndex = sessionIndex;
 
 			StrSubstitutor substitutor = generateSubstitutor(settings);
@@ -159,7 +194,7 @@ public class LogoutRequest {
 	 * @throws XMLEntityException 
 	 */
 	public LogoutRequest(Saml2Settings settings) throws XMLEntityException {
-		this(settings, null, null, null);
+		this(settings,  null, (String ) null, (String ) null);
 	}
 
 	/**
@@ -173,7 +208,7 @@ public class LogoutRequest {
 	 * @throws XMLEntityException 
 	 */
 	public LogoutRequest(Saml2Settings settings, HttpRequest request) throws XMLEntityException {
-		this(settings, request, null, null);
+		this(settings, request, (String) null, (String) null);
 	}
 
 	/**
@@ -238,26 +273,31 @@ public class LogoutRequest {
 
 		valueMap.put("issuer", settings.getSpEntityId());
 
+		// this.subject possibly does not contain all necessary info; combine the known information
+		// with defaults for the unknown ...
 		String nameIdFormat = null;
-		String spNameQualifier = null;
+		String spNameQualifier = this.subject.getSpNameQualifier();
+		String nameId = this.subject.getValue();
 		if (nameId != null) {
-			if (this.nameIdFormat == null && !settings.getSpNameIDFormat().equals(Constants.NAMEID_UNSPECIFIED)) {
+			if (this.subject.getFormat() == null && !settings.getSpNameIDFormat().equals(Constants.NAMEID_UNSPECIFIED)) {
 				nameIdFormat = settings.getSpNameIDFormat();
 			} else {
-				nameIdFormat = this.nameIdFormat;
+				nameIdFormat = this.subject.getFormat();
 			}
 		} else {
 			nameId = settings.getIdpEntityId();
 			nameIdFormat = Constants.NAMEID_ENTITY;
 			spNameQualifier = settings.getSpEntityId();
 		}
-
+		// ... and construct a fully equipped NameID (realSubject) that is subsequently used to generate the nameIdStr
+		NameID realSubject = new NameID(nameIdFormat, this.subject.getNameQualifier(), spNameQualifier, nameId);
 		X509Certificate cert = null;
 		if (settings.getNameIdEncrypted()) {
 			cert = settings.getIdpx509cert();
 		}
 
-		String nameIdStr = Util.generateNameId(nameId, spNameQualifier, nameIdFormat, cert);
+		// String nameIdStr = Util.generateNameId(nameId, spNameQualifier, nameIdFormat, cert);
+		String nameIdStr = Util.generateNameId(realSubject,  cert);
 		valueMap.put("nameIdStr", nameIdStr);
 
 		String sessionIndexStr = "";

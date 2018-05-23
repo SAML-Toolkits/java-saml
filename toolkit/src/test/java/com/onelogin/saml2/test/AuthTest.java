@@ -1275,12 +1275,12 @@ public class AuthTest {
 		settings.setLogoutRequestSigned(false);
 
 		Auth auth = new Auth(settings, request, response);
-		String target = auth.logout("", null, null, true);
+		String target = auth.logout("", (String) null, null, true);
 		assertThat(target, startsWith("https://pitbulk.no-ip.org/simplesaml/saml2/idp/SingleLogoutService.php?SAMLRequest="));
 		assertThat(target, not(containsString("&RelayState=")));
 		
 		String relayState = "http://localhost:8080/expected.jsp";
-		target = auth.logout(relayState, null, null, true);
+		target = auth.logout(relayState, (String) null, null, true);
 		assertThat(target, startsWith("https://pitbulk.no-ip.org/simplesaml/saml2/idp/SingleLogoutService.php?SAMLRequest="));
 		assertThat(target, containsString("&RelayState=http%3A%2F%2Flocalhost%3A8080%2Fexpected.jsp"));
 	}
@@ -1707,7 +1707,7 @@ public class AuthTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
 		Auth auth = new Auth(settings, request, response);
-		String targetSLOURL = auth.logout(null, null, null, true);
+		String targetSLOURL = auth.logout(null, (String) null, null, true);
 		String logoutRequestXML = auth.getLastRequestXML();
 		assertThat(targetSLOURL, containsString(Util.urlEncoder(Util.deflatedBase64encoded(logoutRequestXML))));
 	}

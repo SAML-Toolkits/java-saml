@@ -152,14 +152,14 @@ public class LogoutRequestTest {
 	public void testConstructorWithSessionIndex() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String sessionIndex = "_51be37965feb5579d803141076936dc2e9d1d98ebf";
-		LogoutRequest logoutRequest = new LogoutRequest(settings, null, null, sessionIndex); 
+		LogoutRequest logoutRequest = new LogoutRequest(settings, null, (String) null, sessionIndex); 
 		String logoutRequestStringBase64 = logoutRequest.getEncodedLogoutRequest();
 		String logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		String expectedSessionIndex = "<samlp:SessionIndex>_51be37965feb5579d803141076936dc2e9d1d98ebf</samlp:SessionIndex>";
 		assertThat(logoutRequestStr, containsString("<samlp:LogoutRequest"));
 		assertThat(logoutRequestStr, containsString(expectedSessionIndex));
 
-		logoutRequest = new LogoutRequest(settings, null, null, null);
+		logoutRequest = new LogoutRequest(settings, null, (String) null, null);
 		logoutRequestStringBase64 = logoutRequest.getEncodedLogoutRequest();
 		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		assertThat(logoutRequestStr, containsString("<samlp:LogoutRequest"));
@@ -231,7 +231,7 @@ public class LogoutRequestTest {
 		assertThat(nameIdDataStr, containsString("Value=ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c"));
 		assertThat(nameIdDataStr, not(containsString("SPNameQualifier")));
 
-		logoutRequest = new LogoutRequest(settings, null, null, null);
+		logoutRequest = new LogoutRequest(settings, null, (String)  null, null);
 		logoutRequestStringBase64 = logoutRequest.getEncodedLogoutRequest();
 		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		assertThat(logoutRequestStr, containsString("<samlp:LogoutRequest"));
@@ -371,7 +371,7 @@ public class LogoutRequestTest {
 		String nameIdStr = LogoutRequest.getNameId(logoutRequestStr, null).toString();
 		assertEquals(expectedNameIdStr, nameIdStr);
 
-		logoutRequest = new LogoutRequest(settings, null, null, null);
+		logoutRequest = new LogoutRequest(settings, null, (String) null, null);
 		logoutRequestStringBase64 = logoutRequest.getEncodedLogoutRequest();
 		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		assertThat(logoutRequestStr, containsString("<samlp:LogoutRequest"));
@@ -486,7 +486,7 @@ public class LogoutRequestTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String sessionIndex = "_51be37965feb5579d803141076936dc2e9d1d98ebf";
 		expectedIndexes.add(sessionIndex);
-		LogoutRequest logoutRequest = new LogoutRequest(settings, null, null, sessionIndex); 
+		LogoutRequest logoutRequest = new LogoutRequest(settings, null, (String) null, sessionIndex); 
 		String logoutRequestStringBase64 = logoutRequest.getEncodedLogoutRequest();
 		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		indexes = LogoutRequest.getSessionIndexes(logoutRequestStr);
