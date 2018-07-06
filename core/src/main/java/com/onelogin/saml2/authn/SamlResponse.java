@@ -1065,8 +1065,9 @@ public class SamlResponse {
 	 * @throws SAXException
 	 * @throws ParserConfigurationException
 	 * @throws SettingsException
+	 * @throws ValidationError
 	 */
-	private Document decryptAssertion(Document dom) throws XPathExpressionException, ParserConfigurationException, SAXException, IOException, SettingsException {		
+	private Document decryptAssertion(Document dom) throws XPathExpressionException, ParserConfigurationException, SAXException, IOException, SettingsException, ValidationError {
 		PrivateKey key = settings.getSPkey();
 
 		if (key == null) {
@@ -1074,11 +1075,17 @@ public class SamlResponse {
 		}
 
 		NodeList encryptedDataNodes = Util.query(dom, "/samlp:Response/saml:EncryptedAssertion/xenc:EncryptedData");
+		if (encryptedDataNodes.getLength() == 0) {
+		    throw new ValidationError("No /samlp:Response/saml:EncryptedAssertion/xenc:EncryptedData element found", ValidationError.MISSING_ENCRYPTED_ELEMENT);
+		}
 		Element encryptedData = (Element) encryptedDataNodes.item(0);
 		Util.decryptElement(encryptedData, key);
 
 		// We need to Remove the saml:EncryptedAssertion Node
 		NodeList AssertionDataNodes = Util.query(dom, "/samlp:Response/saml:EncryptedAssertion/saml:Assertion");
+		if (encryptedDataNodes.getLength() == 0) {
+		    throw new ValidationError("No /samlp:Response/saml:EncryptedAssertion/saml:Assertion element found", ValidationError.MISSING_ENCRYPTED_ELEMENT);
+		}
 		Node assertionNode = AssertionDataNodes.item(0);
 		assertionNode.getParentNode().getParentNode().replaceChild(assertionNode, assertionNode.getParentNode());
 
@@ -1099,7 +1106,7 @@ public class SamlResponse {
 		if (encrypted) {
 			xml = Util.convertDocumentToString(decryptedDocument);
 		} else {
-        	xml = samlResponseString;
+			xml = samlResponseString;
 		}
 		return xml; 
 	}
@@ -1113,7 +1120,7 @@ public class SamlResponse {
 		if (encrypted) {
 			doc = decryptedDocument;
 		} else {
-        	doc = samlResponseDocument;
+			doc = samlResponseDocument;
 		}
 		return doc;
 	}

@@ -1,0 +1,273 @@
+<EntitiesDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:mdui="urn:oasis:names:tc:SAML:metadata:ui" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Name="CSC testipalvelut" validUntil="2018-05-22T10:06:17Z" xsi:schemaLocation="urn:oasis:names:tc:SAML:2.0:metadata saml-schema-metadata-2.0.xsd urn:mace:shibboleth:metadata:1.0 shibboleth-metadata-1.0.xsd http://www.w3.org/2000/09/xmldsig# xmldsig-core-schema.xsd">
+  <EntityDescriptor xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:shibmd="urn:mace:shibboleth:metadata:1.0" entityID="https://testidp.funet.fi/idp/shibboleth">
+    <IDPSSODescriptor WantAuthnRequestsSigned="true" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+      <Extensions>
+        <shibmd:Scope regexp="false">funet.fi</shibmd:Scope>
+        <shibmd:Scope regexp="false">yliopisto.fi</shibmd:Scope>
+        <mdui:UIInfo>
+          <mdui:DisplayName xml:lang="sv">Haka Test-Idp</mdui:DisplayName>
+          <mdui:DisplayName xml:lang="en">Haka Test-Idp</mdui:DisplayName>
+          <mdui:DisplayName xml:lang="fi">Haka Testi-Idp</mdui:DisplayName>
+          <mdui:Description xml:lang="sv">Haka Test Organization</mdui:Description>
+          <mdui:Description xml:lang="fi">Haka Testiorganisaatio</mdui:Description>
+          <mdui:Description xml:lang="en">Haka Test Organization</mdui:Description>
+          <mdui:Logo height="575" width="575">https://haka.funet.fi/img/Haka_kuvake_pyorea.png</mdui:Logo>
+          <mdui:Logo height="32" width="32">https://testsp.funet.fi/img/Haka_favicon_32px.jpg</mdui:Logo>
+          <mdui:Keywords xml:lang="fi">testi</mdui:Keywords>
+          <mdui:Keywords xml:lang="en">test</mdui:Keywords>
+          <mdui:InformationURL xml:lang="en">http://www.csc.fi/english/institutions/haka/instructions/services-tech/test_servers</mdui:InformationURL>
+          <mdui:InformationURL xml:lang="sv">http://www.csc.fi/svenska</mdui:InformationURL>
+          <mdui:InformationURL xml:lang="fi">http://www.csc.fi/hallinto/haka/ohjeet/palvelut-yllapitajille/testipalvelimet</mdui:InformationURL>
+        </mdui:UIInfo>
+      </Extensions>
+      <KeyDescriptor>
+        <ds:KeyInfo>
+          <ds:X509Data>
+            <ds:X509Certificate>MIIFSjCCAzICCQC8J53bDLsjJzANBgkqhkiG9w0BAQsFADBmMQswCQYDVQQGEwJG
+STEQMA4GA1UECAwHVVVTSU1BQTEOMAwGA1UEBwwFRXNwb28xDDAKBgNVBAsMA0lB
+TTEMMAoGA1UECgwDQ1NDMRkwFwYDVQQDDBB0ZXN0aWRwLmZ1bmV0LmZpMCAXDTE3
+MDQxMTExNTQ0OVoYDzIxMTcwMzE4MTE1NDQ5WjBmMQswCQYDVQQGEwJGSTEQMA4G
+A1UECAwHVVVTSU1BQTEOMAwGA1UEBwwFRXNwb28xDDAKBgNVBAsMA0lBTTEMMAoG
+A1UECgwDQ1NDMRkwFwYDVQQDDBB0ZXN0aWRwLmZ1bmV0LmZpMIICIjANBgkqhkiG
+9w0BAQEFAAOCAg8AMIICCgKCAgEAtGhIKCmcbHqBsJyiHxkS/lxyH10uLlNE3IZE
+IlLteNpC+ibV2aEf2VRZkF2DV6GKpOAjP8NfJfSIsja516bcPLPo84RLWCcArOOZ
+KrnHoM60wOcBkBMuggCuT+GFtx2065ESdSn0qMWlpzZLBzpGwD1EfigzQ/7fF0oy
+Yg8pfc4LOBG55UVmYlbmF2eGYEEaSU1cQ5KOV0cApm8FXtopHYlmxlberuJfK1Ve
+5upkJ1SE+D/4A2lJT2+ruiPtL5dGN9zd/SrrVSD8hCMkKwIuZthgqycXzvO92ccZ
+cWKycWiON5Y47XEyWnozofyAr91qp0I1kXQiFJtAbIQz97vYte6nb0VWU2iwOHRP
+JnMcrRbRFH4W7NuaiI0Zr9dhDnt/v/JlfQrcRhjdM7WDvt5qEH7+0d8XJC6ua/AU
+klnsaaJTUaFkAUerrZCnwMCws/uP5zQCSq+tTUrSVDFwDBqs6+6KB6LxHNjq5mFL
+w+QtOfhBLD6XAbaHFWcmxfcHepQb8pGi+WJTizGQ6UX/glQe15CqhIG3vPVrDXvu
+xNYwxQsWaVuFZl/JfPLbpjQudI7/BmnD3aVECj7hk2VQCfAUlSm3ALiolkFiRArz
+Kra3AF7GAcpcnIcwagaTQr4JT9i7icpIShiCkwuYGBVEcCRNe9NBQ8PVX4EHh6Hj
+qIGkIWkCAwEAATANBgkqhkiG9w0BAQsFAAOCAgEACyl5UqLdHYjlc9JigjuLzCqn
+Pqgc8tSHp4DWGYonw30usAy2Wd6k8sHaMKiV9C+Z9UWP8IOAvNlTG1MTkSoRu954
+rcEmTiYljUVpdecno94WteS8c9gfijUehnNE7yvfTImFyHwtWTsmVWX8aNX+JpKU
+2tX+MBqq38eYGQUZE5uTO/ChgEeC30vTapiGX9wA48RboMv06BNW2UKu3qdeEK67
+VGTDTqzSKtPuiXLuU5BTuNW0gR9wrv64rb5HcaVi0xQ2lqXWhllQbI2ltuEMmVbw
+XFBeQNaJJrLSYf5qinRuVqhNvp833MNW9rlnzV+rdru0Uxrz4j6yDdHtUhvUOe3d
+djLQV47FLiHPGHBXIoE0hCTtXhAdlYlK+4Ec8Y31GwMXakodFy9s1qWogiIt55JA
+OdFKvUfKEsAdIRn2Nd4I933gNmrAa5/95hEQFfhTp9v6NbIYhAKaIbZnW6EVCUGK
+Jt6KQAf5Vzwb3/jNVg5ywyE/EScVEHS6Z/Ba+cdKymJSJDpOlrlXbPW36e5irpZY
+TA8UOuPdGaOi6fti7chnnqLPMQKuYQ5bDBFs3RncTK03qDt5s/RB2sXs6tcxxGtX
+aCb8kb/XS6zQLPPJ93fzd2MKDvRZAXhZJOsvMksSIWK3KmQoANTbLHv1Dl1QIlSG
+o1we6cPpzdt4j9jPZo0=</ds:X509Certificate>
+          </ds:X509Data>
+        </ds:KeyInfo>
+      </KeyDescriptor>
+      <SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://testidp.funet.fi/idp/profile/SAML2/Redirect/SLO"/>
+      <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</NameIDFormat>
+      <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:persistent</NameIDFormat>
+      <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://testidp.funet.fi/idp/profile/SAML2/Redirect/SSO"/>
+      <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:PAOS" Location="https://testidp.funet.fi/idp/profile/SAML2/SOAP/ECP"/>
+    </IDPSSODescriptor>
+    <Organization>
+      <OrganizationName xml:lang="fi">Haka Testiorganisaatio</OrganizationName>
+      <OrganizationName xml:lang="en">Haka Testing Organization</OrganizationName>
+      <OrganizationName xml:lang="sv">Haka Testning Organisation</OrganizationName>
+      <OrganizationDisplayName xml:lang="fi">Haka Testiorganisaatio</OrganizationDisplayName>
+      <OrganizationDisplayName xml:lang="en">Haka Testing Organization</OrganizationDisplayName>
+      <OrganizationDisplayName xml:lang="sv">Haka Testning Organisation</OrganizationDisplayName>
+      <OrganizationURL xml:lang="fi">https://testsp.funet.fi/haka</OrganizationURL>
+      <OrganizationURL xml:lang="en">https://testsp.funet.fi/haka</OrganizationURL>
+      <OrganizationURL xml:lang="sv">https://testsp.funet.fi/haka</OrganizationURL>
+    </Organization>
+    <ContactPerson contactType="technical">
+      <GivenName>Haka</GivenName>
+      <EmailAddress>mailto:haka@csc.fi</EmailAddress>
+    </ContactPerson>
+    <ContactPerson contactType="support">
+      <GivenName>Haka</GivenName>
+      <EmailAddress>mailto:haka@csc.fi</EmailAddress>
+    </ContactPerson>
+  </EntityDescriptor>
+  <EntityDescriptor xmlns:ds="http://www.w3.org/2000/09/xmldsig#" entityID="https://testsp.funet.fi/shibboleth">
+    <SPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+      <Extensions>
+        <mdui:UIInfo>
+          <mdui:DisplayName xml:lang="fi">Testi SP</mdui:DisplayName>
+          <mdui:DisplayName xml:lang="en">Test SP</mdui:DisplayName>
+          <mdui:DisplayName xml:lang="sv">Test SP</mdui:DisplayName>
+          <mdui:Description xml:lang="fi">Attribuuttitestipalvelu</mdui:Description>
+          <mdui:Description xml:lang="en">Attribute test service</mdui:Description>
+          <mdui:Logo height="32" width="32">https://haka.funet.fi/img/Haka_favicon_32px.jpg</mdui:Logo>
+          <mdui:Logo height="575" width="575">https://haka.funet.fi/img/Haka_kuvake_pyorea.png</mdui:Logo>
+          <mdui:PrivacyStatementURL xml:lang="fi">https://wiki.eduuni.fi/x/TYigAQ</mdui:PrivacyStatementURL>
+          <mdui:PrivacyStatementURL xml:lang="en">https://wiki.eduuni.fi/x/TYigAQ</mdui:PrivacyStatementURL>
+        </mdui:UIInfo>
+      </Extensions>
+      <KeyDescriptor>
+        <ds:KeyInfo>
+          <ds:X509Data>
+            <ds:X509Certificate>MIIFSDCCAzACCQCcPD4aUqGA0jANBgkqhkiG9w0BAQsFADBlMQswCQYDVQQGEwJG
+STEQMA4GA1UECAwHVVVTSU1BQTEOMAwGA1UEBwwFRXNwb28xDDAKBgNVBAsMA0lB
+TTEMMAoGA1UECgwDQ1NDMRgwFgYDVQQDDA90ZXN0c3AuZnVuZXQuZmkwIBcNMTcw
+NDExMTE0NjA0WhgPMjExNzAzMTgxMTQ2MDRaMGUxCzAJBgNVBAYTAkZJMRAwDgYD
+VQQIDAdVVVNJTUFBMQ4wDAYDVQQHDAVFc3BvbzEMMAoGA1UECwwDSUFNMQwwCgYD
+VQQKDANDU0MxGDAWBgNVBAMMD3Rlc3RzcC5mdW5ldC5maTCCAiIwDQYJKoZIhvcN
+AQEBBQADggIPADCCAgoCggIBALcoeY/wzRk5rLFgccIUqQJZJs2S/UiugmaE1qmk
+tcT6GXGnVDPnujmqNvcsXrNcUZWlx/2a720r6XQ5jwQMWhdU9cVpQIZb9kKiuH75
+YkYU3qvogsYlxuLu9gM695fSgkzoB7QV0ZKrLRkyet9LFIt+O3ZLi5xSrglnfFJW
+X2GEWrkD6Z0yZT/PSk0b6QfFbjoVorNgTkqkfQZ8rdgHizuhstGy8NfvHJACiJ7J
+MeAlWfsJtwpWOg0RRI0TuLIS64hUZC3s+bcue8PzEjzstKBrTL+UjpaAy4ne3Ofh
+ii1DmbSBDJCyoUO+a1RXbisukvOqrfxKEqf66v+HCtdYNtLsz8q89QM7MlmLexPN
+dNjGsFrkVdpU4YHkZZLylXfSHLyOAFIVOy06CQaKqw7HHQ9rD8sWaOWrBP2yl53X
+vu0sAjOB74QCgqpW1loJhsO/TeRUCyo3zeX/jQFbSbTzJfxs2ZypDQZE+h3HIkkw
+xfILIhYN2WNQKW2h3GuzAvXjo+Xx/ZE66WD6rYaNZiOj3A7jLzo6lufCqGIZNaYu
+/m35PJappBqO8BxXLYghY416QmanYCIOTX4JRyM9JR3mhTkx4BJdggx7u3D+lnQe
+JrKqAtqoy9iQXD76QyI+32ZSBvBiOkD5/UTdmAn8SrNl43Plw5cj0ToE7yAVx/Ij
+WerVAgMBAAEwDQYJKoZIhvcNAQELBQADggIBAE47jv8ZrQuoaI9TtxWgwxi3rZvC
+++mvc6LD0tukRALQiJAYIqShcCweIHfRgLJKBxNlGXdUrhNwLptUKpVBGqe3csZI
+qkNdOK2SelYGSRivj3X2M672uh09TdT2OikRP6W51+zoNsPFoCZrnaXjiSVZPT7R
+m/TVkRbASovdWisjLLR2bewDcR+he5iG5Xe+Of8g3G77rk55+y0NWgK5K5fBbqWL
+NCy5jwIvhUJdlg27RJgmpOFy4cZacWBBnHa5WOB7VwAO60XOY4ThS4uNvVjWkVXC
+ukB0XaruTJooICxsL0Q0HHEjoBa9z3fb8ZgHXady/zE6GE9jn1qO25Q2vEQtcQXW
+a/TtcDYfEwyr15DqcUHR+uf6Ijg7o0NUrAY8Uwyh7aUChBnHaJ4mErpvz6+eeO/V
+YecMQIWGzj0HkOrasvmodaXOTEAyR2qVhVCqdJ5RCyB3dK6BpKTnd4+pntSjTSKo
+gQEruXDz3u2h+/9LY3Rju6T+i6O5FPoS5F1RahgX0M5AJjbXRYJkfCJsWw/LQ4XR
+VkoUgMK0/3JbE27DU8mcwPOrwsThf6wCjY6L4w/zZH5rhAOujefrTUrQm9bjJl3w
+d7aqI/Xvy2Z3WFAIP54U9y/+V07cQIRKcy7UAKL2sJd+CSJxNnStEx6heVo5XrsQ
+iir1naPWW5xukLoL</ds:X509Certificate>
+          </ds:X509Data>
+        </ds:KeyInfo>
+      </KeyDescriptor>
+      <SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://testsp.funet.fi/Shibboleth.sso/SLO/Redirect"/>
+      <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</NameIDFormat>
+      <AssertionConsumerService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="https://testsp.funet.fi/Shibboleth.sso/SAML2/POST" index="1" isDefault="true"/>
+      <AssertionConsumerService Binding="urn:oasis:names:tc:SAML:2.0:bindings:PAOS" Location="https://testsp.funet.fi/Shibboleth.sso/SAML2/ECP" index="2" isDefault="false"/>
+      <AttributeConsumingService index="1" isDefault="true">
+        <ServiceName xml:lang="fi">Test SP</ServiceName>
+        <ServiceName xml:lang="en">Test SP</ServiceName>
+        <ServiceName xml:lang="sv">Test SP</ServiceName>
+        <ServiceDescription xml:lang="fi">Attribuuttitestipalvelu</ServiceDescription>
+        <ServiceDescription xml:lang="en">Attribute test service</ServiceDescription>
+        <RequestedAttribute FriendlyName="cn" Name="urn:oid:2.5.4.3" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="displayName" Name="urn:oid:2.16.840.1.113730.3.1.241" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="eduPersonAffiliation" Name="urn:oid:1.3.6.1.4.1.5923.1.1.1.1" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="eduPersonEntitlement" Name="urn:oid:1.3.6.1.4.1.5923.1.1.1.7" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="eduPersonOrgUnitDN" Name="urn:oid:1.3.6.1.4.1.5923.1.1.1.4" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="eduPersonPrimaryAffiliation" Name="urn:oid:1.3.6.1.4.1.5923.1.1.1.5" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="eduPersonPrimaryOrgUnitDN" Name="urn:oid:1.3.6.1.4.1.5923.1.1.1.8" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="eduPersonPrincipalName" Name="urn:oid:1.3.6.1.4.1.5923.1.1.1.6" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="eduPersonTargetedID" Name="urn:oid:1.3.6.1.4.1.5923.1.1.1.10" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="electronicIdentificationNumber" Name="urn:oid:1.2.246.22" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="employeeNumber" Name="urn:oid:2.16.840.1.113730.3.1.3" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="funetEduPersonFullName" Name="urn:oid:1.3.6.1.4.1.16161.1.1.26" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="funetEduPersonLearnerId" Name="urn:oid:1.3.6.1.4.1.16161.1.1.27" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="funetEduPersonProgram" Name="urn:oid:1.3.6.1.4.1.16161.1.1.12" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="givenName" Name="urn:oid:2.5.4.42" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="homePostalAddress" Name="urn:oid:0.9.2342.19200300.100.1.39" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="mail" Name="urn:oid:0.9.2342.19200300.100.1.3" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="mobile" Name="urn:oid:0.9.2342.19200300.100.1.41" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="nationalIdentificationNumber" Name="urn:oid:1.2.246.21" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="o" Name="urn:oid:2.5.4.10" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="ou" Name="urn:oid:2.5.4.11" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="postalAddress" Name="urn:oid:2.5.4.16" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="postalCode" Name="urn:oid:2.5.4.17" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="preferredLanguage" Name="urn:oid:2.16.840.1.113730.3.1.39" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="schacDateOfBirth" Name="urn:oid:1.3.6.1.4.1.25178.1.2.3" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="schacHomeOrganization" Name="urn:oid:1.3.6.1.4.1.25178.1.2.9" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="schacHomeOrganizationType" Name="urn:oid:1.3.6.1.4.1.25178.1.2.10" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="schacPersonalUniqueCode" Name="urn:oid:1.3.6.1.4.1.25178.1.2.14" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="schacPersonalUniqueID" Name="urn:oid:1.3.6.1.4.1.25178.1.2.15" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="sn" Name="urn:oid:2.5.4.4" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="telephoneNumber" Name="urn:oid:2.5.4.20" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="uid" Name="urn:oid:0.9.2342.19200300.100.1.1" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+      </AttributeConsumingService>
+    </SPSSODescriptor>
+    <Organization>
+      <OrganizationName xml:lang="fi">Haka Testiorganisaatio</OrganizationName>
+      <OrganizationName xml:lang="en">Haka Testing Organization</OrganizationName>
+      <OrganizationName xml:lang="sv">Haka Testning Organisation</OrganizationName>
+      <OrganizationDisplayName xml:lang="fi">Haka Testiorganisaatio</OrganizationDisplayName>
+      <OrganizationDisplayName xml:lang="en">Haka Testing Organization</OrganizationDisplayName>
+      <OrganizationDisplayName xml:lang="sv">Haka Testning Organisation</OrganizationDisplayName>
+      <OrganizationURL xml:lang="fi">https://testsp.funet.fi/haka</OrganizationURL>
+      <OrganizationURL xml:lang="en">https://testsp.funet.fi/haka</OrganizationURL>
+      <OrganizationURL xml:lang="sv">https://testsp.funet.fi/haka</OrganizationURL>
+    </Organization>
+    <ContactPerson contactType="technical">
+      <GivenName>Sami</GivenName>
+      <SurName>Silen</SurName>
+      <EmailAddress>mailto:sami.silen@csc.fi</EmailAddress>
+    </ContactPerson>
+    <ContactPerson contactType="support">
+      <EmailAddress>mailto:haka@csc.fi</EmailAddress>
+    </ContactPerson>
+  </EntityDescriptor>
+  <EntityDescriptor xmlns:ds="http://www.w3.org/2000/09/xmldsig#" entityID="https://testsp.funet.fi/shibboleth/persistent">
+    <SPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+      <Extensions>
+        <idpdisc:DiscoveryResponse xmlns:idpdisc="urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol" Binding="urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol" Location="https://testsp.funet.fi/persistent/Shibboleth.sso/DS" index="1"/>
+        <mdui:UIInfo>
+          <mdui:DisplayName xml:lang="en">Atribute test service 2</mdui:DisplayName>
+          <mdui:DisplayName xml:lang="fi">Attribuuttitestipalvelu 2</mdui:DisplayName>
+        </mdui:UIInfo>
+      </Extensions>
+      <KeyDescriptor>
+        <ds:KeyInfo>
+          <ds:X509Data>
+            <ds:X509Certificate>MIIFSDCCAzACCQCcPD4aUqGA0jANBgkqhkiG9w0BAQsFADBlMQswCQYDVQQGEwJG
+STEQMA4GA1UECAwHVVVTSU1BQTEOMAwGA1UEBwwFRXNwb28xDDAKBgNVBAsMA0lB
+TTEMMAoGA1UECgwDQ1NDMRgwFgYDVQQDDA90ZXN0c3AuZnVuZXQuZmkwIBcNMTcw
+NDExMTE0NjA0WhgPMjExNzAzMTgxMTQ2MDRaMGUxCzAJBgNVBAYTAkZJMRAwDgYD
+VQQIDAdVVVNJTUFBMQ4wDAYDVQQHDAVFc3BvbzEMMAoGA1UECwwDSUFNMQwwCgYD
+VQQKDANDU0MxGDAWBgNVBAMMD3Rlc3RzcC5mdW5ldC5maTCCAiIwDQYJKoZIhvcN
+AQEBBQADggIPADCCAgoCggIBALcoeY/wzRk5rLFgccIUqQJZJs2S/UiugmaE1qmk
+tcT6GXGnVDPnujmqNvcsXrNcUZWlx/2a720r6XQ5jwQMWhdU9cVpQIZb9kKiuH75
+YkYU3qvogsYlxuLu9gM695fSgkzoB7QV0ZKrLRkyet9LFIt+O3ZLi5xSrglnfFJW
+X2GEWrkD6Z0yZT/PSk0b6QfFbjoVorNgTkqkfQZ8rdgHizuhstGy8NfvHJACiJ7J
+MeAlWfsJtwpWOg0RRI0TuLIS64hUZC3s+bcue8PzEjzstKBrTL+UjpaAy4ne3Ofh
+ii1DmbSBDJCyoUO+a1RXbisukvOqrfxKEqf66v+HCtdYNtLsz8q89QM7MlmLexPN
+dNjGsFrkVdpU4YHkZZLylXfSHLyOAFIVOy06CQaKqw7HHQ9rD8sWaOWrBP2yl53X
+vu0sAjOB74QCgqpW1loJhsO/TeRUCyo3zeX/jQFbSbTzJfxs2ZypDQZE+h3HIkkw
+xfILIhYN2WNQKW2h3GuzAvXjo+Xx/ZE66WD6rYaNZiOj3A7jLzo6lufCqGIZNaYu
+/m35PJappBqO8BxXLYghY416QmanYCIOTX4JRyM9JR3mhTkx4BJdggx7u3D+lnQe
+JrKqAtqoy9iQXD76QyI+32ZSBvBiOkD5/UTdmAn8SrNl43Plw5cj0ToE7yAVx/Ij
+WerVAgMBAAEwDQYJKoZIhvcNAQELBQADggIBAE47jv8ZrQuoaI9TtxWgwxi3rZvC
+++mvc6LD0tukRALQiJAYIqShcCweIHfRgLJKBxNlGXdUrhNwLptUKpVBGqe3csZI
+qkNdOK2SelYGSRivj3X2M672uh09TdT2OikRP6W51+zoNsPFoCZrnaXjiSVZPT7R
+m/TVkRbASovdWisjLLR2bewDcR+he5iG5Xe+Of8g3G77rk55+y0NWgK5K5fBbqWL
+NCy5jwIvhUJdlg27RJgmpOFy4cZacWBBnHa5WOB7VwAO60XOY4ThS4uNvVjWkVXC
+ukB0XaruTJooICxsL0Q0HHEjoBa9z3fb8ZgHXady/zE6GE9jn1qO25Q2vEQtcQXW
+a/TtcDYfEwyr15DqcUHR+uf6Ijg7o0NUrAY8Uwyh7aUChBnHaJ4mErpvz6+eeO/V
+YecMQIWGzj0HkOrasvmodaXOTEAyR2qVhVCqdJ5RCyB3dK6BpKTnd4+pntSjTSKo
+gQEruXDz3u2h+/9LY3Rju6T+i6O5FPoS5F1RahgX0M5AJjbXRYJkfCJsWw/LQ4XR
+VkoUgMK0/3JbE27DU8mcwPOrwsThf6wCjY6L4w/zZH5rhAOujefrTUrQm9bjJl3w
+d7aqI/Xvy2Z3WFAIP54U9y/+V07cQIRKcy7UAKL2sJd+CSJxNnStEx6heVo5XrsQ
+iir1naPWW5xukLoL</ds:X509Certificate>
+          </ds:X509Data>
+        </ds:KeyInfo>
+      </KeyDescriptor>
+      <SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://testsp.funet.fi/haka/persistent/Shibboleth.sso/SLO/Redirect"/>
+      <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:persistent</NameIDFormat>
+      <AssertionConsumerService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="https://testsp.funet.fi/haka/persistent/Shibboleth.sso/SAML2/POST" index="1" isDefault="true"/>
+      <AttributeConsumingService index="1" isDefault="true">
+        <ServiceName xml:lang="fi">Attribuuttitestipalvelu 2</ServiceName>
+        <RequestedAttribute FriendlyName="cn" Name="urn:oid:2.5.4.3" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="displayName" Name="urn:oid:2.16.840.1.113730.3.1.241" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="eduPersonPrincipalName" Name="urn:oid:1.3.6.1.4.1.5923.1.1.1.6" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="eduPersonTargetedID" Name="urn:oid:1.3.6.1.4.1.5923.1.1.1.10" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="schacHomeOrganization" Name="urn:oid:1.3.6.1.4.1.25178.1.2.9" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="schacHomeOrganizationType" Name="urn:oid:1.3.6.1.4.1.25178.1.2.10" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+        <RequestedAttribute FriendlyName="sn" Name="urn:oid:2.5.4.4" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri"/>
+      </AttributeConsumingService>
+    </SPSSODescriptor>
+    <Organization>
+      <OrganizationName xml:lang="fi">Haka Testiorganisaatio</OrganizationName>
+      <OrganizationName xml:lang="en">Haka Testing Organization</OrganizationName>
+      <OrganizationName xml:lang="sv">Haka Testning Organisation</OrganizationName>
+      <OrganizationDisplayName xml:lang="fi">Haka Testiorganisaatio</OrganizationDisplayName>
+      <OrganizationDisplayName xml:lang="en">Haka Testing Organization</OrganizationDisplayName>
+      <OrganizationDisplayName xml:lang="sv">Haka Testning Organisation</OrganizationDisplayName>
+      <OrganizationURL xml:lang="fi">https://testsp.funet.fi/haka</OrganizationURL>
+      <OrganizationURL xml:lang="en">https://testsp.funet.fi/haka</OrganizationURL>
+      <OrganizationURL xml:lang="sv">https://testsp.funet.fi/haka</OrganizationURL>
+    </Organization>
+    <ContactPerson contactType="technical">
+      <GivenName>Arto</GivenName>
+      <SurName>Tuomi</SurName>
+      <EmailAddress>mailto:haka@csc.fi</EmailAddress>
+    </ContactPerson>
+  </EntityDescriptor>
+</EntitiesDescriptor>

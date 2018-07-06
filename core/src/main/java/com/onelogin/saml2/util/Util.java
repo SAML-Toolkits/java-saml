@@ -96,6 +96,7 @@ import com.onelogin.saml2.exception.XMLEntityException;
  * A class that contains several auxiliary methods related to the SAML protocol
  */
 public final class Util {
+
 	/**
      * Private property to construct a logger for this class.
      */
@@ -108,6 +109,11 @@ public final class Util {
 	public static final String ASSERTION_SIGNATURE_XPATH = "/samlp:Response/saml:Assertion/ds:Signature";
 	/** Indicates if JAXP 1.5 support has been detected. */
 	private static boolean JAXP_15_SUPPORTED = isJaxp15Supported();
+
+	static {
+		System.setProperty("org.apache.xml.security.ignoreLineBreaks", "true");
+		org.apache.xml.security.Init.init();
+	}
 
 	private Util() {
 	      //not called
@@ -380,7 +386,6 @@ public final class Util {
 	 * @return the Document object
 	 */
 	public static String convertDocumentToString(Document doc, Boolean c14n) {
-		org.apache.xml.security.Init.init();
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		if (c14n) {
 			XMLUtils.outputDOMc14nWithComments(doc, baos);
@@ -525,8 +530,6 @@ public final class Util {
 	 * @throws GeneralSecurityException 
 	 */
 	public static PrivateKey loadPrivateKey(String keyString) throws GeneralSecurityException {
-		org.apache.xml.security.Init.init();
-
 		String extractedKey = formatPrivateKey(keyString, false);
 		extractedKey = chunkString(extractedKey, 64);
 		KeyFactory kf = KeyFactory.getInstance("RSA");
@@ -808,8 +811,6 @@ public final class Util {
 	 * @throws SignatureException
 	 */
 	public static byte[] sign(String text, PrivateKey key, String signAlgorithm) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-		org.apache.xml.security.Init.init();
-
         if (signAlgorithm == null) {
         	signAlgorithm = Constants.RSA_SHA1;
         }
@@ -964,8 +965,6 @@ public final class Util {
 	public static Boolean validateSignNode(Node signNode, X509Certificate cert, String fingerprint, String alg) {
 		Boolean res = false;
 		try {
-			org.apache.xml.security.Init.init();
-
 			Element sigElement = (Element) signNode;
 			XMLSignature signature = new XMLSignature(sigElement, "", true);
 
@@ -1034,8 +1033,6 @@ public final class Util {
 	 */
 	public static void decryptElement(Element encryptedDataElement, PrivateKey inputKey) {
 		try {
-			org.apache.xml.security.Init.init();
-
 			XMLCipher xmlCipher = XMLCipher.getInstance();
 			xmlCipher.init(XMLCipher.DECRYPT_MODE, null);
 
@@ -1111,15 +1108,36 @@ public final class Util {
 	 * 				 The public certificate
 	 * @param signAlgorithm
 	 * 				 Signature Algorithm
-	 * 
+	 *
 	 * @return the signed document in string format
-	 * 
+	 *
 	 * @throws XMLSecurityException
 	 * @throws XPathExpressionException
 	 */
 	public static String addSign(Document document, PrivateKey key, X509Certificate certificate, String signAlgorithm) throws XMLSecurityException, XPathExpressionException {
-		org.apache.xml.security.Init.init();
+		return addSign(document, key, certificate, signAlgorithm, Constants.SHA1);
+	}
 
+	/**
+	 * Signs the Document using the specified signature algorithm with the private key and the public certificate.
+	 *
+	 * @param document
+	 * 				 The document to be signed
+	 * @param key
+	 * 				 The private key
+	 * @param certificate
+	 * 				 The public certificate
+	 * @param signAlgorithm
+	 * 				 Signature Algorithm
+	 * @param digestAlgorithm
+	 * 				 Digest Algorithm
+	 *
+	 * @return the signed document in string format
+	 *
+	 * @throws XMLSecurityException
+	 * @throws XPathExpressionException
+	 */
+	public static String addSign(Document document, PrivateKey key, X509Certificate certificate, String signAlgorithm, String digestAlgorithm) throws XMLSecurityException, XPathExpressionException {
 		// Check arguments.
 		if (document == null) {
 			throw new IllegalArgumentException("Provided document was null");
@@ -1132,7 +1150,7 @@ public final class Util {
 		if (key == null) {
 			throw new IllegalArgumentException("Provided key was null");
 		}
-		
+
 		if (certificate == null) {
 			throw new IllegalArgumentException("Provided certificate was null");
 		}
@@ -1140,10 +1158,13 @@ public final class Util {
 		if (signAlgorithm == null || signAlgorithm.isEmpty()) {
 			signAlgorithm = Constants.RSA_SHA1;
 		}
+		if (digestAlgorithm == null || digestAlgorithm.isEmpty()) {
+			digestAlgorithm = Constants.SHA1;
+		}
 
-		// document.normalizeDocument();
+		document.normalizeDocument();
 
-		String c14nMethod = Constants.C14NEXC_WC;
+		String c14nMethod = Constants.C14NEXC;
 
 		// Signature object
 		XMLSignature sig = new XMLSignature(document, null, signAlgorithm, c14nMethod);
@@ -1155,30 +1176,42 @@ public final class Util {
 
 		// If Issuer, locate Signature after Issuer, Otherwise as first child.
 		NodeList issuerNodes = Util.query(document, "//saml:Issuer", null);
+		Element elemToSign = null;
 		if (issuerNodes.getLength() > 0) {
 			Node issuer =  issuerNodes.item(0);
 			root.insertBefore(sig.getElement(), issuer.getNextSibling());
+			elemToSign = (Element) issuer.getParentNode();
 		} else {
-			root.insertBefore(sig.getElement(), root.getFirstChild());
+			NodeList entitiesDescriptorNodes = Util.query(document, "//md:EntitiesDescriptor", null);
+			if (entitiesDescriptorNodes.getLength() > 0) {
+				elemToSign = (Element)entitiesDescriptorNodes.item(0);
+			} else {
+				NodeList entityDescriptorNodes = Util.query(document, "//md:EntityDescriptor", null);
+				if (entityDescriptorNodes.getLength() > 0) {
+					elemToSign = (Element)entityDescriptorNodes.item(0);
+				} else {
+					elemToSign = root;
+				}
+			}
+			root.insertBefore(sig.getElement(), elemToSign.getFirstChild());
 		}
 
-		String id = root.getAttribute("ID");
+		String id = elemToSign.getAttribute("ID");
 
 		String reference = id;
 		if (!id.isEmpty()) {
-			root.setIdAttributeNS(null, "ID", true);
+			elemToSign.setIdAttributeNS(null, "ID", true);
 			reference = "#" + id;
 		}
 
 		// Create the transform for the document
 		Transforms transforms = new Transforms(document);
 		transforms.addTransform(Constants.ENVSIG);
-		//transforms.addTransform(Transforms.TRANSFORM_C14N_OMIT_COMMENTS);
 		transforms.addTransform(c14nMethod);
-		sig.addDocument(reference, transforms, Constants.SHA1);
+		sig.addDocument(reference, transforms, digestAlgorithm);
 
 		// Add the certification info
-		sig.addKeyInfo(certificate);			
+		sig.addKeyInfo(certificate);
 
 		// Sign the document
 		sig.sign(key);
@@ -1197,14 +1230,16 @@ public final class Util {
 	 * 				 The public certificate
 	 * @param signAlgorithm
 	 * 				 Signature Algorithm
-	 * 
+	 * @param digestAlgorithm
+	 * 				 Digest Algorithm
+	 *
 	 * @return the signed document in string format
 	 *
 	 * @throws ParserConfigurationException
 	 * @throws XMLSecurityException
 	 * @throws XPathExpressionException
 	 */
-	public static String addSign(Node node, PrivateKey key, X509Certificate certificate, String signAlgorithm) throws ParserConfigurationException, XPathExpressionException, XMLSecurityException {
+	public static String addSign(Node node, PrivateKey key, X509Certificate certificate, String signAlgorithm, String digestAlgorithm) throws ParserConfigurationException, XPathExpressionException, XMLSecurityException {
 		// Check arguments.
 		if (node == null) {
 			throw new IllegalArgumentException("Provided node was null");
@@ -1216,9 +1251,31 @@ public final class Util {
 		Node newNode = doc.importNode(node, true);
 		doc.appendChild(newNode);
 
-		return addSign(doc, key, certificate, signAlgorithm);
-	}	
-	
+		return addSign(doc, key, certificate, signAlgorithm, digestAlgorithm);
+	}
+
+	/**
+	 * Signs a Node using the specified signature algorithm with the private key and the public certificate.
+	 *
+	 * @param node
+	 * 				 The Node to be signed
+	 * @param key
+	 * 				 The private key
+	 * @param certificate
+	 * 				 The public certificate
+	 * @param signAlgorithm
+	 * 				 Signature Algorithm
+	 *
+	 * @return the signed document in string format
+	 *
+	 * @throws ParserConfigurationException
+	 * @throws XMLSecurityException
+	 * @throws XPathExpressionException
+	 */
+	public static String addSign(Node node, PrivateKey key, X509Certificate certificate, String signAlgorithm) throws ParserConfigurationException, XPathExpressionException, XMLSecurityException {
+		return addSign(node, key, certificate, signAlgorithm, Constants.SHA1);
+	}
+
 	/**
 	 * Validates signed binary data (Used to validate GET Signature).
 	 *
@@ -1241,8 +1298,6 @@ public final class Util {
 	public static Boolean validateBinarySignature(String signedQuery, byte[] signature, X509Certificate cert, String signAlg) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException {
 		Boolean valid = false;
 		try {
-			org.apache.xml.security.Init.init();
-
 			String convertedSigAlg = signatureAlgConversion(signAlg);
 
 			Signature sig = Signature.getInstance(convertedSigAlg); //, provider);
@@ -1278,7 +1333,6 @@ public final class Util {
 	public static Boolean validateBinarySignature(String signedQuery, byte[] signature, List<X509Certificate> certList, String signAlg) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException {
 		Boolean valid = false;
 
-		org.apache.xml.security.Init.init();
 		String convertedSigAlg = signatureAlgConversion(signAlg);
 		Signature sig = Signature.getInstance(convertedSigAlg); //, provider);
 

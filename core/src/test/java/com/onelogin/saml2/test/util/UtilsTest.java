@@ -1628,6 +1628,9 @@ public class UtilsTest {
 		String keyString = Util.getFileAsString("data/customPath/certs/sp.pem");
 		PrivateKey key = Util.loadPrivateKey(keyString);
 		String signAlgorithmSha1 = Constants.RSA_SHA1;
+		String signAlgorithmSha256 = Constants.RSA_SHA256;
+		String digestAlgorithmSha1 = Constants.SHA1;
+		String digestAlgorithmSha512 = Constants.SHA512;
 
 		// AuthNReq
 		String authNRequest = Util.getFileAsString("data/requests/authn_request.xml");
@@ -1658,12 +1661,22 @@ public class UtilsTest {
 		// Logout Request
 		String logoutRequest = Util.getFileAsString("data/logout_requests/logout_request.xml");
 		Document logoutRequestDoc = Util.loadXML(logoutRequest);
-		String logoutRequestSigned = Util.addSign(logoutRequestDoc, key, cert, signAlgorithmSha1);
+		String logoutRequestSigned = Util.addSign(logoutRequestDoc, key, cert, signAlgorithmSha256, digestAlgorithmSha512);
 		assertThat(logoutRequestSigned, containsString("<ds:SignatureValue>"));
 
 		Document logoutRequestSignedDoc = Util.loadXML(logoutRequestSigned);
-		Node ds_signature_logreq = logoutRequestSignedDoc.getFirstChild().getFirstChild().getNextSibling().getNextSibling();
-		assertEquals("ds:Signature", ds_signature_logreq.getNodeName());
+		assertEquals("samlp:LogoutRequest", logoutRequestSignedDoc.getFirstChild().getNodeName());
+		Node ds_signature_logout_request = logoutRequestSignedDoc.getFirstChild().getFirstChild().getNextSibling().getNextSibling();
+		assertEquals("ds:Signature", ds_signature_logout_request.getNodeName());
+		Node canonization_logout_request_signed = ds_signature_logout_request.getFirstChild().getFirstChild();
+		assertEquals("ds:CanonicalizationMethod", canonization_logout_request_signed.getNodeName());
+		assertEquals(Constants.C14NEXC, canonization_logout_request_signed.getAttributes().getNamedItem("Algorithm").getNodeValue());
+		Node signature_method_logout_request_signed = ds_signature_logout_request.getFirstChild().getFirstChild().getNextSibling();
+		assertEquals("ds:SignatureMethod", signature_method_logout_request_signed.getNodeName());
+		assertEquals(signAlgorithmSha256, signature_method_logout_request_signed.getAttributes().getNamedItem("Algorithm").getNodeValue());
+		Node digest_method_logout_request_signed = ds_signature_logout_request.getFirstChild().getFirstChild().getNextSibling().getNextSibling().getFirstChild().getNextSibling();
+		assertEquals("ds:DigestMethod", digest_method_logout_request_signed.getNodeName());
+		assertEquals(digestAlgorithmSha512, digest_method_logout_request_signed.getAttributes().getNamedItem("Algorithm").getNodeValue());
 
 		// Logout Response
 		String logoutResponse = Util.getFileAsString("data/logout_responses/logout_response.xml");
@@ -1672,8 +1685,18 @@ public class UtilsTest {
 		assertThat(logoutResponseSigned, containsString("<ds:SignatureValue>"));
 
 		Document logoutResponseSignedDoc = Util.loadXML(logoutResponseSigned);
-		Node ds_signature_logres = logoutResponseSignedDoc.getFirstChild().getFirstChild().getNextSibling().getNextSibling();
-		assertEquals("ds:Signature", ds_signature_logres.getNodeName());
+		assertEquals("samlp:LogoutResponse", logoutResponseSignedDoc.getFirstChild().getNodeName());
+		Node ds_signature_logout_response = logoutResponseSignedDoc.getFirstChild().getFirstChild().getNextSibling().getNextSibling();;
+		assertEquals("ds:Signature", ds_signature_logout_response.getNodeName());
+		Node canonization_logout_response_signed = ds_signature_logout_response.getFirstChild().getFirstChild();
+		assertEquals("ds:CanonicalizationMethod", canonization_logout_response_signed.getNodeName());
+		assertEquals(Constants.C14NEXC, canonization_logout_response_signed.getAttributes().getNamedItem("Algorithm").getNodeValue());
+		Node signature_method_logout_response_signed = ds_signature_logout_response.getFirstChild().getFirstChild().getNextSibling();
+		assertEquals("ds:SignatureMethod", signature_method_logout_response_signed.getNodeName());
+		assertEquals(signAlgorithmSha1, signature_method_logout_response_signed.getAttributes().getNamedItem("Algorithm").getNodeValue());
+		Node digest_method_logout_response_signed = ds_signature_logout_response.getFirstChild().getFirstChild().getNextSibling().getNextSibling().getFirstChild().getNextSibling();
+		assertEquals("ds:DigestMethod", digest_method_logout_response_signed.getNodeName());
+		assertEquals(digestAlgorithmSha1, digest_method_logout_response_signed.getAttributes().getNamedItem("Algorithm").getNodeValue());
 
 		// Metadata
 		String metadata = Util.getFileAsString("data/metadata/metadata_settings1.xml");
@@ -1682,8 +1705,37 @@ public class UtilsTest {
 		assertThat(metadataSigned, containsString("<ds:SignatureValue>"));
 
 		Document metadataSignedDoc = Util.loadXML(metadataSigned);
+		assertEquals("md:EntityDescriptor", metadataSignedDoc.getFirstChild().getNodeName());
 		Node ds_signature_metadata = metadataSignedDoc.getFirstChild().getFirstChild();
 		assertEquals("ds:Signature", ds_signature_metadata.getNodeName());
+		Node canonization_metadata_signed = ds_signature_metadata.getFirstChild().getFirstChild();
+		assertEquals("ds:CanonicalizationMethod", canonization_metadata_signed.getNodeName());
+		assertEquals(Constants.C14NEXC, canonization_metadata_signed.getAttributes().getNamedItem("Algorithm").getNodeValue());
+		Node signature_method_metadata_signed = ds_signature_metadata.getFirstChild().getFirstChild().getNextSibling();
+		assertEquals("ds:SignatureMethod", signature_method_metadata_signed.getNodeName());
+		assertEquals(signAlgorithmSha1, signature_method_metadata_signed.getAttributes().getNamedItem("Algorithm").getNodeValue());
+		Node digest_method_metadata_signed = ds_signature_metadata.getFirstChild().getFirstChild().getNextSibling().getNextSibling().getFirstChild().getNextSibling();
+		assertEquals("ds:DigestMethod", digest_method_metadata_signed.getNodeName());
+		assertEquals(digestAlgorithmSha1, digest_method_metadata_signed.getAttributes().getNamedItem("Algorithm").getNodeValue());
+
+		String metadata_entities = Util.getFileAsString("data/metadata/metadata_entities.xml");
+		Document metadataEntitiesDoc = Util.loadXML(metadata_entities);
+		String metadataEntitiesSigned = Util.addSign(metadataEntitiesDoc, key, cert, signAlgorithmSha256, digestAlgorithmSha512);
+		assertThat(metadataEntitiesSigned, containsString("<ds:SignatureValue>"));
+
+		Document metadataEntitiesSignedDoc = Util.loadXML(metadataEntitiesSigned);
+		assertEquals("EntitiesDescriptor", metadataEntitiesSignedDoc.getFirstChild().getNodeName());
+		Node ds_signature_metadata_entities = metadataEntitiesSignedDoc.getFirstChild().getFirstChild();
+		assertEquals("ds:Signature", ds_signature_metadata_entities.getNodeName());
+		Node canonization_metadata_entities_signed = ds_signature_metadata_entities.getFirstChild().getFirstChild();
+		assertEquals("ds:CanonicalizationMethod", canonization_metadata_entities_signed.getNodeName());
+		assertEquals(Constants.C14NEXC, canonization_metadata_entities_signed.getAttributes().getNamedItem("Algorithm").getNodeValue());
+		Node signature_method_metadata_entities_signed = ds_signature_metadata_entities.getFirstChild().getFirstChild().getNextSibling();
+		assertEquals("ds:SignatureMethod", signature_method_metadata_entities_signed.getNodeName());
+		assertEquals(signAlgorithmSha256, signature_method_metadata_entities_signed.getAttributes().getNamedItem("Algorithm").getNodeValue());
+		Node digest_method_metadata_entities_signed = ds_signature_metadata_entities.getFirstChild().getFirstChild().getNextSibling().getNextSibling().getFirstChild().getNextSibling();
+		assertEquals("ds:DigestMethod", digest_method_metadata_entities_signed.getNodeName());
+		assertEquals(digestAlgorithmSha512, digest_method_metadata_entities_signed.getAttributes().getNamedItem("Algorithm").getNodeValue());
 	}
 
 	/**

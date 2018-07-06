@@ -9,12 +9,20 @@ import static org.junit.Assert.assertTrue;
 
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.PrivateKey;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import javax.xml.xpath.XPathExpressionException;
+
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.junit.Test;
 
 import com.onelogin.saml2.settings.Saml2Settings;
@@ -23,6 +31,7 @@ import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.model.AttributeConsumingService;
 import com.onelogin.saml2.model.RequestedAttribute;
 import com.onelogin.saml2.settings.Metadata;
+import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.SchemaFactory;
 import com.onelogin.saml2.util.Util;
 
@@ -376,5 +385,84 @@ public class MetadataTest {
 		assertThat(metadataStr, containsString(reqAttr1Attr2Str));
 		assertThat(metadataStr, containsString(reqAttr2Str));
 		assertThat(metadataStr, containsString(footerStr));
+	}
+
+	/**
+	 * Tests the signMetadata method of Metadata
+	 * Case imported metadata
+	 *
+	 * @throws IOException
+	 * @throws GeneralSecurityException
+	 * @throws XMLSecurityException
+	 * @throws XPathExpressionException
+	 *
+	 * @see com.onelogin.saml2.settings.Metadata#signMetadata
+	 */
+	@Test
+	public void testSignImportedMetadata() throws IOException, GeneralSecurityException, XPathExpressionException, XMLSecurityException {
+		String certString = Util.getFileAsString("data/customPath/certs/sp.crt");
+		X509Certificate cert = Util.loadCert(certString);
+		String keyString = Util.getFileAsString("data/customPath/certs/sp.pem");
+		PrivateKey key = Util.loadPrivateKey(keyString);
+		String signAlgorithmSha1 = Constants.RSA_SHA1;
+		String digestAlgorithmSha1 = Constants.SHA1;
+
+		String metadata = Util.getFileAsString("data/metadata/metadata_settings1.xml");
+		String metadataSigned = Metadata.signMetadata(metadata, key, cert, signAlgorithmSha1);
+		assertThat(metadataSigned, containsString("<ds:SignatureValue>"));
+		Document metadataSignedDoc = Util.loadXML(metadataSigned);
+		assertEquals("md:EntityDescriptor", metadataSignedDoc.getFirstChild().getNodeName());
+		Node ds_signature_metadata = metadataSignedDoc.getFirstChild().getFirstChild();
+		assertEquals("ds:Signature", ds_signature_metadata.getNodeName());
+		Node canonization_metadata_signed = ds_signature_metadata.getFirstChild().getFirstChild();
+		assertEquals("ds:CanonicalizationMethod", canonization_metadata_signed.getNodeName());
+		assertEquals(Constants.C14NEXC, canonization_metadata_signed.getAttributes().getNamedItem("Algorithm").getNodeValue());
+		Node signature_method_metadata_signed = ds_signature_metadata.getFirstChild().getFirstChild().getNextSibling();
+		assertEquals("ds:SignatureMethod", signature_method_metadata_signed.getNodeName());
+		assertEquals(signAlgorithmSha1, signature_method_metadata_signed.getAttributes().getNamedItem("Algorithm").getNodeValue());
+		Node digest_method_metadata_signed = ds_signature_metadata.getFirstChild().getFirstChild().getNextSibling().getNextSibling().getFirstChild().getNextSibling();
+		assertEquals("ds:DigestMethod", digest_method_metadata_signed.getNodeName());
+		assertEquals(digestAlgorithmSha1, digest_method_metadata_signed.getAttributes().getNamedItem("Algorithm").getNodeValue());
+	}
+	
+	/**
+	 * Tests the signMetadata method of Metadata
+	 * Case generated metadata
+	 *
+	 * @throws Error
+	 * @throws IOException
+	 * @throws GeneralSecurityException
+	 * @throws XMLSecurityException 
+	 * @throws XPathExpressionException
+	 *
+	 * @see com.onelogin.saml2.settings.Metadata#signMetadata
+	 */
+	@Test
+	public void testSigngeneratedMetadata() throws Error, IOException, GeneralSecurityException, XPathExpressionException, XMLSecurityException {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
+		String certString = Util.getFileAsString("data/customPath/certs/sp.crt");
+		X509Certificate cert = Util.loadCert(certString);
+		String keyString = Util.getFileAsString("data/customPath/certs/sp.pem");
+		PrivateKey key = Util.loadPrivateKey(keyString);		
+		String signAlgorithmSha256 = Constants.RSA_SHA256;
+		String digestAlgorithmSha512 = Constants.SHA512;
+		
+		Metadata metadataObj = new Metadata(settings);
+		String metadata = metadataObj.getMetadataString();
+		String metadataSigned = Metadata.signMetadata(metadata, key, cert, signAlgorithmSha256, digestAlgorithmSha512);
+		assertThat(metadataSigned, containsString("<ds:SignatureValue>"));
+		Document metadataSignedDoc = Util.loadXML(metadataSigned);
+		assertEquals("md:EntityDescriptor", metadataSignedDoc.getFirstChild().getNodeName());
+		Node ds_signature_metadata = metadataSignedDoc.getFirstChild().getFirstChild();
+		assertEquals("ds:Signature", ds_signature_metadata.getNodeName());
+		Node canonization_metadata_signed = ds_signature_metadata.getFirstChild().getFirstChild();
+		assertEquals("ds:CanonicalizationMethod", canonization_metadata_signed.getNodeName());
+		assertEquals(Constants.C14NEXC, canonization_metadata_signed.getAttributes().getNamedItem("Algorithm").getNodeValue());
+		Node signature_method_metadata_signed = ds_signature_metadata.getFirstChild().getFirstChild().getNextSibling();
+		assertEquals("ds:SignatureMethod", signature_method_metadata_signed.getNodeName());
+		assertEquals(signAlgorithmSha256, signature_method_metadata_signed.getAttributes().getNamedItem("Algorithm").getNodeValue());
+		Node digest_method_metadata_signed = ds_signature_metadata.getFirstChild().getFirstChild().getNextSibling().getNextSibling().getFirstChild().getNextSibling();
+		assertEquals("ds:DigestMethod", digest_method_metadata_signed.getNodeName());
+		assertEquals(digestAlgorithmSha512, digest_method_metadata_signed.getAttributes().getNamedItem("Algorithm").getNodeValue());
 	}
 }

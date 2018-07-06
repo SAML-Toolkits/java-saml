@@ -14,11 +14,13 @@ import java.util.List;
 
 import org.junit.Test;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
 import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.settings.Metadata;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
+import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.SchemaFactory;
 import com.onelogin.saml2.util.Util;
 
@@ -279,9 +281,14 @@ public class Saml2SettingsTest {
 
 		Document metadataDoc = Util.loadXML(metadataStr);
 		assertTrue(metadataDoc instanceof Document);
-
-		assertEquals("md:EntityDescriptor", metadataDoc.getDocumentElement().getNodeName());
 		assertEquals("ds:Signature", metadataDoc.getDocumentElement().getFirstChild().getNodeName());
+		Node ds_signature_metadata = metadataDoc.getFirstChild().getFirstChild();
+
+		assertEquals(Constants.C14NEXC, ds_signature_metadata.getFirstChild().getFirstChild().getAttributes().getNamedItem("Algorithm").getNodeValue());
+		
+		assertEquals(Constants.RSA_SHA512, ds_signature_metadata.getFirstChild().getFirstChild().getNextSibling().getAttributes().getNamedItem("Algorithm").getNodeValue());
+		assertEquals(Constants.SHA1, ds_signature_metadata.getFirstChild().getFirstChild().getNextSibling().getNextSibling().getFirstChild().getNextSibling().getAttributes().getNamedItem("Algorithm").getNodeValue());
+
 		assertEquals("md:SPSSODescriptor", metadataDoc.getDocumentElement().getFirstChild().getNextSibling().getNodeName());
 		
 		assertTrue(Util.validateXML(metadataDoc, SchemaFactory.SAML_SCHEMA_METADATA_2_0));

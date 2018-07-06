@@ -71,6 +71,7 @@ public class Saml2Settings {
 	private String requestedAuthnContextComparison = "exact";
 	private boolean wantXMLValidation = true;
 	private String signatureAlgorithm = Constants.RSA_SHA1;
+	private String digestAlgorithm = Constants.SHA1;
 	private boolean rejectUnsolicitedResponsesWithInResponseTo = false;
 
 	// Compress
@@ -316,6 +317,13 @@ public class Saml2Settings {
 	 */
 	public String getSignatureAlgorithm() {
 		return signatureAlgorithm;
+	}
+
+	/**
+	 * @return the digestAlgorithm setting value
+	 */
+	public String getDigestAlgorithm() {
+		return digestAlgorithm;
 	}
 
 	/**
@@ -682,6 +690,16 @@ public class Saml2Settings {
 	}
 
 	/**
+	 * Set the digestAlgorithm setting value
+	 *
+	 * @param digestAlgorithm
+	 *            the digestAlgorithm value to be set.
+	 */
+	public void setDigestAlgorithm(String digestAlgorithm) {
+		this.digestAlgorithm = digestAlgorithm;
+	}
+
+	/**
 	 * Controls if unsolicited Responses are rejected if they contain an InResponseTo value.
 	 *
 	 * If false using a validate method {@link com.onelogin.saml2.authn.SamlResponse#isValid(String)} with a null argument will
@@ -951,7 +969,8 @@ public class Saml2Settings {
 						metadataString,
 						this.getSPkey(),
 						this.getSPcert(),
-						this.getSignatureAlgorithm()
+						this.getSignatureAlgorithm(),
+						this.getDigestAlgorithm()
 				);
 			} catch (Exception e) {				
 				LOGGER.debug("Error executing signMetadata: " + e.getMessage(), e);
