@@ -577,42 +577,15 @@ public class SamlResponse {
 	 * @param dom
 	 *            The Response as XML
 	 *
-	 * @return array with the code and a message
+	 * @return SamlResponseStatus
 	 *
 	 * @throws IllegalArgumentException
 	 *             if the response not contain status or if Unexpected XPath error
 	 * @throws ValidationError 
 	 */
 	public static SamlResponseStatus getStatus(Document dom) throws ValidationError {
-		try {
-			String statusExpr = "/samlp:Response/samlp:Status";
-
-			NodeList statusEntry = Util.query(dom, statusExpr, null);
-			if (statusEntry.getLength() != 1) {
-				throw new ValidationError("Missing Status on response", ValidationError.MISSING_STATUS);
-			}
-			NodeList codeEntry;
-
-			codeEntry = Util.query(dom, statusExpr + "/samlp:StatusCode", (Element) statusEntry.item(0));
-
-			if (codeEntry.getLength() != 1) {
-				throw new ValidationError("Missing Status Code on response", ValidationError.MISSING_STATUS_CODE);
-			}
-
-			String stausCode = codeEntry.item(0).getAttributes().getNamedItem("Value").getNodeValue();
-			SamlResponseStatus status = new SamlResponseStatus(stausCode);
-
-			NodeList messageEntry = Util.query(dom, statusExpr + "/samlp:StatusMessage",
-					(Element) statusEntry.item(0));
-			if (messageEntry.getLength() == 1) {
-				status.setStatusMessage(messageEntry.item(0).getTextContent());
-			}
-			return status;
-		} catch (XPathExpressionException e) {
-			String error = "Unexpected error in getStatus." +  e.getMessage();
-			LOGGER.error(error);
-			throw new IllegalArgumentException(error);
-		}
+		String statusXpath = "/samlp:Response/samlp:Status";
+		return Util.getStatus(statusXpath, dom);
 	}
 
 	/**

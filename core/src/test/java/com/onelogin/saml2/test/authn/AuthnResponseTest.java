@@ -693,6 +693,13 @@ public class AuthnResponseTest {
 		status = SamlResponse.getStatus(samlResponseDoc);
 		assertEquals(Constants.STATUS_RESPONDER, status.getStatusCode());
 		assertEquals("something_is_wrong", status.getStatusMessage());
+
+		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/status_code_and_sub_status_code_responder_and_msg.xml.base64");
+		samlResponseDoc = Util.loadXML(new String(Util.base64decoder(samlResponseEncoded)));
+		status = SamlResponse.getStatus(samlResponseDoc);
+		assertEquals(Constants.STATUS_RESPONDER, status.getStatusCode());
+		assertEquals(Constants.STATUS_AUTHNFAILED, status.getSubStatusCode());
+		assertEquals("something_is_wrong", status.getStatusMessage());
 	}
 
 	/**

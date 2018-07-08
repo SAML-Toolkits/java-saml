@@ -13,6 +13,11 @@ public class SamlResponseStatus {
 	private String statusCode;
 
 	/**
+     * Status code second level
+     */
+	private String subStatusCode;
+
+	/**
      * Status Message
      */
 	private String statusMessage;
@@ -50,11 +55,28 @@ public class SamlResponseStatus {
 	/**
 	 * Set the status code
 	 * 
-	 * @param stausCode 
+	 * @param statusCode
 	 *              String. Status code
 	 */
-	public void setStatusCode(String stausCode) {
-		this.statusCode = stausCode;
+	public void setStatusCode(String statusCode) {
+		this.statusCode = statusCode;
+	}
+
+	/**
+	 * @return string the second-level status code
+	 */
+	public String getSubStatusCode() {
+		return subStatusCode;
+	}
+
+	/**
+	 * Set the second-level status code
+	 *
+	 * @param subStatusCode
+	 *              String. second-level status code
+	 */
+	public void setSubStatusCode(String subStatusCode) {
+		this.subStatusCode = subStatusCode;
 	}
 
 	/**

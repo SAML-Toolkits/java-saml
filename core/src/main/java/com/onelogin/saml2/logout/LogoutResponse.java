@@ -22,6 +22,7 @@ import org.w3c.dom.NodeList;
 import com.onelogin.saml2.exception.SettingsException;
 import com.onelogin.saml2.exception.ValidationError;
 import com.onelogin.saml2.http.HttpRequest;
+import com.onelogin.saml2.model.SamlResponseStatus;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.SchemaFactory;
@@ -295,10 +296,10 @@ public class LogoutResponse {
 
     /**
      * Gets the Status of the Logout Response.
-     * 
+     *
      * @return the Status
      *
-     * @throws XPathExpressionException 
+     * @throws XPathExpressionException
      */
     public String getStatus() throws XPathExpressionException
     {
@@ -306,9 +307,22 @@ public class LogoutResponse {
 		NodeList entries = this.query("/samlp:LogoutResponse/samlp:Status/samlp:StatusCode");
 		if (entries.getLength() == 1) {
 			statusCode = entries.item(0).getAttributes().getNamedItem("Value").getNodeValue();
-		}    	
+		}
         return statusCode;
-    }    
+    }
+
+    /**
+     * Gets the Status of the Logout Response.
+     *
+     * @return SamlResponseStatus
+     *
+     * @throws ValidationError
+     */
+    public SamlResponseStatus getSamlResponseStatus() throws ValidationError
+    {
+		String statusXpath = "/samlp:Response/samlp:Status";
+		return Util.getStatus(statusXpath, this.logoutResponseDocument);
+    }
 
 	/**
      * Extracts nodes that match the query from the DOMDocument (Logout Response Menssage)

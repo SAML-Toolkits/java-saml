@@ -88,6 +88,7 @@ import org.xml.sax.SAXException;
 
 import com.onelogin.saml2.exception.ValidationError;
 import com.onelogin.saml2.exception.XMLEntityException;
+import com.onelogin.saml2.model.SamlResponseStatus;
 
 
 /**
@@ -1349,6 +1350,50 @@ public final class Util {
 			}
 		}
 		return valid;
+	}
+
+	/**
+	 * Get Status from a Response
+	 *
+	 * @param dom
+	 *            The Response as XML
+	 *
+	 * @return SamlResponseStatus
+	 *
+	 * @throws IllegalArgumentException
+	 * @throws ValidationError
+	 */
+	public static SamlResponseStatus getStatus(String statusXpath, Document dom) throws ValidationError {
+		try {
+			NodeList statusEntry = Util.query(dom, statusXpath, null);
+			if (statusEntry.getLength() != 1) {
+				throw new ValidationError("Missing Status on response", ValidationError.MISSING_STATUS);
+			}
+			NodeList codeEntry = Util.query(dom, statusXpath + "/samlp:StatusCode", (Element) statusEntry.item(0));
+
+			if (codeEntry.getLength() == 0) {
+				throw new ValidationError("Missing Status Code on response", ValidationError.MISSING_STATUS_CODE);
+			}
+			String stausCode = codeEntry.item(0).getAttributes().getNamedItem("Value").getNodeValue();
+			SamlResponseStatus status = new SamlResponseStatus(stausCode);
+
+			NodeList subStatusCodeEntry = Util.query(dom, statusXpath + "/samlp:StatusCode/samlp:StatusCode", (Element) statusEntry.item(0));
+			if (subStatusCodeEntry.getLength() > 0) {
+				String subStatusCode = subStatusCodeEntry.item(0).getAttributes().getNamedItem("Value").getNodeValue();
+				status.setSubStatusCode(subStatusCode);
+			}
+
+			NodeList messageEntry = Util.query(dom, statusXpath + "/samlp:StatusMessage", (Element) statusEntry.item(0));
+			if (messageEntry.getLength() == 1) {
+				status.setStatusMessage(messageEntry.item(0).getTextContent());
+			}
+
+			return status;
+		} catch (XPathExpressionException e) {
+			String error = "Unexpected error in getStatus." +  e.getMessage();
+			LOGGER.error(error);
+			throw new IllegalArgumentException(error);
+		}
 	}
 
 	/**
