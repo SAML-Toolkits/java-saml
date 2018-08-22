@@ -26,26 +26,32 @@
 
 	<dependencyManagement>
 		<dependencies>
+			<!-- for test -->
 			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<version>${junitVersion}</version>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-core</artifactId>
 				<version>1.10.19</version>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.hamcrest</groupId>
 				<artifactId>hamcrest-core</artifactId>
 				<version>1.3</version>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.hamcrest</groupId>
 				<artifactId>hamcrest-library</artifactId>
 				<version>1.3</version>
+				<scope>test</scope>
 			</dependency>
+			<!-- for log -->
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
@@ -55,6 +61,7 @@
 				<groupId>ch.qos.logback</groupId>
 				<artifactId>logback-classic</artifactId>
 				<version>${logbackVersion}</version>
+				<optional>true</optional>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
