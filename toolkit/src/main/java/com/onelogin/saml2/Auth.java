@@ -561,7 +561,7 @@ public class Auth {
      * Process the SAML Logout Response / Logout Request sent by the IdP.
      *
      * @param keepLocalSession
-     *				When false will destroy the local session, otherwise will destroy it
+     *				When true will keep the local session, otherwise will destroy it
      * @param requestId
      *				The ID of the LogoutRequest sent by this SP to the IdP
      *
