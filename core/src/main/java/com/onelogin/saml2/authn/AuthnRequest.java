@@ -86,7 +86,26 @@ public class AuthnRequest {
 	 *            When true the AuthNReuqest will set a nameIdPolicy
 	 */
 	public AuthnRequest(Saml2Settings settings, boolean forceAuthn, boolean isPassive, boolean setNameIdPolicy) {
-		this.id = Util.generateUniqueID();
+		this(settings, forceAuthn, isPassive, setNameIdPolicy, Util.generateUniqueID());
+	}
+
+	/**
+	 * Constructs the AuthnRequest object.
+	 *
+	 * @param settings
+	 *            OneLogin_Saml2_Settings
+	 * @param forceAuthn
+	 *            When true the AuthNReuqest will set the ForceAuthn='true'
+	 * @param isPassive
+	 *            When true the AuthNReuqest will set the IsPassive='true'
+	 * @param setNameIdPolicy
+	 *            When true the AuthNReuqest will set a nameIdPolicy
+	 * @param requestId
+	 *            unique id for each request,
+	 *            in minimum "_" + UUID.randomUUID() as it should be a string that does not start with a number
+	 */
+	public AuthnRequest(Saml2Settings settings, boolean forceAuthn, boolean isPassive, boolean setNameIdPolicy, String requestId) {
+		this.id = requestId;
 		issueInstant = Calendar.getInstance();
 		this.isPassive = isPassive;
 		this.settings = settings;
