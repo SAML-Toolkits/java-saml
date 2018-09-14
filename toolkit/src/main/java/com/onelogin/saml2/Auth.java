@@ -1,5 +1,6 @@
 package com.onelogin.saml2;
 
+import com.onelogin.saml2.authn.NameID;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -138,6 +139,12 @@ public class Auth {
      * encrypted, by default tries to return the decrypted XML 
 	 */
 	private String lastResponse;
+	
+	/**
+	 * Stores the complete NameID of the subject as returned by IdP.
+	 * Added for support of Shibboleth IdP3 logout.
+	 */
+	private NameID subject;
 
 	/**
 	 * Initializes the SP SAML instance.
@@ -397,6 +404,48 @@ public class Auth {
 	}
 
 	/**
+	 * 	LogoutRequest added for support of Shibboleth IdP3. This method is based on code of {@link #logout(String returnTo, String nameId, String sessionIndex, Boolean stay, String nameidFormat) logout}
+	 * 	where the NameId attribute values and value is obtained from a passed-in NameID object.
+	 */
+		public String logout(String returnTo, NameID subject, String sessionIndex, Boolean stay) throws IOException, XMLEntityException, SettingsException {
+		Map<String, String> parameters = new HashMap<String, String>();
+
+		// LogoutRequest logoutRequest = new LogoutRequest(settings, null, nameId, sessionIndex, nameidFormat);
+		LogoutRequest logoutRequest = new LogoutRequest(settings, null, subject, sessionIndex);
+		String samlLogoutRequest = logoutRequest.getEncodedLogoutRequest();
+		parameters.put("SAMLRequest", samlLogoutRequest);
+
+		String relayState;
+		if (returnTo == null) {
+			relayState = ServletUtils.getSelfRoutedURLNoQuery(request);
+		} else {
+			relayState = returnTo;
+		}
+
+		if (!relayState.isEmpty()) {
+			parameters.put("RelayState", relayState);
+		}
+
+		if (settings.getLogoutRequestSigned()) {
+			String sigAlg = settings.getSignatureAlgorithm();
+			String signature = this.buildRequestSignature(samlLogoutRequest, relayState, sigAlg);
+
+			parameters.put("SigAlg", sigAlg);
+			parameters.put("Signature", signature);
+		}
+
+		String sloUrl = getSLOurl();
+		lastRequestId = logoutRequest.getId();
+		lastRequest = logoutRequest.getLogoutRequestXml();
+
+		if (!stay) {
+			LOGGER.debug("Logout request sent to " + sloUrl + " --> " + samlLogoutRequest);
+		}
+		return ServletUtils.sendRedirect(response, sloUrl, parameters, stay);
+	}
+
+	
+	/**
 	 * Initiates the SLO process.
 	 *
 	 * @param returnTo 
@@ -466,7 +515,7 @@ public class Auth {
 	 * @throws SettingsException
 	 */
 	public void logout() throws IOException, XMLEntityException, SettingsException {		
-		logout(null, null, null, false);
+		logout(null, (String ) null, null, false);
 	}
 
 	/**
@@ -533,6 +582,11 @@ public class Auth {
 				lastMessageId = samlResponse.getId();
 				lastAssertionId = samlResponse.getAssertionId();
 				lastAssertionNotOnOrAfter = samlResponse.getAssertionNotOnOrAfter();
+				// store the name ID
+				HashMap<String, String> data = samlResponse.getNameIdData();
+				String nameQualifier = data.get("NameQualifier");
+				String spNameQualifier = data.get("SPNameQualifier");
+				this.subject = new NameID(nameidFormat, nameQualifier, spNameQualifier, nameid);
 				LOGGER.debug("processResponse success --> " + samlResponseParameter);
 			} else {
 				errors.add("invalid_response");
@@ -546,6 +600,11 @@ public class Auth {
 			LOGGER.error("processResponse error." + errorMsg);
 			throw new Error(errorMsg, Error.SAML_RESPONSE_NOT_FOUND);
 		}
+	}
+
+	public NameID getSubject()
+	{
+		return subject;
 	}
 
 	/**

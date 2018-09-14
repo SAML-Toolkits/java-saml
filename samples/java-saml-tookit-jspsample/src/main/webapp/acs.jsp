@@ -7,6 +7,7 @@
 <%@page import="org.apache.commons.lang3.StringUtils" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
+<jsp:useBean class="java.util.HashMap" id="lgp" scope="session"/>
 <!DOCTYPE html>
 <html>
 <head>
@@ -36,7 +37,12 @@
 		if (!auth.isAuthenticated()) {
 			out.println("<div class=\"alert alert-danger\" role=\"alert\">Not authenticated</div>");
 		}
-
+		else
+		{
+			// added for the support of Sibboleth IdP3 logout.
+			lgp.put("subject", auth.getSubject());
+			lgp.put("session-index", auth.getSessionIndex());
+		}
 		List<String> errors = auth.getErrors();
 
 	    if (!errors.isEmpty()) {

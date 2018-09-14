@@ -1,5 +1,6 @@
 package com.onelogin.saml2.util;
 
+import com.onelogin.saml2.authn.NameID;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -1424,6 +1425,70 @@ public final class Util {
 				nameId.setAttribute("Format", format);
 			}
 			nameId.appendChild(doc.createTextNode(value));
+			doc.appendChild(nameId);
+
+			if (cert != null) {
+				// We generate a symmetric key
+				Key symmetricKey = generateSymmetricKey();
+
+				// cipher for encrypt the data
+				XMLCipher xmlCipher = XMLCipher.getInstance(Constants.AES128_CBC);
+				xmlCipher.init(XMLCipher.ENCRYPT_MODE, symmetricKey);
+
+				// cipher for encrypt the symmetric key
+				XMLCipher keyCipher = XMLCipher.getInstance(Constants.RSA_1_5);
+				keyCipher.init(XMLCipher.WRAP_MODE, cert.getPublicKey());
+
+				// encrypt the symmetric key
+				EncryptedKey encryptedKey = keyCipher.encryptKey(doc, symmetricKey);				
+
+				// Add keyinfo inside the encrypted data
+				EncryptedData encryptedData = xmlCipher.getEncryptedData();
+				KeyInfo keyInfo = new KeyInfo(doc);
+				keyInfo.add(encryptedKey);
+				encryptedData.setKeyInfo(keyInfo);
+
+				// Encrypt the actual data
+				xmlCipher.doFinal(doc, nameId, false);
+
+				// Building the result
+				res = "<saml:EncryptedID>" + convertDocumentToString(doc) + "</saml:EncryptedID>";
+			} else {
+				res = convertDocumentToString(doc);
+			}
+		} catch (Exception e) {
+			LOGGER.error("Error executing generateNameId: " + e.getMessage(), e);
+		}
+		return res;
+	}
+
+	/**
+	 * 	Generate a string representing the NameId carrying the three attributes and the value contained
+	 * 	in the supplied NameID instance.
+	 * 	This method code is copied from {@link #generateNameId(String value, String spnq, String format, X509Certificate cert) generateNameId}, with
+	 * 	replaced references to spnq and format with values from subject and added the NameQualifier to the resulting string.
+	 */
+	public static String generateNameId(NameID subject, X509Certificate cert) {
+		String res = null;
+		try {
+		  	DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		  	dbf.setNamespaceAware(true);
+			Document doc = dbf.newDocumentBuilder().newDocument();
+			Element nameId = doc.createElement("saml:NameID");
+			String spnq = subject.getSpNameQualifier();
+			String format = subject.getFormat();
+			String nq = subject.getNameQualifier();
+			if (spnq != null && !spnq.isEmpty()) {
+				nameId.setAttribute("SPNameQualifier", spnq);
+			}
+			if (format != null && !format.isEmpty()) {
+				nameId.setAttribute("Format", format);
+			}
+			if ((nq != null) && !nq.isEmpty())
+			{
+				nameId.setAttribute("NameQualifier", nq);
+			}
+			nameId.appendChild(doc.createTextNode(subject.getValue()));
 			doc.appendChild(nameId);
 
 			if (cert != null) {

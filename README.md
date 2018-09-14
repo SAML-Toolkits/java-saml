@@ -443,7 +443,7 @@ if (!errors.isEmpty()) {
         }
     }
 } else {
-    Map<String, List<String>> attributes = auth.getAttributes();
+    HashMap<String, List<String>> attributes = auth.getAttributes();
     String nameId = auth.getNameId();
     session.setAttribute("attributes", attributes);
     session.setAttribute("nameId", nameId);
