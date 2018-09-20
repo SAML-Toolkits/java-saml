@@ -356,7 +356,42 @@ public class Saml2SettingsTest {
 		assertFalse(errors.isEmpty());
 		assertTrue(errors.contains("noEntityDescriptor_xml"));
 	}
-	
+
+	/**
+	 * Test that Unique ID prefix is read
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	public void testGivenUniqueIDPrefixIsUsed() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
+
+		assertEquals("EXAMPLE", settings.getUniqueIDPrefix());
+	}
+
+	/**
+	 * Test that "_" value is ok for Unique ID prefix
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	public void testUniqueIDPrefixIsUsed() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min_uniqueid.properties").build();
+
+		assertEquals("_", settings.getUniqueIDPrefix());
+	}
+
+	/**
+	 * Tests that if property Unique ID prefix is unset, default value is used
+	 * @throws Exception
+	 */
+	@Test
+	public void testUniqueIDPrefixUsesDefaultWhenNotSet() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+
+		assertEquals("ONELOGIN_", settings.getUniqueIDPrefix());
+	}
+
 	/**
 	 * Tests the validateMetadata method of the Saml2Settings
 	 * Case Invalid: onlySPSSODescriptor_allowed_xml

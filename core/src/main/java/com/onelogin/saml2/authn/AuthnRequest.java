@@ -86,7 +86,7 @@ public class AuthnRequest {
 	 *            When true the AuthNReuqest will set a nameIdPolicy
 	 */
 	public AuthnRequest(Saml2Settings settings, boolean forceAuthn, boolean isPassive, boolean setNameIdPolicy) {
-		this.id = Util.generateUniqueID();
+		this.id = Util.generateUniqueID(settings.getUniqueIDPrefix());
 		issueInstant = Calendar.getInstance();
 		this.isPassive = isPassive;
 		this.settings = settings;

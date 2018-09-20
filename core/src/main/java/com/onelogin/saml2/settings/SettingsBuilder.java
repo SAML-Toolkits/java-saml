@@ -103,6 +103,7 @@ public class SettingsBuilder {
 	public final static String ORGANIZATION_DISPLAYNAME = "onelogin.saml2.organization.displayname";
 	public final static String ORGANIZATION_URL = "onelogin.saml2.organization.url";
 	public final static String ORGANIZATION_LANG = "onelogin.saml2.organization.lang";
+	public final static String UNIQUE_ID_PREFIX_PROPERTY_KEY = "onelogin.saml2.unique_id_prefix";
 
 	/**
 	 * Load settings from the file
@@ -205,6 +206,8 @@ public class SettingsBuilder {
 		saml2Setting.setContacts(loadContacts());
 
 		saml2Setting.setOrganization(loadOrganization());
+
+		saml2Setting.setUniqueIDPrefix(loadUniqueIDPrefix());
 
 		return saml2Setting;
 	}
@@ -377,6 +380,18 @@ public class SettingsBuilder {
 		}
 
 		return contacts;
+	}
+
+	/**
+	 * Loads the unique ID prefix. Uses default if property not set.
+	 */
+	private String loadUniqueIDPrefix() {
+		String uniqueIDPrefix = loadStringProperty(UNIQUE_ID_PREFIX_PROPERTY_KEY);
+		if (StringUtils.isNotEmpty(uniqueIDPrefix)) {
+			return uniqueIDPrefix;
+		} else {
+			return Saml2Settings.DEFAULT_UNIQUE_ID_PREFIX;
+		}
 	}
 
 	/**

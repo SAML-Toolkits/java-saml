@@ -344,6 +344,11 @@ onelogin.saml2.contacts.technical.given_name = Technical Guy
 onelogin.saml2.contacts.technical.email_address = technical@example.com
 onelogin.saml2.contacts.support.given_name = Support Guy
 onelogin.saml2.contacts.support.email_address = support@example.com
+
+# Prefix used in generated Unique IDs.
+# Optional, defaults to ONELOGIN_ or full ID is like ONELOGIN_ebb0badd-4f60-4b38-b20a-a8e01f0592b1.
+# At minimun, the prefix can be non-numeric character such as "_".
+# onelogin.saml2.unique_id_prefix = _
 ```
 
 ##### Dynamic Settings

@@ -52,6 +52,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.SchemaFactory;
 import com.onelogin.saml2.util.Util;
@@ -1882,16 +1883,34 @@ public class UtilsTest {
 	 */
 	@Test
 	public void testGenerateUniqueID() {
-		String s1 = Util.generateUniqueID();
+		String s1 = Util.generateUniqueID(Saml2Settings.DEFAULT_UNIQUE_ID_PREFIX);
 
-		assertThat(s1, startsWith(Util.UNIQUE_ID_PREFIX));
+		assertThat(s1, startsWith(Saml2Settings.DEFAULT_UNIQUE_ID_PREFIX));
 		assertTrue(s1.length() > 40);
 		
-		String s2 = Util.generateUniqueID();
-		String s3 = Util.generateUniqueID();
+		String s2 = Util.generateUniqueID(Saml2Settings.DEFAULT_UNIQUE_ID_PREFIX);
+		String s3 = Util.generateUniqueID("_");
+		assertThat(s3, startsWith("_"));
+
 		assertNotEquals(s1, s2);
 		assertNotEquals(s1, s3);
 		assertNotEquals(s2, s3);
+	}
+
+	/**
+	 * Tests that generateUniqueID method throws when given null
+	 */
+	@Test(expected=IllegalArgumentException.class)
+	public void testGenerateUniqueID_throwsOnNullPrefix() {
+		Util.generateUniqueID(null);
+	}
+
+	/**
+	 * Tests that generateUniqueID method throws when given empty String
+	 */
+	@Test(expected=IllegalArgumentException.class)
+	public void testGenerateUniqueID_throwsOnEmptyPrefix() {
+		Util.generateUniqueID("");
 	}
 
 	/**

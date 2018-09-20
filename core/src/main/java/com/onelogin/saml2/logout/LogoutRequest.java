@@ -132,7 +132,7 @@ public class LogoutRequest {
 		}
 	
 		if (samlLogoutRequest == null) {
-			id = Util.generateUniqueID();
+			id = Util.generateUniqueID(settings.getUniqueIDPrefix());
 			issueInstant = Calendar.getInstance();
 			this.nameId = nameId;
 			this.nameIdFormat = nameIdFormat;

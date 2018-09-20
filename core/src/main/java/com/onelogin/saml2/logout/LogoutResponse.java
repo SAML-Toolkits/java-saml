@@ -343,7 +343,7 @@ public class LogoutResponse {
      *				InResponseTo attribute value to bet set at the Logout Response. 
      */
 	public void build(String inResponseTo) {
-		id = Util.generateUniqueID();
+		id = Util.generateUniqueID(settings.getUniqueIDPrefix());
 		issueInstant = Calendar.getInstance();
 		this.inResponseTo = inResponseTo;
 
