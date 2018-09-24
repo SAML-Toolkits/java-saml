@@ -445,8 +445,13 @@ if (!errors.isEmpty()) {
 } else {
     Map<String, List<String>> attributes = auth.getAttributes();
     String nameId = auth.getNameId();
+    String nameIdFormat = auth.getNameIdFormat();
+    String sessionIndex = auth.getSessionIndex();
+
     session.setAttribute("attributes", attributes);
     session.setAttribute("nameId", nameId);
+    session.setAttribute("nameIdFormat", nameIdFormat);
+    session.setAttribute("sessionIndex", sessionIndex);
 
     String relayState = request.getParameter("RelayState");
 
@@ -517,7 +522,20 @@ If we don't want that processSLO to destroy the session, pass the keepLocalSessi
 In order to send a Logout Request to the IdP:
 ```
 Auth auth = new Auth(request, response);
-auth.logout();
+
+String nameId = null;
+if (session.getAttribute("nameId") != null) {
+    nameId = session.getAttribute("nameId").toString();
+}
+String nameIdFormat = null;
+if (session.getAttribute("nameIdFormat") != null) {
+    nameIdFormat = session.getAttribute("nameIdFormat").toString();
+}
+String sessionIndex = null;
+if (session.getAttribute("sessionIndex") != null) {
+    sessionIndex = session.getAttribute("sessionIndex").toString();
+}
+auth.logout(null, nameId, sessionIndex, nameIdFormat);
 ```
 The Logout Request will be sent signed or unsigned based on the security settings 'onelogin.saml2.security.logoutrequest_signed'
 

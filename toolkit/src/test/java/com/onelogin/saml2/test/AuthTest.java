@@ -35,6 +35,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import com.onelogin.saml2.Auth;
+import com.onelogin.saml2.authn.SamlResponse;
 import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.exception.ValidationError;
 import com.onelogin.saml2.exception.SettingsException;
@@ -853,6 +854,70 @@ public class AuthTest {
 	}
 
 	/**
+	 * Tests the getNameIdNameQualifier method of Auth
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.Auth#getNameIdNameQualifier
+	 */
+	@Test
+	public void testGetNameIdNameQualifier() throws Exception {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		Auth auth = new Auth(settings, request, response);
+		assertNull(auth.getNameIdNameQualifier());
+		auth.processResponse();
+		assertFalse(auth.isAuthenticated());
+		assertNull(auth.getNameIdNameQualifier());
+		
+		
+		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response_with_namequalifier.xml.base64");
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		Auth auth2 = new Auth(settings, request, response);
+		assertNull(auth2.getNameIdNameQualifier());
+		auth2.processResponse();
+		assertTrue(auth2.isAuthenticated());
+		assertEquals("example.com", auth2.getNameIdNameQualifier());
+	}
+
+	/**
+	 * Tests the getNameIdSPNameQualifier method of Auth
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.Auth#getNameIdSPNameQualifier
+	 */
+	@Test
+	public void testGetNameIdSPNameQualifier() throws Exception {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		Auth auth = new Auth(settings, request, response);
+		assertNull(auth.getNameIdSPNameQualifier());
+		auth.processResponse();
+		assertFalse(auth.isAuthenticated());
+		assertNull(auth.getNameIdSPNameQualifier());
+		
+		
+		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response_with_namequalifier.xml.base64");
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		Auth auth2 = new Auth(settings, request, response);
+		assertNull(auth2.getNameIdSPNameQualifier());
+		auth2.processResponse();
+		assertTrue(auth2.isAuthenticated());
+		assertEquals(settings.getSpEntityId(), auth2.getNameIdSPNameQualifier());
+	}
+	
+	/**
 	 * Tests the getNameId method of SamlResponse
 	 *
 	 * @throws Exception
@@ -940,8 +1005,8 @@ public class AuthTest {
 		Auth auth = new Auth(settings, request, response);
 		auth.processResponse();
 
-		assertThat(auth.getLastAssertionId(), is("pfxeac87197-11cb-ec12-c181-ae739b54debe"));
-		assertThat(auth.getLastAssertionNotOnOrAfter(), contains(new Instant("2023-08-23T06:57:01Z")));
+		assertThat(auth.getLastAssertionId(), is("pfxb26bb203-4e9d-8e74-a46e-def275ff4c7b"));
+		assertThat(auth.getLastAssertionNotOnOrAfter(), contains(new Instant("2053-08-23T06:57:01Z")));
 	}
 
 	/**
@@ -972,7 +1037,7 @@ public class AuthTest {
 		assertNull(auth2.getSessionExpiration());
 		auth2.processResponse();
 		assertTrue(auth2.isAuthenticated());
-		assertEquals(1692773821000L, auth2.getSessionExpiration().getMillis());
+		assertEquals(2639545021000L, auth2.getSessionExpiration().getMillis());
 	}
 
 	/**

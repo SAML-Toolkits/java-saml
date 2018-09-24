@@ -1,7 +1,6 @@
 <%@page import="com.onelogin.saml2.Auth"%>
 <%@page import="com.onelogin.saml2.servlet.ServletUtils"%>
 <%@page import="java.util.Collection"%>
-<%@page import="java.util.HashMap"%>
 <%@page import="java.util.List"%>
 <%@page import="java.util.Map"%> 
 <%@page import="org.apache.commons.lang3.StringUtils" %>
@@ -39,21 +38,30 @@
 
 		List<String> errors = auth.getErrors();
 
-	    if (!errors.isEmpty()) {
-	    	out.println("<p>" + StringUtils.join(errors, ", ") + "</p>");
-	    	if (auth.isDebugActive()) {
-	    		String errorReason = auth.getLastErrorReason();
-	    		if (errorReason != null && !errorReason.isEmpty()) {
-	    			out.println("<p>" + auth.getLastErrorReason() + "</p>");
-	    		}
-	    	}
-	    	out.println("<a href=\"dologin.jsp\" class=\"btn btn-primary\">Login</a>");
-	    } else {
+		if (!errors.isEmpty()) {
+			out.println("<p>" + StringUtils.join(errors, ", ") + "</p>");
+			if (auth.isDebugActive()) {
+				String errorReason = auth.getLastErrorReason();
+				if (errorReason != null && !errorReason.isEmpty()) {
+					out.println("<p>" + auth.getLastErrorReason() + "</p>");
+				}
+			}
+			out.println("<a href=\"dologin.jsp\" class=\"btn btn-primary\">Login</a>");
+		} else {
 			Map<String, List<String>> attributes = auth.getAttributes();
 			String nameId = auth.getNameId();
+			String nameIdFormat = auth.getNameIdFormat();
+			String sessionIndex = auth.getSessionIndex();
+			String nameidNameQualifier = auth.getNameIdNameQualifier();
+			String nameidSPNameQualifier = auth.getNameIdNameQualifier();
 
 			session.setAttribute("attributes", attributes);
 			session.setAttribute("nameId", nameId);
+			session.setAttribute("nameIdFormat", nameIdFormat);
+			session.setAttribute("sessionIndex", sessionIndex);
+			session.setAttribute("nameidNameQualifier", nameidNameQualifier);
+			session.setAttribute("nameidSPNameQualifier", nameidSPNameQualifier);
+			
 
 			String relayState = request.getParameter("RelayState");
 

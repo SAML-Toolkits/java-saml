@@ -71,6 +71,16 @@ public class LogoutRequest {
 	private String nameIdFormat;
 
 	/**
+     * nameId NameQualifier
+     */
+	private String nameIdNameQualifier;
+
+	/**
+     * nameId SP NameQualifier
+     */
+	private String nameIdSPNameQualifier;
+	
+	/**
      * SessionIndex. When the user is logged, this stored it from the AuthnStatement of the SAML Response
      */
 	private String sessionIndex;
@@ -103,33 +113,81 @@ public class LogoutRequest {
 	 *              The SessionIndex (taken from the SAML Response in the SSO process).
 	 * @param nameIdFormat
 	 *              The nameIdFormat that will be set in the LogoutRequest.
-	 * @throws XMLEntityException 
+	 * @param nameIdNameQualifier
+	 *				The NameID NameQualifier that will be set in the LogoutRequest.
+	 * @param nameIdSPNameQualifier
+	 *				The SP Name Qualifier that will be set in the LogoutRequest.
 	 *
+	 * @throws XMLEntityException
 	 */
-	public LogoutRequest(Saml2Settings settings, HttpRequest request, String nameId, String sessionIndex, String nameIdFormat) throws XMLEntityException {
+	public LogoutRequest(Saml2Settings settings, HttpRequest request, String nameId, String sessionIndex, String nameIdFormat, String nameIdNameQualifier, String nameIdSPNameQualifier) throws XMLEntityException {
 		this.settings = settings;
 		this.request = request;
-
+	
 		String samlLogoutRequest = null;
-
+	
 		if (request != null) {
 			samlLogoutRequest = request.getParameter("SAMLRequest");
 			currentUrl = request.getRequestURL();
 		}
-
+	
 		if (samlLogoutRequest == null) {
 			id = Util.generateUniqueID();
 			issueInstant = Calendar.getInstance();
 			this.nameId = nameId;
 			this.nameIdFormat = nameIdFormat;
+			this.nameIdNameQualifier = nameIdNameQualifier;
+			this.nameIdSPNameQualifier = nameIdSPNameQualifier;
 			this.sessionIndex = sessionIndex;
-
+	
 			StrSubstitutor substitutor = generateSubstitutor(settings);
 			logoutRequestString = substitutor.replace(getLogoutRequestTemplate());
 		} else {
 			logoutRequestString = Util.base64decodedInflated(samlLogoutRequest);
 			id = getId(logoutRequestString);
 		}
+	}
+
+	/**
+	 * Constructs the LogoutRequest object.
+	 *
+	 * @param settings
+	 *              OneLogin_Saml2_Settings
+	 * @param request
+     *              the HttpRequest object to be processed (Contains GET and POST parameters, request URL, ...).
+	 * @param nameId
+	 *              The NameID that will be set in the LogoutRequest.
+	 * @param sessionIndex
+	 *              The SessionIndex (taken from the SAML Response in the SSO process).
+	 * @param nameIdFormat
+	 *              The nameIdFormat that will be set in the LogoutRequest.
+	 * @param nameIdNameQualifier
+	 *				The NameID NameQualifier will be set in the LogoutRequest.
+	 *
+	 * @throws XMLEntityException
+	 */
+	public LogoutRequest(Saml2Settings settings, HttpRequest request, String nameId, String sessionIndex, String nameIdFormat, String nameIdNameQualifier) throws XMLEntityException {
+		this(settings, request, nameId, sessionIndex, nameIdFormat, nameIdNameQualifier, null);
+	}
+
+	/**
+	 * Constructs the LogoutRequest object.
+	 *
+	 * @param settings
+	 *              OneLogin_Saml2_Settings
+	 * @param request
+     *              the HttpRequest object to be processed (Contains GET and POST parameters, request URL, ...).
+	 * @param nameId
+	 *              The NameID that will be set in the LogoutRequest.
+	 * @param sessionIndex
+	 *              The SessionIndex (taken from the SAML Response in the SSO process).
+	 * @param nameIdFormat
+	 *              The nameIdFormat that will be set in the LogoutRequest.
+	 *
+	 * @throws XMLEntityException
+	 */
+	public LogoutRequest(Saml2Settings settings, HttpRequest request, String nameId, String sessionIndex, String nameIdFormat) throws XMLEntityException {
+		this(settings, request, nameId, sessionIndex, nameIdFormat, null);
 	}
 
 	/**
@@ -239,7 +297,8 @@ public class LogoutRequest {
 		valueMap.put("issuer", settings.getSpEntityId());
 
 		String nameIdFormat = null;
-		String spNameQualifier = null;
+		String spNameQualifier = this.nameIdSPNameQualifier;
+		String nameQualifier = this.nameIdNameQualifier;
 		if (nameId != null) {
 			if (this.nameIdFormat == null && !settings.getSpNameIDFormat().equals(Constants.NAMEID_UNSPECIFIED)) {
 				nameIdFormat = settings.getSpNameIDFormat();
@@ -248,16 +307,27 @@ public class LogoutRequest {
 			}
 		} else {
 			nameId = settings.getIdpEntityId();
-			nameIdFormat = Constants.NAMEID_ENTITY;
-			spNameQualifier = settings.getSpEntityId();
+			nameIdFormat = Constants.NAMEID_ENTITY;			
 		}
 
+		// From saml-core-2.0-os 8.3.6, when the entity Format is used: "The NameQualifier, SPNameQualifier, and
+        // SPProvidedID attributes MUST be omitted.		
+		if (nameIdFormat != null && nameIdFormat.equals(Constants.NAMEID_ENTITY)) {
+			nameQualifier = null;
+			spNameQualifier = null;
+		}
+
+		// NameID Format UNSPECIFIED omitted
+		if (nameIdFormat != null && nameIdFormat.equals(Constants.NAMEID_UNSPECIFIED)) {
+			nameIdFormat = null;
+		}
+		
 		X509Certificate cert = null;
 		if (settings.getNameIdEncrypted()) {
 			cert = settings.getIdpx509cert();
 		}
 
-		String nameIdStr = Util.generateNameId(nameId, spNameQualifier, nameIdFormat, cert);
+		String nameIdStr = Util.generateNameId(nameId, spNameQualifier, nameIdFormat, nameQualifier, cert);
 		valueMap.put("nameIdStr", nameIdStr);
 
 		String sessionIndexStr = "";

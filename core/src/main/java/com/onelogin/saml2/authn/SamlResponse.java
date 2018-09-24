@@ -66,6 +66,11 @@ public class SamlResponse {
 	private Document decryptedDocument;
 
 	/**
+	 * NameID Data
+	 */
+	private HashMap<String,String> nameIdData = null;
+
+	/**
 	 * URL of the current host + current view
 	 */
 	private String currentUrl;
@@ -421,6 +426,9 @@ public class SamlResponse {
      *
      */
 	public HashMap<String,String> getNameIdData() throws Exception {
+		if (this.nameIdData != null) {
+			return this.nameIdData;
+		}
 		HashMap<String,String> nameIdData = new HashMap<String, String>();
 
 		NodeList encryptedIDNodes = this.queryAssertion("/saml:Subject/saml:EncryptedID");
@@ -477,6 +485,7 @@ public class SamlResponse {
 				throw new ValidationError("No name id found in Document.", ValidationError.NO_NAMEID);
 			}
 		}
+		this.nameIdData = nameIdData;
 		return nameIdData;
 	}
 
@@ -512,6 +521,40 @@ public class SamlResponse {
 			nameidFormat = nameIdData.get("Format");
 		}
 		return nameidFormat;
+	}
+
+    /**
+     * Gets the NameID NameQualifier provided from the SAML Response String.
+     *
+     * @return string NameQualifier
+     *
+     * @throws Exception
+     */
+	public String getNameIdNameQualifier() throws Exception {
+		HashMap<String,String> nameIdData = getNameIdData();
+		String nameQualifier = null;
+		if (!nameIdData.isEmpty() && nameIdData.containsKey("NameQualifier")) {
+			LOGGER.debug("SAMLResponse has NameID NameQualifier --> " + nameIdData.get("NameQualifier"));
+			nameQualifier = nameIdData.get("NameQualifier");
+		}
+		return nameQualifier;
+	}
+
+    /**
+     * Gets the NameID SP NameQualifier provided from the SAML Response String.
+     *
+     * @return string SP NameQualifier
+     *
+     * @throws Exception
+     */
+	public String getNameIdSPNameQualifier() throws Exception {
+		HashMap<String,String> nameIdData = getNameIdData();
+		String spNameQualifier = null;
+		if (!nameIdData.isEmpty() && nameIdData.containsKey("SPNameQualifier")) {
+			LOGGER.debug("SAMLResponse has NameID NameQualifier --> " + nameIdData.get("SPNameQualifier"));
+			spNameQualifier = nameIdData.get("SPNameQualifier");
+		}
+		return spNameQualifier;
 	}
 
 	/**

@@ -8,7 +8,28 @@
 <body>
 	<%
 		Auth auth = new Auth(request, response);
-		auth.logout();
+
+		String nameId = null;
+		if (session.getAttribute("nameId") != null) {
+			nameId = session.getAttribute("nameId").toString();
+		}
+		String nameIdFormat = null;
+		if (session.getAttribute("nameIdFormat") != null) {
+			nameIdFormat = session.getAttribute("nameIdFormat").toString();
+		}
+		String nameidNameQualifier = null;
+		if (session.getAttribute("nameidNameQualifier") != null) {
+			nameIdFormat = session.getAttribute("nameidNameQualifier").toString();
+		}
+		String nameidSPNameQualifier = null;
+		if (session.getAttribute("nameidSPNameQualifier") != null) {
+			nameidSPNameQualifier = session.getAttribute("nameidSPNameQualifier").toString();
+		}
+		String sessionIndex = null;
+		if (session.getAttribute("sessionIndex") != null) {
+			sessionIndex = session.getAttribute("sessionIndex").toString();
+		}
+		auth.logout(null, nameId, sessionIndex, nameIdFormat, nameidNameQualifier, nameidSPNameQualifier);
 	%>
 </body>
 </html>

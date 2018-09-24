@@ -252,7 +252,45 @@ public class AuthnResponseTest {
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertNull(samlResponse.getNameIdFormat());
 	}
-	
+
+	/**
+	 * Tests the getNameIdNameQualifier method of SamlResponse
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#getNameIdNameQualifier
+	 */
+	@Test
+	public void testGetNameIdNameQualifier() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertNull(samlResponse.getNameIdNameQualifier());
+		
+		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response_with_namequalifier.xml.base64");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertEquals("example.com", samlResponse.getNameIdNameQualifier());
+	}
+
+	/**
+	 * Tests the getNameIdSPNameQualifier method of SamlResponse
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#getNameIdSPNameQualifier
+	 */
+	@Test
+	public void testGetNameIdSPNameQualifier() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertNull(samlResponse.getNameIdSPNameQualifier());
+		
+		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response_with_namequalifier.xml.base64");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertEquals(settings.getSpEntityId(), samlResponse.getNameIdSPNameQualifier());
+	}
+
 	/**
 	 * Tests the getNameId method of SamlResponse
 	 * Case: No NameId

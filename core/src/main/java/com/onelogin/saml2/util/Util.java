@@ -948,7 +948,7 @@ public final class Util {
 		}
 		return false;
     }
-    
+
 	/**
 	 * Validate signature of the Node.
 	 *
@@ -1405,24 +1405,32 @@ public final class Util {
 	 * 				 SP Name Qualifier
 	 * @param format
 	 * 				 SP Format
+	 * @param nq
+	 * 				 Name Qualifier
 	 * @param cert
 	 * 				 IdP Public certificate to encrypt the nameID
 	 *
 	 * @return Xml contained in the document.
 	 */
-	public static String generateNameId(String value, String spnq, String format, X509Certificate cert) {
+	public static String generateNameId(String value, String spnq, String format, String nq, X509Certificate cert) {
 		String res = null;
 		try {
 		  	DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		  	dbf.setNamespaceAware(true);
 			Document doc = dbf.newDocumentBuilder().newDocument();
 			Element nameId = doc.createElement("saml:NameID");
+
 			if (spnq != null && !spnq.isEmpty()) {
 				nameId.setAttribute("SPNameQualifier", spnq);
 			}
 			if (format != null && !format.isEmpty()) {
 				nameId.setAttribute("Format", format);
 			}
+			if ((nq != null) && !nq.isEmpty())
+			{
+				nameId.setAttribute("NameQualifier", nq);
+			}
+
 			nameId.appendChild(doc.createTextNode(value));
 			doc.appendChild(nameId);
 
@@ -1461,6 +1469,24 @@ public final class Util {
 		return res;
 	}
 
+	/**
+	 * Generates a nameID.
+	 *
+	 * @param value
+	 * 				 The value
+	 * @param spnq
+	 * 				 SP Name Qualifier
+	 * @param format
+	 * 				 SP Format
+	 * @param cert
+	 * 				 IdP Public certificate to encrypt the nameID
+	 *
+	 * @return Xml contained in the document.
+	 */
+	public static String generateNameId(String value, String spnq, String format, X509Certificate cert) {		
+		return generateNameId(value, spnq, format, null, cert);
+	}
+	
 	/**
 	 * Generates a nameID.
 	 *
