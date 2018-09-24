@@ -447,11 +447,15 @@ if (!errors.isEmpty()) {
     String nameId = auth.getNameId();
     String nameIdFormat = auth.getNameIdFormat();
     String sessionIndex = auth.getSessionIndex();
+    String nameidNameQualifier = auth.getNameIdNameQualifier();
+    String nameidSPNameQualifier = auth.getNameIdNameQualifier();
 
     session.setAttribute("attributes", attributes);
     session.setAttribute("nameId", nameId);
     session.setAttribute("nameIdFormat", nameIdFormat);
     session.setAttribute("sessionIndex", sessionIndex);
+    session.setAttribute("nameidNameQualifier", nameidNameQualifier);
+    session.setAttribute("nameidSPNameQualifier", nameidSPNameQualifier);
 
     String relayState = request.getParameter("RelayState");
 
@@ -530,6 +534,14 @@ if (session.getAttribute("nameId") != null) {
 String nameIdFormat = null;
 if (session.getAttribute("nameIdFormat") != null) {
     nameIdFormat = session.getAttribute("nameIdFormat").toString();
+}
+String nameidNameQualifier = null;
+if (session.getAttribute("nameidNameQualifier") != null) {
+    nameIdFormat = session.getAttribute("nameidNameQualifier").toString();
+}
+String nameidSPNameQualifier = null;
+if (session.getAttribute("nameidSPNameQualifier") != null) {
+    nameidSPNameQualifier = session.getAttribute("nameidSPNameQualifier").toString();
 }
 String sessionIndex = null;
 if (session.getAttribute("sessionIndex") != null) {
