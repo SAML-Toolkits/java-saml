@@ -105,6 +105,7 @@ public final class Util {
 
     private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(DateTimeZone.UTC);
 	private static final DateTimeFormatter DATE_TIME_FORMAT_MILLS = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(DateTimeZone.UTC);
+	public static final String UNIQUE_ID_PREFIX = "ONELOGIN_";
 	public static final String RESPONSE_SIGNATURE_XPATH = "/samlp:Response/ds:Signature";
 	public static final String ASSERTION_SIGNATURE_XPATH = "/samlp:Response/saml:Assertion/ds:Signature";
 	/** Indicates if JAXP 1.5 support has been detected. */
@@ -1537,11 +1538,19 @@ public final class Util {
 	 * @return A unique string
 	 */
 	public static String generateUniqueID(String prefix) {
-		if (StringUtils.isNotEmpty(prefix)) {
-			return prefix + UUID.randomUUID();
-		} else {
-			throw new IllegalArgumentException("Prefix cannot be null or empty.");
+		if (prefix == null || StringUtils.isEmpty(prefix)) {
+			prefix = Util.UNIQUE_ID_PREFIX;
 		}
+		return prefix + UUID.randomUUID();
+	}
+
+	/**
+	 * Generates a unique string (used for example as ID of assertions)
+	 *
+	 * @return A unique string
+	 */
+	public static String generateUniqueID() {
+		return generateUniqueID(null);
 	}
 
 	/**

@@ -30,8 +30,6 @@ public class Saml2Settings {
      */
 	private static final Logger LOGGER = LoggerFactory.getLogger(Saml2Settings.class);
 
-	public static final String DEFAULT_UNIQUE_ID_PREFIX = "ONELOGIN_";
-
 	// Toolkit settings
 	private boolean strict = false;
 	private boolean debug = false;
@@ -75,7 +73,7 @@ public class Saml2Settings {
 	private String signatureAlgorithm = Constants.RSA_SHA1;
 	private String digestAlgorithm = Constants.SHA1;
 	private boolean rejectUnsolicitedResponsesWithInResponseTo = false;
-	private String uniqueIDPrefix = DEFAULT_UNIQUE_ID_PREFIX;
+	private String uniqueIDPrefix = null;
 
 	// Compress
 	private boolean compressRequest = true;

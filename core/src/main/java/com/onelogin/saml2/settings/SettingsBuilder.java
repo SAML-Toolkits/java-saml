@@ -390,7 +390,7 @@ public class SettingsBuilder {
 		if (StringUtils.isNotEmpty(uniqueIDPrefix)) {
 			return uniqueIDPrefix;
 		} else {
-			return Saml2Settings.DEFAULT_UNIQUE_ID_PREFIX;
+			return Util.UNIQUE_ID_PREFIX;
 		}
 	}
 

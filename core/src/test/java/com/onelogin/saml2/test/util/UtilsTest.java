@@ -1878,17 +1878,28 @@ public class UtilsTest {
 
 	/**
 	 * Tests the generateUniqueID method
+	 *
+	 * * @see com.onelogin.saml2.util.Util#generateUniqueID
+	 */
+	@Test
+	public void testGenerateUniqueID() {
+		String s1 = Util.generateUniqueID();
+		assertThat(s1, startsWith(Util.UNIQUE_ID_PREFIX));
+	}
+
+	/**
+	 * Tests the generateUniqueID method
 	 * 
 	 * @see com.onelogin.saml2.util.Util#generateUniqueID
 	 */
 	@Test
-	public void testGenerateUniqueID() {
-		String s1 = Util.generateUniqueID(Saml2Settings.DEFAULT_UNIQUE_ID_PREFIX);
+	public void testGenerateUniqueID_withCustomPrefix() {
+		String s1 = Util.generateUniqueID(Util.UNIQUE_ID_PREFIX);
 
-		assertThat(s1, startsWith(Saml2Settings.DEFAULT_UNIQUE_ID_PREFIX));
+		assertThat(s1, startsWith(Util.UNIQUE_ID_PREFIX));
 		assertTrue(s1.length() > 40);
 		
-		String s2 = Util.generateUniqueID(Saml2Settings.DEFAULT_UNIQUE_ID_PREFIX);
+		String s2 = Util.generateUniqueID(Util.UNIQUE_ID_PREFIX);
 		String s3 = Util.generateUniqueID("_");
 		assertThat(s3, startsWith("_"));
 
@@ -1898,19 +1909,21 @@ public class UtilsTest {
 	}
 
 	/**
-	 * Tests that generateUniqueID method throws when given null
+	 * Tests that generateUniqueID method uses default prefix when given null
 	 */
-	@Test(expected=IllegalArgumentException.class)
-	public void testGenerateUniqueID_throwsOnNullPrefix() {
-		Util.generateUniqueID(null);
+	@Test
+	public void testGenerateUniqueID_usesDefaultOnNull() {
+		String s1 = Util.generateUniqueID(null);
+		assertThat(s1, startsWith(Util.UNIQUE_ID_PREFIX));
 	}
 
 	/**
-	 * Tests that generateUniqueID method throws when given empty String
+	 * Tests that generateUniqueID method uses default prefix when given empty String
 	 */
-	@Test(expected=IllegalArgumentException.class)
-	public void testGenerateUniqueID_throwsOnEmptyPrefix() {
-		Util.generateUniqueID("");
+	@Test
+	public void testGenerateUniqueID_usesDefaultOnEmpty() {
+		String s1 = Util.generateUniqueID("");
+		assertThat(s1, startsWith(Util.UNIQUE_ID_PREFIX));
 	}
 
 	/**
