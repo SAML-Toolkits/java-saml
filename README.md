@@ -77,12 +77,12 @@ The toolkit is hosted on github. You can download it from:
 #### Maven
 The toolkit is hosted at [Sonatype OSSRH (OSS Repository Hosting)](http://central.sonatype.org/pages/ossrh-guide.html) that is synced to the Central Repository.
 
-Install it as a maven dependecy:
+Install it as a maven dependency:
 ```
   <dependency>
       <groupId>com.onelogin</groupId>
       <artifactId>java-saml</artifactId>
-      <version>2.2.0</version>
+      <version>2.3.0</version>
   </dependency>
 ```
 
@@ -123,7 +123,7 @@ For more info, open and read the different pom.xml files:
 ## Working with the github repository code and Eclipse.
 ### Get the toolkit.
 The toolkit is hosted on github. You can download it from:
-* Lastest release: https://github.com/onelogin/java-saml/releases/latest
+* Latest release: https://github.com/onelogin/java-saml/releases/latest
 * Master repo: https://github.com/onelogin/java-saml/tree/master
 
 ### Adding java-saml toolkit components as a project
@@ -132,7 +132,7 @@ The toolkit is hosted on github. You can download it from:
 3. File > Import > Maven : Existing Maven Projects > Select the path where the toolkit folder of the Java Toolkit is  *<path>/java-saml/toolkit*, resolve the Workspace project and select the pom.xml
 
 ### Adding the java-saml-tookit-jspsample as a project
-1. File > Import > Maven : Existing Maven Projects > Select the path where the core folder of the Java Toolkit is  *<path>/java-saml/samples/java-saml-tookit-jspsample*, resolve the Wordkspace project and select the pom.xml
+1. File > Import > Maven : Existing Maven Projects > Select the path where the core folder of the Java Toolkit is  *<path>/java-saml/samples/java-saml-tookit-jspsample*, resolve the Workspace project and select the pom.xml
 
 ### Deploy the java-saml-tookit-jspsample
 
@@ -153,7 +153,7 @@ In the repo, at *src/main/java* you will find the source; at *src/main/resources
 
 
 #### toolkit (com.onelogin:java-saml) ####
-This folder contains a maven project with the Auth class to handle the low level classes of java-saml-core and the ServletUtils class to handle javax.servlet.http objetcs, used on the Auth class.
+This folder contains a maven project with the Auth class to handle the low level classes of java-saml-core and the ServletUtils class to handle javax.servlet.http objects, used on the Auth class.
 In the repo, at *src/main/java* you will find the source and at *src/test/java* the junit tests for the classes Auth and ServletUtils.
 
 #### samples (com.onelogin:java-saml-tookit-samples) ####
@@ -347,7 +347,7 @@ onelogin.saml2.contacts.support.email_address = support@example.com
 ```
 
 ##### Dynamic Settings
-It is possible to build settings programatically. You can load your values from different sources such as files, databases, or generated values.
+It is possible to build settings programmatically. You can load your values from different sources such as files, databases, or generated values.
 
 The `SettingsBuilder` class exposes the method `fromValues(Map<String, Object> samlData)` which let you build your settings dynamically. The `key` strings are the same from the *Properties file*
 ```java
@@ -498,7 +498,7 @@ With this method we get a Map with all the user data provided by the IdP in the 
     "groups": ["users", "members"]
 }
 ```
-Each attribute name can be used as a key to obtain the value. Every attribute is a list of values. A single-valued attribute is a listy of a single element.
+Each attribute name can be used as a key to obtain the value. Every attribute is a list of values. A single-valued attribute is a list of a single element.
 
 Before trying to get an attribute, check that the user is authenticated. If the user isn't authenticated, an empty Map will be returned. For example, if we call to getAttributes before a auth.processResponse, the getAttributes() will return an empty Map.
 

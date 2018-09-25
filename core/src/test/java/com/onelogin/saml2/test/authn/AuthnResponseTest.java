@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -329,7 +330,7 @@ public class AuthnResponseTest {
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		
 		expectedEx.expect(ValidationError.class);
-		expectedEx.expectMessage("The SPNameQualifier value mistmatch the SP entityID value.");
+		expectedEx.expectMessage("The SPNameQualifier value mismatch the SP entityID value.");
 		samlResponse.getNameId();
 	}
 	
@@ -483,7 +484,7 @@ public class AuthnResponseTest {
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		
 		expectedEx.expect(ValidationError.class);
-		expectedEx.expectMessage("The SPNameQualifier value mistmatch the SP entityID value.");
+		expectedEx.expectMessage("The SPNameQualifier value mismatch the SP entityID value.");
 		samlResponse.getNameIdData();
 	}
 
@@ -500,7 +501,7 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/empty_nameid.xml.base64");
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
-		HashMap<String, String> nameIdData = samlResponse.getNameIdData();
+		Map<String, String> nameIdData = samlResponse.getNameIdData();
 		assertTrue(nameIdData.get("Value").isEmpty());
 
 		settings.setStrict(true);
@@ -1490,7 +1491,7 @@ public class AuthnResponseTest {
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		
 		expectedEx.expect(ValidationError.class);
-		expectedEx.expectMessage("The SPNameQualifier value mistmatch the SP entityID value.");
+		expectedEx.expectMessage("The SPNameQualifier value mismatch the SP entityID value.");
 		samlResponse.getNameId();
 	}
 	
