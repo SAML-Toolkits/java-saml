@@ -28,10 +28,12 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -66,7 +68,9 @@ import org.apache.xml.security.encryption.EncryptedKey;
 import org.apache.xml.security.encryption.XMLCipher;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.keys.KeyInfo;
+import org.apache.xml.security.keys.keyresolver.KeyResolverException;
 import org.apache.xml.security.signature.XMLSignature;
+import org.apache.xml.security.signature.XMLSignatureException;
 import org.apache.xml.security.transforms.Transforms;
 import org.apache.xml.security.utils.XMLUtils;
 import org.joda.time.DateTime;
@@ -892,12 +896,32 @@ public final class Util {
 
 			if (signatures.getLength() == 1) {
 				final Node signNode = signatures.item(0);
+
+				Map<String,Object> signatureData = getSignatureData(signNode, alg);
+				if (signatureData.isEmpty()) {
+					return false;
+				}
+				XMLSignature signature = (XMLSignature) signatureData.get("signature");
+				X509Certificate extractedCert = (X509Certificate) signatureData.get("cert");
+				String extractedFingerprint = (String) signatureData.get("fingerprint");
+
 				if (certList == null || certList.isEmpty()) {
-					return validateSignNode(signNode, null, fingerprint, alg);
+					return validateSignNode(signature, null, fingerprint, alg, extractedCert, extractedFingerprint);
 				} else {
+					Boolean certMatches = false;
 					for (X509Certificate cert : certList) {
-						if (validateSignNode(signNode, cert, fingerprint, alg))
+						if (cert != null && extractedFingerprint != null && !extractedFingerprint.equals(calculateX509Fingerprint(cert, alg))) {
+							continue;
+						} else {
+							certMatches = true;
+						}
+
+						if (validateSignNode(signature, cert, fingerprint, alg, extractedCert, extractedFingerprint)) {
 							return true;
+						}
+					}
+					if (certMatches == false) {
+						LOGGER.warn("Certificate used in the document does not match any registered certificate");
 					}
 				}
 			}
@@ -949,6 +973,33 @@ public final class Util {
 		return false;
     }
 
+    private static Map<String,Object> getSignatureData(Node signNode, String alg) {
+		Map<String,Object> signatureData = new HashMap<>();
+		try {
+			Element sigElement = (Element) signNode;
+			XMLSignature signature = new XMLSignature(sigElement, "", true);
+
+			String sigMethodAlg = signature.getSignedInfo().getSignatureMethodURI();
+			if (!isAlgorithmWhitelisted(sigMethodAlg)){
+				throw new Exception(sigMethodAlg + " is not a valid supported algorithm");
+			}
+
+			String extractedFingerprint = null;
+			X509Certificate extractedCert = null;
+			KeyInfo keyInfo = signature.getKeyInfo();
+			if (keyInfo != null && keyInfo.containsX509Data()) {
+				extractedCert = keyInfo.getX509Certificate();
+				extractedFingerprint = calculateX509Fingerprint(extractedCert, alg);
+			}
+			signatureData.put("signature", signature);
+			signatureData.put("cert", extractedCert);
+			signatureData.put("fingerprint", extractedFingerprint);
+		} catch (Exception e) {
+			LOGGER.warn("Error executing getSignatureData: " + e.getMessage(), e);
+		}
+		return signatureData;
+    }
+
 	/**
 	 * Validate signature of the Node.
 	 *
@@ -962,30 +1013,39 @@ public final class Util {
 	 * 				 The signature algorithm method
 	 *
 	 * @return True if the sign is valid, false otherwise.
+	 *
+	 * @throws Exception
 	 */
 	public static Boolean validateSignNode(Node signNode, X509Certificate cert, String fingerprint, String alg) {
+		Map<String,Object> signatureData = getSignatureData(signNode, alg);
+		if (signatureData.isEmpty()) {
+			return false;
+		}
+
+		XMLSignature signature = (XMLSignature) signatureData.get("signature");
+		X509Certificate extractedCert = (X509Certificate) signatureData.get("cert");
+		String extractedFingerprint = (String) signatureData.get("fingerprint");
+
+		return validateSignNode(signature, cert, fingerprint, alg, extractedCert, extractedFingerprint);
+	}
+
+	public static Boolean validateSignNode(XMLSignature signature, X509Certificate cert, String fingerprint, String alg, X509Certificate extractedCert, String extractedFingerprint) {
 		Boolean res = false;
 		try {
-			Element sigElement = (Element) signNode;
-			XMLSignature signature = new XMLSignature(sigElement, "", true);
-
-			String sigMethodAlg = signature.getSignedInfo().getSignatureMethodURI();
-			if (!isAlgorithmWhitelisted(sigMethodAlg)){
-				throw new Exception(sigMethodAlg + " is not a valid supported algorithm");
-			}
-
 			if (cert != null) {
 				res = signature.checkSignatureValue(cert);
-			} else {
-				KeyInfo keyInfo = signature.getKeyInfo();
-				if (fingerprint != null && keyInfo != null && keyInfo.containsX509Data()) {
-					X509Certificate providedCert = keyInfo.getX509Certificate();
-					String calculatedFingerprint = calculateX509Fingerprint(providedCert, alg);
-					for (String fingerprintStr : fingerprint.split(",")) {
-						if (calculatedFingerprint.equals(fingerprintStr.trim())) {
-							res = signature.checkSignatureValue(providedCert);
+			} else if (extractedCert != null && fingerprint != null && extractedFingerprint != null) {
+				Boolean fingerprintMatches = false;
+				for (String fingerprintStr : fingerprint.split(",")) {
+					if (extractedFingerprint.equals(fingerprintStr.trim())) {
+						fingerprintMatches = true;
+						if (res = signature.checkSignatureValue(extractedCert)) {
+							break;
 						}
 					}
+				}
+				if (fingerprintMatches == false) {
+					LOGGER.warn("Fingerprint of the certificate used in the document does not match any registered fingerprints");
 				}
 			}
 		} catch (Exception e) {
