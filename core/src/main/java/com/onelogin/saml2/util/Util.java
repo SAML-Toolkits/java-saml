@@ -1531,10 +1531,26 @@ public final class Util {
 	/**
 	 * Generates a unique string (used for example as ID of assertions)
 	 *
+	 * @param prefix
+	 *          Prefix for the Unique ID.
+	 *          Use property <code>onelogin.saml2.unique_id_prefix</code> to set this.
+	 *
+	 * @return A unique string
+	 */
+	public static String generateUniqueID(String prefix) {
+		if (prefix == null || StringUtils.isEmpty(prefix)) {
+			prefix = Util.UNIQUE_ID_PREFIX;
+		}
+		return prefix + UUID.randomUUID();
+	}
+
+	/**
+	 * Generates a unique string (used for example as ID of assertions)
+	 *
 	 * @return A unique string
 	 */
 	public static String generateUniqueID() {
-		return UNIQUE_ID_PREFIX + UUID.randomUUID();
+		return generateUniqueID(null);
 	}
 
 	/**

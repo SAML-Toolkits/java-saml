@@ -139,7 +139,7 @@ public class Metadata {
 		Map<String, String> valueMap = new HashMap<String, String>();
 		Boolean wantsEncrypted = settings.getWantAssertionsEncrypted() || settings.getWantNameIdEncrypted(); 
 		
-		valueMap.put("id", Util.generateUniqueID());
+		valueMap.put("id", Util.generateUniqueID(settings.getUniqueIDPrefix()));
 		valueMap.put("validUntilTime", Util.formatDateTime(validUntilTime.getTimeInMillis()));
 		valueMap.put("cacheDuration", String.valueOf(cacheDuration));
 		valueMap.put("spEntityId", settings.getSpEntityId());

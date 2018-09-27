@@ -166,6 +166,8 @@ public class SettingBuilderTest {
 
 		assertNull(setting.getOrganization());
 		assertTrue(setting.getContacts().isEmpty());
+
+		assertEquals("ONELOGIN_", setting.getUniqueIDPrefix());
 	}
 
 	/**
@@ -235,6 +237,8 @@ public class SettingBuilderTest {
 		assertEquals("support", c2.getContactType());
 		assertEquals("support@example.com", c2.getEmailAddress());
 		assertEquals("Support Guy", c2.getGivenName());
+
+		assertEquals("EXAMPLE", setting.getUniqueIDPrefix());
 	}
 
 	/**
@@ -523,6 +527,21 @@ public class SettingBuilderTest {
 	}
 
 	/**
+	 * Tests SettingsBuilder fromFile method
+	 * Case: min settings with minimal Unique ID config file
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.settings.SettingsBuilder#fromFile
+	 */
+	@Test
+	public void testLoadFromFileMinUniqueIDProp() throws Exception {
+		Saml2Settings setting = new SettingsBuilder().fromFile("config/config.min_uniqueid.properties").build();
+
+		assertEquals("_", setting.getUniqueIDPrefix());
+	}
+
+	/**
 	 * Tests SettingsBuilder fromProperties method
 	 *
 	 * @throws Error
@@ -586,6 +605,8 @@ public class SettingBuilderTest {
 
 		assertNull(setting2.getOrganization());
 		assertTrue(setting2.getContacts().isEmpty());
+
+		assertEquals("ONELOGIN_", setting2.getUniqueIDPrefix());
 	}
 	
 	/**
@@ -654,6 +675,8 @@ public class SettingBuilderTest {
 		samlData.put(CONTACT_TECHNICAL_EMAIL_ADDRESS, "technical@example.org");
 		samlData.put(CONTACT_SUPPORT_GIVEN_NAME, "Support Guy");
 		samlData.put(CONTACT_SUPPORT_EMAIL_ADDRESS, "support@example.org");
+
+		samlData.put(UNIQUE_ID_PREFIX_PROPERTY_KEY, "_");
 		
 		Saml2Settings setting = new SettingsBuilder().fromValues(samlData).build();
 		
@@ -717,6 +740,8 @@ public class SettingBuilderTest {
 		assertEquals("support", c2.getContactType());
 		assertEquals("support@example.org", c2.getEmailAddress());
 		assertEquals("Support Guy", c2.getGivenName());
+
+		assertEquals("_", setting.getUniqueIDPrefix());
 	}
 	
 	/**
@@ -840,6 +865,8 @@ public class SettingBuilderTest {
 		assertEquals("support", c2.getContactType());
 		assertEquals("support@example.org", c2.getEmailAddress());
 		assertEquals("Support Guy", c2.getGivenName());
+
+		assertEquals("ONELOGIN_", setting.getUniqueIDPrefix());
 	}
 	
 	/**

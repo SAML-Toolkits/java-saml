@@ -73,6 +73,7 @@ public class Saml2Settings {
 	private String signatureAlgorithm = Constants.RSA_SHA1;
 	private String digestAlgorithm = Constants.SHA1;
 	private boolean rejectUnsolicitedResponsesWithInResponseTo = false;
+	private String uniqueIDPrefix = null;
 
 	// Compress
 	private boolean compressRequest = true;
@@ -341,6 +342,13 @@ public class Saml2Settings {
 	}
 
 	/**
+	 * @return Unique ID prefix
+	 */
+	public String getUniqueIDPrefix() {
+		return this.uniqueIDPrefix;
+	}
+
+	/**
 	 * @return if the debug is active or not
 	 */
 	public boolean isDebugActive() {
@@ -445,6 +453,16 @@ public class Saml2Settings {
 	 */
 	protected final void setSpPrivateKey(PrivateKey spPrivateKey) {
 		this.spPrivateKey = spPrivateKey;
+	}
+
+	/**
+	 * Set the uniqueIDPrefix setting value
+	 *
+	 * @param uniqueIDPrefix
+	 *            the Unique ID prefix used when generating Unique ID
+	 */
+	protected final void setUniqueIDPrefix(String uniqueIDPrefix) {
+		this.uniqueIDPrefix = uniqueIDPrefix;
 	}
 
 	/**
