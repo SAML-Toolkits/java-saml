@@ -453,7 +453,7 @@ if (!errors.isEmpty()) {
     String nameIdFormat = auth.getNameIdFormat();
     String sessionIndex = auth.getSessionIndex();
     String nameidNameQualifier = auth.getNameIdNameQualifier();
-    String nameidSPNameQualifier = auth.getNameIdNameQualifier();
+    String nameidSPNameQualifier = auth.getNameIdSPNameQualifier();
 
     session.setAttribute("attributes", attributes);
     session.setAttribute("nameId", nameId);
