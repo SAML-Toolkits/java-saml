@@ -280,31 +280,33 @@ public class SamlResponse {
 				}
 			}
 
-			if (signedElements.isEmpty() || (!hasSignedAssertion && !hasSignedResponse)) {
-				throw new ValidationError("No Signature found. SAML Response rejected", ValidationError.NO_SIGNATURE_FOUND);
-			} else {
-				X509Certificate cert = settings.getIdpx509cert();
-				List<X509Certificate> certList = new ArrayList<>();
-				List<X509Certificate> multipleCertList = settings.getIdpx509certMulti();
+			if(settings.getVerifyResponseSignature()) {
+				if (signedElements.isEmpty() || (!hasSignedAssertion && !hasSignedResponse)) {
+					throw new ValidationError("No Signature found. SAML Response rejected", ValidationError.NO_SIGNATURE_FOUND);
+				} else {
+					X509Certificate cert = settings.getIdpx509cert();
+					List<X509Certificate> certList = new ArrayList<>();
+					List<X509Certificate> multipleCertList = settings.getIdpx509certMulti();
 
-				if (multipleCertList != null && !multipleCertList.isEmpty()) {
-					certList.addAll(multipleCertList);
-				}
+					if (multipleCertList != null && !multipleCertList.isEmpty()) {
+						certList.addAll(multipleCertList);
+					}
 
-				if (cert != null && !certList.contains(cert)) {
-					certList.add(0, cert);
-				}
+					if (cert != null && !certList.contains(cert)) {
+						certList.add(0, cert);
+					}
 
-				String fingerprint = settings.getIdpCertFingerprint();
-				String alg = settings.getIdpCertFingerprintAlgorithm();
+					String fingerprint = settings.getIdpCertFingerprint();
+					String alg = settings.getIdpCertFingerprintAlgorithm();
 
-				if (hasSignedResponse && !Util.validateSign(samlResponseDocument, certList, fingerprint, alg, Util.RESPONSE_SIGNATURE_XPATH)) {
-					throw new ValidationError("Signature validation failed. SAML Response rejected", ValidationError.INVALID_SIGNATURE);
-				}
+					if (hasSignedResponse && !Util.validateSign(samlResponseDocument, certList, fingerprint, alg, Util.RESPONSE_SIGNATURE_XPATH)) {
+						throw new ValidationError("Signature validation failed. SAML Response rejected", ValidationError.INVALID_SIGNATURE);
+					}
 
-				final Document documentToCheckAssertion = encrypted ? decryptedDocument : samlResponseDocument;
-				if (hasSignedAssertion && !Util.validateSign(documentToCheckAssertion, certList, fingerprint, alg, Util.ASSERTION_SIGNATURE_XPATH)) {
-					throw new ValidationError("Signature validation failed. SAML Response rejected", ValidationError.INVALID_SIGNATURE);
+					final Document documentToCheckAssertion = encrypted ? decryptedDocument : samlResponseDocument;
+					if (hasSignedAssertion && !Util.validateSign(documentToCheckAssertion, certList, fingerprint, alg, Util.ASSERTION_SIGNATURE_XPATH)) {
+						throw new ValidationError("Signature validation failed. SAML Response rejected", ValidationError.INVALID_SIGNATURE);
+					}
 				}
 			}
 
