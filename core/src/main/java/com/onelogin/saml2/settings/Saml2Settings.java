@@ -74,6 +74,7 @@ public class Saml2Settings {
 	private String digestAlgorithm = Constants.SHA1;
 	private boolean rejectUnsolicitedResponsesWithInResponseTo = false;
 	private String uniqueIDPrefix = null;
+	private boolean verifyResponseSignature = true;
 
 	// Compress
 	private boolean compressRequest = true;
@@ -791,6 +792,14 @@ public class Saml2Settings {
 	 */
 	protected final void setOrganization(Organization organization) {
 		this.organization = organization;
+	}
+
+	public boolean getVerifyResponseSignature() {
+		return verifyResponseSignature;
+	}
+
+	public void setVerifyResponseSignature(boolean val) {
+		this.verifyResponseSignature = val;
 	}
 
 	/**

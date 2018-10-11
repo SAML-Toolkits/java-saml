@@ -88,6 +88,7 @@ public class SettingsBuilder {
 	public final static String SECURITY_WANT_XML_VALIDATION = "onelogin.saml2.security.want_xml_validation";
 	public final static String SECURITY_SIGNATURE_ALGORITHM = "onelogin.saml2.security.signature_algorithm";
 	public final static String SECURITY_REJECT_UNSOLICITED_RESPONSES_WITH_INRESPONSETO = "onelogin.saml2.security.reject_unsolicited_responses_with_inresponseto";
+	public final static String SECURITY_VERIFY_RESPONSE_SIGNATURE = "onelogin.saml2.security.verify_response_signature";
 
 	// Compress
 	public final static String COMPRESS_REQUEST = "onelogin.saml2.compress.request";
@@ -322,6 +323,10 @@ public class SettingsBuilder {
 		if (rejectUnsolicitedResponsesWithInResponseTo != null) {
 			saml2Setting.setRejectUnsolicitedResponsesWithInResponseTo(rejectUnsolicitedResponsesWithInResponseTo);
 		}
+
+		Boolean verifyRespSignature = loadBooleanProperty(SECURITY_VERIFY_RESPONSE_SIGNATURE);
+		if (verifyRespSignature != null)
+			saml2Setting.setVerifyResponseSignature(verifyRespSignature);
 	}
 
 	/**
