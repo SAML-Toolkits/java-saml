@@ -40,7 +40,7 @@ public class LogoutResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		final String logoutResponseString = Util.getFileAsString("data/logout_responses/logout_response.xml");
 		final String requestURL = "/";
-		HttpRequest httpRequest = new HttpRequest(requestURL);
+		HttpRequest httpRequest = new HttpRequest(requestURL, (String)null);
 
 		LogoutResponse logoutResponseBuilder = new LogoutResponse(settings, httpRequest) {
 			@Override
@@ -136,7 +136,7 @@ public class LogoutResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
 		final String requestURL = "/";
-		HttpRequest httpRequest = new HttpRequest(requestURL);
+		HttpRequest httpRequest = new HttpRequest(requestURL, (String)null);
 
 		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertFalse(logoutResponse.isValid());
@@ -256,7 +256,7 @@ public class LogoutResponseTest {
 		assertFalse(logoutResponse.isValid());
 		assertEquals("SAML Logout Response is not loaded", logoutResponse.getError());
 
-		httpRequest = new HttpRequest(requestURL);
+		httpRequest = new HttpRequest(requestURL, (String)null);
 		logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertFalse(logoutResponse.isValid());
 		assertEquals("SAML Logout Response is not loaded", logoutResponse.getError());		
@@ -499,7 +499,7 @@ public class LogoutResponseTest {
 		String sigAlg = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
 		String signature = "vfWbbc47PkP3ejx4bjKsRX7lo9Ml1WRoE5J5owF/0mnyKHfSY6XbhO1wwjBV5vWdrUVX+xp6slHyAf4YoAsXFS0qhan6txDiZY4Oec6yE+l10iZbzvie06I4GPak4QrQ4gAyXOSzwCrRmJu4gnpeUxZ6IqKtdrKfAYRAcVfNKGA=";
 
-		HttpRequest httpRequest = new HttpRequest(requestURL)
+		HttpRequest httpRequest = new HttpRequest(requestURL, (String)null)
 				.addParameter("SAMLResponse", samlResponseEncoded)
 				.addParameter("RelayState", relayState)
 				.addParameter("SigAlg", sigAlg)
@@ -593,6 +593,6 @@ public class LogoutResponseTest {
 	}
 
 	private static HttpRequest newHttpRequest(String requestURL, String samlResponseEncoded) {
-		return new HttpRequest(requestURL).addParameter("SAMLResponse", samlResponseEncoded);
+		return new HttpRequest(requestURL, (String)null).addParameter("SAMLResponse", samlResponseEncoded);
 	}
 }

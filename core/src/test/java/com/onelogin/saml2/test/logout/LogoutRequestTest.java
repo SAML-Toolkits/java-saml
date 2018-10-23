@@ -721,7 +721,7 @@ public class LogoutRequestTest {
 		String sigAlg = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
 		String signature = "XCwCyI5cs7WhiJlB5ktSlWxSBxv+6q2xT3c8L7dLV6NQG9LHWhN7gf8qNsahSXfCzA0Ey9dp5BQ0EdRvAk2DIzKmJY6e3hvAIEp1zglHNjzkgcQmZCcrkK9Czi2Y1WkjOwR/WgUTUWsGJAVqVvlRZuS3zk3nxMrLH6f7toyvuJc=";
 
-		HttpRequest httpRequest = new HttpRequest(requestURL)
+		HttpRequest httpRequest = new HttpRequest(requestURL, (String)null)
 						.addParameter("SAMLRequest", samlRequestEncoded)
 						.addParameter("RelayState", relayState)
 						.addParameter("SigAlg", sigAlg)
@@ -839,6 +839,6 @@ public class LogoutRequestTest {
 	}
 
 	private static HttpRequest newHttpRequest(String requestURL, String samlRequestEncoded) {
-		return new HttpRequest(requestURL).addParameter("SAMLRequest", samlRequestEncoded);
+		return new HttpRequest(requestURL, (String)null).addParameter("SAMLRequest", samlRequestEncoded);
 	}
 }
