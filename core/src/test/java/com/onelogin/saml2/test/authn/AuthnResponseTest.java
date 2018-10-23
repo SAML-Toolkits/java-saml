@@ -2869,7 +2869,7 @@ public class AuthnResponseTest {
 	}
 
 	private static HttpRequest newHttpRequest(String requestURL, String samlResponseEncoded) {
-		return new HttpRequest(requestURL).addParameter("SAMLResponse", samlResponseEncoded);
+		return new HttpRequest(requestURL, (String)null).addParameter("SAMLResponse", samlResponseEncoded);
 	}
 }
 
