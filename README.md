@@ -276,8 +276,8 @@ onelogin.saml2.idp.x509cert =
 # onelogin.saml2.idp.certfingerprint = 
 # onelogin.saml2.idp.certfingerprint_algorithm = sha1
 
-
-## Security settings ##
+# Security settings
+#
 
 # Indicates that the nameID of the <samlp:logoutRequest> sent by this SP
 # will be encrypted.
@@ -295,23 +295,23 @@ onelogin.saml2.security.logoutrequest_signed = false
 # will be signed.
 onelogin.saml2.security.logoutresponse_signed = false
 
-# Sign the Metadata
-# Empty means no signature, or comma separate the keyFileName and the certFileName
-onelogin.saml2.security.want_messages_signed = 
-
 # Indicates a requirement for the <samlp:Response>, <samlp:LogoutRequest> and
 # <samlp:LogoutResponse> elements received by this SP to be signed.
+onelogin.saml2.security.want_messages_signed = false
+
+# Indicates a requirement for the <saml:Assertion> elements received by this SP to be signed.
 onelogin.saml2.security.want_assertions_signed = false
 
 # Indicates a requirement for the Metadata of this SP to be signed.
 # Right now supported null (in order to not sign) or true (sign using SP private key) 
-onelogin.saml2.security.sign_metadata = 
+onelogin.saml2.security.sign_metadata =
 
 # Indicates a requirement for the Assertions received by this SP to be encrypted
 onelogin.saml2.security.want_assertions_encrypted = false
 
 # Indicates a requirement for the NameID received by this SP to be encrypted
 onelogin.saml2.security.want_nameid_encrypted = false
+
 
 # Authentication context.
 # Set Empty and no AuthContext will be sent in the AuthNRequest,
