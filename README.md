@@ -319,7 +319,7 @@ onelogin.saml2.security.want_nameid_encrypted = false
 onelogin.saml2.security.requested_authncontext = urn:oasis:names:tc:SAML:2.0:ac:classes:urn:oasis:names:tc:SAML:2.0:ac:classes:Password
 
 # Allows the authn comparison parameter to be set, defaults to 'exact'
-onelogin.saml2.security.onelogin.saml2.security.requested_authncontextcomparison = exact
+onelogin.saml2.security.requested_authncontextcomparison = exact
 
 # Indicates if the SP will validate all received xmls.
 # (In order to validate the xml, 'strict' and 'wantXMLValidation' must be true).
