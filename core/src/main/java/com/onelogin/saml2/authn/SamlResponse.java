@@ -241,7 +241,7 @@ public class SamlResponse {
 				// EncryptedAttributes are not supported
 				NodeList encryptedAttributeNodes = this.queryAssertion("/saml:AttributeStatement/saml:EncryptedAttribute");
 				if (encryptedAttributeNodes.getLength() > 0) {
-					throw new ValidationError("There is an EncryptedAttribute in the Response and this SP not support them", ValidationError.ENCRYPTED_ATTRIBUTES);
+					throw new ValidationError("There is an EncryptedAttribute in the Response and this SP does not support them", ValidationError.ENCRYPTED_ATTRIBUTES);
 				}
 
 				// Check destination
