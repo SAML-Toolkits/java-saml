@@ -1449,7 +1449,7 @@ public class AuthnResponseTest {
 		settings.setStrict(true);
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
-		assertEquals("There is an EncryptedAttribute in the Response and this SP not support them", samlResponse.getError());
+		assertEquals("There is an EncryptedAttribute in the Response and this SP does not support them", samlResponse.getError());
 	}
 
 	/**
