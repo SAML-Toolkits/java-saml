@@ -1144,7 +1144,7 @@ public class SamlResponse {
 			if (destinationUrl != null) {
 				if (destinationUrl.isEmpty()) {
 					throw new ValidationError("The response has an empty Destination value", ValidationError.EMPTY_DESTINATION);
-				} else if (!destinationUrl.equals(currentUrl)) {
+				} else if (!destinationUrl.startsWith(currentUrl)) {
 					throw new ValidationError("The response was received at " + currentUrl + " instead of " + destinationUrl, ValidationError.WRONG_DESTINATION);
 				}
 			}
