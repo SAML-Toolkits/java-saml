@@ -29,6 +29,7 @@ import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.logout.LogoutRequest;
 import com.onelogin.saml2.logout.LogoutResponse;
+import com.onelogin.saml2.model.SamlResponseStatus;
 import com.onelogin.saml2.servlet.ServletUtils;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
@@ -655,6 +656,13 @@ public class Auth {
 				LOGGER.error("processResponse error. invalid_response");
 				LOGGER.debug(" --> " + samlResponseParameter);
 				errorReason = samlResponse.getError();
+				SamlResponseStatus samlResponseStatus = samlResponse.getResponseStatus();
+				if (samlResponseStatus.getStatusCode() != null) {
+					errors.add(samlResponseStatus.getStatusCode());
+				}
+				if (samlResponseStatus.getSubStatusCode() != null) {
+					errors.add(samlResponseStatus.getSubStatusCode());
+				}
 			}
 		} else {
 			errors.add("invalid_binding");
