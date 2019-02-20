@@ -742,6 +742,7 @@ public class AuthTest {
 		assertFalse(auth.getErrors().isEmpty());
 		List<String> expectedErrors = new ArrayList<String>();
 		expectedErrors.add("invalid_response");
+		expectedErrors.add("urn:oasis:names:tc:SAML:2.0:status:Success");
 		assertEquals(expectedErrors, auth.getErrors());
 		assertEquals("SAML Response must contain 1 Assertion.", auth.getLastErrorReason());
 
@@ -755,6 +756,7 @@ public class AuthTest {
 		assertFalse(auth2.getErrors().isEmpty());
 		expectedErrors = new ArrayList<String>();
 		expectedErrors.add("invalid_response");
+		expectedErrors.add("urn:oasis:names:tc:SAML:2.0:status:Success");
 		assertEquals(expectedErrors, auth2.getErrors());
 		assertThat(auth2.getLastErrorReason(), containsString("Invalid issuer in the Assertion/Response"));
 
