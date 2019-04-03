@@ -393,11 +393,12 @@ We can set a 'returnTo' url parameter to the login function and that will be con
 String targetUrl = 'https://example.com';
 auth.login(returnTo=targetUrl)
 ```
-The login method can receive 4 more optional parameters:
+The login method can receive 5 more optional parameters:
 - *forceAuthn* When true the AuthNRequest will have the 'ForceAuthn' attribute set to 'true'
 - *isPassive* When true the AuthNRequest will have the 'Ispassive' attribute set to 'true'
 - *setNameIdPolicy* When true the AuthNRequest will set a nameIdPolicy element.
 - *stay* Set to true to stay (returns the url string), otherwise set to false to execute a redirection to that url (IdP SSO URL)
+- *nameIdValueReq* Indicates to the IdP the subject that should be authenticated
 
 By default, the login method initiates a redirect to the SAML Identity Provider. You can use the *stay* parameter, to prevent that, and execute the redirection manually. We need to use that if a match on the future SAMLResponse ID and the AuthNRequest ID to be sent is required.  That AuthNRequest ID must be extracted and stored for future validation, so we can't execute the redirection on the login.  Instead, set *stay* to true, then get that ID by
 ```

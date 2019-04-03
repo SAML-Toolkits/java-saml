@@ -57,6 +57,10 @@ public class AuthnRequest {
 	 */
 	private final boolean setNameIdPolicy;
 
+	/**
+	 * Indicates to the IdP the subject that should be authenticated
+	 */
+	private final String nameIdValueReq;
 	
 	/**
 	 * Time stamp that indicates when the AuthNRequest was created
@@ -84,18 +88,37 @@ public class AuthnRequest {
 	 *            When true the AuthNReuqest will set the IsPassive='true'
 	 * @param setNameIdPolicy
 	 *            When true the AuthNReuqest will set a nameIdPolicy
+	 * @param nameIdValueReq
+	 *            Indicates to the IdP the subject that should be authenticated
 	 */
-	public AuthnRequest(Saml2Settings settings, boolean forceAuthn, boolean isPassive, boolean setNameIdPolicy) {
+	public AuthnRequest(Saml2Settings settings, boolean forceAuthn, boolean isPassive, boolean setNameIdPolicy, String nameIdValueReq) {
 		this.id = Util.generateUniqueID(settings.getUniqueIDPrefix());
 		issueInstant = Calendar.getInstance();
 		this.isPassive = isPassive;
 		this.settings = settings;
 		this.forceAuthn = forceAuthn;
 		this.setNameIdPolicy = setNameIdPolicy;
+		this.nameIdValueReq = nameIdValueReq;
 
 		StrSubstitutor substitutor = generateSubstitutor(settings);
 		authnRequestString = substitutor.replace(getAuthnRequestTemplate());
 		LOGGER.debug("AuthNRequest --> " + authnRequestString);
+	}
+
+	/**
+	 * Constructs the AuthnRequest object.
+	 *
+	 * @param settings
+	 *            OneLogin_Saml2_Settings
+	 * @param forceAuthn
+	 *            When true the AuthNReuqest will set the ForceAuthn='true'
+	 * @param isPassive
+	 *            When true the AuthNReuqest will set the IsPassive='true'
+	 * @param setNameIdPolicy
+	 *            When true the AuthNReuqest will set a nameIdPolicy
+	 */
+	public AuthnRequest(Saml2Settings settings, boolean forceAuthn, boolean isPassive, boolean setNameIdPolicy) {
+		this(settings, forceAuthn, isPassive, setNameIdPolicy, null);
 	}
 
 	/**
@@ -167,6 +190,16 @@ public class AuthnRequest {
 		}
 		valueMap.put("destinationStr", destinationStr);
 
+		String subjectStr = "";
+		if (nameIdValueReq != null && !nameIdValueReq.isEmpty()) {
+			String nameIDFormat = settings.getSpNameIDFormat();
+			subjectStr = "<saml:Subject>";
+			subjectStr += "<saml:NameID Format=\"" + nameIDFormat + "\">" + nameIdValueReq + "</saml:NameID>";
+			subjectStr += "<saml:SubjectConfirmation Method=\"urn:oasis:names:tc:SAML:2.0:cm:bearer\"></saml:SubjectConfirmation>";
+			subjectStr += "</saml:Subject>";
+        }
+        valueMap.put("subjectStr", subjectStr);
+
 		String nameIDPolicyStr = "";
 		if (setNameIdPolicy) {
 			String nameIDPolicyFormat = settings.getSpNameIDFormat();
@@ -216,7 +249,7 @@ public class AuthnRequest {
 		StringBuilder template = new StringBuilder();
 		template.append("<samlp:AuthnRequest xmlns:samlp=\"urn:oasis:names:tc:SAML:2.0:protocol\" xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\" ID=\"${id}\" Version=\"2.0\" IssueInstant=\"${issueInstant}\"${providerStr}${forceAuthnStr}${isPassiveStr}${destinationStr} ProtocolBinding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST\" AssertionConsumerServiceURL=\"${assertionConsumerServiceURL}\">");
 		template.append("<saml:Issuer>${spEntityid}</saml:Issuer>");
-		template.append("${nameIDPolicyStr}${requestedAuthnContextStr}</samlp:AuthnRequest>");
+		template.append("${subjectStr}${nameIDPolicyStr}${requestedAuthnContextStr}</samlp:AuthnRequest>");
 		return template;
 	}
 

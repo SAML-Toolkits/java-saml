@@ -19,7 +19,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +53,20 @@ public class AuthTest {
 
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
+
+	private String getSAMLRequestFromURL(String url) throws URISyntaxException, UnsupportedEncodingException {
+		String xml = "";
+		URI uri = new URI(url);
+		String query = uri.getQuery();
+		String[] pairs = query.split("&");
+		for (String pair : pairs) {
+	        int idx = pair.indexOf("=");
+	        if (pair.substring(0, idx).equals("SAMLRequest")) {
+	        	xml = Util.base64decodedInflated(pair.substring(idx + 1));
+	        }
+	    }
+		return xml;
+	}
 
 	/**
 	 * Tests the constructor of Auth
@@ -1161,7 +1178,56 @@ public class AuthTest {
 		assertThat(target, startsWith("https://pitbulk.no-ip.org/simplesaml/saml2/idp/SSOService.php?SAMLRequest="));
 		assertThat(target, containsString("&RelayState=http%3A%2F%2Flocalhost%3A8080%2Fexpected.jsp"));		
 	}
-	
+
+	/**
+	 * Tests the login method of Auth
+	 * Case: Login with Subject enabled
+	 *
+	 * @throws SettingsException
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 * @throws Error
+	 *
+	 * @see com.onelogin.saml2.Auth#login
+	 */
+	@Test
+	public void testLoginSubject() throws IOException, SettingsException, URISyntaxException, Error {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		when(request.getScheme()).thenReturn("http");
+		when(request.getServerPort()).thenReturn(8080);
+		when(request.getServerName()).thenReturn("localhost");
+		when(request.getRequestURI()).thenReturn("/initial.jsp");
+
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+
+		Auth auth = new Auth(settings, request, response);
+		String target = auth.login("", false, false, false, true);
+		assertThat(target, startsWith("http://idp.example.com/simplesaml/saml2/idp/SSOService.php?SAMLRequest="));
+		String authNRequestStr = getSAMLRequestFromURL(target);
+		assertThat(authNRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authNRequestStr, not(containsString("<saml:Subject")));
+
+		target = auth.login("", false, false, false, true, "testuser@example.com");
+		assertThat(target, startsWith("http://idp.example.com/simplesaml/saml2/idp/SSOService.php?SAMLRequest="));
+		authNRequestStr = getSAMLRequestFromURL(target);
+		assertThat(authNRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authNRequestStr, containsString("<saml:Subject"));
+		assertThat(authNRequestStr, containsString("Format=\"urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified\">testuser@example.com</saml:NameID>"));
+		assertThat(authNRequestStr, containsString("<saml:SubjectConfirmation Method=\"urn:oasis:names:tc:SAML:2.0:cm:bearer\">"));
+
+		settings = new SettingsBuilder().fromFile("config/config.emailaddressformat.properties").build();
+		auth = new Auth(settings, request, response);
+		target = auth.login("", false, false, false, true, "testuser@example.com");
+		assertThat(target, startsWith("http://idp.example.com/simplesaml/saml2/idp/SSOService.php?SAMLRequest="));
+		authNRequestStr = getSAMLRequestFromURL(target);
+		assertThat(authNRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authNRequestStr, containsString("<saml:Subject"));
+		assertThat(authNRequestStr, containsString("Format=\"urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress\">testuser@example.com</saml:NameID>"));
+		assertThat(authNRequestStr, containsString("<saml:SubjectConfirmation Method=\"urn:oasis:names:tc:SAML:2.0:cm:bearer\">"));
+
+	}
+
 	/**
 	 * Tests the login method of Auth
 	 * Case: Signed Login but no sp key
