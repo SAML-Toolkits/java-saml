@@ -39,11 +39,11 @@ public class Saml2SettingsTest {
 	public void testIsStrict() {
 		Saml2Settings settings = new Saml2Settings();
 		
-		assertFalse(settings.isStrict());
-		settings.setStrict(true);
 		assertTrue(settings.isStrict());
 		settings.setStrict(false);
 		assertFalse(settings.isStrict());
+		settings.setStrict(true);
+		assertTrue(settings.isStrict());
 	}
 
 	/**

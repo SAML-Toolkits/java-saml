@@ -364,6 +364,7 @@ public class AuthnResponseTest {
 	@Test
 	public void testGetNameIdEmptyNameIDValue() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		settings.setStrict(false);
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/empty_nameid.xml.base64");
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		String nameId = samlResponse.getNameId();
@@ -499,6 +500,7 @@ public class AuthnResponseTest {
 	@Test
 	public void testGetNameIdDataEmptyNameIDValue() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		settings.setStrict(false);
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/empty_nameid.xml.base64");
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		Map<String, String> nameIdData = samlResponse.getNameIdData();
@@ -2140,6 +2142,7 @@ public class AuthnResponseTest {
 	@Test
 	public void testIsInValidCert() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.invalididpcertstring.properties").build();
+		settings.setStrict(false);
 		String samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());

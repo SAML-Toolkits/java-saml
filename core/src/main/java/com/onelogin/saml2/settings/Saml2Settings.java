@@ -31,7 +31,7 @@ public class Saml2Settings {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Saml2Settings.class);
 
 	// Toolkit settings
-	private boolean strict = false;
+	private boolean strict = true;
 	private boolean debug = false;
 	
 	// SP
