@@ -3,7 +3,7 @@
 
 	<groupId>com.onelogin</groupId>
 	<artifactId>java-saml-toolkit</artifactId>
-	<version>2.5.0</version>
+	<version>2.5.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>OneLogin java-saml Toolkit Project</name>
@@ -156,7 +156,7 @@
 		<connection>scm:git:git@github.com:onelogin/java-saml.git</connection>
 		<developerConnection>scm:git:git@github.com:onelogin/java-saml.git</developerConnection>
 		<url>https://github.com/onelogin/java-saml</url>
-		<tag>v2.5.0</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<licenses>
