@@ -5,7 +5,7 @@
 Add SAML support to your Java applications using this library.
 Forget those complicated libraries and use that open source library provided and supported by OneLogin Inc.
 
-Version < 2.5.0 uses an old version of xmlsec library (<2.1.4 which has a security vulnerability [CVE-2019-12400](https://snyk.io/vuln/SNYK-JAVA-ORGAPACHESANTUARIO-460281))
+Version < 2.5.0 uses an old version of xmlsec library (<2.1.4 which has a security vulnerability [CVE-2019-12400](https://snyk.io/vuln/SNYK-JAVA-ORGAPACHESANTUARIO-460281)). We recommend to use a version >= 2.5.0.
 
 Version 2.4.1 sets the 'strict' setting parameter to true.
 
