@@ -5,6 +5,10 @@
 Add SAML support to your Java applications using this library.
 Forget those complicated libraries and use that open source library provided and supported by OneLogin Inc.
 
+Version < 2.5.0 uses an old version of xmlsec library (<2.1.4 which has a security vulnerability [CVE-2019-12400](https://snyk.io/vuln/SNYK-JAVA-ORGAPACHESANTUARIO-460281))
+
+Version 2.4.1 sets the 'strict' setting parameter to true.
+
 Version 2.X.X, compatible with java7 / java8.
 
 We [introduced some incompatibilities](https://github.com/onelogin/java-saml/issues/90), that could be fixed and make it compatible with java6.
@@ -188,7 +192,7 @@ Here are the list of properties to be defined on the settings file:
 #  If 'strict' is True, then the Java Toolkit will reject unsigned
 #  or unencrypted messages if it expects them signed or encrypted
 #  Also will reject the messages if not strictly follow the SAML
-onelogin.saml2.strict =  false
+onelogin.saml2.strict =  true
 
 # Enable debug mode (to print errors)
 onelogin.saml2.debug =  false

@@ -76,7 +76,7 @@ public class SettingBuilderTest {
 		Saml2Settings setting = new SettingsBuilder().fromFile("config/config.empty.properties").build();
 
 		assertFalse(setting.isDebugActive());
-		assertFalse(setting.isStrict());
+		assertTrue(setting.isStrict());
 
 		assertTrue(setting.getSpEntityId().isEmpty());
 		assertNull(setting.getSpAssertionConsumerServiceUrl());
@@ -130,7 +130,7 @@ public class SettingBuilderTest {
 		Saml2Settings setting = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
 		assertFalse(setting.isDebugActive());
-		assertFalse(setting.isStrict());
+		assertTrue(setting.isStrict());
 
 		assertEquals("http://localhost:8080/java-saml-jspsample/metadata.jsp", setting.getSpEntityId());
 		assertEquals("http://localhost:8080/java-saml-jspsample/acs.jsp", setting.getSpAssertionConsumerServiceUrl().toString());
@@ -569,7 +569,7 @@ public class SettingBuilderTest {
 		Saml2Settings setting2 = new SettingsBuilder().fromProperties(prop).build();
 
 		assertFalse(setting2.isDebugActive());
-		assertFalse(setting2.isStrict());
+		assertTrue(setting2.isStrict());
 
 		assertEquals("http://localhost:8080/java-saml-jspsample/metadata.jsp", setting2.getSpEntityId());
 		assertEquals("http://localhost:8080/java-saml-jspsample/acs.jsp", setting2.getSpAssertionConsumerServiceUrl().toString());
