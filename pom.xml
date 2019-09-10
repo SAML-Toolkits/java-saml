@@ -98,7 +98,6 @@
 				<artifactId>dependency-check-maven</artifactId>
 				<version>5.2.1</version>
 				<configuration>
-					<failBuildOnCVSS>7</failBuildOnCVSS>
 					<suppressionFiles>
 						<suppressionFile>.nvd-suppressions.xml</suppressionFile>
 					</suppressionFiles>
