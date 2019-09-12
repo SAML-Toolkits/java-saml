@@ -297,7 +297,12 @@ public class Saml2SettingsTest {
 		assertThat(metadataStr, containsString("entityID=\"http://localhost:8080/java-saml-jspsample/metadata.jsp\""));
 		assertThat(metadataStr, containsString("AuthnRequestsSigned=\"true\""));
 		assertThat(metadataStr, containsString("WantAssertionsSigned=\"true\""));
-		assertThat(metadataStr, containsString("<md:KeyDescriptor use=\"signing\">"));
+
+		String keyDescriptorSigningText = "<md:KeyDescriptor use=\"signing\">";
+		int keyDescriptorSignStrCount = metadataStr.split(keyDescriptorSigningText).length - 1;
+		assertThat(metadataStr, containsString(keyDescriptorSigningText));
+		assertEquals(2, keyDescriptorSignStrCount);
+
 		assertThat(metadataStr, containsString("<md:AssertionConsumerService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST\" Location=\"http://localhost:8080/java-saml-jspsample/acs.jsp\" index=\"1\">"));
 		assertThat(metadataStr, containsString("<md:SingleLogoutService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect\" Location=\"http://localhost:8080/java-saml-jspsample/sls.jsp\">")); 
 		assertThat(metadataStr, containsString("<md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</md:NameIDFormat>"));
