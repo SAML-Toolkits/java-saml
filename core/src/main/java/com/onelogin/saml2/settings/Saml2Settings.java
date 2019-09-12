@@ -42,6 +42,7 @@ public class Saml2Settings {
 	private String spSingleLogoutServiceBinding = Constants.BINDING_HTTP_REDIRECT;
 	private String spNameIDFormat = Constants.NAMEID_UNSPECIFIED;
 	private X509Certificate spX509cert = null;
+	private X509Certificate spX509certNew = null;
 	private PrivateKey spPrivateKey = null;
 
 	// IdP
@@ -139,6 +140,13 @@ public class Saml2Settings {
 	 */
 	public final X509Certificate getSPcert() {
 		return spX509cert;
+	}
+
+	/**
+	 * @return the spX509certNew setting value
+	 */
+	public final X509Certificate getSPcertNew() {
+		return spX509certNew;
 	}
 
 	/**
@@ -443,6 +451,16 @@ public class Saml2Settings {
 	 */
 	protected final void setSpX509cert(X509Certificate spX509cert) {
 		this.spX509cert = spX509cert;
+	}
+
+	/**
+	 * Set the spX509certNew setting value provided as X509Certificate object
+	 *
+	 * @param spX509certNew
+	 *            the spX509certNew value to be set in X509Certificate format
+	 */
+	protected final void setSpX509certNew(X509Certificate spX509certNew) {
+		this.spX509certNew = spX509certNew;
 	}
 
 	/**

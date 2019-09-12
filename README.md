@@ -233,6 +233,9 @@ onelogin.saml2.sp.nameidformat = urn:oasis:names:tc:SAML:1.1:nameid-format:unspe
 
 onelogin.saml2.sp.x509cert =
 
+# Future SP certificate, to be used during SP Key roll over
+onelogin.saml2.sp.x509certNew =
+
 # Requires Format PKCS#8   BEGIN PRIVATE KEY       
 # If you have     PKCS#1   BEGIN RSA PRIVATE KEY  convert it by   openssl pkcs8 -topk8 -inform pem -nocrypt -in sp.rsa_key -outform pem -out sp.pem
 onelogin.saml2.sp.privatekey =

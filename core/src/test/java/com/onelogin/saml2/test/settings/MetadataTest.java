@@ -248,8 +248,14 @@ public class MetadataTest {
 		String keyDescriptorSignStr = "<md:KeyDescriptor use=\"signing\"><ds:KeyInfo xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\"><ds:X509Data><ds:X509Certificate>MIICeDCCAeGgAwIBAgIBADANBgkqhkiG9w0BAQ0FADBZMQswCQYDVQQGEwJ1czET";
 		String keyDescriptorEncStr = "<md:KeyDescriptor use=\"encryption\"><ds:KeyInfo xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\"><ds:X509Data><ds:X509Certificate>MIICeDCCAeGgAwIBAgIBADANBgkqhkiG9w0BAQ0FADBZMQswCQYDVQQGEwJ1czET";
 
+		int keyDescriptorSignStrCount = metadataStr.split(keyDescriptorSignStr).length - 1;
+		int keyDescriptorEncStrCount = metadataStr.split(keyDescriptorEncStr).length - 1;
+
 		assertThat(metadataStr, containsString(keyDescriptorSignStr));
 		assertThat(metadataStr, containsString(keyDescriptorEncStr));
+
+		assertEquals(2, keyDescriptorEncStrCount);
+		assertEquals(2, keyDescriptorSignStrCount);
 
 		Saml2Settings settings2 = new SettingsBuilder().fromFile("config/config.minnosls.properties").build();
 		Metadata metadataObj2 = new Metadata(settings2);
