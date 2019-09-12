@@ -293,7 +293,23 @@ public class Metadata {
 	 * Generates the KeyDescriptor section of the metadata's template
 	 * 
 	 * @param cert
+	 *              the public cert that will be used by the SP to sign and encrypt
+	 * @param wantsEncrypted
+	 *              Whether to include the KeyDescriptor for encryption
+	 *
+	 * @return the KeyDescriptor section of the metadata's template
+	 */
+	private String toX509KeyDescriptorsXML(X509Certificate cert, Boolean wantsEncrypted) throws CertificateEncodingException {
+		return this.toX509KeyDescriptorsXML(cert, null, wantsEncrypted);
+	}
+
+	/**
+	 * Generates the KeyDescriptor section of the metadata's template
+	 * 
+	 * @param certCurrent
 	 * 				the public cert that will be used by the SP to sign and encrypt
+	 * @param certNew
+     *              the public cert that will be used by the SP to sign and encrypt in future
 	 * @param wantsEncrypted
 	 * 				Whether to include the KeyDescriptor for encryption
 	 *
