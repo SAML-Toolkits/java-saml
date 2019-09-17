@@ -18,12 +18,25 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
+import java.security.Key;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +60,7 @@ import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
 import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.Util;
+
 import org.mockito.ArgumentCaptor;
 
 public class AuthTest {
@@ -108,6 +122,41 @@ public class AuthTest {
 		assertEquals(settings.getIdpEntityId(), auth.getSettings().getIdpEntityId());
 		assertEquals(settings.getSpEntityId(), auth.getSettings().getSpEntityId());
 	}
+	
+    /**
+     * Tests the constructor of Auth
+     * Case: filename and KeyStore
+     *
+     * @throws SettingsException
+     * @throws IOException
+     * @throws Error
+     * @throws CertificateException 
+     * @throws NoSuchAlgorithmException 
+     * @throws KeyStoreException 
+     * @throws UnrecoverableKeyException 
+     *
+     * @see com.onelogin.saml2.Auth
+     */
+    @Test
+    public void testConstructorWithFilenameAndKeyStore() throws IOException, SettingsException, Error, NoSuchAlgorithmException, CertificateException, KeyStoreException, UnrecoverableKeyException {
+        
+        String password = "changeit";
+        String keyStoreFile = "src/test/resources/keystore/oneloginTestKeystore.jks";
+        String alias = "onelogintest";
+        
+        KeyStore ks = KeyStore.getInstance("JKS");
+        ks.load(new FileInputStream(keyStoreFile), password.toCharArray());
+        
+        Auth auth = new Auth("config/config.min.properties", ks, alias, password);
+        assertTrue(auth.getSettings() != null);
+        
+        assertTrue(auth.getSettings().getSPcert() != null);
+        assertTrue(auth.getSettings().getSPkey() != null);
+        
+        Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+        assertEquals(settings.getIdpEntityId(), auth.getSettings().getIdpEntityId());
+        assertEquals(settings.getSpEntityId(), auth.getSettings().getSpEntityId());
+    }
 
 	/**
 	 * Tests the constructor of Auth
