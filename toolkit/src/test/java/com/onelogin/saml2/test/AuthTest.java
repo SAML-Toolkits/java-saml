@@ -149,13 +149,12 @@ public class AuthTest {
         
         Auth auth = new Auth("config/config.min.properties", ks, alias, password);
         assertTrue(auth.getSettings() != null);
-        
         assertTrue(auth.getSettings().getSPcert() != null);
         assertTrue(auth.getSettings().getSPkey() != null);
         
-        Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-        assertEquals(settings.getIdpEntityId(), auth.getSettings().getIdpEntityId());
-        assertEquals(settings.getSpEntityId(), auth.getSettings().getSpEntityId());
+        Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties", ks, alias, password).build();
+        assertEquals(settings.getSPcert(), auth.getSettings().getSPcert());
+        assertEquals(settings.getSPkey(), auth.getSettings().getSPkey());
     }
 
 	/**
@@ -183,7 +182,43 @@ public class AuthTest {
 		assertEquals(settings.getIdpEntityId(), auth.getSettings().getIdpEntityId());
 		assertEquals(settings.getSpEntityId(), auth.getSettings().getSpEntityId());
 	}
-
+	
+	/**
+	 * Tests the constructor of Auth
+	 * Case: KeyStore and HttpServletRequest and HttpServletResponse provided
+	 *
+	 * @throws SettingsException
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 * @throws Error
+	 * @throws KeyStoreException 
+	 * @throws CertificateException 
+	 * @throws NoSuchAlgorithmException 
+	 *
+	 * @see com.onelogin.saml2.Auth
+	 */
+	@Test
+	public void testConstructorWithReqResAndKeyStore() throws IOException, SettingsException, URISyntaxException, Error, KeyStoreException, NoSuchAlgorithmException, CertificateException {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		
+        String password = "changeit";
+        String keyStoreFile = "src/test/resources/keystore/oneloginTestKeystore.jks";
+        String alias = "onelogintest";
+        
+        KeyStore ks = KeyStore.getInstance("JKS");
+        ks.load(new FileInputStream(keyStoreFile), password.toCharArray());
+        
+        Auth auth = new Auth(ks, alias, password, request, response);
+        assertTrue(auth.getSettings() != null);
+        assertTrue(auth.getSettings().getSPcert() != null);
+        assertTrue(auth.getSettings().getSPkey() != null);
+        
+        Saml2Settings settings = new SettingsBuilder().fromFile("onelogin.saml.properties", ks, alias, password).build();
+        assertEquals(settings.getSPkey(), auth.getSettings().getSPkey());
+        assertEquals(settings.getSPcert(), auth.getSettings().getSPcert());
+	}
+	
 	/**
 	 * Tests the constructor of Auth
 	 * Case: filename, HttpServletRequest and HttpServletResponse provided

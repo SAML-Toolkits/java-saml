@@ -8,10 +8,16 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.Key;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -58,6 +64,36 @@ public class SettingBuilderTest {
 		
 		new SettingsBuilder().fromFile("config/config.notfound.properties").build();
 	}
+	
+	/**
+	 * Tests SettingsBuilder fromFile method
+	 * Case: Config file with KeyStore
+	 *
+	 * @throws IOException 
+	 * @throws CertificateException 
+	 * @throws URISyntaxException 
+	 * @throws SettingsException
+	 * @throws Error
+	 * @throws KeyStoreException 
+	 * @throws NoSuchAlgorithmException 
+	 *
+	 * @see {@link com.onelogin.saml2.settings.SettingsBuilder#fromFile(String, java.security.KeyStore, String, String)}
+	 */
+	@Test
+	public void testLoadFromFileAndKeyStore() throws IOException, CertificateException, URISyntaxException, SettingsException, Error, KeyStoreException, NoSuchAlgorithmException {
+		
+		String password = "changeit";
+        String keyStoreFile = "src/test/resources/keystore/oneloginTestKeystore.jks";
+        String alias = "onelogintest";
+        
+        KeyStore ks = KeyStore.getInstance("JKS");
+        ks.load(new FileInputStream(keyStoreFile), password.toCharArray());
+        
+		Saml2Settings setting = new SettingsBuilder().fromFile("config/config.empty.properties", ks, alias, password).build();
+		assertNotNull(setting.getSPcert() instanceof X509Certificate);
+		assertNotNull(setting.getSPkey() instanceof Key);
+	}
+	
 
 	/**
 	 * Tests SettingsBuilder fromFile method
