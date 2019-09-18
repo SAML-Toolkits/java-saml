@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.model.Contact;
+import com.onelogin.saml2.model.KeyStoreSettings;
 import com.onelogin.saml2.model.Organization;
 import com.onelogin.saml2.util.Util;
 
@@ -128,7 +129,7 @@ public class SettingsBuilder {
 	 * @throws Error
 	 */
 	public SettingsBuilder fromFile(String propFileName) throws Error {
-		return fromFile(propFileName, null, null, null);
+		return fromFile(propFileName, null);
 	}
 
 	/**
@@ -144,7 +145,7 @@ public class SettingsBuilder {
 	 * @throws IOException
 	 * @throws Error
 	 */
-	public SettingsBuilder fromFile(String propFileName, KeyStore ks, String alias, String password) throws Error {
+	public SettingsBuilder fromFile(String propFileName, KeyStoreSettings keyStoreSetting) throws Error {
 
 		ClassLoader classLoader = getClass().getClassLoader();
 		try (InputStream inputStream = classLoader.getResourceAsStream(propFileName)) {
@@ -164,8 +165,8 @@ public class SettingsBuilder {
 			throw new Error(errorMsg, Error.SETTINGS_FILE_NOT_FOUND);
 		}
 		// Parse KeyStore and set the properties for SP Cert and Key
-		if (ks != null && StringUtils.isNotBlank(alias) && StringUtils.isNotBlank(password)) {
-			parseKeyStore(ks, alias, password);
+		if (keyStoreSetting != null) {
+			parseKeyStore(keyStoreSetting);
 		}
 
 		return this;
@@ -193,8 +194,24 @@ public class SettingsBuilder {
 	 *         object
 	 */
 	public SettingsBuilder fromValues(Map<String, Object> samlData) {
+	    return this.fromValues(samlData, null);
+	}
+
+	/**
+	 * Loads the settings from mapped values and KeyStore settings.
+	 *
+	 * @param samlData Mapped values.
+	 * @param keyStoreSetting KeyStore model
+	 *
+	 * @return the SettingsBuilder object with the settings loaded from the prop
+	 *         object
+	 */
+	public SettingsBuilder fromValues(Map<String, Object> samlData, KeyStoreSettings keyStoreSetting) {
 		if (samlData != null) {
-			this.samlData.putAll(samlData);
+		    this.samlData.putAll(samlData);
+		}
+		if (keyStoreSetting != null) {
+		    parseKeyStore(keyStoreSetting);
 		}
 		return this;
 	}
@@ -762,11 +779,11 @@ public class SettingsBuilder {
 		}
 	}
 
-	private void parseKeyStore(KeyStore keyStore, String alias, String password) {
-		this.samlData.put(KEYSTORE_KEY, keyStore);
-		this.samlData.put(KEYSTORE_ALIAS, alias);
-		this.samlData.put(KEYSTORE_PASSWORD, password);
-	}
+    private void parseKeyStore(KeyStoreSettings setting) {
+		this.samlData.put(KEYSTORE_KEY, setting.getKeyStore());
+		this.samlData.put(KEYSTORE_ALIAS, setting.getSpAlias());
+		this.samlData.put(KEYSTORE_PASSWORD, setting.getStorePass());
+    }
 
 	private boolean isString(Object propValue) {
 		return propValue instanceof String && StringUtils.isNotBlank((String) propValue);

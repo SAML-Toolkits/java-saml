@@ -1,7 +1,6 @@
 package com.onelogin.saml2.test.settings;
 
 import static com.onelogin.saml2.settings.SettingsBuilder.*;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -9,6 +8,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -16,6 +16,7 @@ import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ import org.junit.rules.ExpectedException;
 import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.exception.SettingsException;
 import com.onelogin.saml2.model.Contact;
+import com.onelogin.saml2.model.KeyStoreSettings;
 import com.onelogin.saml2.model.Organization;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
@@ -65,6 +67,26 @@ public class SettingBuilderTest {
 		new SettingsBuilder().fromFile("config/config.notfound.properties").build();
 	}
 	
+    /**
+     * Returns KeyStore details from src/test/resources for testing
+     *
+     * @return
+     * @throws KeyStoreException
+     * @throws NoSuchAlgorithmException
+     * @throws CertificateException
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    private KeyStoreSettings getKeyStoreSettings() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException {
+        String password = "changeit";
+        String keyStoreFile = "src/test/resources/keystore/oneloginTestKeystore.jks";
+        String alias = "onelogintest";
+
+        KeyStore ks = KeyStore.getInstance("JKS");
+        ks.load(new FileInputStream(keyStoreFile), password.toCharArray());
+        return new KeyStoreSettings(ks, alias, password);
+    }
+
 	/**
 	 * Tests SettingsBuilder fromFile method
 	 * Case: Config file with KeyStore
@@ -81,15 +103,8 @@ public class SettingBuilderTest {
 	 */
 	@Test
 	public void testLoadFromFileAndKeyStore() throws IOException, CertificateException, URISyntaxException, SettingsException, Error, KeyStoreException, NoSuchAlgorithmException {
+		Saml2Settings setting = new SettingsBuilder().fromFile("config/config.empty.properties", getKeyStoreSettings()).build();
 		
-		String password = "changeit";
-        String keyStoreFile = "src/test/resources/keystore/oneloginTestKeystore.jks";
-        String alias = "onelogintest";
-        
-        KeyStore ks = KeyStore.getInstance("JKS");
-        ks.load(new FileInputStream(keyStoreFile), password.toCharArray());
-        
-		Saml2Settings setting = new SettingsBuilder().fromFile("config/config.empty.properties", ks, alias, password).build();
 		assertNotNull(setting.getSPcert() instanceof X509Certificate);
 		assertNotNull(setting.getSPkey() instanceof Key);
 	}
@@ -781,6 +796,23 @@ public class SettingBuilderTest {
 		assertEquals("Support Guy", c2.getGivenName());
 
 		assertEquals("_", setting.getUniqueIDPrefix());
+
+		// Test with samlData and KeyStoreSettings
+		X509Certificate previousCert = setting.getSPcert();
+		PrivateKey previousKey = setting.getSPkey();
+
+		samlData.remove(SP_X509CERT_PROPERTY_KEY);
+		samlData.remove(SP_PRIVATEKEY_PROPERTY_KEY);
+		setting = new SettingsBuilder().fromValues(samlData, getKeyStoreSettings()).build();
+
+		X509Certificate newCert = setting.getSPcert();
+		PrivateKey newKey = setting.getSPkey();
+
+		assertNotNull(newCert);
+		assertNotNull(newKey);
+		assertFalse(previousCert.equals(newCert));
+		assertFalse(previousKey.equals(newKey));
+		
 	}
 	
 	/**

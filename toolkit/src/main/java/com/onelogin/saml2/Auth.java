@@ -30,6 +30,7 @@ import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.logout.LogoutRequest;
 import com.onelogin.saml2.logout.LogoutResponse;
+import com.onelogin.saml2.model.KeyStoreSettings;
 import com.onelogin.saml2.servlet.ServletUtils;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
@@ -185,9 +186,9 @@ public class Auth {
 	 * @throws SettingsException
 	 * @throws Error
 	 */
-	public Auth(String filename, KeyStore ks, String alias, String password)
+	public Auth(String filename, KeyStoreSettings keyStoreSetting)
 			throws IOException, SettingsException, Error {
-		this(new SettingsBuilder().fromFile(filename, ks, alias, password).build(), null, null);
+		this(new SettingsBuilder().fromFile(filename, keyStoreSetting).build(), null, null);
 	}
 
 	/**
@@ -217,9 +218,9 @@ public class Auth {
 	 * @throws SettingsException
 	 * @throws Error
 	 */
-	public Auth(KeyStore ks, String alias, String password, HttpServletRequest request, HttpServletResponse response)
+	public Auth(KeyStoreSettings keyStoreSetting, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, SettingsException, Error {
-		this(new SettingsBuilder().fromFile("onelogin.saml.properties", ks, alias, password).build(), request,
+		this(new SettingsBuilder().fromFile("onelogin.saml.properties", keyStoreSetting).build(), request,
 				response);
 	}
 
@@ -236,7 +237,7 @@ public class Auth {
 	 */
 	public Auth(String filename, HttpServletRequest request, HttpServletResponse response)
 			throws SettingsException, IOException, Error {
-		this(filename, null, null, null, request, response);
+		this(filename, null, request, response);
 	}
 
 	/**
@@ -253,9 +254,9 @@ public class Auth {
 	 * @throws IOException
 	 * @throws Error
 	 */
-	public Auth(String filename, KeyStore ks, String alias, String password, HttpServletRequest request,
+	public Auth(String filename, KeyStoreSettings keyStoreSetting, HttpServletRequest request,
 			HttpServletResponse response) throws SettingsException, IOException, Error {
-		this(new SettingsBuilder().fromFile(filename, ks, alias, password).build(), request, response);
+		this(new SettingsBuilder().fromFile(filename, keyStoreSetting).build(), request, response);
 	}
 
 	/**
