@@ -1,21 +1,18 @@
 package com.onelogin.saml2.test.settings;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertThat;
-
+import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.List;
-
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-
 import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.settings.Metadata;
 import com.onelogin.saml2.settings.Saml2Settings;
@@ -184,7 +181,22 @@ public class Saml2SettingsTest {
 		settingsErrors = settings.checkSettings();
 		assertTrue(settingsErrors.isEmpty());
 	}
-	
+
+	/**
+	 * Tests the checkIdpSettings method of the {@link Saml2Settings}
+	 * Case: Multiple certs defined.
+	 * 
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.settings.Saml2Settings#checkIdPSettings
+	 */
+	@Test
+	public void testCheckIdpMultipleCertSettings () throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min_idp_multicert.properties").build();
+		List<String> settingsErrors = settings.checkSettings();
+		assertTrue(settingsErrors.isEmpty());
+	}
+
 	/**
 	 * Tests the checkSettings method of the Saml2Settings
 	 * Case: No SP Errors
