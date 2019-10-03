@@ -165,6 +165,19 @@ public class Auth {
 	/**
 	 * Initializes the SP SAML instance.
 	 *
+	 * @param keyStoreSetting KeyStoreSettings is a KeyStore which have the Private/Public keys
+	 *
+	 * @throws IOException
+	 * @throws SettingsException
+	 * @throws Error
+	 */
+	public Auth(KeyStoreSettings keyStoreSetting) throws IOException, SettingsException, Error {
+		this("onelogin.saml.properties", keyStoreSetting);
+	}
+	
+	/**
+	 * Initializes the SP SAML instance.
+	 *
 	 * @param filename String Filename with the settings
 	 *
 	 * @throws IOException

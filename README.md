@@ -359,6 +359,27 @@ onelogin.saml2.contacts.support.email_address = support@example.com
 # onelogin.saml2.unique_id_prefix = _
 ```
 
+##### KeyStores
+
+The Auth constructor supports the ability to read SP public cert/private key from a KeyStore. A KeyStoreSettings object must be provided with the KeyStore, the Alias and the storePass if any.
+
+```java
+import java.io.FileInputStream;
+import java.security.KeyStore;
+import com.onelogin.saml2.Auth
+import com.onelogin.saml2.model.KeyStoreSettings
+
+String keyStoreFile = "oneloginTestKeystore.jks";
+String alias = "onelogintest";
+String storePass = "changeit";
+
+KeyStore ks = KeyStore.getInstance("JKS");
+ks.load(new FileInputStream(keyStoreFile), password.toCharArray());
+
+KeyStoreSettings keyStoreSettings =  new keyStoreSettings(ks, alias, storePass);
+Auth auth = new Auth(KeyStoreSettings keyStoreSetting);
+```
+
 ##### Dynamic Settings
 It is possible to build settings programmatically. You can load your values from different sources such as files, databases, or generated values.
 
