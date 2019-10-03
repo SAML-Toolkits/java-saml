@@ -128,7 +128,7 @@ public class SettingsBuilder {
 	 * @throws IOException
 	 * @throws Error
 	 */
-	public SettingsBuilder fromFile(String propFileName) throws Error {
+	public SettingsBuilder fromFile(String propFileName) throws Error, IOException {
 		return fromFile(propFileName, null);
 	}
 
@@ -136,16 +136,14 @@ public class SettingsBuilder {
 	 * Load settings from the file
 	 *
 	 * @param propFileName OneLogin_Saml2_Settings
-	 * @param ks           KeyStore which have the Private/Public keys
-	 * @param alias        Alias in the KeyStore to be used as key
-	 * @param password     Password for accessing KeyStore
+	 * @param keyStoreSetting KeyStore which have the Private/Public keys
 	 * 
 	 * @return the SettingsBuilder object with the settings loaded from the file
 	 *
 	 * @throws IOException
 	 * @throws Error
 	 */
-	public SettingsBuilder fromFile(String propFileName, KeyStoreSettings keyStoreSetting) throws Error {
+	public SettingsBuilder fromFile(String propFileName, KeyStoreSettings keyStoreSetting) throws Error, IOException {
 
 		ClassLoader classLoader = getClass().getClassLoader();
 		try (InputStream inputStream = classLoader.getResourceAsStream(propFileName)) {
@@ -188,7 +186,7 @@ public class SettingsBuilder {
 	/**
 	 * Loads the settings from mapped values.
 	 *
-	 * @param values Mapped values.
+	 * @param samlData Mapped values.
 	 *
 	 * @return the SettingsBuilder object with the settings loaded from the prop
 	 *         object
@@ -740,37 +738,10 @@ public class SettingsBuilder {
 	}
 
 	/**
-	 * Loads a property of the type PrivateKey from file
+	 * Parses properties
 	 *
-	 * @param filename the file name of the file that contains the PrivateKey
-	 *
-	 * @return the PrivateKey object
+	 * @param properties the Properties object to be parsed
 	 */
-	/*
-	protected PrivateKey loadPrivateKeyFromFile(String filename) {
-		String keyString = null;
-		
-		try {
-			keyString = Util.getFileAsString(filename.trim());
-		} catch (URISyntaxException e) {
-			LOGGER.error("Error loading privatekey from file.", e);
-			return null;
-		} catch (IOException e) {
-			LOGGER.error("Error loading privatekey from file.", e);
-			return null;
-		}
-		
-		try {
-			return Util.loadPrivateKey(keyString);
-		} catch (GeneralSecurityException e) {
-			LOGGER.error("Error loading privatekey from file.", e);
-			return null;
-		} catch (IOException e) {
-			LOGGER.debug("Error loading privatekey from file.", e);
-			return null;
-		}
-	}
-	*/
 	private void parseProperties(Properties properties) {
 		if (properties != null) {
 			for (String propertyKey : properties.stringPropertyNames()) {
@@ -779,12 +750,22 @@ public class SettingsBuilder {
 		}
 	}
 
+	/**
+	 * Parses the KeyStore data
+	 *
+	 * @param setting the KeyStoreSettings object to be parsed
+	 */
     private void parseKeyStore(KeyStoreSettings setting) {
 		this.samlData.put(KEYSTORE_KEY, setting.getKeyStore());
 		this.samlData.put(KEYSTORE_ALIAS, setting.getSpAlias());
 		this.samlData.put(KEYSTORE_PASSWORD, setting.getStorePass());
     }
 
+	/**
+	 * Aux method that verifies if an Object is an string
+	 *
+	 * @param propValue the Object to be verified
+	 */
 	private boolean isString(Object propValue) {
 		return propValue instanceof String && StringUtils.isNotBlank((String) propValue);
 	}

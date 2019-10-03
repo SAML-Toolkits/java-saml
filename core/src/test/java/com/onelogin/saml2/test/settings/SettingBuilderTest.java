@@ -99,7 +99,7 @@ public class SettingBuilderTest {
 	 * @throws KeyStoreException 
 	 * @throws NoSuchAlgorithmException 
 	 *
-	 * @see {@link com.onelogin.saml2.settings.SettingsBuilder#fromFile(String, java.security.KeyStore, String, String)}
+	 * @see com.onelogin.saml2.settings.SettingsBuilder#fromFile
 	 */
 	@Test
 	public void testLoadFromFileAndKeyStore() throws IOException, CertificateException, URISyntaxException, SettingsException, Error, KeyStoreException, NoSuchAlgorithmException {
@@ -664,6 +664,8 @@ public class SettingBuilderTest {
 	 * Tests SettingsBuilder constructor
 	 * Case: settings from values
 	 *
+	 * @throws IOException
+	 *
 	 * @see com.onelogin.saml2.settings.SettingsBuilder
 	 */
 	@Test
@@ -818,6 +820,8 @@ public class SettingBuilderTest {
 	/**
 	 * Tests SettingsBuilder constructor
 	 * Case: settings from values
+	 *
+	 * @throws IOException
 	 *
 	 * @see com.onelogin.saml2.settings.SettingsBuilder
 	 */

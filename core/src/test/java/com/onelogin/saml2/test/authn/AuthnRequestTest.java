@@ -105,7 +105,7 @@ public class AuthnRequestTest {
 	 *
 	 * @throws Exception
 	 * 
-	 * @see com.onelogin.saml2.authn.getAuthnRequestXml
+	 * @see com.onelogin.saml2.authn.AuthnRequest#getAuthnRequestXml
 	 */
 	@Test
 	public void testGetAuthnRequestXml() throws Exception {
@@ -313,7 +313,7 @@ public class AuthnRequestTest {
 	 *
 	 * @throws Exception
 	 * 
-	 * @see com.onelogin.saml2.authn.getId
+	 * @see com.onelogin.saml2.authn.AuthnRequest.getId
 	 */
 	@Test
 	public void testGetId() throws Exception

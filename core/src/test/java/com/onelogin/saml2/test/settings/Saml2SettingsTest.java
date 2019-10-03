@@ -30,7 +30,7 @@ import com.onelogin.saml2.util.Util;
 public class Saml2SettingsTest {
 
 	/**
-	 * Tests the isStrict & setStrict methods of the Saml2Settings
+	 * Tests the isStrict and setStrict methods of the Saml2Settings
 	 *
 	 * @see com.onelogin.saml2.settings.Saml2Settings#isStrict
 	 * @see com.onelogin.saml2.settings.Saml2Settings#setStrict
@@ -47,7 +47,7 @@ public class Saml2SettingsTest {
 	}
 
 	/**
-	 * Tests the isDebugActive & setDebug methods of the Saml2Settings
+	 * Tests the isDebugActive and setDebug methods of the Saml2Settings
 	 *
 	 * @see com.onelogin.saml2.settings.Saml2Settings#isDebugActive
 	 * @see com.onelogin.saml2.settings.Saml2Settings#setDebug

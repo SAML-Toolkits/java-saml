@@ -123,8 +123,8 @@ public final class Util {
 
 	/**
 	 * Method which uses the recommended way ( https://docs.oracle.com/javase/tutorial/jaxp/properties/error.html )
-	 * of checking if JAXP >= 1.5 options are supported. Needed if the project which uses this library also has
-	 * Xerces in it's classpath.
+	 * of checking if JAXP is equal or greater than 1.5 options are supported. Needed if the project which uses
+	 *  this library also has Xerces in it's classpath.
 	 *
 	 * If for whatever reason this method cannot determine if JAXP 1.5 properties are supported it will indicate the
 	 * options are supported. This way we don't accidentally disable configuration options.
@@ -339,8 +339,8 @@ public final class Util {
 	/**
 	 * Parse an XML from input source to a Document object
 	 *
-	 * @param xmlStr
-	 * 				The XML string which should be converted
+	 * @param inputSource
+	 * 				The InputSource with the XML string which should be converted
 	 *
 	 * @return the Document object
 	 *
@@ -910,7 +910,7 @@ public final class Util {
 	 * Validate the signature pointed to by the xpath
 	 *
 	 * @param doc The document we should validate
-	 * @param certs The public certificates
+	 * @param certList The public certificates
 	 * @param fingerprint The fingerprint of the public certificate
 	 * @param alg The signature algorithm method
 	 * @param xpath the xpath of the ds:Signture node to validate
@@ -1029,12 +1029,6 @@ public final class Util {
 	/**
 	 * Whitelist the XMLSignature algorithm
 	 *
-	 * @param signNode
-	 * 				 The document we should validate
-	 * @param cert
-	 * 				 The public certificate
-	 * @param fingerprint
-	 * 				 The fingerprint of the public certificate
 	 * @param alg
 	 * 				 The signature algorithm method
 	 *

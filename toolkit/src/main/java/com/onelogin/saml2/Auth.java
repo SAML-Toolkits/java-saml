@@ -179,9 +179,8 @@ public class Auth {
 	 * Initializes the SP SAML instance.
 	 *
 	 * @param filename String Filename with the settings
-	 * @param ks       KeyStore which have the Private/Public keys
-	 * @param alias    Alias in the KeyStore to be used as key
-	 * @param password Password for accessing KeyStore
+	 * @param keyStoreSetting KeyStoreSettings is a KeyStore which have the Private/Public keys
+     *
 	 * @throws IOException
 	 * @throws SettingsException
 	 * @throws Error
@@ -208,9 +207,7 @@ public class Auth {
 	/**
 	 * Initializes the SP SAML instance.
 	 * 
-	 * @param ks       KeyStore which have the Private/Public keys
-	 * @param alias    Alias in the KeyStore to be used as key
-	 * @param password Password for accessing KeyStore
+	 * @param keyStoreSetting KeyStoreSettings is a KeyStore which have the Private/Public keys
 	 * @param request  HttpServletRequest object to be processed
 	 * @param response HttpServletResponse object to be used
 	 *
@@ -243,12 +240,10 @@ public class Auth {
 	/**
 	 * Initializes the SP SAML instance.
 	 *
-	 * @param filename String Filename with the settings
-	 * @param ks       KeyStore which have the Private/Public keys
-	 * @param alias    Alias in the KeyStore to be used as key
-	 * @param password Password for accessing KeyStore
-	 * @param request  HttpServletRequest object to be processed
-	 * @param response HttpServletResponse object to be used
+	 * @param filename 			String Filename with the settings
+	 * @param keyStoreSetting 	KeyStoreSettings is a KeyStore which have the Private/Public keys
+	 * @param request  			HttpServletRequest object to be processed
+	 * @param response 			HttpServletResponse object to be used
 	 *
 	 * @throws SettingsException
 	 * @throws IOException
@@ -1019,10 +1014,10 @@ public class Auth {
 	}
 
 	/**
-	 * Generates the Signature for a SAML Response
+	 * Generates the Signature for a SAML Message
 	 *
-	 * @param samlResponse
-	 *				The SAML Response
+	 * @param samlMessage
+	 *				The SAML Message
 	 * @param relayState
 	 *				The RelayState
 	 * @param signAlgorithm
