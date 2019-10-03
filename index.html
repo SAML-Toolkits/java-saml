@@ -1,174 +1,176 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"><title>Untitled Document.md</title><style></style></head><body id="preview">
-<h1><a id="OneLogins_SAML_Java_Toolkit_0"></a>OneLogin’s SAML Java Toolkit</h1>
-<p><a href="https://travis-ci.org/onelogin/java-saml"><img src="https://travis-ci.org/onelogin/java-saml.svg?branch=v2.0.0" alt="Build Status"></a> <a href="https://coveralls.io/github/onelogin/java-saml?branch=v2.0.0"><img src="https://coveralls.io/repos/github/onelogin/java-saml/badge.svg?branch=v2.0.0" alt="Coverage Status"></a></p>
-<p>Add SAML support to your Java applications using this library.<br>
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>OneLogin’s SAML Java Toolkit.md</title><style></style></head><body id="preview">
+<h1 class="code-line" data-line-start=0 data-line-end=1 ><a id="OneLogins_SAML_Java_Toolkit_0"></a>OneLogin’s SAML Java Toolkit</h1>
+<p class="has-line-data" data-line-start="2" data-line-end="3"><a href="https://travis-ci.org/onelogin/java-saml"><img src="https://travis-ci.org/onelogin/java-saml.svg?branch=master" alt="Build Status"></a> <a href="https://coveralls.io/github/onelogin/java-saml?branch=master"><img src="https://coveralls.io/repos/github/onelogin/java-saml/badge.svg?branch=master" alt="Coverage Status"></a></p>
+<p class="has-line-data" data-line-start="4" data-line-end="6">Add SAML support to your Java applications using this library.<br>
 Forget those complicated libraries and use that open source library provided and supported by OneLogin Inc.</p>
-<p>This is the Version 2.0.0, compatible with java6 / java7 / java8.</p>
-<p>The 1.1.2 is consider deprecated. If you used it, we strongly recommend to migrate to that new version.<br>
-We rebuilt the toolkit on 2.0.0 so code/settings that you had will not be compatible.</p>
-
-<h2><a id="Javadocs"></a>Javadocs</h2>
-<p>
-<ul>
-    <li><a href="toolkit/index.html">toolkit</a></li>
-    <li><a href="core/index.html">core</a></il>
-</ul>
-</p>
-
-<h2><a id="Why_add_SAML_support_to_my_software_13"></a>Why add SAML support to my software?</h2>
-<p>SAML is an XML-based standard for web browser single sign-on and is defined by<br>
+<p class="has-line-data" data-line-start="7" data-line-end="10">Version &gt;= 2.5.0 compatible with java8 / java9. Not compatible with java7<br>
+2.5.0 sets the ‘strict’ setting parameter to true.<br>
+2.5.0 uses xmlsec 2.1.4 which fixes <a href="https://snyk.io/vuln/SNYK-JAVA-ORGAPACHESANTUARIO-460281">CVE-2019-12400</a></p>
+<p class="has-line-data" data-line-start="12" data-line-end="13">Version 2.0.0 - 2.4.0, compatible with java7 / java8.</p>
+<p class="has-line-data" data-line-start="14" data-line-end="15">We <a href="https://github.com/onelogin/java-saml/issues/90">introduced some incompatibilities</a>, that could be fixed and make it compatible with java6.</p>
+<p class="has-line-data" data-line-start="16" data-line-end="18">Version 1.1.2 is considered to be deprecated. If you have used it, we strongly recommend that you migrate to the new version.<br>
+We rebuilt the toolkit on 2.0.0, so code/settings that you had been using in the previous version will no longer be compatible.</p>
+<h2 class="code-line" data-line-start=20 data-line-end=21 ><a id="Why_add_SAML_support_to_my_software_20"></a>Why add SAML support to my software?</h2>
+<p class="has-line-data" data-line-start="22" data-line-end="25">SAML is an XML-based standard for web browser single sign-on and is defined by<br>
 the OASIS Security Services Technical Committee. The standard has been around<br>
-since 2002, but lately it is becoming popular due its advantages:</p>
+since 2002, but lately it has become popular due to its advantages as follows:</p>
 <ul>
-<li><strong>Usability</strong> - One-click access from portals or intranets, deep linking,<br>
+<li class="has-line-data" data-line-start="26" data-line-end="29"><strong>Usability</strong> - One-click access from portals or intranets, deep linking,<br>
 password elimination and automatically renewing sessions make life<br>
 easier for the user.</li>
-<li><strong>Security</strong> - Based on strong digital signatures for authentication and<br>
+<li class="has-line-data" data-line-start="29" data-line-end="32"><strong>Security</strong> - Based on strong digital signatures for authentication and<br>
 integrity, SAML is a secure single sign-on protocol that the largest<br>
 and most security conscious enterprises in the world rely on.</li>
-<li><strong>Speed</strong> - SAML is fast. One browser redirect is all it takes to securely<br>
+<li class="has-line-data" data-line-start="32" data-line-end="34"><strong>Speed</strong> - SAML is fast. One browser redirect is all it takes to securely<br>
 sign a user into an application.</li>
-<li><strong>Phishing Prevention</strong> - If you don’t have a password for an app, you<br>
+<li class="has-line-data" data-line-start="34" data-line-end="36"><strong>Phishing Prevention</strong> - If you don’t have a password for an app, you<br>
 can’t be tricked into entering it on a fake login page.</li>
-<li><strong>IT Friendly</strong> - SAML simplifies life for IT because it centralizes<br>
+<li class="has-line-data" data-line-start="36" data-line-end="39"><strong>IT Friendly</strong> - SAML simplifies life for IT because it centralizes<br>
 authentication, provides greater visibility and makes directory<br>
 integration easier.</li>
-<li><strong>Opportunity</strong> - B2B cloud vendor should support SAML to facilitate the<br>
+<li class="has-line-data" data-line-start="39" data-line-end="41"><strong>Opportunity</strong> - B2B cloud vendor should support SAML to facilitate the<br>
 integration of their product.</li>
 </ul>
-<h2><a id="General_description_36"></a>General description</h2>
-<p>OneLogin’s SAML Java toolkit lets you turn a Java application into a SP<br>
+<h2 class="code-line" data-line-start=43 data-line-end=44 ><a id="General_description_43"></a>General description</h2>
+<p class="has-line-data" data-line-start="45" data-line-end="47">OneLogin’s SAML Java toolkit lets you turn a Java application into a SP<br>
 (Service Provider) that can be connected to an IdP (Identity Provider).</p>
-<p>Supports:</p>
+<p class="has-line-data" data-line-start="48" data-line-end="49">Supports:</p>
 <ul>
-<li>SSO and SLO (SP-Initiated and IdP-Initiated).</li>
-<li>Assertion and nameId encryption.</li>
-<li>Assertion signatures.</li>
-<li>Message signatures: AuthNRequest, LogoutRequest, LogoutResponses.</li>
-<li>Enable an Assertion Consumer Service endpoint.</li>
-<li>Enable a Single Logout Service endpoint.</li>
-<li>Publish the SP metadata (which can be signed).</li>
+<li class="has-line-data" data-line-start="50" data-line-end="51">SSO and SLO (SP-Initiated and IdP-Initiated).</li>
+<li class="has-line-data" data-line-start="51" data-line-end="52">Assertion and nameId encryption.</li>
+<li class="has-line-data" data-line-start="52" data-line-end="53">Assertion signatures.</li>
+<li class="has-line-data" data-line-start="53" data-line-end="54">Message signatures: AuthNRequest, LogoutRequest, LogoutResponses.</li>
+<li class="has-line-data" data-line-start="54" data-line-end="55">Enable an Assertion Consumer Service endpoint.</li>
+<li class="has-line-data" data-line-start="55" data-line-end="56">Enable a Single Logout Service endpoint.</li>
+<li class="has-line-data" data-line-start="56" data-line-end="58">Publish the SP metadata (which can be signed).</li>
 </ul>
-<p>Key features:</p>
+<p class="has-line-data" data-line-start="58" data-line-end="59">Key features:</p>
 <ul>
-<li><strong>saml2int</strong> - Implements the SAML 2.0 Web Browser SSO Profile.</li>
-<li><strong>Session-less</strong> - Forget those common conflicts between the SP and<br>
-the final app, the toolkit delegate session in the final app.</li>
-<li><strong>Easy to use</strong> - Programmer will be allowed to code high-level and<br>
-low-level programming, 2 easy to use APIs are available.</li>
-<li><strong>Tested</strong> - Thoroughly tested.</li>
-<li><strong>Popular</strong> - OneLogin’s customers use it. Add easy support to your java web projects.</li>
+<li class="has-line-data" data-line-start="60" data-line-end="61"><strong>saml2int</strong> - Implements the SAML 2.0 Web Browser SSO Profile.</li>
+<li class="has-line-data" data-line-start="61" data-line-end="63"><strong>Session-less</strong> - Forget those common conflicts between the SP and<br>
+the final app; the toolkit delegates session in the final app.</li>
+<li class="has-line-data" data-line-start="63" data-line-end="65"><strong>Easy to use</strong> - Programmer will be allowed to code high-level and<br>
+low-level programming; 2 easy-to-use APIs are available.</li>
+<li class="has-line-data" data-line-start="65" data-line-end="66"><strong>Tested</strong> - Thoroughly tested.</li>
+<li class="has-line-data" data-line-start="66" data-line-end="68"><strong>Popular</strong> - OneLogin’s customers use it. Add easy support to your java web projects.</li>
 </ul>
-<h2><a id="Security_warning_61"></a>Security warning</h2>
-<p>In production, the <strong>onelogin.saml2.strict</strong> setting parameter MUST be set as <strong>“true”</strong>. Otherwise your environment is not secure and will be exposed to attacks.</p>
-<h2><a id="Installation_65"></a>Installation</h2>
-<h3><a id="Hosting_66"></a>Hosting</h3>
-<h4><a id="Github_67"></a>Github</h4>
-<p>The toolkit is hosted on github. You can download it from:</p>
+<h2 class="code-line" data-line-start=68 data-line-end=69 ><a id="Security_warning_68"></a>Security warning</h2>
+<p class="has-line-data" data-line-start="70" data-line-end="71">In production, the <strong>onelogin.saml2.strict</strong> setting parameter MUST be set as <strong>“true”</strong>. Otherwise your environment is not secure and will be exposed to attacks.</p>
+<p class="has-line-data" data-line-start="72" data-line-end="73">In production also we highly recommend to register on the settings the IdP certificate instead of using the fingerprint method. The fingerprint, is a hash, so at the end is open to a collision attack that can end on a signature validation bypass. Other SAML toolkits deprecated that mechanism, we maintain it for compatibility and also to be used on test environment.</p>
+<h2 class="code-line" data-line-start=74 data-line-end=75 ><a id="Installation_74"></a>Installation</h2>
+<h3 class="code-line" data-line-start=75 data-line-end=76 ><a id="Hosting_75"></a>Hosting</h3>
+<h4 class="code-line" data-line-start=76 data-line-end=77 ><a id="Github_76"></a>Github</h4>
+<p class="has-line-data" data-line-start="77" data-line-end="78">The toolkit is hosted on github. You can download it from:</p>
 <ul>
-<li>Lastest release: <a href="https://github.com/onelogin/java-saml/releases/latest">https://github.com/onelogin/java-saml/releases/latest</a></li>
-<li>Master repo: <a href="https://github.com/onelogin/java-saml/tree/master">https://github.com/onelogin/java-saml/tree/master</a></li>
+<li class="has-line-data" data-line-start="78" data-line-end="79">Latest release: <a href="https://github.com/onelogin/java-saml/releases/latest">https://github.com/onelogin/java-saml/releases/latest</a></li>
+<li class="has-line-data" data-line-start="79" data-line-end="81">Master repo: <a href="https://github.com/onelogin/java-saml/tree/master">https://github.com/onelogin/java-saml/tree/master</a></li>
 </ul>
-<h4><a id="Maven_72"></a>Maven</h4>
-<p>The toolkit is hosted at <a href="http://central.sonatype.org/pages/ossrh-guide.html">Sonatype OSSRH (OSS Repository Hosting)</a> that is synced to the Central Repository.</p>
-<p>Install it as a maven dependecy:</p>
-<pre><code>  &lt;dependency&gt;
+<h4 class="code-line" data-line-start=81 data-line-end=82 ><a id="Maven_81"></a>Maven</h4>
+<p class="has-line-data" data-line-start="82" data-line-end="83">The toolkit is hosted at <a href="http://central.sonatype.org/pages/ossrh-guide.html">Sonatype OSSRH (OSS Repository Hosting)</a> that is synced to the Central Repository.</p>
+<p class="has-line-data" data-line-start="84" data-line-end="85">Install it as a maven dependency:</p>
+<pre><code class="has-line-data" data-line-start="86" data-line-end="92">  &lt;dependency&gt;
       &lt;groupId&gt;com.onelogin&lt;/groupId&gt;
       &lt;artifactId&gt;java-saml&lt;/artifactId&gt;
-      &lt;version&gt;2.0.0&lt;/version&gt;
+      &lt;version&gt;2.5.0&lt;/version&gt;
   &lt;/dependency&gt;
 </code></pre>
-<h3><a id="Dependencies_85"></a>Dependencies</h3>
-<p>java-saml (com.onelogin:java-saml-toolkit) has the following dependencies:</p>
-<p><em>core:</em></p>
+<h3 class="code-line" data-line-start=94 data-line-end=95 ><a id="Dependencies_94"></a>Dependencies</h3>
+<p class="has-line-data" data-line-start="95" data-line-end="96">java-saml (com.onelogin:java-saml-toolkit) has the following dependencies:</p>
+<p class="has-line-data" data-line-start="97" data-line-end="98"><em>core:</em></p>
 <ul>
-<li>org.apache.santuario:xmlsec</li>
-<li>joda-time:joda-time</li>
-<li>org.apache.commons:commons-lang3</li>
-<li>commons-codec:commons-codec</li>
-<li>testing:
+<li class="has-line-data" data-line-start="98" data-line-end="99">org.apache.santuario:xmlsec</li>
+<li class="has-line-data" data-line-start="99" data-line-end="100">joda-time:joda-time</li>
+<li class="has-line-data" data-line-start="100" data-line-end="101">org.apache.commons:commons-lang3</li>
+<li class="has-line-data" data-line-start="101" data-line-end="102">commons-codec:commons-codec</li>
+<li class="has-line-data" data-line-start="102" data-line-end="106">testing:
 <ul>
-<li>org.hamcrest:hamcrest-core and org.hamcrest:hamcrest-library</li>
-<li>junit:junit</li>
-<li>org.mockito:mockito-core</li>
+<li class="has-line-data" data-line-start="103" data-line-end="104">org.hamcrest:hamcrest-core and org.hamcrest:hamcrest-library</li>
+<li class="has-line-data" data-line-start="104" data-line-end="105">junit:junit</li>
+<li class="has-line-data" data-line-start="105" data-line-end="106">org.mockito:mockito-core</li>
 </ul>
 </li>
-<li>logging:
+<li class="has-line-data" data-line-start="106" data-line-end="109">logging:
 <ul>
-<li>org.slf4j:slf4j-api</li>
-<li>ch.qos.logback:logback-classic</li>
+<li class="has-line-data" data-line-start="107" data-line-end="108">org.slf4j:slf4j-api</li>
+<li class="has-line-data" data-line-start="108" data-line-end="109">ch.qos.logback:logback-classic</li>
 </ul>
 </li>
-<li>For CI:
+<li class="has-line-data" data-line-start="109" data-line-end="112">For CI:
 <ul>
-<li>org.jacoco:jacoco-maven-plugin</li>
+<li class="has-line-data" data-line-start="110" data-line-end="112">org.jacoco:jacoco-maven-plugin</li>
 </ul>
 </li>
 </ul>
-<p>also the <a href="https://en.wikipedia.org/wiki/Java_Cryptography_Extension">Java Cryptography Extension (JCE)</a> is required. If you don’t have it, download the version of <a href="http://www.oracle.com/technetwork/java/javase/downloads/jce-6-download-429243.html">jce-6</a>, <a href="http://www.oracle.com/technetwork/java/javase/downloads/jce-7-download-432124.html">jce-7</a> or <a href="http://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html">jce-8</a>, unzip it, and drop its content at<br>
+<p class="has-line-data" data-line-start="112" data-line-end="114">also the <a href="https://en.wikipedia.org/wiki/Java_Cryptography_Extension">Java Cryptography Extension (JCE)</a> is required. If you don’t have it, download the version of <a href="http://www.oracle.com/technetwork/java/javase/downloads/jce-6-download-429243.html">jce-6</a>, <a href="http://www.oracle.com/technetwork/java/javase/downloads/jce-7-download-432124.html">jce-7</a> or <a href="http://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html">jce-8</a>, unzip it, and drop its content at<br>
 <em>${java.home}/jre/lib/security/</em></p>
-<p><em>toolkit:</em></p>
+<p class="has-line-data" data-line-start="115" data-line-end="116"><em>toolkit:</em></p>
 <ul>
-<li>com.onelogin:java-saml-core</li>
-<li>javax.servlet:servlet-api</li>
+<li class="has-line-data" data-line-start="116" data-line-end="117">com.onelogin:java-saml-core</li>
+<li class="has-line-data" data-line-start="117" data-line-end="119">javax.servlet:servlet-api</li>
 </ul>
-<p><em>maven:</em></p>
+<p class="has-line-data" data-line-start="119" data-line-end="120"><em>maven:</em></p>
 <ul>
-<li>org.apache.maven.plugins:maven-jar-plugin</li>
-<li>org.apache.maven.plugins:maven-surefire-plugin</li>
-<li>org.apache.maven.plugins:maven-enforcer-plugin</li>
+<li class="has-line-data" data-line-start="120" data-line-end="121">org.apache.maven.plugins:maven-jar-plugin</li>
+<li class="has-line-data" data-line-start="121" data-line-end="122">org.apache.maven.plugins:maven-surefire-plugin</li>
+<li class="has-line-data" data-line-start="122" data-line-end="124">org.apache.maven.plugins:maven-enforcer-plugin</li>
 </ul>
-<p>For more info, open and read the different pom.xml files:<br>
-<a href="https://github.com/onelogin/java-saml/blob/v2.0.0/core/pom.xml">core/pom.xml</a>, <a href="https://github.com/onelogin/java-saml/blob/v2.0.0/toolkit/pom.xml">toolkit/pom.xml</a></p>
-<h2><a id="Working_with_the_github_repository_code_and_Eclipse_118"></a>Working with the github repository code and Eclipse.</h2>
-<h3><a id="Get_the_toolkit_119"></a>Get the toolkit.</h3>
-<p>The toolkit is hosted on github. You can download it from:</p>
+<p class="has-line-data" data-line-start="124" data-line-end="126">For more info, open and read the different pom.xml files:<br>
+<a href="https://github.com/onelogin/java-saml/blob/v2.2.0/core/pom.xml">core/pom.xml</a>, <a href="https://github.com/onelogin/java-saml/blob/v2.2.0/toolkit/pom.xml">toolkit/pom.xml</a></p>
+<h2 class="code-line" data-line-start=127 data-line-end=128 ><a id="Working_with_the_github_repository_code_and_Eclipse_127"></a>Working with the github repository code and Eclipse.</h2>
+<h3 class="code-line" data-line-start=128 data-line-end=129 ><a id="Get_the_toolkit_128"></a>Get the toolkit.</h3>
+<p class="has-line-data" data-line-start="129" data-line-end="130">The toolkit is hosted on github. You can download it from:</p>
 <ul>
-<li>Lastest release: <a href="https://github.com/onelogin/java-saml/releases/latest">https://github.com/onelogin/java-saml/releases/latest</a></li>
-<li>Master repo: <a href="https://github.com/onelogin/java-saml/tree/master">https://github.com/onelogin/java-saml/tree/master</a></li>
+<li class="has-line-data" data-line-start="130" data-line-end="131">Latest release: <a href="https://github.com/onelogin/java-saml/releases/latest">https://github.com/onelogin/java-saml/releases/latest</a></li>
+<li class="has-line-data" data-line-start="131" data-line-end="133">Master repo: <a href="https://github.com/onelogin/java-saml/tree/master">https://github.com/onelogin/java-saml/tree/master</a></li>
 </ul>
-<h3><a id="Adding_javasaml_toolkit_components_as_a_project_124"></a>Adding java-saml toolkit components as a project</h3>
+<h3 class="code-line" data-line-start=133 data-line-end=134 ><a id="Adding_javasaml_toolkit_components_as_a_project_133"></a>Adding java-saml toolkit components as a project</h3>
 <ol>
-<li>Open Eclipse and set a workspace</li>
-<li>File &gt; Import &gt; Maven : Existing Maven Projects &gt; Select the path where the core folder of the Java Toolkit is  <em>&lt;path&gt;/java-saml/core</em>, resolve the Workspace project and select the pom.xml</li>
-<li>File &gt; Import &gt; Maven : Existing Maven Projects &gt; Select the path where the toolkit folder of the Java Toolkit is  <em>&lt;path&gt;/java-saml/toolkit</em>, resolve the Workspace project and select the pom.xml</li>
+<li class="has-line-data" data-line-start="134" data-line-end="135">Open Eclipse and set a workspace</li>
+<li class="has-line-data" data-line-start="135" data-line-end="136">File &gt; Import &gt; Maven : Existing Maven Projects &gt; Select the path where the core folder of the Java Toolkit is  <em>&lt;path&gt;/java-saml/core</em>, resolve the Workspace project and select the pom.xml</li>
+<li class="has-line-data" data-line-start="136" data-line-end="138">File &gt; Import &gt; Maven : Existing Maven Projects &gt; Select the path where the toolkit folder of the Java Toolkit is  <em>&lt;path&gt;/java-saml/toolkit</em>, resolve the Workspace project and select the pom.xml</li>
 </ol>
-<h3><a id="Adding_the_javasamltookitjspsample_as_a_project_129"></a>Adding the java-saml-tookit-jspsample as a project</h3>
+<h3 class="code-line" data-line-start=138 data-line-end=139 ><a id="Adding_the_javasamltookitjspsample_as_a_project_138"></a>Adding the java-saml-tookit-jspsample as a project</h3>
 <ol>
-<li>File &gt; Import &gt; Maven : Existing Maven Projects &gt; Select the path where the core folder of the Java Toolkit is  <em>&lt;path&gt;/java-saml/samples/java-saml-tookit-jspsample</em>, resolve the Wordkspace project and select the pom.xml</li>
+<li class="has-line-data" data-line-start="139" data-line-end="141">File &gt; Import &gt; Maven : Existing Maven Projects &gt; Select the path where the core folder of the Java Toolkit is  <em>&lt;path&gt;/java-saml/samples/java-saml-tookit-jspsample</em>, resolve the Workspace project and select the pom.xml</li>
 </ol>
-<h3><a id="Deploy_the_javasamltookitjspsample_132"></a>Deploy the java-saml-tookit-jspsample</h3>
-<p>At the Package Explorer, select the jsp-sample project, 2nd bottom of the mouse and Run As &gt; Run Server<br>
+<h3 class="code-line" data-line-start=141 data-line-end=142 ><a id="Deploy_the_javasamltookitjspsample_141"></a>Deploy the java-saml-tookit-jspsample</h3>
+<p class="has-line-data" data-line-start="143" data-line-end="145">At the Package Explorer, select the jsp-sample project, 2nd bottom of the mouse and Run As &gt; Run Server<br>
 Select a <a href="http://crunchify.com/step-by-step-guide-to-setup-and-install-apache-tomcat-server-in-eclipse-development-environment-ide/">Tomcat Server</a> in order to deploy the server.</p>
-<h2><a id="Getting_started_137"></a>Getting started</h2>
-<h3><a id="Knowing_the_toolkit_138"></a>Knowing the toolkit</h3>
-<p>The new OneLogin’s SAML Java SAML Toolkit contains different folders (core, toolkit, samples) and some files.</p>
-<p>Let’s start describing them:</p>
-<h4><a id="core_comoneloginjavasamlcore_144"></a>core (com.onelogin:java-saml-core)</h4>
-<p>This folder contains a maven project with the heart of java-saml, classes and methods to handle AuthNRequest, SAMLResponse, LogoutRequest, LogoutResponse and Metadata (low level API). In addition contains classes to load the settings of the toolkit and the HttpRequest class, a framework-agnostic representation of an HTTP request.</p>
-<p>In the repo, at <em>src/main/java</em> you will find the source, at <em>src/main/resources/schemas</em> there are xsd schemas used to validate the SAML messages, at <em>src/test/java</em> are the tests for its classes and at <em>src/test/resources</em> different settings, SAML messages and certificates used on the junit tests.</p>
-<h4><a id="toolkit_comoneloginjavasaml_150"></a>toolkit (com.onelogin:java-saml)</h4>
-<p>This folder contains a maven project with the Auth class to handle the low level classes of java-saml-core and the ServletUtils class to handle javax.servlet.http objetcs, used on the Auth class.<br>
+<h2 class="code-line" data-line-start=146 data-line-end=147 ><a id="Getting_started_146"></a>Getting started</h2>
+<h3 class="code-line" data-line-start=147 data-line-end=148 ><a id="Learning_the_toolkit_147"></a>Learning the toolkit</h3>
+<p class="has-line-data" data-line-start="149" data-line-end="150">OneLogin’s new SAML Java SAML Toolkit contains different folders (core, toolkit, samples) and some files.</p>
+<p class="has-line-data" data-line-start="151" data-line-end="152">Let’s start describing them:</p>
+<h4 class="code-line" data-line-start=153 data-line-end=154 ><a id="core_comoneloginjavasamlcore_153"></a>core (com.onelogin:java-saml-core)</h4>
+<p class="has-line-data" data-line-start="154" data-line-end="155">This folder contains a maven project with the heart of java-saml, classes and methods to handle AuthNRequest, SAMLResponse, LogoutRequest, LogoutResponse and Metadata (low level API). In addition, it contains classes to load the settings of the toolkit and the HttpRequest class, a framework-agnostic representation of an HTTP request.</p>
+<p class="has-line-data" data-line-start="156" data-line-end="157">In the repo, at <em>src/main/java</em> you will find the source; at <em>src/main/resources/schemas</em>, there are xsd schemas used to validate the SAML messages; at <em>src/test/java</em> are the tests for its classes; and at <em>src/test/resources</em> can be found different settings, SAML messages and certificates used by the junit tests.</p>
+<h4 class="code-line" data-line-start=159 data-line-end=160 ><a id="toolkit_comoneloginjavasaml_159"></a>toolkit (com.onelogin:java-saml)</h4>
+<p class="has-line-data" data-line-start="160" data-line-end="162">This folder contains a maven project with the Auth class to handle the low level classes of java-saml-core and the ServletUtils class to handle javax.servlet.http objects, used on the Auth class.<br>
 In the repo, at <em>src/main/java</em> you will find the source and at <em>src/test/java</em> the junit tests for the classes Auth and ServletUtils.</p>
-<h4><a id="samples_comoneloginjavasamltookitsamples_154"></a>samples (com.onelogin:java-saml-tookit-samples)</h4>
-<p>This folder contains a maven project with a jsp app used to learn how the java-saml toolkit works.</p>
-<p>At <em>java-saml-tookit-jspsample/src/main/webapp</em> folder we will find several jsp files, each one represent a different endpoint:</p>
+<h4 class="code-line" data-line-start=163 data-line-end=164 ><a id="samples_comoneloginjavasamltookitsamples_163"></a>samples (com.onelogin:java-saml-tookit-samples)</h4>
+<p class="has-line-data" data-line-start="164" data-line-end="165">This folder contains a maven project with a jsp app used to learn how the java-saml toolkit works.</p>
+<p class="has-line-data" data-line-start="166" data-line-end="167">Within the <em>java-saml-tookit-jspsample/src/main/webapp</em> folder are several jsp files, each one representing a different endpoint:</p>
 <ul>
-<li><em>index.jsp</em> Index of the webapp.</li>
-<li><em>dologin.jsp</em> SP-initiated SSO endpoint.</li>
-<li><em>dologout.jsp</em> SP-initiated SLO endpoint.</li>
-<li><em>acs.jsp</em> Service Provider Assertion Consumer Service endpoint.</li>
-<li><em>attrs.jsp</em> Shows attributes collected from the SAMLResponse.</li>
-<li><em>sls.jsp</em> Service Provider Single Logout Service endpoint.</li>
-<li><em>metadata.jsp</em> Publish SP metadata.</li>
+<li class="has-line-data" data-line-start="167" data-line-end="168"><em>index.jsp</em> Index of the webapp.</li>
+<li class="has-line-data" data-line-start="168" data-line-end="169"><em>dologin.jsp</em> SP-initiated SSO endpoint.</li>
+<li class="has-line-data" data-line-start="169" data-line-end="170"><em>dologout.jsp</em> SP-initiated SLO endpoint.</li>
+<li class="has-line-data" data-line-start="170" data-line-end="171"><em>acs.jsp</em> Service Provider Assertion Consumer Service endpoint.</li>
+<li class="has-line-data" data-line-start="171" data-line-end="172"><em>attrs.jsp</em> Shows attributes collected from the SAMLResponse.</li>
+<li class="has-line-data" data-line-start="172" data-line-end="173"><em>sls.jsp</em> Service Provider Single Logout Service endpoint.</li>
+<li class="has-line-data" data-line-start="173" data-line-end="175"><em>metadata.jsp</em> Publish SP metadata.</li>
 </ul>
-<p>At <em>java-saml-tookit-jspsample/src/main/resources</em> folder is the <em>onelogin.saml.properties</em> file that contains the SAML settings.</p>
-<h3><a id="How_it_works_168"></a>How it works</h3>
-<h4><a id="Settings_170"></a>Settings</h4>
-<p>First of all we need to configure the toolkit. The SP’s info, the IdP’s info, and in some cases, configure advanced security issues like signatures and encryption.</p>
-<p>All the settings are defined in one unique file, by default the Auth class loads a <em>onelogin.saml.properties</em> file with the Auth() method, but if we named it in a differnt way we can use Auth(filename);</p>
-<p>Here are the list of properties to be defined on the settings file:</p>
-<pre><code class="language-properties">#  If 'strict' is True, then the Java Toolkit will reject unsigned
+<p class="has-line-data" data-line-start="175" data-line-end="176">At <em>java-saml-tookit-jspsample/src/main/resources</em> folder is the <em>onelogin.saml.properties</em> file which contains the SAML settings.</p>
+<h3 class="code-line" data-line-start=177 data-line-end=178 ><a id="How_it_works_177"></a>How it works</h3>
+<h4 class="code-line" data-line-start=179 data-line-end=180 ><a id="Javadocs_179"></a>Javadocs</h4>
+<ul>
+<li class="has-line-data" data-line-start="181" data-line-end="182"><a href="https://onelogin.github.io/java-saml/toolkit/index.html">toolkit (com.onelogin:java-saml)</a></li>
+<li class="has-line-data" data-line-start="182" data-line-end="184"><a href="https://onelogin.github.io/java-saml/core/index.html">core (com.onelogin:java-saml-core)</a></li>
+</ul>
+<h4 class="code-line" data-line-start=184 data-line-end=185 ><a id="Settings_184"></a>Settings</h4>
+<p class="has-line-data" data-line-start="185" data-line-end="186">First of all we need to configure the toolkit. The SP’s info, the IdP’s info, and in some cases, configuration for advanced security issues, such as signatures and encryption.</p>
+<h5 class="code-line" data-line-start=187 data-line-end=188 ><a id="Properties_File_187"></a>Properties File</h5>
+<p class="has-line-data" data-line-start="188" data-line-end="189">All the settings are defined in one unique file; by default, the Auth class loads a <em>onelogin.saml.properties</em> file with the Auth() method, but if we named it in a different way, we can use Auth(filename);</p>
+<p class="has-line-data" data-line-start="190" data-line-end="191">Here are the list of properties to be defined on the settings file:</p>
+<pre><code class="has-line-data" data-line-start="192" data-line-end="360" class="language-properties">#  If 'strict' is True, then the Java Toolkit will reject unsigned
 #  or unencrypted messages if it expects them signed or encrypted
 #  Also will reject the messages if not strictly follow the SAML
 onelogin.saml2.strict =  false
@@ -203,13 +205,16 @@ onelogin.saml2.sp.single_logout_service.binding = urn:oasis:names:tc:SAML:2.0:bi
 
 # Specifies constraints on the name identifier to be used to
 # represent the requested subject.
-# Take a look on lib/Saml2/Constants.php to see the NameIdFormat supported
+# Take a look on core/src/main/java/com/onelogin/saml2/util/Constants.java to see the NameIdFormat supported
 onelogin.saml2.sp.nameidformat = urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified
 
 # Usually x509cert and privateKey of the SP are provided by files placed at
 # the certs folder. But we can also provide them with the following parameters
 
 onelogin.saml2.sp.x509cert =
+
+# Future SP certificate, to be used during SP Key roll over
+onelogin.saml2.sp.x509certNew =
 
 # Requires Format PKCS#8   BEGIN PRIVATE KEY       
 # If you have     PKCS#1   BEGIN RSA PRIVATE KEY  convert it by   openssl pkcs8 -topk8 -inform pem -nocrypt -in sp.rsa_key -outform pem -out sp.pem
@@ -246,7 +251,10 @@ onelogin.saml2.idp.single_logout_service.binding = urn:oasis:names:tc:SAML:2.0:b
 # Public x509 certificate of the IdP
 onelogin.saml2.idp.x509cert =
 
-# Instead of use the whole x509cert you can use a fingerprint
+# Instead of using the whole x509cert you can use a fingerprint in order to
+# validate a SAMLResponse (but you still need the x509cert to validate LogoutRequest and LogoutResponse using the HTTP-Redirect binding).
+# But take in mind that the fingerprint, is a hash, so at the end is open to a collision attack that can end on a signature validation bypass,
+# that why we don't recommend it use for production environments.
 # (openssl x509 -noout -fingerprint -in &quot;idp.crt&quot; to generate it,
 # or add for example the -sha256 , -sha384 or -sha512 parameter)
 #
@@ -256,8 +264,8 @@ onelogin.saml2.idp.x509cert =
 # onelogin.saml2.idp.certfingerprint = 
 # onelogin.saml2.idp.certfingerprint_algorithm = sha1
 
-
-## Security settings ##
+# Security settings
+#
 
 # Indicates that the nameID of the &lt;samlp:logoutRequest&gt; sent by this SP
 # will be encrypted.
@@ -275,17 +283,16 @@ onelogin.saml2.security.logoutrequest_signed = false
 # will be signed.
 onelogin.saml2.security.logoutresponse_signed = false
 
-# Sign the Metadata
-# Empty means no signature, or comma separate the keyFileName and the certFileName
-onelogin.saml2.security.want_messages_signed = 
-
 # Indicates a requirement for the &lt;samlp:Response&gt;, &lt;samlp:LogoutRequest&gt; and
 # &lt;samlp:LogoutResponse&gt; elements received by this SP to be signed.
+onelogin.saml2.security.want_messages_signed = false
+
+# Indicates a requirement for the &lt;saml:Assertion&gt; elements received by this SP to be signed.
 onelogin.saml2.security.want_assertions_signed = false
 
 # Indicates a requirement for the Metadata of this SP to be signed.
 # Right now supported null (in order to not sign) or true (sign using SP private key) 
-onelogin.saml2.security.sign_metadata = 
+onelogin.saml2.security.sign_metadata =
 
 # Indicates a requirement for the Assertions received by this SP to be encrypted
 onelogin.saml2.security.want_assertions_encrypted = false
@@ -293,13 +300,14 @@ onelogin.saml2.security.want_assertions_encrypted = false
 # Indicates a requirement for the NameID received by this SP to be encrypted
 onelogin.saml2.security.want_nameid_encrypted = false
 
+
 # Authentication context.
 # Set Empty and no AuthContext will be sent in the AuthNRequest,
 # Set comma separated values urn:oasis:names:tc:SAML:2.0:ac:classes:urn:oasis:names:tc:SAML:2.0:ac:classes:Password
 onelogin.saml2.security.requested_authncontext = urn:oasis:names:tc:SAML:2.0:ac:classes:urn:oasis:names:tc:SAML:2.0:ac:classes:Password
 
 # Allows the authn comparison parameter to be set, defaults to 'exact'
-onelogin.saml2.security.onelogin.saml2.security.requested_authncontextcomparison = exact
+onelogin.saml2.security.requested_authncontextcomparison = exact
 
 # Indicates if the SP will validate all received xmls.
 # (In order to validate the xml, 'strict' and 'wantXMLValidation' must be true).
@@ -317,45 +325,83 @@ onelogin.saml2.security.signature_algorithm = http://www.w3.org/2000/09/xmldsig#
 onelogin.saml2.organization.name = SP Java 
 onelogin.saml2.organization.displayname = SP Java Example
 onelogin.saml2.organization.url = http://sp.example.com
+onelogin.saml2.organization.lang = en
 
 # Contacts
 onelogin.saml2.contacts.technical.given_name = Technical Guy
 onelogin.saml2.contacts.technical.email_address = technical@example.com
 onelogin.saml2.contacts.support.given_name = Support Guy
-onelogin.saml2.contacts.support.email_address = support@@example.com
+onelogin.saml2.contacts.support.email_address = support@example.com
+
+# Prefix used in generated Unique IDs.
+# Optional, defaults to ONELOGIN_ or full ID is like ONELOGIN_ebb0badd-4f60-4b38-b20a-a8e01f0592b1.
+# At minimun, the prefix can be non-numeric character such as &quot;_&quot;.
+# onelogin.saml2.unique_id_prefix = _
 </code></pre>
-<h4><a id="The_HttpRequest_334"></a>The HttpRequest</h4>
-<p>java-saml-core uses HttpRequest class, a framework-agnostic representation of an HTTP request.</p>
-<p>java-saml depends on javax.servlet:servlet-api, and the classes Auth and ServletUtils use HttpServletRequest and HttpServletResponse objects.</p>
-<p>If you want to use anything different than javax.servlet.http, you will need to reimplement Auth and ServletUtils based on that new representation of the HTTP request/responses.</p>
-<h4><a id="Initiate_SSO_341"></a>Initiate SSO</h4>
-<p>In order to send an AuthNRequest to the IdP:</p>
-<pre><code>Auth auth = new Auth(request, response);
+<h5 class="code-line" data-line-start=361 data-line-end=362 ><a id="KeyStores_361"></a>KeyStores</h5>
+<p class="has-line-data" data-line-start="363" data-line-end="364">The Auth constructor supports the ability to read SP public cert/private key from a KeyStore. A KeyStoreSettings object must be provided with the KeyStore, the Alias and the storePass if any.</p>
+<pre><code class="has-line-data" data-line-start="366" data-line-end="381" class="language-java"><span class="hljs-keyword">import</span> java.io.FileInputStream;
+<span class="hljs-keyword">import</span> java.security.KeyStore;
+<span class="hljs-keyword">import</span> com.onelogin.saml2.Auth
+<span class="hljs-keyword">import</span> com.onelogin.saml2.model.KeyStoreSettings
+
+String keyStoreFile = <span class="hljs-string">"oneloginTestKeystore.jks"</span>;
+String alias = <span class="hljs-string">"onelogintest"</span>;
+String storePass = <span class="hljs-string">"changeit"</span>;
+
+KeyStore ks = KeyStore.getInstance(<span class="hljs-string">"JKS"</span>);
+ks.load(<span class="hljs-keyword">new</span> FileInputStream(keyStoreFile), password.toCharArray());
+
+KeyStoreSettings keyStoreSettings =  <span class="hljs-keyword">new</span> keyStoreSettings(ks, alias, storePass);
+Auth auth = <span class="hljs-keyword">new</span> Auth(KeyStoreSettings keyStoreSetting);
+</code></pre>
+<h5 class="code-line" data-line-start=382 data-line-end=383 ><a id="Dynamic_Settings_382"></a>Dynamic Settings</h5>
+<p class="has-line-data" data-line-start="383" data-line-end="384">It is possible to build settings programmatically. You can load your values from different sources such as files, databases, or generated values.</p>
+<p class="has-line-data" data-line-start="385" data-line-end="386">The <code>SettingsBuilder</code> class exposes the method <code>fromValues(Map&lt;String, Object&gt; samlData)</code> which let you build your settings dynamically. The <code>key</code> strings are the same from the <em>Properties file</em></p>
+<pre><code class="has-line-data" data-line-start="387" data-line-end="396" class="language-java">Map&lt;String, Object&gt; samlData = <span class="hljs-keyword">new</span> HashMap&lt;&gt;();
+samlData.put(<span class="hljs-string">"onelogin.saml2.sp.entityid"</span>, <span class="hljs-string">"http://localhost:8080/java-saml-tookit-jspsample/metadata.jsp"</span>);
+samlData.put(<span class="hljs-string">"onelogin.saml2.sp.assertion_consumer_service.url"</span>, <span class="hljs-keyword">new</span> URL(<span class="hljs-string">"http://localhost:8080/java-saml-tookit-jspsample/acs.jsp"</span>));
+samlData.put(<span class="hljs-string">"onelogin.saml2.security.want_xml_validation"</span>,<span class="hljs-keyword">true</span>);
+samlData.put(<span class="hljs-string">"onelogin.saml2.sp.x509cert"</span>, myX509CertInstance);
+
+SettingsBuilder builder = <span class="hljs-keyword">new</span> SettingsBuilder();
+Saml2Settings settings = builder.fromValues(samlData).build();
+</code></pre>
+<p class="has-line-data" data-line-start="397" data-line-end="398">To instantiate the <code>Auth</code> class you write</p>
+<pre><code class="has-line-data" data-line-start="399" data-line-end="401" class="language-java">Auth auth = <span class="hljs-keyword">new</span> Auth(settings, request, response);
+</code></pre>
+<h4 class="code-line" data-line-start=402 data-line-end=403 ><a id="The_HttpRequest_402"></a>The HttpRequest</h4>
+<p class="has-line-data" data-line-start="403" data-line-end="404">java-saml-core uses HttpRequest class, a framework-agnostic representation of an HTTP request.</p>
+<p class="has-line-data" data-line-start="405" data-line-end="406">java-saml depends on javax.servlet:servlet-api, and the classes Auth and ServletUtils use HttpServletRequest and HttpServletResponse objects.</p>
+<p class="has-line-data" data-line-start="407" data-line-end="408">If you want to use anything different than javax.servlet.http, you will need to reimplement Auth and ServletUtils based on that new representation of the HTTP request/responses.</p>
+<h4 class="code-line" data-line-start=409 data-line-end=410 ><a id="Initiate_SSO_409"></a>Initiate SSO</h4>
+<p class="has-line-data" data-line-start="410" data-line-end="411">In order to send an AuthNRequest to the IdP:</p>
+<pre><code class="has-line-data" data-line-start="412" data-line-end="415">Auth auth = new Auth(request, response);
 auth.login();
 </code></pre>
-<p>The AuthNRequest will be sent signed or unsigned based on the security settings ‘onelogin.saml2.security.authnrequest_signed’.</p>
-<p>The IdP will then return the SAML Response to the user’s client. The client is then forwarded to the Attribute Consumer Service of the SP with this information.</p>
-<p>We can set a ‘returnTo’ url parameter to the login function and that will be converted as a ‘RelayState’ parameter:</p>
-<pre><code>String targetUrl = 'https://example.com';
+<p class="has-line-data" data-line-start="415" data-line-end="416">The AuthNRequest will be sent signed or unsigned based on the security settings ‘onelogin.saml2.security.authnrequest_signed’.</p>
+<p class="has-line-data" data-line-start="417" data-line-end="418">The IdP will then return the SAML Response to the user’s client. The client is then forwarded to the Attribute Consumer Service of the SP with this information.</p>
+<p class="has-line-data" data-line-start="419" data-line-end="420">We can set a ‘returnTo’ url parameter to the login function and that will be converted as a ‘RelayState’ parameter:</p>
+<pre><code class="has-line-data" data-line-start="421" data-line-end="424">String targetUrl = 'https://example.com';
 auth.login(returnTo=targetUrl)
 </code></pre>
-<p>The login method can recieve 4 more optional parameters:</p>
+<p class="has-line-data" data-line-start="424" data-line-end="425">The login method can receive 5 more optional parameters:</p>
 <ul>
-<li>forceAuthn When true the AuthNReuqest will set the ForceAuthn=‘true’</li>
-<li>isPassive When true the AuthNReuqest will set the Ispassive=‘true’</li>
-<li>setNameIdPolicy When true the AuthNReuqest will set a nameIdPolicy element.</li>
-<li>stay True if we want to stay (returns the url string) False to execute a redirection to that url (IdP SSO URL)</li>
+<li class="has-line-data" data-line-start="425" data-line-end="426"><em>forceAuthn</em> When true the AuthNRequest will have the ‘ForceAuthn’ attribute set to ‘true’</li>
+<li class="has-line-data" data-line-start="426" data-line-end="427"><em>isPassive</em> When true the AuthNRequest will have the ‘Ispassive’ attribute set to ‘true’</li>
+<li class="has-line-data" data-line-start="427" data-line-end="428"><em>setNameIdPolicy</em> When true the AuthNRequest will set a nameIdPolicy element.</li>
+<li class="has-line-data" data-line-start="428" data-line-end="429"><em>stay</em> Set to true to stay (returns the url string), otherwise set to false to execute a redirection to that url (IdP SSO URL)</li>
+<li class="has-line-data" data-line-start="429" data-line-end="431"><em>nameIdValueReq</em> Indicates to the IdP the subject that should be authenticated</li>
 </ul>
-<p>By default the login method initiates a redirect to the SAML Identity Provider. You can use the stay parameter, to prevent that, and execute the redirection manually. We need to use that<br>
-if a match on the future SAMLResponse ID and the AuthNRequest ID to be sent is required, that AuthNRequest ID must be extracted and stored for future validation so we can’t execute the redirection on the login, instead set stay to true, then get that ID by</p>
-<pre><code>auth.getLastRequestId()
+<p class="has-line-data" data-line-start="431" data-line-end="432">By default, the login method initiates a redirect to the SAML Identity Provider. You can use the <em>stay</em> parameter, to prevent that, and execute the redirection manually. We need to use that if a match on the future SAMLResponse ID and the AuthNRequest ID to be sent is required.  That AuthNRequest ID must be extracted and stored for future validation, so we can’t execute the redirection on the login.  Instead, set <em>stay</em> to true, then get that ID by</p>
+<pre><code class="has-line-data" data-line-start="433" data-line-end="435">auth.getLastRequestId()
 </code></pre>
-<p>and later excuting the redirection manually.</p>
-<h4><a id="The_SP_Endpoints_370"></a>The SP Endpoints</h4>
-<p>Related to the SP there are 3 important endpoints: The metadata view, the ACS view and the SLS view. The toolkit provides at the demo of the samples folder those views.</p>
-<h5><a id="SP_Metadata_373"></a>SP Metadata</h5>
-<p>This code will provide the XML metadata file of our SP, based on the info that we provided in the settings files.</p>
-<pre><code>Auth auth = new Auth();
+<p class="has-line-data" data-line-start="435" data-line-end="436">and later executing the redirection manually.</p>
+<h4 class="code-line" data-line-start=438 data-line-end=439 ><a id="The_SP_Endpoints_438"></a>The SP Endpoints</h4>
+<p class="has-line-data" data-line-start="439" data-line-end="440">Related to the SP there are 3 important endpoints: The metadata view, the ACS view and the SLS view. The toolkit provides at the demo of the samples folder those views.</p>
+<h5 class="code-line" data-line-start=441 data-line-end=442 ><a id="SP_Metadata_441"></a>SP Metadata</h5>
+<p class="has-line-data" data-line-start="442" data-line-end="443">This code will provide the XML metadata file of our SP, based on the info that we provided in the settings files.</p>
+<pre><code class="has-line-data" data-line-start="444" data-line-end="457">Auth auth = new Auth();
 Saml2Settings settings = auth.getSettings();
 String metadata = settings.getSPMetadata();
 List&lt;String&gt; errors = Saml2Settings.validateMetadata(metadata);
@@ -368,11 +414,11 @@ if (errors.isEmpty()) {
    }
 }
 </code></pre>
-<p>The getSPMetadata will return the metadata signed or not based on the security parameter of the settings <code>onelogin.saml2.security.sign_metadata</code>.</p>
-<p>Before the XML metadata is exposed, a check takes place to ensure that the info to be provided is valid.</p>
-<h5><a id="Attribute_Consumer_ServiceACS_393"></a>Attribute Consumer Service(ACS)</h5>
-<p>This code handles the SAML response that the IdP forwards to the SP through the user’s client.</p>
-<pre><code>Auth auth = new Auth(request, response);
+<p class="has-line-data" data-line-start="457" data-line-end="458">The getSPMetadata will return the metadata signed or not based on the security parameter of the settings <code>onelogin.saml2.security.sign_metadata</code>.</p>
+<p class="has-line-data" data-line-start="459" data-line-end="460">Before the XML metadata is exposed, a check takes place to ensure that the info to be provided is valid.</p>
+<h5 class="code-line" data-line-start=461 data-line-end=462 ><a id="Attribute_Consumer_ServiceACS_461"></a>Attribute Consumer Service(ACS)</h5>
+<p class="has-line-data" data-line-start="462" data-line-end="463">This code handles the SAML response that the IdP forwards to the SP through the user’s client.</p>
+<pre><code class="has-line-data" data-line-start="464" data-line-end="515">Auth auth = new Auth(request, response);
 auth.processResponse();
 if (!auth.isAuthenticated()) {
    out.println(&quot;Not authenticated&quot;);
@@ -388,10 +434,19 @@ if (!errors.isEmpty()) {
         }
     }
 } else {
-    HashMap&lt;String, List&lt;String&gt;&gt; attributes = auth.getAttributes();
+    Map&lt;String, List&lt;String&gt;&gt; attributes = auth.getAttributes();
     String nameId = auth.getNameId();
+    String nameIdFormat = auth.getNameIdFormat();
+    String sessionIndex = auth.getSessionIndex();
+    String nameidNameQualifier = auth.getNameIdNameQualifier();
+    String nameidSPNameQualifier = auth.getNameIdSPNameQualifier();
+
     session.setAttribute(&quot;attributes&quot;, attributes);
     session.setAttribute(&quot;nameId&quot;, nameId);
+    session.setAttribute(&quot;nameIdFormat&quot;, nameIdFormat);
+    session.setAttribute(&quot;sessionIndex&quot;, sessionIndex);
+    session.setAttribute(&quot;nameidNameQualifier&quot;, nameidNameQualifier);
+    session.setAttribute(&quot;nameidSPNameQualifier&quot;, nameidSPNameQualifier);
 
     String relayState = request.getParameter(&quot;RelayState&quot;);
 
@@ -414,29 +469,29 @@ if (!errors.isEmpty()) {
     }
 }
 </code></pre>
-<p>The SAML response is processed and then checked that there are no errors. It also verifies that the user is authenticated and stored the userdata in session.<br>
+<p class="has-line-data" data-line-start="515" data-line-end="517">The SAML response is processed and then checked to ensure that there are no errors. It also verifies that the user is authenticated, and then the userdata is stored in the session.<br>
 At that point there are 2 possible alternatives:</p>
 <ul>
-<li>If no RelayState is provided, we could show the user data in this view or however we wanted.</li>
-<li>If RelayState is provided, a redirection take place.<br>
+<li class="has-line-data" data-line-start="517" data-line-end="518">If no RelayState is provided, we could show the user data in this view or however we wanted.</li>
+<li class="has-line-data" data-line-start="518" data-line-end="521">If RelayState is provided, a redirection take place.<br>
 Notice that we saved the user data in the session before the redirection to have the user data available at the RelayState view.</li>
 </ul>
-<p>In order to retrieve attributes we use:</p>
-<pre><code>Map&lt;String, List&lt;String&gt;&gt; attributes = auth.getAttributes();
+<p class="has-line-data" data-line-start="521" data-line-end="522">In order to retrieve attributes we use:</p>
+<pre><code class="has-line-data" data-line-start="523" data-line-end="525">Map&lt;String, List&lt;String&gt;&gt; attributes = auth.getAttributes();
 </code></pre>
-<p>With this method we get a Map with all the user data provided by the IdP in the Assertion of the SAML Response.</p>
-<pre><code>{
+<p class="has-line-data" data-line-start="526" data-line-end="527">With this method we get a Map with all the user data provided by the IdP in the Assertion of the SAML Response.</p>
+<pre><code class="has-line-data" data-line-start="528" data-line-end="535">{
     &quot;cn&quot;: [&quot;Jhon&quot;],
     &quot;sn&quot;: [&quot;Doe&quot;],
     &quot;mail&quot;: [&quot;Doe&quot;],
     &quot;groups&quot;: [&quot;users&quot;, &quot;members&quot;]
 }
 </code></pre>
-<p>Each attribute name can be used as a key to obtain the value. Every attribute is a list of values. A single-valued attribute is a listy of a single element.</p>
-<p>Before trying to get an attribute, check that the user is authenticated. If the user isn’t authenticated, an empty Map will be returned. For example, if we call to getAttributes before a auth.processResponse, the getAttributes() will return an empty Map.</p>
-<h5><a id="Single_Logout_Service_SLS_462"></a>Single Logout Service (SLS)</h5>
-<p>This code handles the Logout Request and the Logout Responses.</p>
-<pre><code>Auth auth = new Auth(request, response);
+<p class="has-line-data" data-line-start="535" data-line-end="536">Each attribute name can be used as a key to obtain the value. Every attribute is a list of values. A single-valued attribute is a list of a single element.</p>
+<p class="has-line-data" data-line-start="537" data-line-end="538">Before trying to get an attribute, check that the user is authenticated. If the user isn’t authenticated, an empty Map will be returned. For example, if we call to getAttributes before a auth.processResponse, the getAttributes() will return an empty Map.</p>
+<h5 class="code-line" data-line-start=539 data-line-end=540 ><a id="Single_Logout_Service_SLS_539"></a>Single Logout Service (SLS)</h5>
+<p class="has-line-data" data-line-start="540" data-line-end="541">This code handles the Logout Request and the Logout Responses.</p>
+<pre><code class="has-line-data" data-line-start="542" data-line-end="553">Auth auth = new Auth(request, response);
 auth.processSLO();
 List&lt;String&gt; errors = auth.getErrors();
 if (errors.isEmpty()) {
@@ -447,54 +502,86 @@ if (errors.isEmpty()) {
    }
 }
 </code></pre>
-<p>If the SLS endpoints receives a Logout Response, the response is validated and the session of the HttpRequest could be closed.</p>
-<p>If the SLS endpoints receives an Logout Request, the request is validated, the session is closed and a Logout Response is sent to the SLS endpoint of the IdP.</p>
-<p>If we don’t want that processSLO to destroy the session, pass the keepLocalSession parameter as true to the processSLO method.</p>
-<h4><a id="Initiate_SLO_482"></a>Initiate SLO</h4>
-<p>In order to send a Logout Request to the IdP:</p>
-<pre><code>Auth auth = new Auth(request, response);
-auth.logout();
+<p class="has-line-data" data-line-start="553" data-line-end="554">If the SLS endpoints receives a Logout Response, the response is validated and the session of the HttpRequest could be closed.</p>
+<p class="has-line-data" data-line-start="555" data-line-end="556">If the SLS endpoints receives an Logout Request, the request is validated, the session is closed and a Logout Response is sent to the SLS endpoint of the IdP.</p>
+<p class="has-line-data" data-line-start="557" data-line-end="558">If we don’t want that processSLO to destroy the session, pass the keepLocalSession parameter as true to the processSLO method.</p>
+<h4 class="code-line" data-line-start=559 data-line-end=560 ><a id="Initiate_SLO_559"></a>Initiate SLO</h4>
+<p class="has-line-data" data-line-start="560" data-line-end="561">In order to send a Logout Request to the IdP:</p>
+<pre><code class="has-line-data" data-line-start="562" data-line-end="586">Auth auth = new Auth(request, response);
+
+String nameId = null;
+if (session.getAttribute(&quot;nameId&quot;) != null) {
+    nameId = session.getAttribute(&quot;nameId&quot;).toString();
+}
+String nameIdFormat = null;
+if (session.getAttribute(&quot;nameIdFormat&quot;) != null) {
+    nameIdFormat = session.getAttribute(&quot;nameIdFormat&quot;).toString();
+}
+String nameidNameQualifier = null;
+if (session.getAttribute(&quot;nameidNameQualifier&quot;) != null) {
+    nameIdFormat = session.getAttribute(&quot;nameidNameQualifier&quot;).toString();
+}
+String nameidSPNameQualifier = null;
+if (session.getAttribute(&quot;nameidSPNameQualifier&quot;) != null) {
+    nameidSPNameQualifier = session.getAttribute(&quot;nameidSPNameQualifier&quot;).toString();
+}
+String sessionIndex = null;
+if (session.getAttribute(&quot;sessionIndex&quot;) != null) {
+    sessionIndex = session.getAttribute(&quot;sessionIndex&quot;).toString();
+}
+auth.logout(null, nameId, sessionIndex, nameIdFormat);
 </code></pre>
-<p>The Logout Request will be sent signed or unsigned based on the security settings ‘onelogin.saml2.security.logoutrequest_signed’</p>
-<p>The IdP will return the Logout Response through the user’s client to the Single Logout Service of the SP.</p>
-<p>We can set a ‘returnTo’ url parameter to the logout function and that will be converted as a ‘RelayState’ parameter:</p>
-<pre><code>String targetUrl = 'https://example.com';
+<p class="has-line-data" data-line-start="586" data-line-end="587">The Logout Request will be sent signed or unsigned based on the security settings ‘onelogin.saml2.security.logoutrequest_signed’</p>
+<p class="has-line-data" data-line-start="588" data-line-end="589">The IdP will return the Logout Response through the user’s client to the Single Logout Service of the SP.</p>
+<p class="has-line-data" data-line-start="590" data-line-end="591">We can set a ‘returnTo’ url parameter to the logout function and that will be converted as a ‘RelayState’ parameter:</p>
+<pre><code class="has-line-data" data-line-start="592" data-line-end="595">String targetUrl = 'https://example.com';
 auth.logout(returnTo=targetUrl)
 </code></pre>
-<p>Also there are 3 optional parameters that can be set:</p>
+<p class="has-line-data" data-line-start="596" data-line-end="597">Also there are 3 optional parameters that can be set:</p>
 <ul>
-<li>nameId. That will be used to build the LogoutRequest. If not name_id parameter is set and the auth object processed a SAML Response with a NameId, then this NameId will be used.</li>
-<li>sessionIndex. Identifies the session of the user.<br>
+<li class="has-line-data" data-line-start="597" data-line-end="598">nameId. That will be used to build the LogoutRequest. If not name_id parameter is set and the auth object processed a SAML Response with a NameId, then this NameId will be used.</li>
+<li class="has-line-data" data-line-start="598" data-line-end="600">sessionIndex. Identifies the session of the user.<br>
 If a match on the LogoutResponse ID and the LogoutRequest ID to be sent is required, that LogoutRequest ID must to be extracted and stored for future validation, we can get that ID by</li>
-<li>stay. True if we want to stay (returns the url string) False to execute a redirection to that url (IdP SLS URL)</li>
+<li class="has-line-data" data-line-start="600" data-line-end="602">stay. True if we want to stay (returns the url string) False to execute a redirection to that url (IdP SLS URL)</li>
 </ul>
-<p>By default the logout method initiates a redirect to the SAML Identity Provider. You can use the stay parameter, to prevent that, and execute the redirection manually. We need to use that<br>
+<p class="has-line-data" data-line-start="602" data-line-end="604">By default the logout method initiates a redirect to the SAML Identity Provider. You can use the stay parameter, to prevent that, and execute the redirection manually. We need to use that<br>
 if a match on the future LogoutResponse ID and the LogoutRequest ID to be sent is required, that LogoutRequest ID must be extracted and stored for future validation so we can’t execute the redirection on the logout, instead set stay to true, then get that ID by</p>
-<pre><code>auth.getLastRequestId()
+<pre><code class="has-line-data" data-line-start="606" data-line-end="608">auth.getLastRequestId()
 </code></pre>
-<p>and later excuting the redirection manually.</p>
-<h2><a id="Demo_included_in_the_toolkit_513"></a>Demo included in the toolkit</h2>
-<p>The Onelogin’s Java Toolkit allows you to provide the settings in a unique file as described at the <a href="https://github.com/onelogin/java-saml/#Settings">Settings  section</a>.</p>
-<h4><a id="SP_setup_516"></a>SP setup</h4>
-<p>Configure the SP part and review the metadata of the IdP and complete the IdP info. Later configure how the toolkit will work enabling/disabling the security settings.</p>
-<h4><a id="IdP_setup_519"></a>IdP setup</h4>
-<p>Once the SP is configured, the metadata of the SP is published at the /metadata.jsp url. Based on that info, configure the IdP.</p>
-<h4><a id="How_it_works_523"></a>How it works</h4>
-<p>Lets imagine we deploy the jsp example project at <em><a href="http://localhost:8080/java-saml-tookit-jspsample/">http://localhost:8080/java-saml-tookit-jspsample/</a></em>.</p>
+<p class="has-line-data" data-line-start="608" data-line-end="609">and later executing the redirection manually.</p>
+<h3 class="code-line" data-line-start=611 data-line-end=612 ><a id="Working_behind_load_balancer_611"></a>Working behind load balancer</h3>
+<p class="has-line-data" data-line-start="613" data-line-end="614">Is possible that asserting request URL and Destination attribute of SAML response fails when working behind load balancer with SSL offload.</p>
+<p class="has-line-data" data-line-start="615" data-line-end="616">You should be able to workaround this by configuring your server so that it is aware of the proxy and returns the original url when requested.</p>
+<p class="has-line-data" data-line-start="617" data-line-end="618">For Apache Tomcat this is done by setting the proxyName, proxyPort, scheme and secure attributes for the Connector. See <a href="http://serverfault.com/questions/774300/ssl-offloading-from-apache-to-tomcat-get-overwritten-somewhere">here</a> for an example.</p>
+<h3 class="code-line" data-line-start=620 data-line-end=621 ><a id="IdP_with_multiple_certificates_620"></a>IdP with multiple certificates</h3>
+<p class="has-line-data" data-line-start="622" data-line-end="624">In some scenarios the IdP uses different certificates for<br>
+signing/encryption, or is under key rollover phase and more than one certificate is published on IdP metadata.</p>
+<p class="has-line-data" data-line-start="625" data-line-end="626">In order to handle that the toolkit offers the <code>onelogin.saml2.idp.x509certMulti</code> parameters where you can set additional certificates that will be used to validate IdP signature. However just the certificate set in <code>onelogin.saml2.idp.x509cert</code> parameter will be used for encrypting.</p>
+<h3 class="code-line" data-line-start=628 data-line-end=629 ><a id="Replay_attacks_628"></a>Replay attacks</h3>
+<p class="has-line-data" data-line-start="630" data-line-end="631">In order to avoid replay attacks, you can store the ID of the SAML messages already processed, to avoid processing them twice. Since the Messages expires and will be invalidated due that fact, you don’t need to store those IDs longer than the time frame that you currently accepting.</p>
+<p class="has-line-data" data-line-start="632" data-line-end="633">Get the ID of the last processed message with the getLastMessageId method of the Auth object.</p>
+<h2 class="code-line" data-line-start=634 data-line-end=635 ><a id="Demo_included_in_the_toolkit_634"></a>Demo included in the toolkit</h2>
+<p class="has-line-data" data-line-start="635" data-line-end="636">The Onelogin’s Java Toolkit allows you to provide the settings in a unique file as described at the <a href="https://github.com/onelogin/java-saml/#Settings">Settings  section</a>.</p>
+<h4 class="code-line" data-line-start=637 data-line-end=638 ><a id="SP_setup_637"></a>SP setup</h4>
+<p class="has-line-data" data-line-start="638" data-line-end="639">Configure the SP part and review the metadata of the IdP and complete the IdP info. Later configure how the toolkit will work enabling/disabling the security settings.</p>
+<h4 class="code-line" data-line-start=640 data-line-end=641 ><a id="IdP_setup_640"></a>IdP setup</h4>
+<p class="has-line-data" data-line-start="642" data-line-end="643">Once the SP is configured, the metadata of the SP is published at the /metadata.jsp url. Based on that info, configure the IdP.</p>
+<h4 class="code-line" data-line-start=644 data-line-end=645 ><a id="How_it_works_644"></a>How it works</h4>
+<p class="has-line-data" data-line-start="645" data-line-end="646">Lets imagine we deploy the jsp example project at <em><a href="http://localhost:8080/java-saml-tookit-jspsample/">http://localhost:8080/java-saml-tookit-jspsample/</a></em>.</p>
 <ol>
-<li>
-<p>First time you access to the main view <em><a href="http://localhost:8080/java-saml-tookit-jspsample/index.jsp">http://localhost:8080/java-saml-tookit-jspsample/index.jsp</a></em>, you can select to login and return to the same view or login and be redirected to  the attribute view (attrs).</p>
+<li class="has-line-data" data-line-start="647" data-line-end="649">
+<p class="has-line-data" data-line-start="647" data-line-end="648">First time you access to the main view <em><a href="http://localhost:8080/java-saml-tookit-jspsample/index.jsp">http://localhost:8080/java-saml-tookit-jspsample/index.jsp</a></em>, you can select to login and return to the same view or login and be redirected to  the attribute view (attrs).</p>
 </li>
-<li>
-<p>When you click on a link,:</p>
+<li class="has-line-data" data-line-start="649" data-line-end="651">
+<p class="has-line-data" data-line-start="649" data-line-end="650">When you click on a link,:</p>
 </li>
 </ol>
-<p>2.1. In the first link, we are redirected to the <em>/dologin.jsp</em> view. An AuthNRequest is sent to the IdP, we authenticate at the IdP and then a Response is sent to the SP, specifically to the Assertion Consumer Service view: /acs.jsp. There the SAMLResponse is validated, the NameID and user attributes extracted and stored in the session. Notice that a RelayState parameter is set to the url that initiated the process, the dologin.jsp url, but we are not redirecting the user to that view, and instead we present user data on the /acs.jsp view.</p>
-<p>2.2. In the second link we are redirected to the <em>/dologin.jsp</em> view with a ‘attrs’ GET parameter. An AuthNRequest is sent to the IdP with the /attrs.jsp view as RelayState parameter, we authenticate at the IdP and then a Response is sent to the SP, specifically to the Assertion Consumer Service view: /acs.jsp. There the SAMLResponse is validated, the NameID and user attributes extracted and stored in the session and we are redirected to the RelayState view, the attrs.jsp view where user data is read from session and prompted.</p>
+<p class="has-line-data" data-line-start="651" data-line-end="652">2.1. In the first link, we are redirected to the <em>/dologin.jsp</em> view. An AuthNRequest is sent to the IdP, we authenticate at the IdP and then a Response is sent to the SP, specifically to the Assertion Consumer Service view: /acs.jsp. There the SAMLResponse is validated, the NameID and user attributes extracted and stored in the session. Notice that a RelayState parameter is set to the url that initiated the process, the dologin.jsp url, but we are not redirecting the user to that view, and instead we present user data on the /acs.jsp view.</p>
+<p class="has-line-data" data-line-start="653" data-line-end="654">2.2. In the second link we are redirected to the <em>/dologin.jsp</em> view with a ‘attrs’ GET parameter. An AuthNRequest is sent to the IdP with the /attrs.jsp view as RelayState parameter, we authenticate at the IdP and then a Response is sent to the SP, specifically to the Assertion Consumer Service view: /acs.jsp. There the SAMLResponse is validated, the NameID and user attributes extracted and stored in the session and we are redirected to the RelayState view, the attrs.jsp view where user data is read from session and prompted.</p>
 <ol start="3">
-<li>The single log out funcionality could be tested by 2 ways.</li>
+<li class="has-line-data" data-line-start="655" data-line-end="657">The single log out functionality could be tested by 2 ways.</li>
 </ol>
-<p>3.1. SLO Initiated by SP. Click on the “logout” link at the SP, after that we are redirected to the /dologout.jsp view where a Logout Request is sent to the IdP, the session at the IdP is closed and replies to the SP a Logout Response (sent to the Single Logout Service endpoint). The SLS endpoint /sls.jsp of the SP process the Logout Response and if is valid, close the user session of the local app. Notice that the SLO Workflow starts and ends at the SP.</p>
-<p>3.2. SLO Initiated by IdP. In this case, the action takes place on the IdP side, the logout process is initiated at the IdP, it sends a Logout Request to the SP (SLS endpoint, /sls.jsp). The SLS endpoint of the SP process the Logout Request and if is valid, close the session of the user at the local app and send a Logout Response to the IdP (to the SLS endpoint of the IdP). The IdP receives the Logout Response, process it and close the session at the IdP. Notice that the SLO Workflow starts and ends at the IdP.</p>
+<p class="has-line-data" data-line-start="657" data-line-end="658">3.1. SLO Initiated by SP. Click on the “logout” link at the SP, after that we are redirected to the /dologout.jsp view where a Logout Request is sent to the IdP, the session at the IdP is closed and replies to the SP a Logout Response (sent to the Single Logout Service endpoint). The SLS endpoint /sls.jsp of the SP process the Logout Response and if is valid, close the user session of the local app. Notice that the SLO Workflow starts and ends at the SP.</p>
+<p class="has-line-data" data-line-start="659" data-line-end="660">3.2. SLO Initiated by IdP. In this case, the action takes place on the IdP side, the logout process is initiated at the IdP, it sends a Logout Request to the SP (SLS endpoint, /sls.jsp). The SLS endpoint of the SP process the Logout Request and if is valid, close the session of the user at the local app and send a Logout Response to the IdP (to the SLS endpoint of the IdP). The IdP receives the Logout Response, process it and close the session at the IdP. Notice that the SLO Workflow starts and ends at the IdP.</p>
 
 </body></html>
