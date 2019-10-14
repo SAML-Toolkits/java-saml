@@ -70,7 +70,7 @@ public class SettingsBuilder {
 	// KeyStore
 	public final static String KEYSTORE_KEY = "onelogin.saml2.keystore.store";
 	public final static String KEYSTORE_ALIAS = "onelogin.saml2.keystore.alias";
-	public final static String KEYSTORE_PASSWORD = "onelogin.saml2.keystore.password";
+	public final static String KEYSTORE_KEY_PASSWORD = "onelogin.saml2.keystore.key.password";
 
 	// IDP
 	public final static String IDP_ENTITYID_PROPERTY_KEY = "onelogin.saml2.idp.entityid";
@@ -471,7 +471,7 @@ public class SettingsBuilder {
 			saml2Setting.setSpNameIDFormat(spNameIDFormat);
 
 		boolean keyStoreEnabled = this.samlData.get(KEYSTORE_KEY) != null && this.samlData.get(KEYSTORE_ALIAS) != null
-				&& this.samlData.get(KEYSTORE_PASSWORD) != null;
+				&& this.samlData.get(KEYSTORE_KEY_PASSWORD) != null;
 
 		X509Certificate spX509cert;
 		PrivateKey spPrivateKey;
@@ -479,7 +479,7 @@ public class SettingsBuilder {
 		if (keyStoreEnabled) {
 			KeyStore ks = (KeyStore) this.samlData.get(KEYSTORE_KEY);
 			String alias = (String) this.samlData.get(KEYSTORE_ALIAS);
-			String password = (String) this.samlData.get(KEYSTORE_PASSWORD);
+			String password = (String) this.samlData.get(KEYSTORE_KEY_PASSWORD);
 
 			spX509cert = getCertificateFromKeyStore(ks, alias, password);
 			spPrivateKey = getPrivateKeyFromKeyStore(ks, alias, password);
@@ -758,7 +758,7 @@ public class SettingsBuilder {
     private void parseKeyStore(KeyStoreSettings setting) {
 		this.samlData.put(KEYSTORE_KEY, setting.getKeyStore());
 		this.samlData.put(KEYSTORE_ALIAS, setting.getSpAlias());
-		this.samlData.put(KEYSTORE_PASSWORD, setting.getStorePass());
+		this.samlData.put(KEYSTORE_KEY_PASSWORD, setting.getSpKeyPass());
     }
 
 	/**

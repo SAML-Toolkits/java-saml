@@ -78,13 +78,14 @@ public class SettingBuilderTest {
      * @throws IOException
      */
     private KeyStoreSettings getKeyStoreSettings() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException {
-        String password = "changeit";
+        String storePassword = "changeit";
         String keyStoreFile = "src/test/resources/keystore/oneloginTestKeystore.jks";
-        String alias = "onelogintest";
+        String alias = "keywithpassword";
+        String keyPassword = "keypassword";
 
         KeyStore ks = KeyStore.getInstance("JKS");
-        ks.load(new FileInputStream(keyStoreFile), password.toCharArray());
-        return new KeyStoreSettings(ks, alias, password);
+        ks.load(new FileInputStream(keyStoreFile), storePassword.toCharArray());
+        return new KeyStoreSettings(ks, alias, keyPassword);
     }
 
 	/**
