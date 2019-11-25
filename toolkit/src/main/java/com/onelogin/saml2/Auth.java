@@ -821,7 +821,7 @@ public class Auth {
 
 				String inResponseTo = logoutRequest.id;
 				LogoutResponse logoutResponseBuilder = new LogoutResponse(settings, httpRequest);
-				logoutResponseBuilder.build(inResponseTo);
+				logoutResponseBuilder.build(inResponseTo, Constants.STATUS_SUCCESS);
 				lastResponse = logoutResponseBuilder.getLogoutResponseXml();
 
 				String samlLogoutResponse = logoutResponseBuilder.getEncodedLogoutResponse();

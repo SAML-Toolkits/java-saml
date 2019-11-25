@@ -32,7 +32,7 @@ import com.onelogin.saml2.util.Util;
  * LogoutResponse class of OneLogin's Java Toolkit.
  *
  * A class that implements SAML 2 Logout Response builder/parser/validator
- */ 
+ */
 public class LogoutResponse {
 	/**
      * Private property to construct a logger for this class.
@@ -42,7 +42,7 @@ public class LogoutResponse {
 	/**
 	 * SAML LogoutResponse string
 	 */
-	private String logoutResponseString;	
+	private String logoutResponseString;
 
 	/**
 	 * A DOMDocument object loaded from the SAML Response.
@@ -81,7 +81,7 @@ public class LogoutResponse {
 
 	/**
 	 * After validation, if it fails this property has the cause of the problem
-	 */ 
+	 */
 	private String error;
 
 	/**
@@ -96,7 +96,7 @@ public class LogoutResponse {
 	public LogoutResponse(Saml2Settings settings, HttpRequest request) {
 		this.settings = settings;
 		this.request = request;
-		
+
 		String samlLogoutResponse = null;
 		if (request != null) {
 			currentUrl = request.getRequestURL();
@@ -112,10 +112,10 @@ public class LogoutResponse {
 	/**
 	 * @return the base64 encoded unsigned Logout Response (deflated or not)
 	 *
-	 * @param deflated 
+	 * @param deflated
      *				If deflated or not the encoded Logout Response
      *
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public String getEncodedLogoutResponse(Boolean deflated) throws IOException {
 		String encodedLogoutResponse;
@@ -133,7 +133,7 @@ public class LogoutResponse {
 	/**
 	 * @return the base64 encoded, unsigned Logout Response (deflated or not)
 	 *
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public String getEncodedLogoutResponse() throws IOException {
 		return getEncodedLogoutResponse(null);
@@ -274,13 +274,13 @@ public class LogoutResponse {
 		}
 	}
 
-	public Boolean isValid() {		
+	public Boolean isValid() {
 		return isValid(null);
 	}
 
 	/**
 	 * Gets the Issuer from Logout Response.
-	 * 
+	 *
 	 * @return the issuer of the logout response
 	 *
 	 * @throws XPathExpressionException
@@ -290,7 +290,7 @@ public class LogoutResponse {
 		NodeList issuers = this.query("/samlp:LogoutResponse/saml:Issuer");
 		if (issuers.getLength() == 1) {
 			issuer = issuers.item(0).getTextContent();
-		}    	
+		}
         return issuer;
     }
 
@@ -341,16 +341,28 @@ public class LogoutResponse {
      *
      * @param inResponseTo
      *				InResponseTo attribute value to bet set at the Logout Response. 
+	 * @param statusCode
+	 * 				String StatusCode to be set on the LogoutResponse
      */
-	public void build(String inResponseTo) {
+	public void build(String inResponseTo, String statusCode) {
 		id = Util.generateUniqueID(settings.getUniqueIDPrefix());
 		issueInstant = Calendar.getInstance();
 		this.inResponseTo = inResponseTo;
 
-		StrSubstitutor substitutor = generateSubstitutor(settings);
+		StrSubstitutor substitutor = generateSubstitutor(settings, statusCode);
 		this.logoutResponseString = substitutor.replace(getLogoutResponseTemplate());
 	}
 
+    /**
+     * Generates a Logout Response XML string.
+     *
+     * @param inResponseTo
+     *				InResponseTo attribute value to bet set at the Logout Response. 
+     */
+	public void build(String inResponseTo) {
+		build(inResponseTo, Constants.STATUS_SUCCESS);
+	}
+	
     /**
      * Generates a Logout Response XML string.
      *
@@ -364,13 +376,15 @@ public class LogoutResponse {
 	 *
 	 * @param settings
 	 * 				Saml2Settings object. Setting data
-	 * 
-	 * @return the StrSubstitutor object of the LogoutResponse 
+	 * @param statusCode
+	 * 				String StatusCode to be set on the LogoutResponse
+	 *
+	 * @return the StrSubstitutor object of the LogoutResponse
 	 */
-	private StrSubstitutor generateSubstitutor(Saml2Settings settings) {
+	private StrSubstitutor generateSubstitutor(Saml2Settings settings, String statusCode) {
 		Map<String, String> valueMap = new HashMap<String, String>();
 
-		valueMap.put("id", id);		
+		valueMap.put("id", id);
 
 		String issueInstantString = Util.formatDateTime(issueInstant.getTimeInMillis());
 		valueMap.put("issueInstant", issueInstantString);
@@ -388,9 +402,27 @@ public class LogoutResponse {
 		}
 		valueMap.put("inResponseStr", inResponseStr);		
 
+		String statusStr = "";
+		if (statusCode != null) {
+			statusStr = "Value=\"" + statusCode + "\"";
+		}
+		valueMap.put("statusStr", statusStr);
+
 		valueMap.put("issuer", settings.getSpEntityId());
 
 		return new StrSubstitutor(valueMap);
+	}
+
+	/**
+	 * Substitutes LogoutResponse variables within a string by values.
+	 *
+	 * @param settings
+	 * 				Saml2Settings object. Setting data
+	 *
+	 * @return the StrSubstitutor object of the LogoutResponse
+	 */
+	private StrSubstitutor generateSubstitutor(Saml2Settings settings) {
+		return generateSubstitutor(settings, Constants.STATUS_SUCCESS);
 	}
 
 	/**
@@ -404,7 +436,7 @@ public class LogoutResponse {
 		template.append("IssueInstant=\"${issueInstant}\"${destinationStr}${inResponseStr} >");
 		template.append("<saml:Issuer>${issuer}</saml:Issuer>");
 		template.append("<samlp:Status>");
-		template.append("<samlp:StatusCode Value=\"urn:oasis:names:tc:SAML:2.0:status:Success\" />");
+		template.append("<samlp:StatusCode ${statusStr} />");
 		template.append("</samlp:Status>");
 		template.append("</samlp:LogoutResponse>");
 		return template;
@@ -413,7 +445,7 @@ public class LogoutResponse {
 	/**
      * After execute a validation process, if fails this method returns the cause
      *
-     * @return the cause of the validation error 
+     * @return the cause of the validation error
      */
 	public String getError() {
 		return error;
