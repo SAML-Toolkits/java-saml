@@ -7,12 +7,10 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
 import com.onelogin.saml2.model.Contact;
 import com.onelogin.saml2.model.Organization;
 import com.onelogin.saml2.util.Constants;
@@ -846,7 +844,7 @@ public class Saml2Settings {
 			LOGGER.error(errorMsg);
 		}
 
-		if (this.getIdpx509cert() == null && !checkRequired(this.getIdpCertFingerprint())) {
+		if (!checkIdpx509certRequired() && !checkRequired(this.getIdpCertFingerprint())) {
 			errorMsg = "idp_cert_or_fingerprint_not_found_and_required";
 			errors.add(errorMsg);
 			LOGGER.error(errorMsg);			
@@ -859,6 +857,19 @@ public class Saml2Settings {
 		}
 
 		return errors;
+	}
+
+	/**
+	 * Auxiliary method to check Idp certificate is configured.
+	 * 
+	 * @return true if the Idp Certificate settings are valid
+	 */
+	private boolean checkIdpx509certRequired () {
+		if (this.getIdpx509cert() != null) {
+			return true;
+		}
+
+		return this.getIdpx509certMulti() != null && !this.getIdpx509certMulti().isEmpty();
 	}
 
 	/**
