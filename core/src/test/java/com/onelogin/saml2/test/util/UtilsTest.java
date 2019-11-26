@@ -1092,6 +1092,8 @@ public class UtilsTest {
 		X509Certificate cert = Util.loadCert(certString);
 		String fingerprint_sha1 = "afe71c28ef740bc87425be13a2263d37971da1f9";
 		String fingerprint_sha256 = "c51cfa06c7a49767f6eab18238eae1c56708e29264da3d11f538a12cd2c357ba";
+		String fingerprint_sha1_uppercase = "AFE71C28EF740BC87425BE13A2263D37971DA1F9";
+		String fingerprint_sha256_uppercase = "C51CFA06C7A49767F6EAB18238EAE1C56708E29264DA3D11F538A12CD2C357BA";
 
 		// Signed Response
 		String signedResponseStr = Util.getFileAsString("data/responses/signed_message_response.xml.base64");
@@ -1102,6 +1104,8 @@ public class UtilsTest {
 		assertTrue(Util.validateSign(samlSignedResponseDocument, (X509Certificate) null, fingerprint_sha1, null, RESPONSE_SIGNATURE_XPATH));
 		assertTrue(Util.validateSign(samlSignedResponseDocument, (X509Certificate) null, fingerprint_sha1, "SHA-1", RESPONSE_SIGNATURE_XPATH));
 		assertTrue(Util.validateSign(samlSignedResponseDocument, (X509Certificate) null, fingerprint_sha256, "SHA-256", RESPONSE_SIGNATURE_XPATH));
+		assertTrue(Util.validateSign(samlSignedResponseDocument, (X509Certificate) null, fingerprint_sha1_uppercase, "SHA-1", RESPONSE_SIGNATURE_XPATH));
+		assertTrue(Util.validateSign(samlSignedResponseDocument, (X509Certificate) null, fingerprint_sha256_uppercase, "SHA-256", RESPONSE_SIGNATURE_XPATH));
 		assertFalse(Util.validateSign(samlSignedResponseDocument, (X509Certificate) null, fingerprint_sha256, "SHA-256", ASSERTION_SIGNATURE_XPATH));
 		assertFalse(Util.validateSign(samlSignedResponseDocument, cert, null, null, ""));
 		assertFalse(Util.validateSign(samlSignedResponseDocument, (X509Certificate) null, null, null, ""));
@@ -1114,6 +1118,7 @@ public class UtilsTest {
 		assertTrue(Util.validateSign(samlSignedAssertionDocument, cert, null, null, ASSERTION_SIGNATURE_XPATH));
 		assertTrue(Util.validateSign(samlSignedAssertionDocument, (X509Certificate) null, fingerprint_sha1, null, ASSERTION_SIGNATURE_XPATH));
 		assertTrue(Util.validateSign(samlSignedAssertionDocument, (X509Certificate) null, fingerprint_sha1, "SHA-1", ASSERTION_SIGNATURE_XPATH));
+		assertTrue(Util.validateSign(samlSignedAssertionDocument, (X509Certificate) null, fingerprint_sha1_uppercase, "SHA-1", ASSERTION_SIGNATURE_XPATH));
 		assertFalse(Util.validateSign(samlSignedAssertionDocument, (X509Certificate) null, fingerprint_sha1, "SHA-1", RESPONSE_SIGNATURE_XPATH));
 
 		// Double Signed Response
@@ -1127,8 +1132,12 @@ public class UtilsTest {
 		assertTrue(Util.validateSign(samlDoubleSignedResponseDocument, (X509Certificate) null, fingerprint_sha1, null, RESPONSE_SIGNATURE_XPATH));
 		assertTrue(Util.validateSign(samlDoubleSignedResponseDocument, (X509Certificate) null, fingerprint_sha1, "SHA-1", ASSERTION_SIGNATURE_XPATH));
 		assertTrue(Util.validateSign(samlDoubleSignedResponseDocument, (X509Certificate) null, fingerprint_sha1, "SHA-1", RESPONSE_SIGNATURE_XPATH));
+		assertTrue(Util.validateSign(samlDoubleSignedResponseDocument, (X509Certificate) null, fingerprint_sha1_uppercase, "SHA-1", ASSERTION_SIGNATURE_XPATH));
+		assertTrue(Util.validateSign(samlDoubleSignedResponseDocument, (X509Certificate) null, fingerprint_sha1_uppercase, "SHA-1", RESPONSE_SIGNATURE_XPATH));
 		assertTrue(Util.validateSign(samlDoubleSignedResponseDocument, (X509Certificate) null, fingerprint_sha256, "SHA-256", ASSERTION_SIGNATURE_XPATH));
 		assertTrue(Util.validateSign(samlDoubleSignedResponseDocument, (X509Certificate) null, fingerprint_sha256, "SHA-256", RESPONSE_SIGNATURE_XPATH));
+		assertTrue(Util.validateSign(samlDoubleSignedResponseDocument, (X509Certificate) null, fingerprint_sha256_uppercase, "SHA-256", ASSERTION_SIGNATURE_XPATH));
+		assertTrue(Util.validateSign(samlDoubleSignedResponseDocument, (X509Certificate) null, fingerprint_sha256_uppercase, "SHA-256", RESPONSE_SIGNATURE_XPATH));
 	}
 
 	/**
