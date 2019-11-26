@@ -850,7 +850,7 @@ public class Saml2Settings {
 			LOGGER.error(errorMsg);			
 		}
 
-		if (this.getNameIdEncrypted() == true && this.getIdpx509cert() == null) {
+		if (!checkIdpx509certRequired() && this.getNameIdEncrypted()) {
 			errorMsg = "idp_cert_not_found_and_required";
 			errors.add(errorMsg);
 			LOGGER.error(errorMsg);

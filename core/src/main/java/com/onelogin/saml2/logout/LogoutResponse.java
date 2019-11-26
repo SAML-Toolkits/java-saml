@@ -230,9 +230,6 @@ public class LogoutResponse {
 
 			if (signature != null && !signature.isEmpty()) {
 				X509Certificate cert = settings.getIdpx509cert();
-				if (cert == null) {
-					throw new SettingsException("In order to validate the sign on the Logout Response, the x509cert of the IdP is required", SettingsException.CERT_NOT_FOUND);
-				}
 
 				List<X509Certificate> certList = new ArrayList<X509Certificate>();
 				List<X509Certificate> multipleCertList = settings.getIdpx509certMulti();
@@ -241,8 +238,14 @@ public class LogoutResponse {
 					certList.addAll(multipleCertList);
 				}
 
-				if (certList.isEmpty() || !certList.contains(cert)) {
-					certList.add(0, cert);
+				if (cert != null) {
+					if (certList.isEmpty() || !certList.contains(cert)) {
+						certList.add(0, cert);
+					}
+				}
+
+				if (certList.isEmpty()) {
+					throw new SettingsException("In order to validate the sign on the Logout Response, the x509cert of the IdP is required", SettingsException.CERT_NOT_FOUND);
 				}
 
 				String signAlg = request.getParameter("SigAlg");
