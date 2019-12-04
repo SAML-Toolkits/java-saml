@@ -39,6 +39,7 @@ public class Saml2Settings {
 	private URL spSingleLogoutServiceUrl = null;
 	private String spSingleLogoutServiceBinding = Constants.BINDING_HTTP_REDIRECT;
 	private String spNameIDFormat = Constants.NAMEID_UNSPECIFIED;
+	private boolean spAllowRepeatAttributeName = false;
 	private X509Certificate spX509cert = null;
 	private X509Certificate spX509certNew = null;
 	private PrivateKey spPrivateKey = null;
@@ -131,6 +132,13 @@ public class Saml2Settings {
 	 */
 	public final String getSpNameIDFormat() {
 		return spNameIDFormat;
+	}
+
+	/**
+	 * @return the spAllowRepeatAttributeName setting value
+	 */
+	public boolean isSpAllowRepeatAttributeName () {
+		return spAllowRepeatAttributeName;
 	}
 
 	/**
@@ -439,6 +447,16 @@ public class Saml2Settings {
 	 */
 	protected final void setSpNameIDFormat(String spNameIDFormat) {
 		this.spNameIDFormat = spNameIDFormat;
+	}
+
+	/**
+	 * Set the spAllowRepeatAttributeName setting value
+	 *
+	 * @param spAllowRepeatAttributeName
+	 *        the spAllowRepeatAttributeName value to be set
+	 */
+	public void setSpAllowRepeatAttributeName (boolean spAllowRepeatAttributeName) {
+		this.spAllowRepeatAttributeName = spAllowRepeatAttributeName;
 	}
 
 	/**

@@ -20,11 +20,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.model.Contact;
 import com.onelogin.saml2.model.KeyStoreSettings;
@@ -62,6 +60,7 @@ public class SettingsBuilder {
 	public final static String SP_SINGLE_LOGOUT_SERVICE_URL_PROPERTY_KEY = "onelogin.saml2.sp.single_logout_service.url";
 	public final static String SP_SINGLE_LOGOUT_SERVICE_BINDING_PROPERTY_KEY = "onelogin.saml2.sp.single_logout_service.binding";
 	public final static String SP_NAMEIDFORMAT_PROPERTY_KEY = "onelogin.saml2.sp.nameidformat";
+	public final static String SP_ALLOW_REPEAT_ATTRIBUTE_NAME_PROPERTY_KEY = "onelogin.saml2.sp.allow_duplicated_attribute_name";
 
 	public final static String SP_X509CERT_PROPERTY_KEY = "onelogin.saml2.sp.x509cert";
 	public final static String SP_PRIVATEKEY_PROPERTY_KEY = "onelogin.saml2.sp.privatekey";
@@ -469,6 +468,10 @@ public class SettingsBuilder {
 		String spNameIDFormat = loadStringProperty(SP_NAMEIDFORMAT_PROPERTY_KEY);
 		if (spNameIDFormat != null && !spNameIDFormat.isEmpty())
 			saml2Setting.setSpNameIDFormat(spNameIDFormat);
+
+		Boolean spAllowRepeatAttributeName = loadBooleanProperty(SP_ALLOW_REPEAT_ATTRIBUTE_NAME_PROPERTY_KEY);
+		if (spAllowRepeatAttributeName != null)
+			saml2Setting.setSpAllowRepeatAttributeName(spAllowRepeatAttributeName);
 
 		boolean keyStoreEnabled = this.samlData.get(KEYSTORE_KEY) != null && this.samlData.get(KEYSTORE_ALIAS) != null
 				&& this.samlData.get(KEYSTORE_KEY_PASSWORD) != null;
