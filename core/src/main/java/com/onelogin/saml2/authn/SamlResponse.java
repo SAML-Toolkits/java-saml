@@ -974,7 +974,7 @@ public class SamlResponse {
 	}
 
 	/**
-	 * After execute a validation process, if fails this method returns the cause
+	 * After execute a validation process, if fails this method returns the Exception object
 	 *
 	 * @return the cause of the validation error
 	 */

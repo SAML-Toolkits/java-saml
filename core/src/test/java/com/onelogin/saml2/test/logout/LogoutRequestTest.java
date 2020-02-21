@@ -812,7 +812,7 @@ public class LogoutRequestTest {
 	}
 
 	/**
-	 * Tests the getError method of LogoutRequest
+	 * Tests the getError and getValidationException methods of LogoutRequest
 	 *
 	 * @throws Exception 
 	 *
@@ -828,14 +828,18 @@ public class LogoutRequestTest {
 
 		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertNull(logoutRequest.getError());
+		assertNull(logoutRequest.getValidationException());
 		logoutRequest.isValid();
 		assertThat(logoutRequest.getError(), containsString("The LogoutRequest was received at"));
+		assertTrue(logoutRequest.getValidationException() instanceof ValidationError);
 
 		settings.setStrict(false);
 		logoutRequest = new LogoutRequest(settings, httpRequest);
 		assertNull(logoutRequest.getError());
+		assertNull(logoutRequest.getValidationException());
 		logoutRequest.isValid();
 		assertNull(logoutRequest.getError());
+		assertNull(logoutRequest.getValidationException());
 	}
 
 	private static HttpRequest newHttpRequest(String requestURL, String samlRequestEncoded) {

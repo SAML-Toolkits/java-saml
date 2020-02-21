@@ -82,7 +82,7 @@ public class LogoutResponse {
 	/**
 	 * After validation, if it fails this property has the cause of the problem
 	 */
-	private String error;
+	private Exception validationException;
 
 	/**
 	 * Constructs the LogoutResponse object.
@@ -168,7 +168,7 @@ public class LogoutResponse {
      * @return if the SAML LogoutResponse is or not valid
      */
 	public Boolean isValid(String requestId) {
-		error = null;
+		validationException = null;
 
 		try {
 			if (this.logoutResponseDocument == null) {
@@ -270,9 +270,9 @@ public class LogoutResponse {
 			LOGGER.debug("LogoutRequest validated --> " + logoutResponseString);
 			return true;
 		} catch (Exception e) {
-			error = e.getMessage();
+			validationException = e;
 			LOGGER.debug("LogoutResponse invalid --> " + logoutResponseString);
-			LOGGER.error(error);
+			LOGGER.error(validationException.getMessage());
 			return false;
 		}
 	}
@@ -451,6 +451,18 @@ public class LogoutResponse {
      * @return the cause of the validation error
      */
 	public String getError() {
-		return error;
+		if (validationException != null) {
+			return validationException.getMessage();
+		}
+		return null;
+	}
+
+	/**
+	 * After execute a validation process, if fails this method returns the Exception object
+	 *
+	 * @return the cause of the validation error
+	 */
+	public Exception getValidationException() {
+		return validationException;
 	}
 }
