@@ -2804,7 +2804,7 @@ public class AuthnResponseTest {
 	}
 	
 	/**
-	 * Tests the getError method of SamlResponse
+	 * Tests the getError and getValidationException methods of SamlResponse
 	 *
 	 * @throws ValidationError
 	 * @throws SettingsException
@@ -2823,25 +2823,32 @@ public class AuthnResponseTest {
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response4.xml.base64");
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertNull(samlResponse.getError());
+		assertNull(samlResponse.getValidationException());
 		samlResponse.isValid();
 		assertThat(samlResponse.getError(), containsString("SAML Response must contain 1 Assertion."));
+		assertTrue(samlResponse.getValidationException() instanceof ValidationError);
 
 		settings.setStrict(false);
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		samlResponse.isValid();
 		assertThat(samlResponse.getError(), containsString("SAML Response must contain 1 Assertion."));
+		assertTrue(samlResponse.getValidationException() instanceof ValidationError);
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertNull(samlResponse.getError());
+		assertNull(samlResponse.getValidationException());
 		samlResponse.isValid();
 		assertNull(samlResponse.getError());
+		assertNull(samlResponse.getValidationException());
 
 		settings.setStrict(true);
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertNull(samlResponse.getError());
+		assertNull(samlResponse.getValidationException());
 		samlResponse.isValid();
 		assertNull(samlResponse.getError());
+		assertNull(samlResponse.getValidationException());
 	}
 
 	private String loadAndEncode(String path) throws Exception

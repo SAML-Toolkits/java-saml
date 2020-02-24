@@ -9,6 +9,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+import com.onelogin.saml2.exception.ValidationError;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
@@ -573,7 +574,7 @@ public class LogoutResponseTest {
 	}
 
 	/**
-	 * Tests the getError method of LogoutResponse
+	 * Tests the getError and getValidationException methods of LogoutResponse
 	 *
 	 * @throws IOException
 	 * @throws URISyntaxException
@@ -591,14 +592,18 @@ public class LogoutResponseTest {
 		HttpRequest httpRequest = newHttpRequest(requestURL, samlResponseEncoded);
 		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertNull(logoutResponse.getError());
+		assertNull(logoutResponse.getValidationException());
 		logoutResponse.isValid();
 		assertThat(logoutResponse.getError(), containsString("The LogoutResponse was received at"));
+		assertTrue(logoutResponse.getValidationException() instanceof ValidationError);
 
 		settings.setStrict(false);
 		logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertNull(logoutResponse.getError());
+		assertNull(logoutResponse.getValidationException());
 		logoutResponse.isValid();
 		assertNull(logoutResponse.getError());
+		assertNull(logoutResponse.getValidationException());
 	}
 
 	private static HttpRequest newHttpRequest(String requestURL, String samlResponseEncoded) {

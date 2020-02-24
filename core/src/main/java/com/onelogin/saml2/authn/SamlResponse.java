@@ -83,7 +83,7 @@ public class SamlResponse {
 	/**
 	 * After validation, if it fails this property has the cause of the problem
 	 */ 
-	private String error;
+	private Exception validationException;
 
 	/**
 	 * Constructor to have a Response object fully built and ready to validate the saml response.
@@ -148,7 +148,7 @@ public class SamlResponse {
 	 * @return if the response is valid or not
 	 */
 	public boolean isValid(String requestId) {
-		error = null;
+		validationException = null;
 
 		try {
 			if (samlResponseDocument == null) {
@@ -311,9 +311,9 @@ public class SamlResponse {
 			LOGGER.debug("SAMLResponse validated --> {}", samlResponseString);
 			return true;
 		} catch (Exception e) {
-			error = e.getMessage();
+			validationException = e;
 			LOGGER.debug("SAMLResponse invalid --> {}", samlResponseString);
-			LOGGER.error(error);
+			LOGGER.error(validationException.getMessage());
 			return false;
 		}
 	}
@@ -964,13 +964,22 @@ public class SamlResponse {
 	/**
      * After execute a validation process, if fails this method returns the cause
      *
-     * @return the cause of the validation error 
+     * @return the cause of the validation error as a string
      */
 	public String getError() {
-		if (error != null) {
-			return error;
+		if (validationException != null) {
+			return validationException.getMessage();
 		}
 		return null;
+	}
+
+	/**
+	 * After execute a validation process, if fails this method returns the Exception object
+	 *
+	 * @return the cause of the validation error
+	 */
+	public Exception getValidationException() {
+		return validationException;
 	}
 
 	/**
