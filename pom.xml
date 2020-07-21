@@ -12,7 +12,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<slf4jVersion>1.7.12</slf4jVersion>
+		<slf4jVersion>1.7.30</slf4jVersion>
 		<junitVersion>4.12</junitVersion>
 		<logbackVersion>1.2.3</logbackVersion>
 		<apacheCommonsLangVersion>3.4</apacheCommonsLangVersion>
