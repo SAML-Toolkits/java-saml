@@ -12,7 +12,12 @@ import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.Util;
 
 import org.hamcrest.Matchers;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeUtils;
 import org.joda.time.Instant;
+import org.joda.time.format.ISODateTimeFormat;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -23,6 +28,7 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -50,6 +56,18 @@ public class AuthnResponseTest {
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
+	@Before
+	public void setDateTime() {
+		//All calls to Joda time check will use this timestamp as "now" value : 
+		setDateTime("2020-06-01T00:00:00Z");
+	}
+	
+	@After
+	public void goBackToNormal() {
+		DateTimeUtils.setCurrentMillisSystem();
+	}
+
+	
 	/**
 	 * Tests the constructor of SamlResponse
 	 *
@@ -2677,6 +2695,11 @@ public class AuthnResponseTest {
 
 	private static HttpRequest newHttpRequest(String requestURL, String samlResponseEncoded) {
 		return new HttpRequest(requestURL).addParameter("SAMLResponse", samlResponseEncoded);
+	}
+	
+	private void setDateTime(String ISOTimeStamp) {
+		DateTime dateTime = ISODateTimeFormat.dateTimeNoMillis().withZoneUTC().parseDateTime(ISOTimeStamp);
+		DateTimeUtils.setCurrentMillisFixed(dateTime.toDate().getTime());
 	}
 }
 
