@@ -1866,6 +1866,33 @@ public class AuthnResponseTest {
 		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
 	}
 
+	@Test
+	public void testParseAzureB2CTimestamp() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/redacted_azure_b2c.xml.base64");
+		
+		settings.setStrict(false);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
+
+		settings.setStrict(true);
+		setDateTime("2020-07-16T07:57:00Z");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("A valid SubjectConfirmation was not found on this Response: SubjectConfirmationData doesn't match a valid Recipient", samlResponse.getError());
+
+		setDateTime("2020-07-01T00:00:00Z");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("Could not validate timestamp: not yet valid. Check system clock.", samlResponse.getError());
+
+		setDateTime("2020-08-01T00:00:00Z");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("Could not validate timestamp: expired. Check system clock.", samlResponse.getError());	
+	}
+	
 	/**
 	 * Tests the isValid method of SamlResponse
 	 * Case: invalid requestId
