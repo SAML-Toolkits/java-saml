@@ -597,9 +597,9 @@ public final class Util {
 			byte[] dataBytes = x509cert.getEncoded();
 			if (alg == null || alg.isEmpty() || alg.equals("SHA-1")|| alg.equals("sha1")) {
 				fingerprint = DigestUtils.sha1Hex(dataBytes);
-			} else if (alg.equals("SHA-256") || alg .equals("sha256")) {
+			} else if (alg.equals("SHA-256") || alg.equals("sha256")) {
 				fingerprint = DigestUtils.sha256Hex(dataBytes);
-			} else if (alg.equals("SHA-384") || alg .equals("sha384")) {
+			} else if (alg.equals("SHA-384") || alg.equals("sha384")) {
 				fingerprint = DigestUtils.sha384Hex(dataBytes);
 			} else if (alg.equals("SHA-512") || alg.equals("sha512")) {
 				fingerprint = DigestUtils.sha512Hex(dataBytes);
