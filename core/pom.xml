@@ -61,6 +61,7 @@
 			<groupId>org.apache.santuario</groupId>
 			<artifactId>xmlsec</artifactId>
 			<version>2.2.0</version>
+			<version>2.1.5</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-codec</groupId>
@@ -117,7 +118,7 @@
 						<configuration>
 							<rules>
 								<evaluateBeanshell>
-									<condition>javax.crypto.Cipher.getMaxAllowedKeyLength("AES") &gt; 128</condition>
+									<condition>javax.crypto.Cipher.getMaxAllowedKeyLength("AES") > 128</condition>
 								</evaluateBeanshell>
 							</rules>
 						</configuration>
