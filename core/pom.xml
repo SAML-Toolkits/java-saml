@@ -61,7 +61,6 @@
 			<groupId>org.apache.santuario</groupId>
 			<artifactId>xmlsec</artifactId>
 			<version>2.2.0</version>
-			<version>2.1.5</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-codec</groupId>
