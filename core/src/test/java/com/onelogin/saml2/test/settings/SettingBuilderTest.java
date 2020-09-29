@@ -54,7 +54,6 @@ public class SettingBuilderTest {
 	 * Case: config file not found
 	 *
 	 * @throws IOException
-	 * @throws SettingsException
 	 * @throws Error
 	 *
 	 * @see com.onelogin.saml2.settings.SettingsBuilder#fromFile

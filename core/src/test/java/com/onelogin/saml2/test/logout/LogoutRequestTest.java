@@ -735,7 +735,7 @@ public class LogoutRequestTest {
 		assertTrue(logoutRequest.isValid());
 
 		settings.setStrict(false);
-		String signature2 = "x3Yq1dQ0S/6iirAPpkEYrDvY5mTqzQ3b1eE+sEmnmYbzDs5YHksRrc7uloHt7xqBcCGlk+ZI2USjKshf//OVRkSr8gZ8qYtth1v69hVpEvUdzhSANyJCOCENN2DhX8kc76Wg+VyR1mzbvbrap0G6lrj9TSuM4wyh68gzJDeTQbs=";
+		String signature2 = "vfWbbc47PkP3ejx4bjKsRX7lo9Ml1WRoE5J5owF/0mnyKHfSY6XbhO1wwjBV5vWdrUVX+xp6slHyAf4YoAsXFS0qhan6txDiZY4Oec6yE+l10iZbzvie06I4GPak4QrQ4gAyXOSzwCrRmJu4gnpeUxZ6IqKtdrKfAYRAcVf3333=";
 		httpRequest = httpRequest.removeParameter("Signature")
 								 .addParameter("Signature", signature2);
 
