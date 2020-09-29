@@ -19,7 +19,7 @@
 		}
 		String nameidNameQualifier = null;
 		if (session.getAttribute("nameidNameQualifier") != null) {
-			nameIdFormat = session.getAttribute("nameidNameQualifier").toString();
+			nameidNameQualifier = session.getAttribute("nameidNameQualifier").toString();
 		}
 		String nameidSPNameQualifier = null;
 		if (session.getAttribute("nameidSPNameQualifier") != null) {

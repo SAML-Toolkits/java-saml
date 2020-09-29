@@ -73,8 +73,8 @@ import org.apache.xml.security.utils.XMLUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
-import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.joda.time.format.ISOPeriodFormat;
 import org.joda.time.format.PeriodFormatter;
 import org.slf4j.Logger;
@@ -103,9 +103,9 @@ public final class Util {
      * Private property to construct a logger for this class.
      */
 	private static final Logger LOGGER = LoggerFactory.getLogger(Util.class);
-
-    private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(DateTimeZone.UTC);
-	private static final DateTimeFormatter DATE_TIME_FORMAT_MILLS = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(DateTimeZone.UTC);
+	
+    private static final DateTimeFormatter DATE_TIME_FORMAT = ISODateTimeFormat.dateTimeNoMillis().withZoneUTC();
+	private static final DateTimeFormatter DATE_TIME_FORMAT_MILLS = ISODateTimeFormat.dateTime().withZoneUTC();
 	public static final String UNIQUE_ID_PREFIX = "ONELOGIN_";
 	public static final String RESPONSE_SIGNATURE_XPATH = "/samlp:Response/ds:Signature";
 	public static final String ASSERTION_SIGNATURE_XPATH = "/samlp:Response/saml:Assertion/ds:Signature";
@@ -597,9 +597,9 @@ public final class Util {
 			byte[] dataBytes = x509cert.getEncoded();
 			if (alg == null || alg.isEmpty() || alg.equals("SHA-1")|| alg.equals("sha1")) {
 				fingerprint = DigestUtils.sha1Hex(dataBytes);
-			} else if (alg.equals("SHA-256") || alg .equals("sha256")) {
+			} else if (alg.equals("SHA-256") || alg.equals("sha256")) {
 				fingerprint = DigestUtils.sha256Hex(dataBytes);
-			} else if (alg.equals("SHA-384") || alg .equals("sha384")) {
+			} else if (alg.equals("SHA-384") || alg.equals("sha384")) {
 				fingerprint = DigestUtils.sha384Hex(dataBytes);
 			} else if (alg.equals("SHA-512") || alg.equals("sha512")) {
 				fingerprint = DigestUtils.sha512Hex(dataBytes);

@@ -1,36 +1,5 @@
 package com.onelogin.saml2.test.authn;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPathExpressionException;
-import org.hamcrest.Matchers;
-import org.joda.time.Instant;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 import com.onelogin.saml2.authn.SamlResponse;
 import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.exception.SettingsException;
@@ -42,12 +11,65 @@ import com.onelogin.saml2.settings.SettingsBuilder;
 import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.Util;
 
+import org.hamcrest.Matchers;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeUtils;
+import org.joda.time.Instant;
+import org.joda.time.format.ISODateTimeFormat;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 public class AuthnResponseTest {
 	private static final String ACS_URL = "http://localhost:8080/java-saml-jspsample/acs.jsp";
 
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
+	@Before
+	public void setDateTime() {
+		//All calls to Joda time check will use this timestamp as "now" value : 
+		setDateTime("2020-06-01T00:00:00Z");
+	}
+	
+	@After
+	public void goBackToNormal() {
+		DateTimeUtils.setCurrentMillisSystem();
+	}
+
+	
 	/**
 	 * Tests the constructor of SamlResponse
 	 *
@@ -1947,6 +1969,33 @@ public class AuthnResponseTest {
 		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
 	}
 
+	@Test
+	public void testParseAzureB2CTimestamp() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/redacted_azure_b2c.xml.base64");
+		
+		settings.setStrict(false);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
+
+		settings.setStrict(true);
+		setDateTime("2020-07-16T07:57:00Z");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("A valid SubjectConfirmation was not found on this Response: SubjectConfirmationData doesn't match a valid Recipient", samlResponse.getError());
+
+		setDateTime("2020-07-01T00:00:00Z");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("Could not validate timestamp: not yet valid. Check system clock.", samlResponse.getError());
+
+		setDateTime("2020-08-01T00:00:00Z");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("Could not validate timestamp: expired. Check system clock.", samlResponse.getError());	
+	}
+	
 	/**
 	 * Tests the isValid method of SamlResponse
 	 * Case: invalid requestId
@@ -2828,7 +2877,7 @@ public class AuthnResponseTest {
 	}
 	
 	/**
-	 * Tests the getError method of SamlResponse
+	 * Tests the getError and getValidationException methods of SamlResponse
 	 *
 	 * @throws ValidationError
 	 * @throws SettingsException
@@ -2847,25 +2896,32 @@ public class AuthnResponseTest {
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response4.xml.base64");
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertNull(samlResponse.getError());
+		assertNull(samlResponse.getValidationException());
 		samlResponse.isValid();
 		assertThat(samlResponse.getError(), containsString("SAML Response must contain 1 Assertion."));
+		assertTrue(samlResponse.getValidationException() instanceof ValidationError);
 
 		settings.setStrict(false);
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		samlResponse.isValid();
 		assertThat(samlResponse.getError(), containsString("SAML Response must contain 1 Assertion."));
+		assertTrue(samlResponse.getValidationException() instanceof ValidationError);
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertNull(samlResponse.getError());
+		assertNull(samlResponse.getValidationException());
 		samlResponse.isValid();
 		assertNull(samlResponse.getError());
+		assertNull(samlResponse.getValidationException());
 
 		settings.setStrict(true);
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertNull(samlResponse.getError());
+		assertNull(samlResponse.getValidationException());
 		samlResponse.isValid();
 		assertNull(samlResponse.getError());
+		assertNull(samlResponse.getValidationException());
 	}
 
 	private String loadAndEncode(String path) throws Exception
@@ -2897,6 +2953,11 @@ public class AuthnResponseTest {
 
 	private static HttpRequest newHttpRequest(String requestURL, String samlResponseEncoded) {
 		return new HttpRequest(requestURL, (String)null).addParameter("SAMLResponse", samlResponseEncoded);
+	}
+	
+	private void setDateTime(String ISOTimeStamp) {
+		DateTime dateTime = ISODateTimeFormat.dateTimeNoMillis().withZoneUTC().parseDateTime(ISOTimeStamp);
+		DateTimeUtils.setCurrentMillisFixed(dateTime.toDate().getTime());
 	}
 }
 
