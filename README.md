@@ -361,7 +361,7 @@ onelogin.saml2.contacts.support.email_address = support@example.com
 
 ##### KeyStores
 
-The Auth constructor supports the ability to read SP public cert/private key from a KeyStore. A KeyStoreSettings object must be provided with the KeyStore, the Alias and the storePass if any.
+The Auth constructor supports the ability to read SP public cert/private key from a KeyStore. A KeyStoreSettings object must be provided with the KeyStore, the Alias and the KeyEntry password.
 
 ```java
 import java.io.FileInputStream;
@@ -370,13 +370,14 @@ import com.onelogin.saml2.Auth
 import com.onelogin.saml2.model.KeyStoreSettings
 
 String keyStoreFile = "oneloginTestKeystore.jks";
-String alias = "onelogintest";
+String alias = "keywithpassword";
 String storePass = "changeit";
+String keyPassword = "keypassword";
 
 KeyStore ks = KeyStore.getInstance("JKS");
-ks.load(new FileInputStream(keyStoreFile), password.toCharArray());
+ks.load(new FileInputStream(keyStoreFile), storePass.toCharArray());
 
-KeyStoreSettings keyStoreSettings =  new keyStoreSettings(ks, alias, storePass);
+KeyStoreSettings keyStoreSettings =  new keyStoreSettings(ks, alias, keyPassword);
 Auth auth = new Auth(KeyStoreSettings keyStoreSetting);
 ```
 

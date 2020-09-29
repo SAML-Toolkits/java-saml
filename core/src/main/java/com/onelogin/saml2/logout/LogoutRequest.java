@@ -321,10 +321,15 @@ public class LogoutRequest {
 		if (nameIdFormat != null && nameIdFormat.equals(Constants.NAMEID_UNSPECIFIED)) {
 			nameIdFormat = null;
 		}
-		
+
 		X509Certificate cert = null;
 		if (settings.getNameIdEncrypted()) {
 			cert = settings.getIdpx509cert();
+			if (cert == null) {
+				List<X509Certificate> multipleCertList = settings.getIdpx509certMulti();
+				if (multipleCertList != null && !multipleCertList.isEmpty())
+				cert = multipleCertList.get(0);
+			}
 		}
 
 		String nameIdStr = Util.generateNameId(nameId, spNameQualifier, nameIdFormat, nameQualifier, cert);
@@ -429,10 +434,7 @@ public class LogoutRequest {
                 
 			if (signature != null && !signature.isEmpty()) {
 				X509Certificate cert = settings.getIdpx509cert();
-				if (cert == null) {
-					throw new SettingsException("In order to validate the sign on the Logout Request, the x509cert of the IdP is required", SettingsException.CERT_NOT_FOUND);
-				}
-
+				
 				List<X509Certificate> certList = new ArrayList<X509Certificate>();
 				List<X509Certificate> multipleCertList = settings.getIdpx509certMulti();
 
@@ -440,8 +442,14 @@ public class LogoutRequest {
 					certList.addAll(multipleCertList);
 				}
 
-				if (certList.isEmpty() || !certList.contains(cert)) {
-					certList.add(0, cert);
+				if (cert != null) {
+					if (certList.isEmpty() || !certList.contains(cert)) {
+						certList.add(0, cert);
+					}
+				}
+
+				if (certList.isEmpty()) {
+					throw new SettingsException("In order to validate the sign on the Logout Request, the x509cert of the IdP is required", SettingsException.CERT_NOT_FOUND);
 				}
 
 				String signAlg = request.getParameter("SigAlg");

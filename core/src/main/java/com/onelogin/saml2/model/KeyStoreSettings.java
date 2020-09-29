@@ -19,9 +19,9 @@ public class KeyStoreSettings {
     private final String spAlias;
 
     /**
-     * Password for KeyStore
+     * Password for KeyEntry in KeyStore
      */
-    private final String storePass;
+    private final String spKeyPass;
 
     /**
      * Constructor
@@ -32,13 +32,13 @@ public class KeyStoreSettings {
      * @param spAlias
      *            Alias for SP key entry
      *
-     * @param storePass
-     *            password to access KeyStore
+     * @param spKeyPass
+     *            password to access Private KeyEntry in KeyStore
      */
-    public KeyStoreSettings(KeyStore keyStore, String spAlias, String storePass) {
+    public KeyStoreSettings(KeyStore keyStore, String spAlias, String spKeyPass) {
         this.keyStore = keyStore;
         this.spAlias = spAlias;
-        this.storePass = storePass;
+        this.spKeyPass = spKeyPass;
     }
 
     /**
@@ -56,10 +56,10 @@ public class KeyStoreSettings {
     }
 
     /**
-     * @return the storePass
+     * @return the spKeyPass
      */
-    public final String getStorePass() {
-        return storePass;
+    public final String getSpKeyPass() {
+        return spKeyPass;
     }
 
 }

@@ -1014,7 +1014,7 @@ public final class Util {
 					X509Certificate providedCert = keyInfo.getX509Certificate();
 					String calculatedFingerprint = calculateX509Fingerprint(providedCert, alg);
 					for (String fingerprintStr : fingerprint.split(",")) {
-						if (calculatedFingerprint.equals(fingerprintStr.trim())) {
+						if (calculatedFingerprint.equalsIgnoreCase(fingerprintStr.trim())) {
 							res = signature.checkSignatureValue(providedCert);
 						}
 					}

@@ -155,6 +155,15 @@ public class LogoutResponseTest {
 		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		assertThat(logoutRequestStr, containsString("<samlp:LogoutResponse"));
 		assertThat(logoutRequestStr, containsString("InResponseTo=\"inResponseValue\""));
+		assertThat(logoutRequestStr, containsString("StatusCode Value=\"urn:oasis:names:tc:SAML:2.0:status:Success\""));
+		
+		LogoutResponse logoutResponse3 = new LogoutResponse(settings, httpRequest);
+		logoutResponse3.build("inResponseValue", Constants.STATUS_REQUEST_DENIED);
+		logoutRequestStringBase64 = logoutResponse3.getEncodedLogoutResponse();
+		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
+		assertThat(logoutRequestStr, containsString("<samlp:LogoutResponse"));
+		assertThat(logoutRequestStr, containsString("InResponseTo=\"inResponseValue\""));
+		assertThat(logoutRequestStr, containsString("StatusCode Value=\"" + Constants.STATUS_REQUEST_DENIED + "\""));
 	}
 
 	/**

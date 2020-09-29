@@ -20,11 +20,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.model.Contact;
 import com.onelogin.saml2.model.KeyStoreSettings;
@@ -62,6 +60,7 @@ public class SettingsBuilder {
 	public final static String SP_SINGLE_LOGOUT_SERVICE_URL_PROPERTY_KEY = "onelogin.saml2.sp.single_logout_service.url";
 	public final static String SP_SINGLE_LOGOUT_SERVICE_BINDING_PROPERTY_KEY = "onelogin.saml2.sp.single_logout_service.binding";
 	public final static String SP_NAMEIDFORMAT_PROPERTY_KEY = "onelogin.saml2.sp.nameidformat";
+	public final static String SP_ALLOW_REPEAT_ATTRIBUTE_NAME_PROPERTY_KEY = "onelogin.saml2.sp.allow_duplicated_attribute_name";
 
 	public final static String SP_X509CERT_PROPERTY_KEY = "onelogin.saml2.sp.x509cert";
 	public final static String SP_PRIVATEKEY_PROPERTY_KEY = "onelogin.saml2.sp.privatekey";
@@ -70,7 +69,7 @@ public class SettingsBuilder {
 	// KeyStore
 	public final static String KEYSTORE_KEY = "onelogin.saml2.keystore.store";
 	public final static String KEYSTORE_ALIAS = "onelogin.saml2.keystore.alias";
-	public final static String KEYSTORE_PASSWORD = "onelogin.saml2.keystore.password";
+	public final static String KEYSTORE_KEY_PASSWORD = "onelogin.saml2.keystore.key.password";
 
 	// IDP
 	public final static String IDP_ENTITYID_PROPERTY_KEY = "onelogin.saml2.idp.entityid";
@@ -470,8 +469,12 @@ public class SettingsBuilder {
 		if (spNameIDFormat != null && !spNameIDFormat.isEmpty())
 			saml2Setting.setSpNameIDFormat(spNameIDFormat);
 
+		Boolean spAllowRepeatAttributeName = loadBooleanProperty(SP_ALLOW_REPEAT_ATTRIBUTE_NAME_PROPERTY_KEY);
+		if (spAllowRepeatAttributeName != null)
+			saml2Setting.setSpAllowRepeatAttributeName(spAllowRepeatAttributeName);
+
 		boolean keyStoreEnabled = this.samlData.get(KEYSTORE_KEY) != null && this.samlData.get(KEYSTORE_ALIAS) != null
-				&& this.samlData.get(KEYSTORE_PASSWORD) != null;
+				&& this.samlData.get(KEYSTORE_KEY_PASSWORD) != null;
 
 		X509Certificate spX509cert;
 		PrivateKey spPrivateKey;
@@ -479,7 +482,7 @@ public class SettingsBuilder {
 		if (keyStoreEnabled) {
 			KeyStore ks = (KeyStore) this.samlData.get(KEYSTORE_KEY);
 			String alias = (String) this.samlData.get(KEYSTORE_ALIAS);
-			String password = (String) this.samlData.get(KEYSTORE_PASSWORD);
+			String password = (String) this.samlData.get(KEYSTORE_KEY_PASSWORD);
 
 			spX509cert = getCertificateFromKeyStore(ks, alias, password);
 			spPrivateKey = getPrivateKeyFromKeyStore(ks, alias, password);
@@ -758,7 +761,7 @@ public class SettingsBuilder {
     private void parseKeyStore(KeyStoreSettings setting) {
 		this.samlData.put(KEYSTORE_KEY, setting.getKeyStore());
 		this.samlData.put(KEYSTORE_ALIAS, setting.getSpAlias());
-		this.samlData.put(KEYSTORE_PASSWORD, setting.getStorePass());
+		this.samlData.put(KEYSTORE_KEY_PASSWORD, setting.getSpKeyPass());
     }
 
 	/**
