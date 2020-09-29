@@ -39,7 +39,6 @@ public class Saml2Settings {
 	private URL spSingleLogoutServiceUrl = null;
 	private String spSingleLogoutServiceBinding = Constants.BINDING_HTTP_REDIRECT;
 	private String spNameIDFormat = Constants.NAMEID_UNSPECIFIED;
-	private boolean spAllowRepeatAttributeName = false;
 	private X509Certificate spX509cert = null;
 	private X509Certificate spX509certNew = null;
 	private PrivateKey spPrivateKey = null;
@@ -73,6 +72,7 @@ public class Saml2Settings {
 	private String signatureAlgorithm = Constants.RSA_SHA1;
 	private String digestAlgorithm = Constants.SHA1;
 	private boolean rejectUnsolicitedResponsesWithInResponseTo = false;
+	private boolean allowRepeatAttributeName = false;
 	private String uniqueIDPrefix = null;
 
 	// Compress
@@ -135,10 +135,10 @@ public class Saml2Settings {
 	}
 
 	/**
-	 * @return the spAllowRepeatAttributeName setting value
+	 * @return the allowRepeatAttributeName setting value
 	 */
-	public boolean isSpAllowRepeatAttributeName () {
-		return spAllowRepeatAttributeName;
+	public boolean isAllowRepeatAttributeName () {
+		return allowRepeatAttributeName;
 	}
 
 	/**
@@ -450,13 +450,13 @@ public class Saml2Settings {
 	}
 
 	/**
-	 * Set the spAllowRepeatAttributeName setting value
+	 * Set the allowRepeatAttributeName setting value
 	 *
-	 * @param spAllowRepeatAttributeName
-	 *        the spAllowRepeatAttributeName value to be set
+	 * @param allowRepeatAttributeName
+	 *        the allowRepeatAttributeName value to be set
 	 */
-	public void setSpAllowRepeatAttributeName (boolean spAllowRepeatAttributeName) {
-		this.spAllowRepeatAttributeName = spAllowRepeatAttributeName;
+	public void setAllowRepeatAttributeName (boolean allowRepeatAttributeName) {
+		this.allowRepeatAttributeName = allowRepeatAttributeName;
 	}
 
 	/**

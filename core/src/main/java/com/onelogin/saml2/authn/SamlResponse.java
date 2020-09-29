@@ -549,14 +549,14 @@ public class SamlResponse {
 			for (int i = 0; i < nodes.getLength(); i++) {
 				NamedNodeMap attrName = nodes.item(i).getAttributes();
 				String attName = attrName.getNamedItem("Name").getNodeValue();
-				if (attributes.containsKey(attName) && !settings.isSpAllowRepeatAttributeName()) {
+				if (attributes.containsKey(attName) && !settings.isAllowRepeatAttributeName()) {
 					throw new ValidationError("Found an Attribute element with duplicated Name", ValidationError.DUPLICATED_ATTRIBUTE_NAME_FOUND);
 				}
 				
 				NodeList childrens = nodes.item(i).getChildNodes();
 
 				List<String> attrValues = null;
-				if (attributes.containsKey(attName) && settings.isSpAllowRepeatAttributeName()) {
+				if (attributes.containsKey(attName) && settings.isAllowRepeatAttributeName()) {
 					attrValues = attributes.get(attName);
 				} else {
 					attrValues = new ArrayList<String>();
