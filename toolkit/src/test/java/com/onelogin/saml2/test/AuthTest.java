@@ -713,6 +713,7 @@ public class AuthTest {
 		assertFalse(auth.getErrors().isEmpty());
 		assertTrue(auth.getErrors().contains("invalid_logout_request"));
 		assertThat(auth.getLastErrorReason(), containsString("The LogoutRequest was received at"));
+		assertTrue(auth.getLastValidationException() instanceof ValidationError);
 	}
 
 	/**
@@ -854,6 +855,7 @@ public class AuthTest {
 		expectedErrors.add("invalid_response");
 		assertEquals(expectedErrors, auth.getErrors());
 		assertEquals("SAML Response must contain 1 Assertion.", auth.getLastErrorReason());
+		assertTrue(auth.getLastValidationException() instanceof ValidationError);
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
 		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
@@ -867,6 +869,7 @@ public class AuthTest {
 		expectedErrors.add("invalid_response");
 		assertEquals(expectedErrors, auth2.getErrors());
 		assertThat(auth2.getLastErrorReason(), containsString("Invalid issuer in the Assertion/Response"));
+		assertTrue(auth2.getLastValidationException() instanceof ValidationError);
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
 		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
@@ -877,6 +880,7 @@ public class AuthTest {
 		assertTrue(auth3.isAuthenticated());
 		assertTrue(auth3.getErrors().isEmpty());
 		assertNull(auth3.getLastErrorReason());
+		assertNull(auth3.getLastValidationException());
 	}
 
 	/**

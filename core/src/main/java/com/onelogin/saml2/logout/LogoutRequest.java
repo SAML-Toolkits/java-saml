@@ -98,7 +98,7 @@ public class LogoutRequest {
 	/**
 	 * After validation, if it fails this property has the cause of the problem
 	 */ 
-	private String error;
+	private Exception validationException;
 
 	/**
 	 * Constructs the LogoutRequest object.
@@ -366,7 +366,7 @@ public class LogoutRequest {
 	 * @throws Exception
      */
 	public Boolean isValid() throws Exception {
-		error = null;
+		validationException = null;
 
 		try {
 			if (this.logoutRequestString == null || logoutRequestString.isEmpty()) {
@@ -474,9 +474,9 @@ public class LogoutRequest {
 			LOGGER.debug("LogoutRequest validated --> " + logoutRequestString);
 		    return true;	
 		} catch (Exception e) {
-			error = e.getMessage();
+			validationException = e;
 			LOGGER.debug("LogoutRequest invalid --> " + logoutRequestString);
-			LOGGER.error(error);
+			LOGGER.error(validationException.getMessage());
 			return false;
 		}
 	}
@@ -737,8 +737,21 @@ public class LogoutRequest {
      * @return the cause of the validation error 
      */
 	public String getError() {
-		return error;
+		if (validationException != null) {
+			return validationException.getMessage();
+		}
+		return null;
 	}
+
+	/**
+	 * After execute a validation process, if fails this method returns the Exception object
+	 *
+	 * @return the cause of the validation error
+	 */
+	public Exception getValidationException() {
+		return validationException;
+	}
+
 
 	/**
 	 * @return the ID of the Logout Request

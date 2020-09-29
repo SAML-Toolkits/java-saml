@@ -134,6 +134,11 @@ public class Auth {
 	private String errorReason;
 
 	/**
+	 * Exception of the last error.
+	 */
+	private Exception validationException;
+
+	/**
 	 * The id of the last request (Authn or Logout) generated
 	 */
 	private String lastRequestId;
@@ -748,6 +753,7 @@ public class Auth {
 				LOGGER.error("processResponse error. invalid_response");
 				LOGGER.debug(" --> " + samlResponseParameter);
 				errorReason = samlResponse.getError();
+				validationException = samlResponse.getValidationException();
 			}
 		} else {
 			errors.add("invalid_binding");
@@ -790,6 +796,7 @@ public class Auth {
 				LOGGER.error("processSLO error. invalid_logout_response");
 				LOGGER.debug(" --> " + samlResponseParameter);
 				errorReason = logoutResponse.getError();
+				validationException = logoutResponse.getValidationException();
 			} else {
 				String status = logoutResponse.getStatus();
 				if (status == null || !status.equals(Constants.STATUS_SUCCESS)) {
@@ -812,6 +819,7 @@ public class Auth {
 				LOGGER.error("processSLO error. invalid_logout_request");
 				LOGGER.debug(" --> " + samlRequestParameter);
 				errorReason = logoutRequest.getError();
+				validationException = logoutRequest.getValidationException();
 			} else {
 				lastMessageId = logoutRequest.getId();
 				LOGGER.debug("processSLO success --> " + samlRequestParameter);
@@ -970,6 +978,13 @@ public class Auth {
 	 */
 	public String getLastErrorReason() {
 		return errorReason;
+	}
+
+	/**
+	 * @return the exception for the last error
+	 */
+	public Exception getLastValidationException() {
+		return validationException;
 	}
 
 	/**
