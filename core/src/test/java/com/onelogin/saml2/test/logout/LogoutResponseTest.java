@@ -54,7 +54,7 @@ public class LogoutResponseTest {
 
 		String expectedLogoutResponseStringBase64Deflated = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
 		String expectedLogoutResponseStringBase64 = Util.getFileAsString("data/logout_responses/logout_response.xml.base64");
-		
+
 		String logoutResponseStringBase64Deflated = logoutResponseBuilder.getEncodedLogoutResponse();
 		assertEquals(logoutResponseStringBase64Deflated, expectedLogoutResponseStringBase64Deflated);
 
@@ -76,7 +76,7 @@ public class LogoutResponseTest {
 		logoutResponseStringBase64Deflated = logoutResponse.getEncodedLogoutResponse(false);
 		assertNotEquals(logoutResponseStringBase64Deflated, expectedLogoutResponseStringBase64Deflated);
 		assertEquals(logoutResponseStringBase64Deflated,expectedLogoutResponseStringBase64);
-		
+
 		settings.setCompressResponse(true);
 		logoutResponse = new LogoutResponse(settings, httpRequest) {
 			@Override
@@ -106,7 +106,7 @@ public class LogoutResponseTest {
 	 * @throws XMLEntityException
 	 * @throws URISyntaxException
 	 * @throws Error
-	 * 
+	 *
 	 * @see com.onelogin.saml2.logout.LogoutResponse
 	 */
 	@Test
@@ -129,7 +129,7 @@ public class LogoutResponseTest {
 	 * @throws XMLEntityException
 	 * @throws URISyntaxException
 	 * @throws Error
-	 * 
+	 *
 	 * @see com.onelogin.saml2.logout.LogoutResponse#build
 	 */
 	@Test
@@ -149,7 +149,7 @@ public class LogoutResponseTest {
 		String logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		assertThat(logoutRequestStr, containsString("<samlp:LogoutResponse"));
 		assertThat(logoutRequestStr, not(containsString("InResponseTo=")));
-		
+
 		LogoutResponse logoutResponse2 = new LogoutResponse(settings, httpRequest);
 		logoutResponse2.build("inResponseValue");
 		logoutRequestStringBase64 = logoutResponse2.getEncodedLogoutResponse();
@@ -157,7 +157,7 @@ public class LogoutResponseTest {
 		assertThat(logoutRequestStr, containsString("<samlp:LogoutResponse"));
 		assertThat(logoutRequestStr, containsString("InResponseTo=\"inResponseValue\""));
 		assertThat(logoutRequestStr, containsString("StatusCode Value=\"urn:oasis:names:tc:SAML:2.0:status:Success\""));
-		
+
 		LogoutResponse logoutResponse3 = new LogoutResponse(settings, httpRequest);
 		logoutResponse3.build("inResponseValue", Constants.STATUS_REQUEST_DENIED);
 		logoutRequestStringBase64 = logoutResponse3.getEncodedLogoutResponse();
@@ -171,7 +171,7 @@ public class LogoutResponseTest {
 	 * Tests the getLogoutResponseXml method of LogoutResponse
 	 *
 	 * @throws Exception
-	 * 
+	 *
 	 * @see com.onelogin.saml2.logout.LogoutResponse#getLogoutResponseXml
 	 */
 	@Test
@@ -188,7 +188,7 @@ public class LogoutResponseTest {
 		logoutResponse = new LogoutResponse(settings, httpRequest);
 		logoutResponseXML = logoutResponse.getLogoutResponseXml();
 		assertThat(logoutResponseXML, containsString("<samlp:LogoutResponse"));
-		
+
 	}
 
 	/**
@@ -237,13 +237,13 @@ public class LogoutResponseTest {
 		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
 		String expectedIssuer = "http://idp.example.com/";
 		assertEquals(expectedIssuer, logoutResponse.getIssuer());
-		
+
 		String logoutRequestStr = Util.base64decodedInflated(samlResponseEncoded);
 		logoutRequestStr = logoutRequestStr.replace("<saml:Issuer>http://idp.example.com/</saml:Issuer>", "");
 		samlResponseEncoded = Util.deflatedBase64encoded(logoutRequestStr);
 		httpRequest = newHttpRequest(requestURL, samlResponseEncoded);
 		logoutResponse = new LogoutResponse(settings, httpRequest);
-		assertNull(logoutResponse.getIssuer());		
+		assertNull(logoutResponse.getIssuer());
 	}
 
 	/**
@@ -253,7 +253,7 @@ public class LogoutResponseTest {
 	 * @throws XMLEntityException
 	 * @throws IOException
 	 * @throws Error
-	 * 
+	 *
 	 * @see com.onelogin.saml2.logout.LogoutResponse#isValid
 	 */
 	@Test
@@ -269,7 +269,7 @@ public class LogoutResponseTest {
 		httpRequest = new HttpRequest(requestURL, (String)null);
 		logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertFalse(logoutResponse.isValid());
-		assertEquals("SAML Logout Response is not loaded", logoutResponse.getError());		
+		assertEquals("SAML Logout Response is not loaded", logoutResponse.getError());
 	}
 
 	/**
@@ -289,13 +289,13 @@ public class LogoutResponseTest {
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
 		final String requestURL = "http://stuff.com/endpoints/endpoints/sls.php";
 		HttpRequest httpRequest = newHttpRequest(requestURL, samlResponseEncoded);
-		
+
 		settings.setStrict(false);
 		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertTrue(logoutResponse.isValid());
 
 		assertTrue(logoutResponse.isValid("invalid_request_id"));
-		
+
 		settings.setStrict(true);
 		logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertTrue(logoutResponse.isValid());
@@ -321,7 +321,7 @@ public class LogoutResponseTest {
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/invalids/invalid_issuer.xml.base64");
 		final String requestURL = "http://stuff.com/endpoints/endpoints/sls.php";
 		HttpRequest httpRequest = newHttpRequest(requestURL, samlResponseEncoded);
-		
+
 		settings.setStrict(false);
 		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertTrue(logoutResponse.isValid());
@@ -362,7 +362,7 @@ public class LogoutResponseTest {
 		settings.setWantXMLValidation(false);
 		logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertTrue(logoutResponse.isValid());
-		
+
 		settings.setStrict(false);
 		logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertTrue(logoutResponse.isValid());
@@ -514,7 +514,7 @@ public class LogoutResponseTest {
 				.addParameter("RelayState", relayState)
 				.addParameter("SigAlg", sigAlg)
 				.addParameter("Signature", signature);
-		
+
 		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertTrue(logoutResponse.isValid());
 
@@ -559,7 +559,7 @@ public class LogoutResponseTest {
 	 * @throws IOException
 	 * @throws XMLEntityException
 	 * @throws Error
-	 * 
+	 *
 	 * @see com.onelogin.saml2.logout.LogoutResponse#isValid
 	 */
 	@Test
