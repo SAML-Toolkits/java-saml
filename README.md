@@ -110,8 +110,8 @@ java-saml (com.onelogin:java-saml-toolkit) has the following dependencies:
 * For CI:
   * org.jacoco:jacoco-maven-plugin
 
-also the [Java Cryptography Extension (JCE)](https://en.wikipedia.org/wiki/Java_Cryptography_Extension) is required. If you don't have it, download the version of [jce-6](http://www.oracle.com/technetwork/java/javase/downloads/jce-6-download-429243.html), [jce-7](http://www.oracle.com/technetwork/java/javase/downloads/jce-7-download-432124.html) or [jce-8](http://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html), unzip it, and drop its content at
-*${java.home}/jre/lib/security/*
+also the [Java Cryptography Extension (JCE)](https://en.wikipedia.org/wiki/Java_Cryptography_Extension) is required. If you don't have it, download the version of [jce-8](http://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html), unzip it, and drop its content at
+*${java.home}/jre/lib/security/*. JDK 9 and later offer the stronger cryptographic algorithms by default.
 
 *toolkit:*
 * com.onelogin:java-saml-core
@@ -123,7 +123,7 @@ also the [Java Cryptography Extension (JCE)](https://en.wikipedia.org/wiki/Java_
 * org.apache.maven.plugins:maven-enforcer-plugin
 
 For more info, open and read the different pom.xml files:
-[core/pom.xml](https://github.com/onelogin/java-saml/blob/v2.2.0/core/pom.xml), [toolkit/pom.xml](https://github.com/onelogin/java-saml/blob/v2.2.0/toolkit/pom.xml)
+[core/pom.xml](https://github.com/onelogin/java-saml/blob/v2.5.0/core/pom.xml), [toolkit/pom.xml](https://github.com/onelogin/java-saml/blob/v2.5.0/toolkit/pom.xml)
 
 ## Working with the github repository code and Eclipse.
 ### Get the toolkit.
@@ -328,6 +328,9 @@ onelogin.saml2.security.requested_authncontext = urn:oasis:names:tc:SAML:2.0:ac:
 
 # Allows the authn comparison parameter to be set, defaults to 'exact'
 onelogin.saml2.security.requested_authncontextcomparison = exact
+
+# Allows duplicated names in the attribute statement
+onelogin.saml2.security.allow_duplicated_attribute_name = false
 
 # Indicates if the SP will validate all received xmls.
 # (In order to validate the xml, 'strict' and 'wantXMLValidation' must be true).

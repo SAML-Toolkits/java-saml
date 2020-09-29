@@ -8,10 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
-
 import org.joda.time.DateTime;
 import org.joda.time.Instant;
 import org.slf4j.Logger;
@@ -22,7 +20,8 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-
+import com.onelogin.saml2.exception.SettingsException;
+import com.onelogin.saml2.exception.ValidationError;
 import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.model.SamlResponseStatus;
 import com.onelogin.saml2.model.SubjectConfirmationIssue;
@@ -30,9 +29,6 @@ import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.SchemaFactory;
 import com.onelogin.saml2.util.Util;
-
-import com.onelogin.saml2.exception.SettingsException;
-import com.onelogin.saml2.exception.ValidationError;
 
 /**
  * SamlResponse class of OneLogin's Java Toolkit.
@@ -553,18 +549,24 @@ public class SamlResponse {
 			for (int i = 0; i < nodes.getLength(); i++) {
 				NamedNodeMap attrName = nodes.item(i).getAttributes();
 				String attName = attrName.getNamedItem("Name").getNodeValue();
-				if (attributes.containsKey(attName)) {
+				if (attributes.containsKey(attName) && !settings.isAllowRepeatAttributeName()) {
 					throw new ValidationError("Found an Attribute element with duplicated Name", ValidationError.DUPLICATED_ATTRIBUTE_NAME_FOUND);
 				}
 				
 				NodeList childrens = nodes.item(i).getChildNodes();
 
-				List<String> attrValues = new ArrayList<String>();
+				List<String> attrValues = null;
+				if (attributes.containsKey(attName) && settings.isAllowRepeatAttributeName()) {
+					attrValues = attributes.get(attName);
+				} else {
+					attrValues = new ArrayList<String>();
+				}
 				for (int j = 0; j < childrens.getLength(); j++) {
 					if ("AttributeValue".equals(childrens.item(j).getLocalName())) {
 						attrValues.add(childrens.item(j).getTextContent());
 					}
 				}
+
 				attributes.put(attName, attrValues);
 			}
 			LOGGER.debug("SAMLResponse has attributes: " + attributes.toString());

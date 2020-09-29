@@ -47,6 +47,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -1001,10 +1002,37 @@ public class AuthnResponseTest {
 	}
 
 	/**
-	 * Tests that queryAssertion method of SamlResponse
-	 * Case: Elements retrieved are covered by a Signature 
+	 * Tests the getAttributes method of SamlResponse
+	 * Case: Allow Duplicated names
 	 *
-	 * @throws Exception 
+	 * @throws Error
+	 * @throws IOException
+	 * @throws ValidationError
+	 * @throws SettingsException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws XPathExpressionException
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#getAttributes
+	 */
+	@Test
+	public void testGetAttributesAllowDuplicatedNames () throws IOException, Error, XPathExpressionException, ParserConfigurationException,
+				SAXException, SettingsException, ValidationError {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.allowduplicatednames.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/duplicated_attributes.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+
+		Map<String, List<String>> attributes = samlResponse.getAttributes();
+		assertNotNull(attributes);
+		assertTrue(attributes.containsKey("uid"));
+		assertEquals(2, attributes.get("uid").size());
+	}
+
+	/**
+	 * Tests that queryAssertion method of SamlResponse
+	 * Case: Elements retrieved are covered by a Signature
+	 *
+	 * @throws Exception
 	 *
 	 * @see com.onelogin.saml2.authn.SamlResponse#queryAssertion
 	 */

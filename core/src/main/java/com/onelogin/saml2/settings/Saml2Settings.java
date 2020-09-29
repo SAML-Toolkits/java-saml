@@ -72,6 +72,7 @@ public class Saml2Settings {
 	private String signatureAlgorithm = Constants.RSA_SHA1;
 	private String digestAlgorithm = Constants.SHA1;
 	private boolean rejectUnsolicitedResponsesWithInResponseTo = false;
+	private boolean allowRepeatAttributeName = false;
 	private String uniqueIDPrefix = null;
 
 	// Compress
@@ -131,6 +132,13 @@ public class Saml2Settings {
 	 */
 	public final String getSpNameIDFormat() {
 		return spNameIDFormat;
+	}
+
+	/**
+	 * @return the allowRepeatAttributeName setting value
+	 */
+	public boolean isAllowRepeatAttributeName () {
+		return allowRepeatAttributeName;
 	}
 
 	/**
@@ -439,6 +447,16 @@ public class Saml2Settings {
 	 */
 	protected final void setSpNameIDFormat(String spNameIDFormat) {
 		this.spNameIDFormat = spNameIDFormat;
+	}
+
+	/**
+	 * Set the allowRepeatAttributeName setting value
+	 *
+	 * @param allowRepeatAttributeName
+	 *        the allowRepeatAttributeName value to be set
+	 */
+	public void setAllowRepeatAttributeName (boolean allowRepeatAttributeName) {
+		this.allowRepeatAttributeName = allowRepeatAttributeName;
 	}
 
 	/**
