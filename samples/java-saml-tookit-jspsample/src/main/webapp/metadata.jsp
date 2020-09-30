@@ -2,9 +2,10 @@
 Auth auth = new Auth();
 Saml2Settings settings = auth.getSettings();
 settings.setSPValidationOnly(true);
-String metadata = settings.getSPMetadata();
-List<String> errors = Saml2Settings.validateMetadata(metadata);
+List<String> errors = settings.checkSettings();
+
 if (errors.isEmpty()) {
+        String metadata = settings.getSPMetadata();
 	out.println(metadata);
 } else {
 	response.setContentType("text/html; charset=UTF-8");
