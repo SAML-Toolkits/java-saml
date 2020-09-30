@@ -85,8 +85,8 @@
 									<version>3.2.5</version>
 								</requireMavenVersion>
 								<requireJavaVersion>
-									<!-- enforce =1.7 so that we compile against the right JRE -->
-									<version>[1.7,)</version>
+									<!-- enforce =1.8 so that we compile against the right JRE -->
+									<version>[1.8,)</version>
 								</requireJavaVersion>
 							</rules>
 						</configuration>
@@ -118,8 +118,8 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.8.1</version>
 					<configuration>
-						<source>1.7</source>
-						<target>1.7</target>
+						<source>1.8</source>
+						<target>1.8</target>
 					</configuration>
 				</plugin>
 				<plugin>
