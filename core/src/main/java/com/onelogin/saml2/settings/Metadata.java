@@ -43,7 +43,7 @@ public class Metadata {
 	private static final int SECONDS_CACHED = 604800; // 1 week
 
 	/**
-     * AttributeConsumingService 
+     * AttributeConsumingService
      */
 	private AttributeConsumingService attributeConsumingService = null;
 	
@@ -64,7 +64,7 @@ public class Metadata {
 
 	/**
 	 * Constructs the Metadata object.
-	 * 
+	 *
 	 * @param settings
 	 * 				Saml2Settings object. Setting data  
 	 * @param validUntilTime 
@@ -83,7 +83,7 @@ public class Metadata {
 		} else {
 			this.validUntilTime = validUntilTime;
 		}
-		
+
 		this.attributeConsumingService = attributeConsumingService;
 
 		if (cacheDuration == null) {
@@ -95,13 +95,13 @@ public class Metadata {
 		StrSubstitutor substitutor = generateSubstitutor(settings);
 		String unsignedMetadataString = substitutor.replace(getMetadataTemplate());
 
-    	LOGGER.debug("metadata --> " + unsignedMetadataString);
-    	metadataString = unsignedMetadataString;
+		LOGGER.debug("metadata --> " + unsignedMetadataString);
+		metadataString = unsignedMetadataString;
 	}
 
 	/**
 	 * Constructs the Metadata object.
-	 * 
+	 *
 	 * @param settings
 	 * 				Saml2Settings object. Setting data  
 	 * @param validUntilTime 
@@ -114,7 +114,7 @@ public class Metadata {
 	public Metadata(Saml2Settings settings, Calendar validUntilTime, Integer cacheDuration) throws CertificateEncodingException {
 		this(settings, validUntilTime, cacheDuration, null);
 	}
-		
+
 	/**
 	 * Constructs the Metadata object.
 	 *
@@ -126,7 +126,7 @@ public class Metadata {
 	public Metadata(Saml2Settings settings) throws CertificateEncodingException {
 		this(settings, null, null);
 	}
-	
+
 	/**
 	 * Substitutes metadata variables within a string by values.
 	 *
@@ -138,8 +138,8 @@ public class Metadata {
 	private StrSubstitutor generateSubstitutor(Saml2Settings settings) throws CertificateEncodingException {
 
 		Map<String, String> valueMap = new HashMap<String, String>();
-		Boolean wantsEncrypted = settings.getWantAssertionsEncrypted() || settings.getWantNameIdEncrypted(); 
-		
+		Boolean wantsEncrypted = settings.getWantAssertionsEncrypted() || settings.getWantNameIdEncrypted();
+
 		valueMap.put("id", Util.generateUniqueID(settings.getUniqueIDPrefix()));
 		valueMap.put("validUntilTime", Util.formatDateTime(validUntilTime.getTimeInMillis()));
 		valueMap.put("cacheDuration", String.valueOf(cacheDuration));
@@ -152,7 +152,7 @@ public class Metadata {
 		valueMap.put("sls", toSLSXml(settings.getSpSingleLogoutServiceUrl(), settings.getSpSingleLogoutServiceBinding()));
 
 		valueMap.put("strAttributeConsumingService", getAttributeConsumingServiceXml());
-		
+
 		valueMap.put("strKeyDescriptor", toX509KeyDescriptorsXML(settings.getSPcert(), settings.getSPcertNew(), wantsEncrypted));
 		valueMap.put("strContacts", toContactsXml(settings.getContacts()));
 		valueMap.put("strOrganization", toOrganizationXml(settings.getOrganization()));

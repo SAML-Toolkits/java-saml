@@ -1114,7 +1114,7 @@ public class UtilsTest {
 		String signedAssertionStr = Util.getFileAsString("data/responses/signed_assertion_response.xml.base64");
 		String samlSignedAssertionStr = new String(Util.base64decoder(signedAssertionStr));
 		Document samlSignedAssertionDocument = Util.loadXML(samlSignedAssertionStr);
-		
+
 		assertTrue(Util.validateSign(samlSignedAssertionDocument, cert, null, null, ASSERTION_SIGNATURE_XPATH));
 		assertTrue(Util.validateSign(samlSignedAssertionDocument, (X509Certificate) null, fingerprint_sha1, null, ASSERTION_SIGNATURE_XPATH));
 		assertTrue(Util.validateSign(samlSignedAssertionDocument, (X509Certificate) null, fingerprint_sha1, "SHA-1", ASSERTION_SIGNATURE_XPATH));
