@@ -86,6 +86,32 @@ public class SamlResponse {
 	 *
 	 * @param settings
 	 *              Saml2Settings object. Setting data
+	 * @param currentUrl
+	 *              URL of the current host + current view
+	 *
+	 * @param samlResponse
+	 *              A string containting the base64 encoded response from the IdP
+	 *
+	 *
+	 * @throws ValidationError
+	 * @throws SettingsException
+	 * @throws IOException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws XPathExpressionException
+     *
+	 */
+	public SamlResponse(Saml2Settings settings, String currentUrl, String samlResponse) throws XPathExpressionException, ParserConfigurationException, SAXException, IOException, SettingsException, ValidationError {
+		this.settings = settings;
+		this.currentUrl = currentUrl;
+		loadXmlFromBase64(samlResponse);
+	}
+
+	/**
+	 * Constructor to have a Response object fully built and ready to validate the saml response.
+	 *
+	 * @param settings
+	 *              Saml2Settings object. Setting data
 	 * @param request
 	 *				the HttpRequest object to be processed (Contains GET and POST parameters, request URL, ...).
 	 *
@@ -98,12 +124,7 @@ public class SamlResponse {
      *
 	 */
 	public SamlResponse(Saml2Settings settings, HttpRequest request) throws XPathExpressionException, ParserConfigurationException, SAXException, IOException, SettingsException, ValidationError {
-		this.settings = settings;
-
-		if (request != null) {
-			currentUrl = request.getRequestURL();
-			loadXmlFromBase64(request.getParameter("SAMLResponse"));
-		}
+		this(settings, request.getRequestURL(), request.getParameter("SAMLResponse"));
 	}
 
 	/**
