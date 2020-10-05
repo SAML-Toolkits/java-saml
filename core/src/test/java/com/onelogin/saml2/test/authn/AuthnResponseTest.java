@@ -69,9 +69,37 @@ public class AuthnResponseTest {
 		DateTimeUtils.setCurrentMillisSystem();
 	}
 
-	
 	/**
-	 * Tests the constructor of SamlResponse
+	 * Tests the deconstructed constructor of SamlResponse
+	 *
+	 * @throws Error
+	 * @throws IOException
+	 * @throws ValidationError
+	 * @throws SettingsException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws XPathExpressionException
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse
+	 */
+	@Test
+	public void testDeconstructedConstructor() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+
+		final String requestURL = "/";
+		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
+
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(requestURL, samlResponseEncoded));
+		assertTrue(samlResponse instanceof SamlResponse);
+
+		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
+		samlResponse = new SamlResponse(settings, requestURL, samlResponseEncoded);
+		assertTrue(samlResponse instanceof SamlResponse);
+	}
+
+
+	/**
+	 * Tests the httpRequest constructor of SamlResponse
 	 *
 	 * @throws Error
 	 * @throws IOException
