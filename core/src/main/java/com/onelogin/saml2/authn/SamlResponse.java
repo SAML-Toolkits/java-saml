@@ -82,6 +82,11 @@ public class SamlResponse {
 	private Exception validationException;
 
 	/**
+	 * The respone status code and messages
+	 */
+	private SamlResponseStatus responseStatus;
+
+	/**
 	 * Constructor to have a Response object fully built and ready to validate the saml response.
 	 *
 	 * @param settings
@@ -121,6 +126,7 @@ public class SamlResponse {
 	 * @throws SAXException
 	 * @throws ParserConfigurationException
 	 * @throws XPathExpressionException
+	 * @throws NullPointerException
      *
 	 */
 	public SamlResponse(Saml2Settings settings, HttpRequest request) throws XPathExpressionException, ParserConfigurationException, SAXException, IOException, SettingsException, ValidationError {
@@ -598,18 +604,26 @@ public class SamlResponse {
 	}
 
 	/**
+	 * Returns the ResponseStatus object
+	 * 
+	 * @return
+	 */
+	public SamlResponseStatus getResponseStatus() {
+		return this.responseStatus;
+	}
+
+	/**
 	 * Checks the Status
 	 *
-	 * @throws ValidationError
-	 *             If status is not success
+	 * @throws ValidationError If status is not success
 	 */
 	public void checkStatus() throws ValidationError {
-		SamlResponseStatus responseStatus = getStatus(samlResponseDocument);
-		if (!responseStatus.is(Constants.STATUS_SUCCESS)) {
+		this.responseStatus = getStatus(samlResponseDocument);
+		if (!this.responseStatus.is(Constants.STATUS_SUCCESS)) {
 			String statusExceptionMsg = "The status code of the Response was not Success, was "
-					+ responseStatus.getStatusCode();
-			if (responseStatus.getStatusMessage() != null) {
-				statusExceptionMsg += " -> " + responseStatus.getStatusMessage();
+					+ this.responseStatus.getStatusCode();
+			if (this.responseStatus.getStatusMessage() != null) {
+				statusExceptionMsg += " -> " + this.responseStatus.getStatusMessage();
 			}
 			throw new ValidationError(statusExceptionMsg, ValidationError.STATUS_CODE_IS_NOT_SUCCESS);
 		}

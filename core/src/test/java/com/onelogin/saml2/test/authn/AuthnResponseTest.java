@@ -1345,9 +1345,8 @@ public class AuthnResponseTest {
 	@Test
 	public void testNullRequest() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		expectedEx.expect(NullPointerException.class);
 		SamlResponse samlResponse = new SamlResponse(settings, null);
-		assertFalse(samlResponse.isValid());
-		assertEquals("SAML Response is not loaded", samlResponse.getError());
 	}
 
 	/**

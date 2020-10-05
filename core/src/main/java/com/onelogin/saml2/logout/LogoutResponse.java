@@ -85,6 +85,11 @@ public class LogoutResponse {
 	private Exception validationException;
 
 	/**
+	 * The respone status code and messages
+	 */
+	private SamlResponseStatus responseStatus;
+
+	/**
 	 * Constructs the LogoutResponse object.
 	 *
 	 * @param settings
@@ -323,7 +328,7 @@ public class LogoutResponse {
      */
     public SamlResponseStatus getSamlResponseStatus() throws ValidationError
     {
-		String statusXpath = "/samlp:Response/samlp:Status";
+		String statusXpath = "/samlp:LogoutResponse/samlp:Status";
 		return Util.getStatus(statusXpath, this.logoutResponseDocument);
     }
 
