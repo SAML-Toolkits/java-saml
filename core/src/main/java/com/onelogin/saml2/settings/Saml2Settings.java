@@ -7,12 +7,10 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
 import com.onelogin.saml2.model.Contact;
 import com.onelogin.saml2.model.Organization;
 import com.onelogin.saml2.util.Constants;
@@ -31,7 +29,7 @@ public class Saml2Settings {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Saml2Settings.class);
 
 	// Toolkit settings
-	private boolean strict = false;
+	private boolean strict = true;
 	private boolean debug = false;
 	
 	// SP
@@ -42,6 +40,7 @@ public class Saml2Settings {
 	private String spSingleLogoutServiceBinding = Constants.BINDING_HTTP_REDIRECT;
 	private String spNameIDFormat = Constants.NAMEID_UNSPECIFIED;
 	private X509Certificate spX509cert = null;
+	private X509Certificate spX509certNew = null;
 	private PrivateKey spPrivateKey = null;
 
 	// IdP
@@ -73,6 +72,7 @@ public class Saml2Settings {
 	private String signatureAlgorithm = Constants.RSA_SHA1;
 	private String digestAlgorithm = Constants.SHA1;
 	private boolean rejectUnsolicitedResponsesWithInResponseTo = false;
+	private boolean allowRepeatAttributeName = false;
 	private String uniqueIDPrefix = null;
 
 	// Compress
@@ -135,10 +135,24 @@ public class Saml2Settings {
 	}
 
 	/**
+	 * @return the allowRepeatAttributeName setting value
+	 */
+	public boolean isAllowRepeatAttributeName () {
+		return allowRepeatAttributeName;
+	}
+
+	/**
 	 * @return the spX509cert setting value
 	 */
 	public final X509Certificate getSPcert() {
 		return spX509cert;
+	}
+
+	/**
+	 * @return the spX509certNew setting value
+	 */
+	public final X509Certificate getSPcertNew() {
+		return spX509certNew;
 	}
 
 	/**
@@ -436,6 +450,16 @@ public class Saml2Settings {
 	}
 
 	/**
+	 * Set the allowRepeatAttributeName setting value
+	 *
+	 * @param allowRepeatAttributeName
+	 *        the allowRepeatAttributeName value to be set
+	 */
+	public void setAllowRepeatAttributeName (boolean allowRepeatAttributeName) {
+		this.allowRepeatAttributeName = allowRepeatAttributeName;
+	}
+
+	/**
 	 * Set the spX509cert setting value provided as X509Certificate object
 	 *
 	 * @param spX509cert
@@ -443,6 +467,16 @@ public class Saml2Settings {
 	 */
 	protected final void setSpX509cert(X509Certificate spX509cert) {
 		this.spX509cert = spX509cert;
+	}
+
+	/**
+	 * Set the spX509certNew setting value provided as X509Certificate object
+	 *
+	 * @param spX509certNew
+	 *            the spX509certNew value to be set in X509Certificate format
+	 */
+	protected final void setSpX509certNew(X509Certificate spX509certNew) {
+		this.spX509certNew = spX509certNew;
 	}
 
 	/**
@@ -828,19 +862,32 @@ public class Saml2Settings {
 			LOGGER.error(errorMsg);
 		}
 
-		if (this.getIdpx509cert() == null && !checkRequired(this.getIdpCertFingerprint())) {
+		if (!checkIdpx509certRequired() && !checkRequired(this.getIdpCertFingerprint())) {
 			errorMsg = "idp_cert_or_fingerprint_not_found_and_required";
 			errors.add(errorMsg);
 			LOGGER.error(errorMsg);			
 		}
 
-		if (this.getNameIdEncrypted() == true && this.getIdpx509cert() == null) {
+		if (!checkIdpx509certRequired() && this.getNameIdEncrypted()) {
 			errorMsg = "idp_cert_not_found_and_required";
 			errors.add(errorMsg);
 			LOGGER.error(errorMsg);
 		}
 
 		return errors;
+	}
+
+	/**
+	 * Auxiliary method to check Idp certificate is configured.
+	 * 
+	 * @return true if the Idp Certificate settings are valid
+	 */
+	private boolean checkIdpx509certRequired () {
+		if (this.getIdpx509cert() != null) {
+			return true;
+		}
+
+		return this.getIdpx509certMulti() != null && !this.getIdpx509certMulti().isEmpty();
 	}
 
 	/**

@@ -1,6 +1,6 @@
 package com.onelogin.saml2.exception;
 
-public class ValidationError extends Exception {
+public class ValidationError extends SAMLException {
 
 	private static final long serialVersionUID = 1L;
 
@@ -53,16 +53,16 @@ public class ValidationError extends Exception {
 	public static final int NOT_SUPPORTED = 46;
 	public static final int KEY_ALGORITHM_ERROR = 47;
 	public static final int MISSING_ENCRYPTED_ELEMENT = 48;
-    
-    private int errorCode;
-	
+
+	private int errorCode;
+
 	public ValidationError(String message, int errorCode) {
 		super(message);
 		this.errorCode = errorCode;
 	}
 	
-    public int getErrorCode() {
-        return errorCode;
-    }
+	public int getErrorCode() {
+		return errorCode;
+	}
 
 }

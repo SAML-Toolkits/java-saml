@@ -62,7 +62,7 @@ public class AttributeConsumingService {
 	}
 
 	/**
-	 * @return List<RequestedAttribute> the requested attributes
+	 * @return List the requested attributes
 	 */
 	public final List<RequestedAttribute> getRequestedAttributes() {
 		return requestedAttributes;

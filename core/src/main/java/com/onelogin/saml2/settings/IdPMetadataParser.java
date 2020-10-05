@@ -145,7 +145,7 @@ public class IdPMetadataParser {
 	 * Get IdP Metadata Info from XML Document
 	 * 
 	 * @param xmlDocument
-	 *            XML document hat contains IdP metadata
+	 *            XML document that contains IdP metadata
 	 * @param entityId
 	 *            Entity Id of the desired IdP, if no entity Id is provided and the XML metadata contains more than one IDPSSODescriptor, the first is returned
 	 * 
@@ -160,7 +160,7 @@ public class IdPMetadataParser {
 	 * Get IdP Metadata Info from XML Document
 	 * 
 	 * @param xmlDocument
-	 *            XML document hat contains IdP metadata
+	 *            XML document that contains IdP metadata
 	 * 
 	 * @return Mapped values with metadata info in Saml2Settings format
 	 * @throws XPathException
@@ -172,8 +172,8 @@ public class IdPMetadataParser {
 	/**
 	 * Get IdP Metadata Info from XML file
 	 * 
-	 * @param xmlDocument
-	 *            XML document hat contains IdP metadata
+	 * @param xmlFileName
+	 *            Filename of the XML filename that contains IdP metadata
 	 * @param entityId
 	 *            Entity Id of the desired IdP, if no entity Id is provided and the XML metadata contains more than one IDPSSODescriptor, the first is returned
 	 * @param desiredNameIdFormat
@@ -205,8 +205,8 @@ public class IdPMetadataParser {
 	/**
 	 * Get IdP Metadata Info from XML file
 	 * 
-	 * @param xmlDocument
-	 *            XML document hat contains IdP metadata
+	 * @param xmlFileName
+	 *            Filename of the XML filename that contains IdP metadata
 	 * @param entityId
 	 *            Entity Id of the desired IdP, if no entity Id is provided and the XML metadata contains more than one IDPSSODescriptor, the first is returned
 	 * 
@@ -220,8 +220,8 @@ public class IdPMetadataParser {
 	/**
 	 * Get IdP Metadata Info from XML file
 	 * 
-	 * @param xmlDocument
-	 *            XML document hat contains IdP metadata
+	 * @param xmlFileName
+	 *            Filename of the XML filename that contains IdP metadata
 	 * 
 	 * @return Mapped values with metadata info in Saml2Settings format
 	 * @throws Exception
@@ -233,8 +233,8 @@ public class IdPMetadataParser {
 	/**
 	 * Get IdP Metadata Info from XML file
 	 * 
-	 * @param xmlDocument
-	 *            XML document hat contains IdP metadata
+	 * @param xmlURL
+	 *            URL to the XML document that contains IdP metadata
 	 * @param entityId
 	 *            Entity Id of the desired IdP, if no entity Id is provided and the XML metadata contains more than one IDPSSODescriptor, the first is returned
 	 * @param desiredNameIdFormat
@@ -255,8 +255,8 @@ public class IdPMetadataParser {
 	/**
 	 * Get IdP Metadata Info from XML file
 	 * 
-	 * @param xmlDocument
-	 *            XML document hat contains IdP metadata
+	 * @param xmlURL
+	 *            URL to the XML document that contains IdP metadata
 	 * @param entityId
 	 *            Entity Id of the desired IdP, if no entity Id is provided and the XML metadata contains more than one IDPSSODescriptor, the first is returned
 	 * 
@@ -270,8 +270,8 @@ public class IdPMetadataParser {
 	/**
 	 * Get IdP Metadata Info from XML file
 	 * 
-	 * @param xmlDocument
-	 *            XML document hat contains IdP metadata
+	 * @param xmlURL
+	 *            URL to the XML document that contains IdP metadata
 	 * 
 	 * @return Mapped values with metadata info in Saml2Settings format
 	 * @throws Exception

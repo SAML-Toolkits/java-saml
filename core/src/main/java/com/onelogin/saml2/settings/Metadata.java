@@ -1,6 +1,7 @@
 package com.onelogin.saml2.settings;
 
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -42,7 +43,7 @@ public class Metadata {
 	private static final int SECONDS_CACHED = 604800; // 1 week
 
 	/**
-     * AttributeConsumingService 
+     * AttributeConsumingService
      */
 	private AttributeConsumingService attributeConsumingService = null;
 	
@@ -63,7 +64,7 @@ public class Metadata {
 
 	/**
 	 * Constructs the Metadata object.
-	 * 
+	 *
 	 * @param settings
 	 * 				Saml2Settings object. Setting data  
 	 * @param validUntilTime 
@@ -82,7 +83,7 @@ public class Metadata {
 		} else {
 			this.validUntilTime = validUntilTime;
 		}
-		
+
 		this.attributeConsumingService = attributeConsumingService;
 
 		if (cacheDuration == null) {
@@ -94,13 +95,13 @@ public class Metadata {
 		StrSubstitutor substitutor = generateSubstitutor(settings);
 		String unsignedMetadataString = substitutor.replace(getMetadataTemplate());
 
-    	LOGGER.debug("metadata --> " + unsignedMetadataString);
-    	metadataString = unsignedMetadataString;
+		LOGGER.debug("metadata --> " + unsignedMetadataString);
+		metadataString = unsignedMetadataString;
 	}
 
 	/**
 	 * Constructs the Metadata object.
-	 * 
+	 *
 	 * @param settings
 	 * 				Saml2Settings object. Setting data  
 	 * @param validUntilTime 
@@ -113,7 +114,7 @@ public class Metadata {
 	public Metadata(Saml2Settings settings, Calendar validUntilTime, Integer cacheDuration) throws CertificateEncodingException {
 		this(settings, validUntilTime, cacheDuration, null);
 	}
-		
+
 	/**
 	 * Constructs the Metadata object.
 	 *
@@ -125,7 +126,7 @@ public class Metadata {
 	public Metadata(Saml2Settings settings) throws CertificateEncodingException {
 		this(settings, null, null);
 	}
-	
+
 	/**
 	 * Substitutes metadata variables within a string by values.
 	 *
@@ -137,8 +138,8 @@ public class Metadata {
 	private StrSubstitutor generateSubstitutor(Saml2Settings settings) throws CertificateEncodingException {
 
 		Map<String, String> valueMap = new HashMap<String, String>();
-		Boolean wantsEncrypted = settings.getWantAssertionsEncrypted() || settings.getWantNameIdEncrypted(); 
-		
+		Boolean wantsEncrypted = settings.getWantAssertionsEncrypted() || settings.getWantNameIdEncrypted();
+
 		valueMap.put("id", Util.generateUniqueID(settings.getUniqueIDPrefix()));
 		valueMap.put("validUntilTime", Util.formatDateTime(validUntilTime.getTimeInMillis()));
 		valueMap.put("cacheDuration", String.valueOf(cacheDuration));
@@ -151,8 +152,8 @@ public class Metadata {
 		valueMap.put("sls", toSLSXml(settings.getSpSingleLogoutServiceUrl(), settings.getSpSingleLogoutServiceBinding()));
 
 		valueMap.put("strAttributeConsumingService", getAttributeConsumingServiceXml());
-		
-		valueMap.put("strKeyDescriptor", toX509KeyDescriptorsXML(settings.getSPcert(), wantsEncrypted));
+
+		valueMap.put("strKeyDescriptor", toX509KeyDescriptorsXML(settings.getSPcert(), settings.getSPcertNew(), wantsEncrypted));
 		valueMap.put("strContacts", toContactsXml(settings.getContacts()));
 		valueMap.put("strOrganization", toOrganizationXml(settings.getOrganization()));
 
@@ -292,52 +293,59 @@ public class Metadata {
 	 * Generates the KeyDescriptor section of the metadata's template
 	 * 
 	 * @param cert
-	 * 				the public cert that will be used by the SP to sign and encrypt
+	 *              the public cert that will be used by the SP to sign and encrypt
 	 * @param wantsEncrypted
-	 * 				Whether to include the KeyDescriptor for encryption
+	 *              Whether to include the KeyDescriptor for encryption
 	 *
 	 * @return the KeyDescriptor section of the metadata's template
 	 */
 	private String toX509KeyDescriptorsXML(X509Certificate cert, Boolean wantsEncrypted) throws CertificateEncodingException {
-		StringBuilder keyDescriptorXml = new StringBuilder();
-
-		if (cert != null) {
-			Base64 encoder = new Base64(64);
-			byte[] encodedCert = cert.getEncoded();
-			String certString = new String(encoder.encode(encodedCert));
-
-			keyDescriptorXml.append("<md:KeyDescriptor use=\"signing\">");
-			keyDescriptorXml.append("<ds:KeyInfo xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\">");
-			keyDescriptorXml.append("<ds:X509Data>");
-			keyDescriptorXml.append("<ds:X509Certificate>"+certString+"</ds:X509Certificate>");
-			keyDescriptorXml.append("</ds:X509Data>");
-			keyDescriptorXml.append("</ds:KeyInfo>");
-			keyDescriptorXml.append("</md:KeyDescriptor>");
-
-			if (wantsEncrypted) {
-				keyDescriptorXml.append("<md:KeyDescriptor use=\"encryption\">");
-				keyDescriptorXml.append("<ds:KeyInfo xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\">");
-				keyDescriptorXml.append("<ds:X509Data>");
-				keyDescriptorXml.append("<ds:X509Certificate>"+certString+"</ds:X509Certificate>");
-				keyDescriptorXml.append("</ds:X509Data>");
-				keyDescriptorXml.append("</ds:KeyInfo>");
-				keyDescriptorXml.append("</md:KeyDescriptor>");
-			}
-		}
-
-		return keyDescriptorXml.toString();
+		return this.toX509KeyDescriptorsXML(cert, null, wantsEncrypted);
 	}
 
 	/**
 	 * Generates the KeyDescriptor section of the metadata's template
 	 * 
-	 * @param cert
+	 * @param certCurrent
 	 * 				the public cert that will be used by the SP to sign and encrypt
+	 * @param certNew
+     *              the public cert that will be used by the SP to sign and encrypt in future
+	 * @param wantsEncrypted
+	 * 				Whether to include the KeyDescriptor for encryption
 	 *
 	 * @return the KeyDescriptor section of the metadata's template
 	 */
-	private String toX509KeyDescriptorsXML(X509Certificate cert) throws CertificateEncodingException {
-		return toX509KeyDescriptorsXML(cert, true);
+	private String toX509KeyDescriptorsXML(X509Certificate certCurrent, X509Certificate certNew, Boolean wantsEncrypted) throws CertificateEncodingException {
+		StringBuilder keyDescriptorXml = new StringBuilder();
+
+		List<X509Certificate> certs = Arrays.asList(certCurrent, certNew);
+		for(X509Certificate cert : certs) {
+		    if (cert != null) {
+	            Base64 encoder = new Base64(64);
+	            byte[] encodedCert = cert.getEncoded();
+	            String certString = new String(encoder.encode(encodedCert));
+
+	            keyDescriptorXml.append("<md:KeyDescriptor use=\"signing\">");
+	            keyDescriptorXml.append("<ds:KeyInfo xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\">");
+	            keyDescriptorXml.append("<ds:X509Data>");
+	            keyDescriptorXml.append("<ds:X509Certificate>"+certString+"</ds:X509Certificate>");
+	            keyDescriptorXml.append("</ds:X509Data>");
+	            keyDescriptorXml.append("</ds:KeyInfo>");
+	            keyDescriptorXml.append("</md:KeyDescriptor>");
+
+	            if (wantsEncrypted) {
+	                keyDescriptorXml.append("<md:KeyDescriptor use=\"encryption\">");
+	                keyDescriptorXml.append("<ds:KeyInfo xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\">");
+	                keyDescriptorXml.append("<ds:X509Data>");
+	                keyDescriptorXml.append("<ds:X509Certificate>"+certString+"</ds:X509Certificate>");
+	                keyDescriptorXml.append("</ds:X509Data>");
+	                keyDescriptorXml.append("</ds:KeyInfo>");
+	                keyDescriptorXml.append("</md:KeyDescriptor>");
+	            }
+	        }
+		}
+
+		return keyDescriptorXml.toString();
 	}
 	
 	/**

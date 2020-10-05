@@ -1,8 +1,18 @@
 language: java
-jdk:
-  - openjdk7
-  - openjdk8
-#  - oraclejdk7 #It seems oraclejdk7 temp fail on Travis
+
+matrix:
+  include:
+  - os: linux
+    dist: trusty
+    jdk: openjdk8
+  - os: linux
+    dist: trusty
+    jdk: oraclejdk8
+  - os: linux
+    dist: xenial
+    jdk: openjdk9
+
+
 install: true
 after_success:
-  - mvn clean test org.jacoco:jacoco-maven-plugin:report org.eluder.coveralls:coveralls-maven-plugin:report
+  - mvn clean verify org.jacoco:jacoco-maven-plugin:report org.eluder.coveralls:coveralls-maven-plugin:report

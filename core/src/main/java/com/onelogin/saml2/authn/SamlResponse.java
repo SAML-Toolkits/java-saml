@@ -8,10 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
-
 import org.joda.time.DateTime;
 import org.joda.time.Instant;
 import org.slf4j.Logger;
@@ -22,7 +20,8 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-
+import com.onelogin.saml2.exception.SettingsException;
+import com.onelogin.saml2.exception.ValidationError;
 import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.model.SamlResponseStatus;
 import com.onelogin.saml2.model.SubjectConfirmationIssue;
@@ -30,9 +29,6 @@ import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.SchemaFactory;
 import com.onelogin.saml2.util.Util;
-
-import com.onelogin.saml2.exception.SettingsException;
-import com.onelogin.saml2.exception.ValidationError;
 
 /**
  * SamlResponse class of OneLogin's Java Toolkit.
@@ -83,7 +79,33 @@ public class SamlResponse {
 	/**
 	 * After validation, if it fails this property has the cause of the problem
 	 */ 
-	private String error;
+	private Exception validationException;
+
+	/**
+	 * Constructor to have a Response object fully built and ready to validate the saml response.
+	 *
+	 * @param settings
+	 *              Saml2Settings object. Setting data
+	 * @param currentUrl
+	 *              URL of the current host + current view
+	 *
+	 * @param samlResponse
+	 *              A string containting the base64 encoded response from the IdP
+	 *
+	 *
+	 * @throws ValidationError
+	 * @throws SettingsException
+	 * @throws IOException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws XPathExpressionException
+     *
+	 */
+	public SamlResponse(Saml2Settings settings, String currentUrl, String samlResponse) throws XPathExpressionException, ParserConfigurationException, SAXException, IOException, SettingsException, ValidationError {
+		this.settings = settings;
+		this.currentUrl = currentUrl;
+		loadXmlFromBase64(samlResponse);
+	}
 
 	/**
 	 * The respone status code and messages
@@ -107,12 +129,7 @@ public class SamlResponse {
      *
 	 */
 	public SamlResponse(Saml2Settings settings, HttpRequest request) throws XPathExpressionException, ParserConfigurationException, SAXException, IOException, SettingsException, ValidationError {
-		this.settings = settings;
-
-		if (request != null) {
-			currentUrl = request.getRequestURL();
-			loadXmlFromBase64(request.getParameter("SAMLResponse"));
-		}
+		this(settings, request.getRequestURL(), request.getParameter("SAMLResponse"));
 	}
 
 	/**
@@ -153,7 +170,7 @@ public class SamlResponse {
 	 * @return if the response is valid or not
 	 */
 	public boolean isValid(String requestId) {
-		error = null;
+		validationException = null;
 
 		try {
 			if (samlResponseDocument == null) {
@@ -316,9 +333,9 @@ public class SamlResponse {
 			LOGGER.debug("SAMLResponse validated --> {}", samlResponseString);
 			return true;
 		} catch (Exception e) {
-			error = e.getMessage();
+			validationException = e;
 			LOGGER.debug("SAMLResponse invalid --> {}", samlResponseString);
-			LOGGER.error(error);
+			LOGGER.error(validationException.getMessage());
 			return false;
 		}
 	}
@@ -558,18 +575,24 @@ public class SamlResponse {
 			for (int i = 0; i < nodes.getLength(); i++) {
 				NamedNodeMap attrName = nodes.item(i).getAttributes();
 				String attName = attrName.getNamedItem("Name").getNodeValue();
-				if (attributes.containsKey(attName)) {
+				if (attributes.containsKey(attName) && !settings.isAllowRepeatAttributeName()) {
 					throw new ValidationError("Found an Attribute element with duplicated Name", ValidationError.DUPLICATED_ATTRIBUTE_NAME_FOUND);
 				}
 				
 				NodeList childrens = nodes.item(i).getChildNodes();
 
-				List<String> attrValues = new ArrayList<String>();
+				List<String> attrValues = null;
+				if (attributes.containsKey(attName) && settings.isAllowRepeatAttributeName()) {
+					attrValues = attributes.get(attName);
+				} else {
+					attrValues = new ArrayList<String>();
+				}
 				for (int j = 0; j < childrens.getLength(); j++) {
 					if ("AttributeValue".equals(childrens.item(j).getLocalName())) {
 						attrValues.add(childrens.item(j).getTextContent());
 					}
 				}
+
 				attributes.put(attName, attrValues);
 			}
 			LOGGER.debug("SAMLResponse has attributes: " + attributes.toString());
@@ -977,13 +1000,22 @@ public class SamlResponse {
 	/**
      * After execute a validation process, if fails this method returns the cause
      *
-     * @return the cause of the validation error 
+     * @return the cause of the validation error as a string
      */
 	public String getError() {
-		if (error != null) {
-			return error;
+		if (validationException != null) {
+			return validationException.getMessage();
 		}
 		return null;
+	}
+
+	/**
+	 * After execute a validation process, if fails this method returns the Exception object
+	 *
+	 * @return the cause of the validation error
+	 */
+	public Exception getValidationException() {
+		return validationException;
 	}
 
 	/**

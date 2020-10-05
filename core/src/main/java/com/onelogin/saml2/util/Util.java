@@ -73,8 +73,8 @@ import org.apache.xml.security.utils.XMLUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
-import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.joda.time.format.ISOPeriodFormat;
 import org.joda.time.format.PeriodFormatter;
 import org.slf4j.Logger;
@@ -103,9 +103,9 @@ public final class Util {
      * Private property to construct a logger for this class.
      */
 	private static final Logger LOGGER = LoggerFactory.getLogger(Util.class);
-
-    private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(DateTimeZone.UTC);
-	private static final DateTimeFormatter DATE_TIME_FORMAT_MILLS = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(DateTimeZone.UTC);
+	
+    private static final DateTimeFormatter DATE_TIME_FORMAT = ISODateTimeFormat.dateTimeNoMillis().withZoneUTC();
+	private static final DateTimeFormatter DATE_TIME_FORMAT_MILLS = ISODateTimeFormat.dateTime().withZoneUTC();
 	public static final String UNIQUE_ID_PREFIX = "ONELOGIN_";
 	public static final String RESPONSE_SIGNATURE_XPATH = "/samlp:Response/ds:Signature";
 	public static final String ASSERTION_SIGNATURE_XPATH = "/samlp:Response/saml:Assertion/ds:Signature";
@@ -123,8 +123,8 @@ public final class Util {
 
 	/**
 	 * Method which uses the recommended way ( https://docs.oracle.com/javase/tutorial/jaxp/properties/error.html )
-	 * of checking if JAXP >= 1.5 options are supported. Needed if the project which uses this library also has
-	 * Xerces in it's classpath.
+	 * of checking if JAXP is equal or greater than 1.5 options are supported. Needed if the project which uses
+	 *  this library also has Xerces in it's classpath.
 	 *
 	 * If for whatever reason this method cannot determine if JAXP 1.5 properties are supported it will indicate the
 	 * options are supported. This way we don't accidentally disable configuration options.
@@ -339,8 +339,8 @@ public final class Util {
 	/**
 	 * Parse an XML from input source to a Document object
 	 *
-	 * @param xmlStr
-	 * 				The XML string which should be converted
+	 * @param inputSource
+	 * 				The InputSource with the XML string which should be converted
 	 *
 	 * @return the Document object
 	 *
@@ -597,9 +597,9 @@ public final class Util {
 			byte[] dataBytes = x509cert.getEncoded();
 			if (alg == null || alg.isEmpty() || alg.equals("SHA-1")|| alg.equals("sha1")) {
 				fingerprint = DigestUtils.sha1Hex(dataBytes);
-			} else if (alg.equals("SHA-256") || alg .equals("sha256")) {
+			} else if (alg.equals("SHA-256") || alg.equals("sha256")) {
 				fingerprint = DigestUtils.sha256Hex(dataBytes);
-			} else if (alg.equals("SHA-384") || alg .equals("sha384")) {
+			} else if (alg.equals("SHA-384") || alg.equals("sha384")) {
 				fingerprint = DigestUtils.sha384Hex(dataBytes);
 			} else if (alg.equals("SHA-512") || alg.equals("sha512")) {
 				fingerprint = DigestUtils.sha512Hex(dataBytes);
@@ -910,7 +910,7 @@ public final class Util {
 	 * Validate the signature pointed to by the xpath
 	 *
 	 * @param doc The document we should validate
-	 * @param certs The public certificates
+	 * @param certList The public certificates
 	 * @param fingerprint The fingerprint of the public certificate
 	 * @param alg The signature algorithm method
 	 * @param xpath the xpath of the ds:Signture node to validate
@@ -1014,7 +1014,7 @@ public final class Util {
 					X509Certificate providedCert = keyInfo.getX509Certificate();
 					String calculatedFingerprint = calculateX509Fingerprint(providedCert, alg);
 					for (String fingerprintStr : fingerprint.split(",")) {
-						if (calculatedFingerprint.equals(fingerprintStr.trim())) {
+						if (calculatedFingerprint.equalsIgnoreCase(fingerprintStr.trim())) {
 							res = signature.checkSignatureValue(providedCert);
 						}
 					}
@@ -1029,12 +1029,6 @@ public final class Util {
 	/**
 	 * Whitelist the XMLSignature algorithm
 	 *
-	 * @param signNode
-	 * 				 The document we should validate
-	 * @param cert
-	 * 				 The public certificate
-	 * @param fingerprint
-	 * 				 The fingerprint of the public certificate
 	 * @param alg
 	 * 				 The signature algorithm method
 	 *

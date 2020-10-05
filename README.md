@@ -5,7 +5,12 @@
 Add SAML support to your Java applications using this library.
 Forget those complicated libraries and use that open source library provided and supported by OneLogin Inc.
 
-Version 2.X.X, compatible with java7 / java8.
+Version >= 2.5.0 compatible with java8 / java9. Not compatible with java7
+2.5.0 sets the 'strict' setting parameter to true.
+2.5.0 uses xmlsec 2.1.4 which fixes [CVE-2019-12400](https://snyk.io/vuln/SNYK-JAVA-ORGAPACHESANTUARIO-460281)
+
+
+Version 2.0.0 - 2.4.0, compatible with java7 / java8.
 
 We [introduced some incompatibilities](https://github.com/onelogin/java-saml/issues/90), that could be fixed and make it compatible with java6.
 
@@ -82,7 +87,7 @@ Install it as a maven dependency:
   <dependency>
       <groupId>com.onelogin</groupId>
       <artifactId>java-saml</artifactId>
-      <version>2.4.0</version>
+      <version>2.5.0</version>
   </dependency>
 ```
 
@@ -105,8 +110,8 @@ java-saml (com.onelogin:java-saml-toolkit) has the following dependencies:
 * For CI:
   * org.jacoco:jacoco-maven-plugin
 
-also the [Java Cryptography Extension (JCE)](https://en.wikipedia.org/wiki/Java_Cryptography_Extension) is required. If you don't have it, download the version of [jce-6](http://www.oracle.com/technetwork/java/javase/downloads/jce-6-download-429243.html), [jce-7](http://www.oracle.com/technetwork/java/javase/downloads/jce-7-download-432124.html) or [jce-8](http://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html), unzip it, and drop its content at
-*${java.home}/jre/lib/security/*
+also the [Java Cryptography Extension (JCE)](https://en.wikipedia.org/wiki/Java_Cryptography_Extension) is required. If you don't have it, download the version of [jce-8](http://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html), unzip it, and drop its content at
+*${java.home}/jre/lib/security/*. JDK 9 and later offer the stronger cryptographic algorithms by default.
 
 *toolkit:*
 * com.onelogin:java-saml-core
@@ -118,7 +123,7 @@ also the [Java Cryptography Extension (JCE)](https://en.wikipedia.org/wiki/Java_
 * org.apache.maven.plugins:maven-enforcer-plugin
 
 For more info, open and read the different pom.xml files:
-[core/pom.xml](https://github.com/onelogin/java-saml/blob/v2.2.0/core/pom.xml), [toolkit/pom.xml](https://github.com/onelogin/java-saml/blob/v2.2.0/toolkit/pom.xml)
+[core/pom.xml](https://github.com/onelogin/java-saml/blob/v2.5.0/core/pom.xml), [toolkit/pom.xml](https://github.com/onelogin/java-saml/blob/v2.5.0/toolkit/pom.xml)
 
 ## Working with the github repository code and Eclipse.
 ### Get the toolkit.
@@ -228,6 +233,9 @@ onelogin.saml2.sp.nameidformat = urn:oasis:names:tc:SAML:1.1:nameid-format:unspe
 
 onelogin.saml2.sp.x509cert =
 
+# Future SP certificate, to be used during SP Key roll over
+onelogin.saml2.sp.x509certNew =
+
 # Requires Format PKCS#8   BEGIN PRIVATE KEY       
 # If you have     PKCS#1   BEGIN RSA PRIVATE KEY  convert it by   openssl pkcs8 -topk8 -inform pem -nocrypt -in sp.rsa_key -outform pem -out sp.pem
 onelogin.saml2.sp.privatekey =
@@ -321,6 +329,9 @@ onelogin.saml2.security.requested_authncontext = urn:oasis:names:tc:SAML:2.0:ac:
 # Allows the authn comparison parameter to be set, defaults to 'exact'
 onelogin.saml2.security.requested_authncontextcomparison = exact
 
+# Allows duplicated names in the attribute statement
+onelogin.saml2.security.allow_duplicated_attribute_name = false
+
 # Indicates if the SP will validate all received xmls.
 # (In order to validate the xml, 'strict' and 'wantXMLValidation' must be true).
 onelogin.saml2.security.want_xml_validation = true
@@ -349,6 +360,28 @@ onelogin.saml2.contacts.support.email_address = support@example.com
 # Optional, defaults to ONELOGIN_ or full ID is like ONELOGIN_ebb0badd-4f60-4b38-b20a-a8e01f0592b1.
 # At minimun, the prefix can be non-numeric character such as "_".
 # onelogin.saml2.unique_id_prefix = _
+```
+
+##### KeyStores
+
+The Auth constructor supports the ability to read SP public cert/private key from a KeyStore. A KeyStoreSettings object must be provided with the KeyStore, the Alias and the KeyEntry password.
+
+```java
+import java.io.FileInputStream;
+import java.security.KeyStore;
+import com.onelogin.saml2.Auth
+import com.onelogin.saml2.model.KeyStoreSettings
+
+String keyStoreFile = "oneloginTestKeystore.jks";
+String alias = "keywithpassword";
+String storePass = "changeit";
+String keyPassword = "keypassword";
+
+KeyStore ks = KeyStore.getInstance("JKS");
+ks.load(new FileInputStream(keyStoreFile), storePass.toCharArray());
+
+KeyStoreSettings keyStoreSettings =  new keyStoreSettings(ks, alias, keyPassword);
+Auth auth = new Auth(KeyStoreSettings keyStoreSetting);
 ```
 
 ##### Dynamic Settings
@@ -393,11 +426,12 @@ We can set a 'returnTo' url parameter to the login function and that will be con
 String targetUrl = 'https://example.com';
 auth.login(returnTo=targetUrl)
 ```
-The login method can receive 4 more optional parameters:
+The login method can receive 5 more optional parameters:
 - *forceAuthn* When true the AuthNRequest will have the 'ForceAuthn' attribute set to 'true'
 - *isPassive* When true the AuthNRequest will have the 'Ispassive' attribute set to 'true'
 - *setNameIdPolicy* When true the AuthNRequest will set a nameIdPolicy element.
 - *stay* Set to true to stay (returns the url string), otherwise set to false to execute a redirection to that url (IdP SSO URL)
+- *nameIdValueReq* Indicates to the IdP the subject that should be authenticated
 
 By default, the login method initiates a redirect to the SAML Identity Provider. You can use the *stay* parameter, to prevent that, and execute the redirection manually. We need to use that if a match on the future SAMLResponse ID and the AuthNRequest ID to be sent is required.  That AuthNRequest ID must be extracted and stored for future validation, so we can't execute the redirection on the login.  Instead, set *stay* to true, then get that ID by
 ```

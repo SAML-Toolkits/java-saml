@@ -98,7 +98,7 @@ public class LogoutRequest {
 	/**
 	 * After validation, if it fails this property has the cause of the problem
 	 */ 
-	private String error;
+	private Exception validationException;
 
 	/**
 	 * Constructs the LogoutRequest object.
@@ -321,10 +321,15 @@ public class LogoutRequest {
 		if (nameIdFormat != null && nameIdFormat.equals(Constants.NAMEID_UNSPECIFIED)) {
 			nameIdFormat = null;
 		}
-		
+
 		X509Certificate cert = null;
 		if (settings.getNameIdEncrypted()) {
 			cert = settings.getIdpx509cert();
+			if (cert == null) {
+				List<X509Certificate> multipleCertList = settings.getIdpx509certMulti();
+				if (multipleCertList != null && !multipleCertList.isEmpty())
+				cert = multipleCertList.get(0);
+			}
 		}
 
 		String nameIdStr = Util.generateNameId(nameId, spNameQualifier, nameIdFormat, nameQualifier, cert);
@@ -361,7 +366,7 @@ public class LogoutRequest {
 	 * @throws Exception
      */
 	public Boolean isValid() throws Exception {
-		error = null;
+		validationException = null;
 
 		try {
 			if (this.logoutRequestString == null || logoutRequestString.isEmpty()) {
@@ -429,10 +434,7 @@ public class LogoutRequest {
                 
 			if (signature != null && !signature.isEmpty()) {
 				X509Certificate cert = settings.getIdpx509cert();
-				if (cert == null) {
-					throw new SettingsException("In order to validate the sign on the Logout Request, the x509cert of the IdP is required", SettingsException.CERT_NOT_FOUND);
-				}
-
+				
 				List<X509Certificate> certList = new ArrayList<X509Certificate>();
 				List<X509Certificate> multipleCertList = settings.getIdpx509certMulti();
 
@@ -440,8 +442,14 @@ public class LogoutRequest {
 					certList.addAll(multipleCertList);
 				}
 
-				if (certList.isEmpty() || !certList.contains(cert)) {
-					certList.add(0, cert);
+				if (cert != null) {
+					if (certList.isEmpty() || !certList.contains(cert)) {
+						certList.add(0, cert);
+					}
+				}
+
+				if (certList.isEmpty()) {
+					throw new SettingsException("In order to validate the sign on the Logout Request, the x509cert of the IdP is required", SettingsException.CERT_NOT_FOUND);
 				}
 
 				String signAlg = request.getParameter("SigAlg");
@@ -466,9 +474,9 @@ public class LogoutRequest {
 			LOGGER.debug("LogoutRequest validated --> " + logoutRequestString);
 		    return true;	
 		} catch (Exception e) {
-			error = e.getMessage();
+			validationException = e;
 			LOGGER.debug("LogoutRequest invalid --> " + logoutRequestString);
-			LOGGER.error(error);
+			LOGGER.error(validationException.getMessage());
 			return false;
 		}
 	}
@@ -729,8 +737,21 @@ public class LogoutRequest {
      * @return the cause of the validation error 
      */
 	public String getError() {
-		return error;
+		if (validationException != null) {
+			return validationException.getMessage();
+		}
+		return null;
 	}
+
+	/**
+	 * After execute a validation process, if fails this method returns the Exception object
+	 *
+	 * @return the cause of the validation error
+	 */
+	public Exception getValidationException() {
+		return validationException;
+	}
+
 
 	/**
 	 * @return the ID of the Logout Request

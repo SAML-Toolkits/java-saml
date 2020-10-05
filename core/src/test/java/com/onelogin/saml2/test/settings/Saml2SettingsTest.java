@@ -1,21 +1,18 @@
 package com.onelogin.saml2.test.settings;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertThat;
-
+import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.List;
-
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-
 import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.settings.Metadata;
 import com.onelogin.saml2.settings.Saml2Settings;
@@ -30,7 +27,7 @@ import com.onelogin.saml2.util.Util;
 public class Saml2SettingsTest {
 
 	/**
-	 * Tests the isStrict & setStrict methods of the Saml2Settings
+	 * Tests the isStrict and setStrict methods of the Saml2Settings
 	 *
 	 * @see com.onelogin.saml2.settings.Saml2Settings#isStrict
 	 * @see com.onelogin.saml2.settings.Saml2Settings#setStrict
@@ -39,15 +36,15 @@ public class Saml2SettingsTest {
 	public void testIsStrict() {
 		Saml2Settings settings = new Saml2Settings();
 		
-		assertFalse(settings.isStrict());
-		settings.setStrict(true);
 		assertTrue(settings.isStrict());
 		settings.setStrict(false);
 		assertFalse(settings.isStrict());
+		settings.setStrict(true);
+		assertTrue(settings.isStrict());
 	}
 
 	/**
-	 * Tests the isDebugActive & setDebug methods of the Saml2Settings
+	 * Tests the isDebugActive and setDebug methods of the Saml2Settings
 	 *
 	 * @see com.onelogin.saml2.settings.Saml2Settings#isDebugActive
 	 * @see com.onelogin.saml2.settings.Saml2Settings#setDebug
@@ -184,7 +181,22 @@ public class Saml2SettingsTest {
 		settingsErrors = settings.checkSettings();
 		assertTrue(settingsErrors.isEmpty());
 	}
-	
+
+	/**
+	 * Tests the checkIdpSettings method of the {@link Saml2Settings}
+	 * Case: Multiple certs defined.
+	 * 
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.settings.Saml2Settings#checkIdPSettings
+	 */
+	@Test
+	public void testCheckIdpMultipleCertSettings () throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min_idp_multicert.properties").build();
+		List<String> settingsErrors = settings.checkSettings();
+		assertTrue(settingsErrors.isEmpty());
+	}
+
 	/**
 	 * Tests the checkSettings method of the Saml2Settings
 	 * Case: No SP Errors
@@ -297,7 +309,12 @@ public class Saml2SettingsTest {
 		assertThat(metadataStr, containsString("entityID=\"http://localhost:8080/java-saml-jspsample/metadata.jsp\""));
 		assertThat(metadataStr, containsString("AuthnRequestsSigned=\"true\""));
 		assertThat(metadataStr, containsString("WantAssertionsSigned=\"true\""));
-		assertThat(metadataStr, containsString("<md:KeyDescriptor use=\"signing\">"));
+
+		String keyDescriptorSigningText = "<md:KeyDescriptor use=\"signing\">";
+		int keyDescriptorSignStrCount = metadataStr.split(keyDescriptorSigningText).length - 1;
+		assertThat(metadataStr, containsString(keyDescriptorSigningText));
+		assertEquals(2, keyDescriptorSignStrCount);
+
 		assertThat(metadataStr, containsString("<md:AssertionConsumerService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST\" Location=\"http://localhost:8080/java-saml-jspsample/acs.jsp\" index=\"1\">"));
 		assertThat(metadataStr, containsString("<md:SingleLogoutService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect\" Location=\"http://localhost:8080/java-saml-jspsample/sls.jsp\">")); 
 		assertThat(metadataStr, containsString("<md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</md:NameIDFormat>"));

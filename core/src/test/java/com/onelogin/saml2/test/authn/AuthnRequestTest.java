@@ -105,7 +105,7 @@ public class AuthnRequestTest {
 	 *
 	 * @throws Exception
 	 * 
-	 * @see com.onelogin.saml2.authn.getAuthnRequestXml
+	 * @see com.onelogin.saml2.authn.AuthnRequest#getAuthnRequestXml
 	 */
 	@Test
 	public void testGetAuthnRequestXml() throws Exception {
@@ -273,11 +273,47 @@ public class AuthnRequestTest {
 	}
 
 	/**
+	 * Tests the AuthnRequest Constructor
+	 * The creation of a deflated SAML Request with and without Subject
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.authn.AuthnRequest
+	 */
+	@Test
+	public void testSubject() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+
+		AuthnRequest authnRequest = new AuthnRequest(settings);
+		String authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		String authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, not(containsString("<saml:Subject")));
+
+		authnRequest = new AuthnRequest(settings, false, false, false, "testuser@example.com");
+		authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, containsString("<saml:Subject"));
+		assertThat(authnRequestStr, containsString("Format=\"urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified\">testuser@example.com</saml:NameID>"));
+		assertThat(authnRequestStr, containsString("<saml:SubjectConfirmation Method=\"urn:oasis:names:tc:SAML:2.0:cm:bearer\">"));
+
+		settings = new SettingsBuilder().fromFile("config/config.emailaddressformat.properties").build();
+		authnRequest = new AuthnRequest(settings, false, false, false, "testuser@example.com");
+		authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, containsString("<saml:Subject"));
+		assertThat(authnRequestStr, containsString("Format=\"urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress\">testuser@example.com</saml:NameID>"));
+		assertThat(authnRequestStr, containsString("<saml:SubjectConfirmation Method=\"urn:oasis:names:tc:SAML:2.0:cm:bearer\">"));
+	}
+
+	/**
 	 * Tests the getId method of AuthnRequest
 	 *
 	 * @throws Exception
 	 * 
-	 * @see com.onelogin.saml2.authn.getId
+	 * @see com.onelogin.saml2.authn.AuthnRequest.getId
 	 */
 	@Test
 	public void testGetId() throws Exception

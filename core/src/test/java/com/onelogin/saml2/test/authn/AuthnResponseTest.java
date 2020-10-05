@@ -12,7 +12,12 @@ import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.Util;
 
 import org.hamcrest.Matchers;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeUtils;
 import org.joda.time.Instant;
+import org.joda.time.format.ISODateTimeFormat;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -23,6 +28,7 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +47,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -51,8 +58,48 @@ public class AuthnResponseTest {
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
+	@Before
+	public void setDateTime() {
+		//All calls to Joda time check will use this timestamp as "now" value : 
+		setDateTime("2020-06-01T00:00:00Z");
+	}
+	
+	@After
+	public void goBackToNormal() {
+		DateTimeUtils.setCurrentMillisSystem();
+	}
+
 	/**
-	 * Tests the constructor of SamlResponse
+	 * Tests the deconstructed constructor of SamlResponse
+	 *
+	 * @throws Error
+	 * @throws IOException
+	 * @throws ValidationError
+	 * @throws SettingsException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws XPathExpressionException
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse
+	 */
+	@Test
+	public void testDeconstructedConstructor() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+
+		final String requestURL = "/";
+		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
+
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(requestURL, samlResponseEncoded));
+		assertTrue(samlResponse instanceof SamlResponse);
+
+		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
+		samlResponse = new SamlResponse(settings, requestURL, samlResponseEncoded);
+		assertTrue(samlResponse instanceof SamlResponse);
+	}
+
+
+	/**
+	 * Tests the httpRequest constructor of SamlResponse
 	 *
 	 * @throws Error
 	 * @throws IOException
@@ -364,6 +411,7 @@ public class AuthnResponseTest {
 	@Test
 	public void testGetNameIdEmptyNameIDValue() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		settings.setStrict(false);
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/empty_nameid.xml.base64");
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		String nameId = samlResponse.getNameId();
@@ -499,6 +547,7 @@ public class AuthnResponseTest {
 	@Test
 	public void testGetNameIdDataEmptyNameIDValue() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		settings.setStrict(false);
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/empty_nameid.xml.base64");
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		Map<String, String> nameIdData = samlResponse.getNameIdData();
@@ -981,10 +1030,37 @@ public class AuthnResponseTest {
 	}
 
 	/**
-	 * Tests that queryAssertion method of SamlResponse
-	 * Case: Elements retrieved are covered by a Signature 
+	 * Tests the getAttributes method of SamlResponse
+	 * Case: Allow Duplicated names
 	 *
-	 * @throws Exception 
+	 * @throws Error
+	 * @throws IOException
+	 * @throws ValidationError
+	 * @throws SettingsException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws XPathExpressionException
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#getAttributes
+	 */
+	@Test
+	public void testGetAttributesAllowDuplicatedNames () throws IOException, Error, XPathExpressionException, ParserConfigurationException,
+				SAXException, SettingsException, ValidationError {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.allowduplicatednames.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/duplicated_attributes.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+
+		Map<String, List<String>> attributes = samlResponse.getAttributes();
+		assertNotNull(attributes);
+		assertTrue(attributes.containsKey("uid"));
+		assertEquals(2, attributes.get("uid").size());
+	}
+
+	/**
+	 * Tests that queryAssertion method of SamlResponse
+	 * Case: Elements retrieved are covered by a Signature
+	 *
+	 * @throws Exception
 	 *
 	 * @see com.onelogin.saml2.authn.SamlResponse#queryAssertion
 	 */
@@ -1921,6 +1997,33 @@ public class AuthnResponseTest {
 		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
 	}
 
+	@Test
+	public void testParseAzureB2CTimestamp() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/redacted_azure_b2c.xml.base64");
+		
+		settings.setStrict(false);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
+
+		settings.setStrict(true);
+		setDateTime("2020-07-16T07:57:00Z");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("A valid SubjectConfirmation was not found on this Response: SubjectConfirmationData doesn't match a valid Recipient", samlResponse.getError());
+
+		setDateTime("2020-07-01T00:00:00Z");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("Could not validate timestamp: not yet valid. Check system clock.", samlResponse.getError());
+
+		setDateTime("2020-08-01T00:00:00Z");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("Could not validate timestamp: expired. Check system clock.", samlResponse.getError());	
+	}
+	
 	/**
 	 * Tests the isValid method of SamlResponse
 	 * Case: invalid requestId
@@ -2140,6 +2243,7 @@ public class AuthnResponseTest {
 	@Test
 	public void testIsInValidCert() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.invalididpcertstring.properties").build();
+		settings.setStrict(false);
 		String samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
@@ -2801,7 +2905,7 @@ public class AuthnResponseTest {
 	}
 	
 	/**
-	 * Tests the getError method of SamlResponse
+	 * Tests the getError and getValidationException methods of SamlResponse
 	 *
 	 * @throws ValidationError
 	 * @throws SettingsException
@@ -2820,25 +2924,32 @@ public class AuthnResponseTest {
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response4.xml.base64");
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertNull(samlResponse.getError());
+		assertNull(samlResponse.getValidationException());
 		samlResponse.isValid();
 		assertThat(samlResponse.getError(), containsString("SAML Response must contain 1 Assertion."));
+		assertTrue(samlResponse.getValidationException() instanceof ValidationError);
 
 		settings.setStrict(false);
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		samlResponse.isValid();
 		assertThat(samlResponse.getError(), containsString("SAML Response must contain 1 Assertion."));
+		assertTrue(samlResponse.getValidationException() instanceof ValidationError);
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertNull(samlResponse.getError());
+		assertNull(samlResponse.getValidationException());
 		samlResponse.isValid();
 		assertNull(samlResponse.getError());
+		assertNull(samlResponse.getValidationException());
 
 		settings.setStrict(true);
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertNull(samlResponse.getError());
+		assertNull(samlResponse.getValidationException());
 		samlResponse.isValid();
 		assertNull(samlResponse.getError());
+		assertNull(samlResponse.getValidationException());
 	}
 
 	private String loadAndEncode(String path) throws Exception
@@ -2870,6 +2981,11 @@ public class AuthnResponseTest {
 
 	private static HttpRequest newHttpRequest(String requestURL, String samlResponseEncoded) {
 		return new HttpRequest(requestURL, (String)null).addParameter("SAMLResponse", samlResponseEncoded);
+	}
+	
+	private void setDateTime(String ISOTimeStamp) {
+		DateTime dateTime = ISODateTimeFormat.dateTimeNoMillis().withZoneUTC().parseDateTime(ISOTimeStamp);
+		DateTimeUtils.setCurrentMillisFixed(dateTime.toDate().getTime());
 	}
 }
 

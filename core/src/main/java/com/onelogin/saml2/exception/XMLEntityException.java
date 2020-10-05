@@ -1,6 +1,6 @@
 package com.onelogin.saml2.exception;
 
-public class XMLEntityException extends Exception {
+public class XMLEntityException extends SAMLException {
 
 	private static final long serialVersionUID = 1L;
 

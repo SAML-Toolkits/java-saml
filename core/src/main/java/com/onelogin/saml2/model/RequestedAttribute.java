@@ -46,7 +46,7 @@ public class RequestedAttribute {
 	 * @param nameFormat
 	 *              Boolean. RequestedAttribute NameFormat
 	 * @param attributeValues
-	 *              List<String>. RequestedAttribute values
+	 *              List. RequestedAttribute values
 	 */
 	public RequestedAttribute(String name, String friendlyName, Boolean isRequired, String nameFormat, List<String> attributeValues) {
 		this.name = name;
