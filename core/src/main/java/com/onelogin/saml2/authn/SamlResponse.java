@@ -82,6 +82,11 @@ public class SamlResponse {
 	private Exception validationException;
 
 	/**
+	 * The respone status code and messages
+	 */
+	private SamlResponseStatus responseStatus;
+
+	/**
 	 * Constructor to have a Response object fully built and ready to validate the saml response.
 	 *
 	 * @param settings
@@ -108,11 +113,6 @@ public class SamlResponse {
 	}
 
 	/**
-	 * The respone status code and messages
-	 */
-	private SamlResponseStatus responseStatus;
-
-	/**
 	 * Constructor to have a Response object fully built and ready to validate the saml response.
 	 *
 	 * @param settings
@@ -126,6 +126,7 @@ public class SamlResponse {
 	 * @throws SAXException
 	 * @throws ParserConfigurationException
 	 * @throws XPathExpressionException
+	 * @throws NullPointerException
      *
 	 */
 	public SamlResponse(Saml2Settings settings, HttpRequest request) throws XPathExpressionException, ParserConfigurationException, SAXException, IOException, SettingsException, ValidationError {
@@ -603,7 +604,7 @@ public class SamlResponse {
 	}
 
 	/**
-	 * Returns the latest response status
+	 * Returns the ResponseStatus object
 	 * 
 	 * @return
 	 */

@@ -64,6 +64,7 @@ import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.Util;
 
 import org.mockito.ArgumentCaptor;
+import org.w3c.dom.Document;
 
 public class AuthTest {
 
@@ -564,6 +565,38 @@ public class AuthTest {
 	}
 
 	/**
+	 * Tests the processResponse methods of Auth
+	 * Case: process Response, status code Responder and sub status
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.Auth#processSLO
+	 */
+	@Test
+	public void testProcessResponseStatusResponder() throws Exception {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpSession session = mock(HttpSession.class);
+		when(request.getRequestURL()).thenReturn(new StringBuffer("https://example.com/opensso/Consumer/metaAlias/sp"));
+		when(request.getSession()).thenReturn(session);
+
+		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/status_code_and_sub_status_code_responder_and_msg.xml.base64");
+		Document samlResponseDoc = Util.loadXML(new String(Util.base64decoder(samlResponseEncoded)));
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		Auth auth = new Auth(settings, request, response);
+		assertFalse(auth.isAuthenticated());
+		assertTrue(auth.getErrors().isEmpty());
+		auth.processResponse();
+		verify(session, times(0)).invalidate();
+		assertFalse(auth.getErrors().isEmpty());
+		assertEquals("The status code of the Response was not Success, was urn:oasis:names:tc:SAML:2.0:status:Responder -> something_is_wrong", auth.getLastErrorReason());
+		assertTrue(auth.getErrors().contains("response_not_success"));
+		assertTrue(auth.getErrors().contains(Constants.STATUS_RESPONDER));
+		assertTrue(auth.getErrors().contains(Constants.STATUS_AUTHNFAILED));
+	}
+
+	/**
 	 * Tests the processSLO methods of Auth
 	 *
 	 * @throws Exception
@@ -825,6 +858,7 @@ public class AuthTest {
 		verify(session, times(0)).invalidate();
 		assertFalse(auth.getErrors().isEmpty());
 		assertTrue(auth.getErrors().contains("logout_not_success"));
+		assertTrue(auth.getErrors().contains(Constants.STATUS_RESPONDER));
 	}
 
 	/**
@@ -853,7 +887,6 @@ public class AuthTest {
 		assertFalse(auth.getErrors().isEmpty());
 		List<String> expectedErrors = new ArrayList<String>();
 		expectedErrors.add("invalid_response");
-		expectedErrors.add("urn:oasis:names:tc:SAML:2.0:status:Success");
 		assertEquals(expectedErrors, auth.getErrors());
 		assertEquals("SAML Response must contain 1 Assertion.", auth.getLastErrorReason());
 		assertTrue(auth.getLastValidationException() instanceof ValidationError);
@@ -868,7 +901,6 @@ public class AuthTest {
 		assertFalse(auth2.getErrors().isEmpty());
 		expectedErrors = new ArrayList<String>();
 		expectedErrors.add("invalid_response");
-		expectedErrors.add("urn:oasis:names:tc:SAML:2.0:status:Success");
 		assertEquals(expectedErrors, auth2.getErrors());
 		assertThat(auth2.getLastErrorReason(), containsString("Invalid issuer in the Assertion/Response"));
 		assertTrue(auth2.getLastValidationException() instanceof ValidationError);

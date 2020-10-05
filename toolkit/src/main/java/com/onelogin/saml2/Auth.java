@@ -754,17 +754,17 @@ public class Auth {
 				validationException = samlResponse.getValidationException();
 				SamlResponseStatus samlResponseStatus = samlResponse.getResponseStatus();
 				if (samlResponseStatus.getStatusCode() == null || !samlResponseStatus.getStatusCode().equals(Constants.STATUS_SUCCESS)) {
-          errors.add("response_not_success");
-          LOGGER.error("processResponse error. sso_not_success");
-				  LOGGER.debug(" --> " + samlResponseParameter);
+					errors.add("response_not_success");
+					LOGGER.error("processResponse error. sso_not_success");
+					LOGGER.debug(" --> " + samlResponseParameter);
 					errors.add(samlResponseStatus.getStatusCode());
- 				  if (samlResponseStatus.getSubStatusCode() != null) {
-					    errors.add(samlResponseStatus.getSubStatusCode());
-				  }
+					if (samlResponseStatus.getSubStatusCode() != null) {
+						errors.add(samlResponseStatus.getSubStatusCode());
+					}
 				} else {
-          errors.add("invalid_response");
-          LOGGER.error("processResponse error. invalid_response");
-				  LOGGER.debug(" --> " + samlResponseParameter);
+					errors.add("invalid_response");
+					LOGGER.error("processResponse error. invalid_response");
+					LOGGER.debug(" --> " + samlResponseParameter);
         }
 			}
 		} else {
@@ -810,11 +810,16 @@ public class Auth {
 				errorReason = logoutResponse.getError();
 				validationException = logoutResponse.getValidationException();
 			} else {
-				String status = logoutResponse.getStatus();
+				SamlResponseStatus samlResponseStatus = logoutResponse.getSamlResponseStatus();
+				String status = samlResponseStatus.getStatusCode();
 				if (status == null || !status.equals(Constants.STATUS_SUCCESS)) {
 					errors.add("logout_not_success");
 					LOGGER.error("processSLO error. logout_not_success");
 					LOGGER.debug(" --> " + samlResponseParameter);
+					errors.add(samlResponseStatus.getStatusCode());
+					if (samlResponseStatus.getSubStatusCode() != null) {
+						errors.add(samlResponseStatus.getSubStatusCode());
+					}
 				} else {
 					lastMessageId = logoutResponse.getId();
 					LOGGER.debug("processSLO success --> " + samlResponseParameter);
