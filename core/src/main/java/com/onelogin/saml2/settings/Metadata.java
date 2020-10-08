@@ -34,10 +34,10 @@ import com.onelogin.saml2.util.Util;
  */
 public class Metadata {
 	/**
-     * Private property to construct a logger for this class.
-     */
+	 * Private property to construct a logger for this class.
+	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(Metadata.class);
-	
+
 	// Constants
 	private static final int N_DAYS_VALID_UNTIL = 2;
 	private static final int SECONDS_CACHED = 604800; // 1 week
@@ -46,51 +46,35 @@ public class Metadata {
      * AttributeConsumingService
      */
 	private AttributeConsumingService attributeConsumingService = null;
-	
+
 	/**
-     * Generated metadata in string format
-     */
+	 * Generated metadata in string format
+	 */
 	private final String metadataString;
 
 	/**
-     * validUntilTime of the metadata. How long the metadata is valid
-     */
+	 * validUntilTime of the metadata. How long the metadata is valid
+	 */
 	private final Calendar validUntilTime;
 
 	/**
-     * cacheDuration of the metadata. Duration of the cache in seconds
-     */
+	 * cacheDuration of the metadata. Duration of the cache in seconds
+	 */
 	private final Integer cacheDuration;
 
 	/**
 	 * Constructs the Metadata object.
 	 *
-	 * @param settings
-	 * 				Saml2Settings object. Setting data  
-	 * @param validUntilTime 
-	 * 				Metadata's valid time 
-	 * @param cacheDuration
-	 * 				Duration of the cache in seconds
-	 * @param attributeConsumingService
-	 * 				AttributeConsumingService of service provider
-	 * 
-	 * @throws CertificateEncodingException 
+	 * @param settings                  Saml2Settings object. Setting data
+	 * @param validUntilTime            Metadata's valid time
+	 * @param cacheDuration             Duration of the cache in seconds
+	 * @param attributeConsumingService AttributeConsumingService of service provider
+	 * @throws CertificateEncodingException
 	 */
 	public Metadata(Saml2Settings settings, Calendar validUntilTime, Integer cacheDuration, AttributeConsumingService attributeConsumingService) throws CertificateEncodingException {
-		if (validUntilTime == null) {
-			this.validUntilTime = Calendar.getInstance();
-			this.validUntilTime.add(Calendar.DAY_OF_YEAR, N_DAYS_VALID_UNTIL);
-		} else {
-			this.validUntilTime = validUntilTime;
-		}
-
+		this.validUntilTime = validUntilTime;
 		this.attributeConsumingService = attributeConsumingService;
-
-		if (cacheDuration == null) {
-			this.cacheDuration = SECONDS_CACHED;
-		} else {
-			this.cacheDuration = cacheDuration;
-		}
+		this.cacheDuration = cacheDuration;
 
 		StrSubstitutor substitutor = generateSubstitutor(settings);
 		String unsignedMetadataString = substitutor.replace(getMetadataTemplate());
@@ -102,14 +86,10 @@ public class Metadata {
 	/**
 	 * Constructs the Metadata object.
 	 *
-	 * @param settings
-	 * 				Saml2Settings object. Setting data  
-	 * @param validUntilTime 
-	 * 				Metadata's valid time 
-	 * @param cacheDuration
-	 * 				Duration of the cache in seconds
-	 * 
-	 * @throws CertificateEncodingException 
+	 * @param settings       Saml2Settings object. Setting data
+	 * @param validUntilTime Metadata's valid time
+	 * @param cacheDuration  Duration of the cache in seconds
+	 * @throws CertificateEncodingException
 	 */
 	public Metadata(Saml2Settings settings, Calendar validUntilTime, Integer cacheDuration) throws CertificateEncodingException {
 		this(settings, validUntilTime, cacheDuration, null);
@@ -118,31 +98,49 @@ public class Metadata {
 	/**
 	 * Constructs the Metadata object.
 	 *
-	 * @param settings
-	 * 				Saml2Settings object. Setting data  
-	 *
-	 * @throws CertificateEncodingException 
+	 * @param settings Saml2Settings object. Setting data
+	 * @throws CertificateEncodingException
 	 */
 	public Metadata(Saml2Settings settings) throws CertificateEncodingException {
-		this(settings, null, null);
+
+		this.validUntilTime = Calendar.getInstance();
+		this.validUntilTime.add(Calendar.DAY_OF_YEAR, N_DAYS_VALID_UNTIL);
+
+		this.cacheDuration = SECONDS_CACHED;
+
+		StrSubstitutor substitutor = generateSubstitutor(settings);
+		String unsignedMetadataString = substitutor.replace(getMetadataTemplate());
+
+		LOGGER.debug("metadata --> " + unsignedMetadataString);
+		metadataString = unsignedMetadataString;
 	}
 
 	/**
 	 * Substitutes metadata variables within a string by values.
 	 *
-	 * @param settings
-	 * 				Saml2Settings object. Setting data
-	 * 
-	 * @return the StrSubstitutor object of the metadata 
-	 */ 
+	 * @param settings Saml2Settings object. Setting data
+	 * @return the StrSubstitutor object of the metadata
+	 */
 	private StrSubstitutor generateSubstitutor(Saml2Settings settings) throws CertificateEncodingException {
 
 		Map<String, String> valueMap = new HashMap<String, String>();
 		Boolean wantsEncrypted = settings.getWantAssertionsEncrypted() || settings.getWantNameIdEncrypted();
 
 		valueMap.put("id", Util.generateUniqueID(settings.getUniqueIDPrefix()));
-		valueMap.put("validUntilTime", Util.formatDateTime(validUntilTime.getTimeInMillis()));
-		valueMap.put("cacheDuration", String.valueOf(cacheDuration));
+		String validUntilTimeStr = "";
+		if (validUntilTime != null) {
+			String validUntilTimeValue = Util.formatDateTime(validUntilTime.getTimeInMillis());
+			validUntilTimeStr = " validUntil=\"" + validUntilTimeValue + "\"";
+		}
+		valueMap.put("validUntilTimeStr", validUntilTimeStr);
+
+		String cacheDurationStr = "";
+		if (cacheDuration != null) {
+			String cacheDurationValue = String.valueOf(cacheDuration);
+			cacheDurationStr = " cacheDuration=\"PT" + cacheDurationValue + "S\"";
+		}
+		valueMap.put("cacheDurationStr", cacheDurationStr);
+
 		valueMap.put("spEntityId", settings.getSpEntityId());
 		valueMap.put("strAuthnsign", String.valueOf(settings.getAuthnRequestsSigned()));
 		valueMap.put("strWsign", String.valueOf(settings.getWantAssertionsSigned()));
@@ -154,6 +152,7 @@ public class Metadata {
 		valueMap.put("strAttributeConsumingService", getAttributeConsumingServiceXml());
 
 		valueMap.put("strKeyDescriptor", toX509KeyDescriptorsXML(settings.getSPcert(), settings.getSPcertNew(), wantsEncrypted));
+
 		valueMap.put("strContacts", toContactsXml(settings.getContacts()));
 		valueMap.put("strOrganization", toOrganizationXml(settings.getOrganization()));
 
@@ -168,8 +167,8 @@ public class Metadata {
 		StringBuilder template = new StringBuilder();
 		template.append("<?xml version=\"1.0\"?>");
 		template.append("<md:EntityDescriptor xmlns:md=\"urn:oasis:names:tc:SAML:2.0:metadata\"");
-		template.append(" validUntil=\"${validUntilTime}\"");
-		template.append(" cacheDuration=\"PT${cacheDuration}S\"");
+		template.append("${validUntilTimeStr}");
+		template.append("${cacheDurationStr}");
 		template.append(" entityID=\"${spEntityId}\"");
 		template.append(" ID=\"${id}\">");
 		template.append("<md:SPSSODescriptor AuthnRequestsSigned=\"${strAuthnsign}\" WantAssertionsSigned=\"${strWsign}\" protocolSupportEnumeration=\"urn:oasis:names:tc:SAML:2.0:protocol\">");
@@ -187,7 +186,6 @@ public class Metadata {
 
 	/**
 	 * Generates the AttributeConsumingService section of the metadata's template
-	 *
 	 *
 	 * @return the AttributeConsumingService section of the metadata's template
 	 */
@@ -211,10 +209,10 @@ public class Metadata {
 					String friendlyName = requestedAttribute.getFriendlyName();
 					String nameFormat = requestedAttribute.getNameFormat();
 					Boolean isRequired = requestedAttribute.isRequired();
-					List<String> attrValues = requestedAttribute.getAttributeValues() ;
+					List<String> attrValues = requestedAttribute.getAttributeValues();
 
-					String contentStr = "<md:RequestedAttribute";					
-					
+					String contentStr = "<md:RequestedAttribute";
+
 					if (name != null && !name.isEmpty()) {
 						contentStr += " Name=\"" + name + "\"";
 					}
@@ -230,7 +228,7 @@ public class Metadata {
 					if (isRequired != null) {
 						contentStr += " isRequired=\"" + isRequired.toString() + "\"";
 					}
-					
+
 					if (attrValues != null && !attrValues.isEmpty()) {
 						contentStr += ">";
 						for (String attrValue : attrValues) {
@@ -244,16 +242,14 @@ public class Metadata {
 			}
 			attributeConsumingServiceXML.append("</md:AttributeConsumingService>");
 		}
-		
+
 		return attributeConsumingServiceXML.toString();
 	}
-	
+
 	/**
 	 * Generates the contact section of the metadata's template
 	 *
-	 * @param contacts
-	 * 				List of contact objects
-	 *
+	 * @param contacts List of contact objects
 	 * @return the contact section of the metadata's template
 	 */
 	private String toContactsXml(List<Contact> contacts) {
@@ -272,9 +268,8 @@ public class Metadata {
 	/**
 	 * Generates the organization section of the metadata's template
 	 *
-	 * @param organization
-	 * 				organization object
-	 *  @return the organization section of the metadata's template
+	 * @param organization organization object
+	 * @return the organization section of the metadata's template
 	 */
 	private String toOrganizationXml(Organization organization) {
 		String orgXml = "";
@@ -291,12 +286,8 @@ public class Metadata {
 
 	/**
 	 * Generates the KeyDescriptor section of the metadata's template
-	 * 
-	 * @param cert
-	 *              the public cert that will be used by the SP to sign and encrypt
-	 * @param wantsEncrypted
-	 *              Whether to include the KeyDescriptor for encryption
-	 *
+	 * @param cert the public cert that will be used by the SP to sign and encrypt
+	 * @param wantsEncrypted Whether to include the KeyDescriptor for encryption
 	 * @return the KeyDescriptor section of the metadata's template
 	 */
 	private String toX509KeyDescriptorsXML(X509Certificate cert, Boolean wantsEncrypted) throws CertificateEncodingException {
@@ -305,13 +296,10 @@ public class Metadata {
 
 	/**
 	 * Generates the KeyDescriptor section of the metadata's template
-	 * 
-	 * @param certCurrent
-	 * 				the public cert that will be used by the SP to sign and encrypt
-	 * @param certNew
-     *              the public cert that will be used by the SP to sign and encrypt in future
-	 * @param wantsEncrypted
-	 * 				Whether to include the KeyDescriptor for encryption
+	 *
+	 * @param certCurrent the public cert that will be used by the SP to sign and encrypt
+	 * @param certNew the public cert that will be used by the SP to sign and encrypt in future
+	 * @param wantsEncrypted Whether to include the KeyDescriptor for encryption
 	 *
 	 * @return the KeyDescriptor section of the metadata's template
 	 */
@@ -347,16 +335,16 @@ public class Metadata {
 
 		return keyDescriptorXml.toString();
 	}
-	
+
 	/**
 	 * @return the md:SingleLogoutService section of the metadata's template
 	 */
 	private String toSLSXml(URL spSingleLogoutServiceUrl, String spSingleLogoutServiceBinding) {
 		StringBuilder slsXml = new StringBuilder();
-		
+
 		if (spSingleLogoutServiceUrl != null) {
-			slsXml.append("<md:SingleLogoutService Binding=\""+spSingleLogoutServiceBinding+"\"");
-			slsXml.append(" Location=\""+spSingleLogoutServiceUrl.toString()+"\"/>");
+			slsXml.append("<md:SingleLogoutService Binding=\"" + spSingleLogoutServiceBinding + "\"");
+			slsXml.append(" Location=\"" + spSingleLogoutServiceUrl.toString() + "\"/>");
 		}
 		return slsXml.toString();
 	}
@@ -368,50 +356,37 @@ public class Metadata {
 		return metadataString;
 	}
 
-    /**
-     * Signs the metadata with the key/cert provided
-     *
-     * @param metadata
-     * 				SAML Metadata XML
-     * @param key
-     *       		Private Key
-     * @param cert
-     *      		x509 Public certificate
-     * @param signAlgorithm
-	 * 				Signature Algorithm
-     *
-     * @return string Signed Metadata
-     * @throws XMLSecurityException
-     * @throws XPathExpressionException
-     */
-    public static String signMetadata(String metadata, PrivateKey key, X509Certificate cert, String signAlgorithm) throws XPathExpressionException, XMLSecurityException
-    {
-        return signMetadata(metadata, key, cert, signAlgorithm, Constants.SHA1);
-    }
+	/**
+	 * Signs the metadata with the key/cert provided
+	 *
+	 * @param metadata      SAML Metadata XML
+	 * @param key           Private Key
+	 * @param cert          x509 Public certificate
+	 * @param signAlgorithm Signature Algorithm
+	 * @return string Signed Metadata
+	 * @throws XMLSecurityException
+	 * @throws XPathExpressionException
+	 */
+	public static String signMetadata(String metadata, PrivateKey key, X509Certificate cert, String signAlgorithm) throws XPathExpressionException, XMLSecurityException {
+		return signMetadata(metadata, key, cert, signAlgorithm, Constants.SHA1);
+	}
 
-    /**
-     * Signs the metadata with the key/cert provided
-     *
-     * @param metadata
-     * 				SAML Metadata XML
-     * @param key
-     *       		Private Key
-     * @param cert
-     *      		x509 Public certificate
-     * @param signAlgorithm
-	 * 				Signature Algorithm
-     * @param digestAlgorithm
-	 * 				Digest Algorithm
-     *
-     * @return string Signed Metadata
-     * @throws XMLSecurityException
-     * @throws XPathExpressionException
-     */
-    public static String signMetadata(String metadata, PrivateKey key, X509Certificate cert, String signAlgorithm, String digestAlgorithm) throws XPathExpressionException, XMLSecurityException
-    {
-        Document metadataDoc = Util.loadXML(metadata);
-        String signedMetadata = Util.addSign(metadataDoc, key, cert, signAlgorithm, digestAlgorithm);
-        LOGGER.debug("Signed metadata --> " + signedMetadata);
-        return signedMetadata;
-    }
+	/**
+	 * Signs the metadata with the key/cert provided
+	 *
+	 * @param metadata        SAML Metadata XML
+	 * @param key             Private Key
+	 * @param cert            x509 Public certificate
+	 * @param signAlgorithm   Signature Algorithm
+	 * @param digestAlgorithm Digest Algorithm
+	 * @return string Signed Metadata
+	 * @throws XMLSecurityException
+	 * @throws XPathExpressionException
+	 */
+	public static String signMetadata(String metadata, PrivateKey key, X509Certificate cert, String signAlgorithm, String digestAlgorithm) throws XPathExpressionException, XMLSecurityException {
+		Document metadataDoc = Util.loadXML(metadata);
+		String signedMetadata = Util.addSign(metadataDoc, key, cert, signAlgorithm, digestAlgorithm);
+		LOGGER.debug("Signed metadata --> " + signedMetadata);
+		return signedMetadata;
+	}
 }
