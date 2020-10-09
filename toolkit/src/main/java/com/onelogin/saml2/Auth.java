@@ -2,7 +2,6 @@ package com.onelogin.saml2;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
-import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.SignatureException;

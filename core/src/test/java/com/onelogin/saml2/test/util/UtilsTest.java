@@ -52,7 +52,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.SchemaFactory;
 import com.onelogin.saml2.util.Util;
