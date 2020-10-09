@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.matches;
@@ -18,26 +19,18 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +45,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import com.onelogin.saml2.Auth;
-import com.onelogin.saml2.authn.SamlResponse;
 import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.exception.ValidationError;
 import com.onelogin.saml2.exception.SettingsException;
@@ -642,7 +634,7 @@ public class AuthTest {
 		when(request.getSession()).thenReturn(session);
 
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLRequest", new String[]{samlRequestEncoded}));		
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLRequest", new String[]{samlRequestEncoded}));
 		
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		Auth auth = new Auth(settings, request, response);
@@ -671,7 +663,7 @@ public class AuthTest {
 		when(request.getSession()).thenReturn(session);
 
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLRequest", new String[]{samlRequestEncoded}));		
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLRequest", new String[]{samlRequestEncoded}));
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		Auth auth = new Auth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
@@ -680,6 +672,93 @@ public class AuthTest {
 		verify(response).sendRedirect(matches("http:\\/\\/idp.example.com\\/simplesaml\\/saml2\\/idp\\/SingleLogoutService.php\\?SAMLResponse=(.)*"));
 		verify(session, times(1)).invalidate();
 		assertTrue(auth.getErrors().isEmpty());
+	}
+
+	/**
+	 * Tests the processSLO methods of Auth
+	 * Case: process LogoutRequest, remove session, no stay
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.Auth#processSLO
+	 */
+	@Test
+	public void testProcessSLORequestStay() throws Exception {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpSession session = mock(HttpSession.class);
+		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
+		when(request.getSession()).thenReturn(session);
+
+		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLRequest", new String[]{samlRequestEncoded}));
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		Auth auth = new Auth(settings, request, response);
+		assertFalse(auth.isAuthenticated());
+		assertTrue(auth.getErrors().isEmpty());
+		auth.processSLO(false, null);
+		verify(response).sendRedirect(matches("http:\\/\\/idp.example.com\\/simplesaml\\/saml2\\/idp\\/SingleLogoutService.php\\?SAMLResponse=(.)*"));
+		verify(session, times(1)).invalidate();
+		assertTrue(auth.getErrors().isEmpty());
+	}
+
+	/**
+	 * Tests the processSLO methods of Auth
+	 * Case: process LogoutRequest, remove session, stay = false
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.Auth#processSLO
+	 */
+	@Test
+	public void testProcessSLORequestStayFalse() throws Exception {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpSession session = mock(HttpSession.class);
+		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
+		when(request.getSession()).thenReturn(session);
+
+		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLRequest", new String[]{samlRequestEncoded}));
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		Auth auth = new Auth(settings, request, response);
+		assertFalse(auth.isAuthenticated());
+		assertTrue(auth.getErrors().isEmpty());
+		String target = auth.processSLO(false, null, false);
+		verify(response).sendRedirect(matches("http:\\/\\/idp.example.com\\/simplesaml\\/saml2\\/idp\\/SingleLogoutService.php\\?SAMLResponse=(.)*"));
+		verify(response, times(1)).sendRedirect(matches("http:\\/\\/idp.example.com\\/simplesaml\\/saml2\\/idp\\/SingleLogoutService.php\\?SAMLResponse=(.)*"));
+		verify(session, times(1)).invalidate();
+		assertTrue(auth.getErrors().isEmpty());
+		assertThat(target, startsWith("http://idp.example.com/simplesaml/saml2/idp/SingleLogoutService.php?SAMLResponse="));
+	}
+
+	/**
+	 * Tests the processSLO methods of Auth
+	 * Case: process LogoutRequest, remove session, stay = true
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.Auth#processSLO
+	 */
+	@Test
+	public void testProcessSLORequestStayTrue() throws Exception {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpSession session = mock(HttpSession.class);
+		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
+		when(request.getSession()).thenReturn(session);
+
+		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
+		when(request.getParameterMap()).thenReturn(singletonMap("SAMLRequest", new String[]{samlRequestEncoded}));
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		Auth auth = new Auth(settings, request, response);
+		assertFalse(auth.isAuthenticated());
+		assertTrue(auth.getErrors().isEmpty());
+		String target = auth.processSLO(false, null, true);
+		verify(response, times(0)).sendRedirect(matches("http:\\/\\/idp.example.com\\/simplesaml\\/saml2\\/idp\\/SingleLogoutService.php\\?SAMLResponse=(.)*"));
+		verify(session, times(1)).invalidate();
+		assertTrue(auth.getErrors().isEmpty());
+		assertThat(target, startsWith("http://idp.example.com/simplesaml/saml2/idp/SingleLogoutService.php?SAMLResponse="));
 	}
 
 	/**

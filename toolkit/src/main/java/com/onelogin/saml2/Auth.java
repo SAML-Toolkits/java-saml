@@ -598,7 +598,6 @@ public class Auth {
 	 *                              LogoutRequest.
 	 * @param nameIdSPNameQualifier The NameID SP Name Qualifier that will be set in
 	 *                              the LogoutRequest.
-	 *
 	 * @throws IOException
 	 * @throws XMLEntityException
 	 * @throws SettingsException
@@ -791,10 +790,14 @@ public class Auth {
 	 *                         destroy it
 	 * @param requestId        The ID of the LogoutRequest sent by this SP to the
 	 *                         IdP
+	 * @param stay             True if we want to stay (returns the url string) False
+	 *                         to execute redirection
+	 *
+	 * @return the URL with the Logout Message if stay = True
 	 *
 	 * @throws Exception
 	 */
-	public void processSLO(Boolean keepLocalSession, String requestId) throws Exception {
+	public String processSLO(Boolean keepLocalSession, String requestId, Boolean stay) throws Exception {
 		final HttpRequest httpRequest = ServletUtils.makeHttpRequest(this.request);
 
 		final String samlRequestParameter = httpRequest.getParameter("SAMLRequest");
@@ -828,6 +831,7 @@ public class Auth {
 					}
 				}
 			}
+			return null;
 		} else if (samlRequestParameter != null) {
 			LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
 			lastRequest = logoutRequest.getLogoutRequestXml();
@@ -837,6 +841,7 @@ public class Auth {
 				LOGGER.debug(" --> " + samlRequestParameter);
 				errorReason = logoutRequest.getError();
 				validationException = logoutRequest.getValidationException();
+				return null;
 			} else {
 				lastMessageId = logoutRequest.getId();
 				LOGGER.debug("processSLO success --> " + samlRequestParameter);
@@ -869,8 +874,11 @@ public class Auth {
 				}
 
 				String sloUrl = getSLOResponseUrl();
-				LOGGER.debug("Logout response sent to " + sloUrl + " --> " + samlLogoutResponse);
-				ServletUtils.sendRedirect(response, sloUrl, parameters);
+
+				if (!stay) {
+					LOGGER.debug("Logout response sent to " + sloUrl + " --> " + samlLogoutResponse);
+				}
+				return ServletUtils.sendRedirect(response, sloUrl, parameters, stay);
 			}
 		} else {
 			errors.add("invalid_binding");
@@ -878,6 +886,21 @@ public class Auth {
 			LOGGER.error("processSLO error." + errorMsg);
 			throw new Error(errorMsg, Error.SAML_LOGOUTMESSAGE_NOT_FOUND);
 		}
+	}
+
+	/**
+	 * Process the SAML Logout Response / Logout Request sent by the IdP.
+	 *
+	 * @param keepLocalSession When true will keep the local session, otherwise will
+	 *                         destroy it
+	 * @param requestId        The ID of the LogoutRequest sent by this SP to the
+	 *                         IdP
+	 *
+	 *
+	 * @throws Exception
+	 */
+	public void processSLO(Boolean keepLocalSession, String requestId) throws Exception {
+		processSLO(keepLocalSession, requestId, false);
 	}
 
 	/**
