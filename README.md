@@ -323,8 +323,8 @@ onelogin.saml2.security.want_nameid_encrypted = false
 
 # Authentication context.
 # Set Empty and no AuthContext will be sent in the AuthNRequest,
-# Set comma separated values urn:oasis:names:tc:SAML:2.0:ac:classes:urn:oasis:names:tc:SAML:2.0:ac:classes:Password
-onelogin.saml2.security.requested_authncontext = urn:oasis:names:tc:SAML:2.0:ac:classes:urn:oasis:names:tc:SAML:2.0:ac:classes:Password
+# Set comma separated values urn:oasis:names:tc:SAML:2.0:ac:classes:Kerberos,urn:oasis:names:tc:SAML:2.0:ac:classes:Password
+onelogin.saml2.security.requested_authncontext = urn:oasis:names:tc:SAML:2.0:ac:classes:Password
 
 # Allows the authn comparison parameter to be set, defaults to 'exact'
 onelogin.saml2.security.requested_authncontextcomparison = exact
