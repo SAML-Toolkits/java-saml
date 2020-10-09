@@ -87,7 +87,7 @@ Install it as a maven dependency:
   <dependency>
       <groupId>com.onelogin</groupId>
       <artifactId>java-saml</artifactId>
-      <version>2.5.0</version>
+      <version>2.6.0</version>
   </dependency>
 ```
 
