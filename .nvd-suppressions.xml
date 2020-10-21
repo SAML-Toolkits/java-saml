@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.2.xsd">
-
+    <suppress>
+        <notes></notes>
+        <filePath regex="true">.*\bmsal4j-1.6.1\.jar</filePath>
+        <cpe>cpe:/a:http_authentication_library_project:http_authentication_library</cpe>
+    </suppress>
+    <suppress>
+        <notes></notes>
+        <filePath regex="true">.*\boauth2-oidc-sdk-6.14\.jar</filePath>
+        <cpe>cpe:/a:openid:openid</cpe>
+    </suppress>
 </suppressions>

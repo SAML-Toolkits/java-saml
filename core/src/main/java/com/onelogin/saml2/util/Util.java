@@ -43,6 +43,7 @@ import java.util.zip.Inflater;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
@@ -61,6 +62,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import javax.xml.xpath.XPathFactoryConfigurationException;
 
+import com.onelogin.saml2.model.hsm.HSM;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -105,7 +107,7 @@ public final class Util {
      * Private property to construct a logger for this class.
      */
 	private static final Logger LOGGER = LoggerFactory.getLogger(Util.class);
-	
+
     private static final DateTimeFormatter DATE_TIME_FORMAT = ISODateTimeFormat.dateTimeNoMillis().withZoneUTC();
 	private static final DateTimeFormatter DATE_TIME_FORMAT_MILLS = ISODateTimeFormat.dateTime().withZoneUTC();
 	public static final String UNIQUE_ID_PREFIX = "ONELOGIN_";
@@ -943,7 +945,7 @@ public final class Util {
 						if (cert != null && extractedFingerprint != null) {
 							if (extractedFingerprint.equals(calculateX509Fingerprint(cert, alg))) {
 								certMatches = true;
-								
+
 								if (validateSignNode(signature, cert, null, null, null)) {
 									return true;
 								}
@@ -1035,7 +1037,7 @@ public final class Util {
 			}
 
 			signatureData.put("signature", signature);
-			
+
 			String extractedFingerprint = null;
 			X509Certificate extractedCert = null;
 			KeyInfo keyInfo = signature.getKeyInfo();
@@ -1161,39 +1163,84 @@ public final class Util {
 			XMLCipher xmlCipher = XMLCipher.getInstance();
 			xmlCipher.init(XMLCipher.DECRYPT_MODE, null);
 
-			/* Check if we have encryptedData with a KeyInfo that contains a RetrievalMethod to obtain the EncryptedKey.
-			   xmlCipher is not able to handle that so we move the EncryptedKey inside the KeyInfo element and
-			   replacing the RetrievalMethod.
-			*/
-
-			NodeList keyInfoInEncData = encryptedDataElement.getElementsByTagNameNS(Constants.NS_DS, "KeyInfo");
-			if (keyInfoInEncData.getLength() == 0) {
-				throw new ValidationError("No KeyInfo inside EncryptedData element", ValidationError.KEYINFO_NOT_FOUND_IN_ENCRYPTED_DATA);
-			}
-
-			NodeList childs = keyInfoInEncData.item(0).getChildNodes();
-			for (int i=0; i < childs.getLength(); i++) {
-				if (childs.item(i).getLocalName() != null && childs.item(i).getLocalName().equals("RetrievalMethod")) {
-					Element retrievalMethodElem = (Element)childs.item(i);
-					if (!retrievalMethodElem.getAttribute("Type").equals("http://www.w3.org/2001/04/xmlenc#EncryptedKey")) {
-						throw new ValidationError("Unsupported Retrieval Method found", ValidationError.UNSUPPORTED_RETRIEVAL_METHOD);
-					}
-
-					String uri = retrievalMethodElem.getAttribute("URI").substring(1);
-
-					NodeList encryptedKeyNodes = ((Element) encryptedDataElement.getParentNode()).getElementsByTagNameNS(Constants.NS_XENC, "EncryptedKey");
-					for (int j=0; j < encryptedKeyNodes.getLength(); j++) {
-						if (((Element)encryptedKeyNodes.item(j)).getAttribute("Id").equals(uri)) {
-							keyInfoInEncData.item(0).replaceChild(encryptedKeyNodes.item(j), childs.item(i));
-						}
-					}
-				}
-			}
+			validateEncryptedData(encryptedDataElement);
 
 			xmlCipher.setKEK(inputKey);
 			xmlCipher.doFinal(encryptedDataElement.getOwnerDocument(), encryptedDataElement, false);
 		} catch (Exception e) {
 			LOGGER.warn("Error executing decryption: " + e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * Decrypts the encrypted element using an HSM.
+	 *
+	 * @param encryptedDataElement The encrypted element.
+	 * @param hsm The HSM object.
+	 *
+	 * @throws Exception
+	 */
+	public static void decryptUsingHsm(Element encryptedDataElement, HSM hsm) {
+		try {
+			validateEncryptedData(encryptedDataElement);
+
+			XMLCipher xmlCipher = XMLCipher.getInstance();
+			xmlCipher.init(XMLCipher.DECRYPT_MODE, null);
+
+			hsm.setClient();
+
+			NodeList encryptedKeyNodes = ((Element) encryptedDataElement.getParentNode()).getElementsByTagNameNS(Constants.NS_XENC, "EncryptedKey");
+			EncryptedKey encryptedKey = xmlCipher.loadEncryptedKey((Element) encryptedKeyNodes.item(0));
+			byte[] encryptedBytes = base64decoder(encryptedKey.getCipherData().getCipherValue().getValue());
+
+			byte[] decryptedKey = hsm.unwrapKey(encryptedKey.getEncryptionMethod().getAlgorithm(), encryptedBytes);
+
+			SecretKey encryptionKey = new SecretKeySpec(decryptedKey, 0, decryptedKey.length, "AES");
+
+			xmlCipher.init(XMLCipher.DECRYPT_MODE, encryptionKey);
+			xmlCipher.setKEK(encryptionKey);
+			xmlCipher.doFinal(encryptedDataElement.getOwnerDocument(), encryptedDataElement, false);
+		} catch (Exception e) {
+			LOGGER.warn("Error executing decryption: " + e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * Validates the encrypted data and checks whether it contains a retrieval
+	 * method to obtain the encrypted key or not.
+	 *
+	 * @param encryptedDataElement The encrypted element.
+	 *
+	 * @throws ValidationError
+	 */
+	private static void validateEncryptedData(Element encryptedDataElement) throws ValidationError {
+        /* Check if we have encryptedData with a KeyInfo that contains a RetrievalMethod to obtain the EncryptedKey.
+           xmlCipher is not able to handle that so we move the EncryptedKey inside the KeyInfo element and
+           replacing the RetrievalMethod.
+        */
+
+		NodeList keyInfoInEncData = encryptedDataElement.getElementsByTagNameNS(Constants.NS_DS, "KeyInfo");
+		if (keyInfoInEncData.getLength() == 0) {
+			throw new ValidationError("No KeyInfo inside EncryptedData element", ValidationError.KEYINFO_NOT_FOUND_IN_ENCRYPTED_DATA);
+		}
+
+		NodeList childs = keyInfoInEncData.item(0).getChildNodes();
+		for (int i=0; i < childs.getLength(); i++) {
+			if (childs.item(i).getLocalName() != null && childs.item(i).getLocalName().equals("RetrievalMethod")) {
+				Element retrievalMethodElem = (Element)childs.item(i);
+				if (!retrievalMethodElem.getAttribute("Type").equals("http://www.w3.org/2001/04/xmlenc#EncryptedKey")) {
+					throw new ValidationError("Unsupported Retrieval Method found", ValidationError.UNSUPPORTED_RETRIEVAL_METHOD);
+				}
+
+				String uri = retrievalMethodElem.getAttribute("URI").substring(1);
+
+				NodeList encryptedKeyNodes = ((Element) encryptedDataElement.getParentNode()).getElementsByTagNameNS(Constants.NS_XENC, "EncryptedKey");
+				for (int j=0; j < encryptedKeyNodes.getLength(); j++) {
+					if (((Element)encryptedKeyNodes.item(j)).getAttribute("Id").equals(uri)) {
+						keyInfoInEncData.item(0).replaceChild(encryptedKeyNodes.item(j), childs.item(i));
+					}
+				}
+			}
 		}
 	}
 

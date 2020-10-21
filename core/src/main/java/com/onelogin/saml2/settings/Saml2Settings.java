@@ -7,6 +7,8 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
+import com.onelogin.saml2.model.hsm.HSM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -42,6 +44,7 @@ public class Saml2Settings {
 	private X509Certificate spX509cert = null;
 	private X509Certificate spX509certNew = null;
 	private PrivateKey spPrivateKey = null;
+	private HSM hsm = null;
 
 	// IdP
 	private String idpEntityId = "";
@@ -363,6 +366,13 @@ public class Saml2Settings {
 	}
 
 	/**
+	 * @return The HSM setting value.
+	 */
+	public HSM getHsm() {
+		return this.hsm;
+	}
+
+	/**
 	 * @return if the debug is active or not
 	 */
 	public boolean isDebugActive() {
@@ -387,6 +397,15 @@ public class Saml2Settings {
 	 */
 	public void setDebug(boolean debug) {
 		this.debug = debug;
+	}
+
+	/**
+	 * Sets the HSM setting value.
+	 *
+	 * @param hsm The HSM object to be set.
+	 */
+	public void setHsm(HSM hsm) {
+		this.hsm = hsm;
 	}
 
 	/**
@@ -911,12 +930,8 @@ public class Saml2Settings {
 			LOGGER.error(errorMsg);
 		}
 
-		if ((this.getAuthnRequestsSigned() == true ||
-			  this.getLogoutRequestSigned() == true ||
-			  this.getLogoutResponseSigned() == true ||
-			  this.getWantAssertionsEncrypted() == true ||
-			  this.getWantNameIdEncrypted() == true)
-			  && this.checkSPCerts() == false) {
+		if (this.getHsm() == null && (this.getAuthnRequestsSigned() || this.getLogoutRequestSigned()
+			|| this.getLogoutResponseSigned() || this.getWantAssertionsEncrypted() || this.getWantNameIdEncrypted()) && !this.checkSPCerts()) {
 			errorMsg = "sp_cert_not_found_and_required";
 			errors.add(errorMsg);
 			LOGGER.error(errorMsg);
@@ -942,7 +957,7 @@ public class Saml2Settings {
 */
 
 				if (contact.getEmailAddress().isEmpty() || contact.getGivenName().isEmpty()) {
-					errorMsg = "contact_not_enought_data";
+					errorMsg = "contact_not_enough_data";
 					errors.add(errorMsg);
 					LOGGER.error(errorMsg);
 				}
@@ -951,7 +966,13 @@ public class Saml2Settings {
 
 		Organization org = this.getOrganization();
 		if (org != null && (org.getOrgDisplayName().isEmpty() || org.getOrgName().isEmpty() || org.getOrgUrl().isEmpty())) {
-			errorMsg = "organization_not_enought_data";
+			errorMsg = "organization_not_enough_data";
+			errors.add(errorMsg);
+			LOGGER.error(errorMsg);
+		}
+
+		if (this.getHsm() != null && this.getSPkey() != null) {
+			errorMsg = "use_either_hsm_or_private_key";
 			errors.add(errorMsg);
 			LOGGER.error(errorMsg);
 		}

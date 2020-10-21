@@ -67,6 +67,20 @@
 			<artifactId>commons-codec</artifactId>
 			<version>1.15</version>
 		</dependency>
+
+		<!-- Azure Key Vault -->
+		<dependency>
+			<groupId>com.azure</groupId>
+			<artifactId>azure-security-keyvault-keys</artifactId>
+			<version>4.2.1</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>com.azure</groupId>
+			<artifactId>azure-identity</artifactId>
+			<version>1.0.9</version>
+			<optional>true</optional>
+		</dependency>
 	</dependencies>
 
 	<build>

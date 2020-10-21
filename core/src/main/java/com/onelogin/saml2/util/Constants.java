@@ -110,6 +110,9 @@ public final class Constants {
 	public static String AES128_CBC = "http://www.w3.org/2001/04/xmlenc#aes128-cbc";
 	public static String AES192_CBC = "http://www.w3.org/2001/04/xmlenc#aes192-cbc";
 	public static String AES256_CBC = "http://www.w3.org/2001/04/xmlenc#aes256-cbc";
+	public static String A128KW = "http://www.w3.org/2001/04/xmlenc#kw-aes128";
+	public static String A192KW = "http://www.w3.org/2001/04/xmlenc#kw-aes192";
+	public static String A256KW = "http://www.w3.org/2001/04/xmlenc#kw-aes256";
 	public static String RSA_1_5 = "http://www.w3.org/2001/04/xmlenc#rsa-1_5";
 	public static String RSA_OAEP_MGF1P = "http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p";
 	
