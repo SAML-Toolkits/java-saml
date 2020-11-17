@@ -158,6 +158,7 @@ public class SettingBuilderTest {
 		assertEquals("exact", setting.getRequestedAuthnContextComparison());
 		assertTrue(setting.getWantXMLValidation());
 		assertEquals(Constants.RSA_SHA1, setting.getSignatureAlgorithm());
+		assertEquals(Constants.SHA1, setting.getDigestAlgorithm());
 		assertFalse(setting.getSignMetadata());
 
 		assertNull(setting.getOrganization());
@@ -213,6 +214,7 @@ public class SettingBuilderTest {
 		assertEquals("exact", setting.getRequestedAuthnContextComparison());
 		assertTrue(setting.getWantXMLValidation());
 		assertEquals(Constants.RSA_SHA1, setting.getSignatureAlgorithm());
+		assertEquals(Constants.SHA1, setting.getDigestAlgorithm());
 		assertFalse(setting.getSignMetadata());
 
 		assertNull(setting.getOrganization());
@@ -273,6 +275,7 @@ public class SettingBuilderTest {
 		assertEquals("exact", setting.getRequestedAuthnContextComparison());
 		assertTrue(setting.getWantXMLValidation());
 		assertEquals(Constants.RSA_SHA512, setting.getSignatureAlgorithm());
+		assertEquals(Constants.SHA512, setting.getDigestAlgorithm());
 		assertTrue(setting.getSignMetadata());
 
 		Organization org = new Organization("SP Java", "SP Java Example", "http://sp.example.com");
@@ -338,6 +341,7 @@ public class SettingBuilderTest {
 		assertEquals("exact", setting.getRequestedAuthnContextComparison());
 		assertTrue(setting.getWantXMLValidation());
 		assertEquals(Constants.RSA_SHA1, setting.getSignatureAlgorithm());
+		assertEquals(Constants.SHA1, setting.getDigestAlgorithm());
 		assertFalse(setting.getSignMetadata());
 
 		Organization org = new Organization("SP Java", "SP Java Example", "http://sp.example.com");
@@ -392,6 +396,7 @@ public class SettingBuilderTest {
 		assertEquals("exact", setting.getRequestedAuthnContextComparison());
 		assertTrue(setting.getWantXMLValidation());
 		assertEquals(Constants.RSA_SHA1, setting.getSignatureAlgorithm());
+		assertEquals(Constants.SHA1, setting.getDigestAlgorithm());
 		assertFalse(setting.getSignMetadata());
 
 		Organization org = new Organization("SP Java", "SP Java Example", "http://sp.example.com");
@@ -504,6 +509,7 @@ public class SettingBuilderTest {
 		assertEquals("exact", setting.getRequestedAuthnContextComparison());
 		assertTrue(setting.getWantXMLValidation());
 		assertEquals(Constants.RSA_SHA1, setting.getSignatureAlgorithm());
+		assertEquals(Constants.SHA1, setting.getDigestAlgorithm());
 		assertTrue(setting.getSignMetadata());
 
 		assertNull(setting.getOrganization());
@@ -560,6 +566,7 @@ public class SettingBuilderTest {
 		assertEquals("minimum", setting.getRequestedAuthnContextComparison());
 		assertTrue(setting.getWantXMLValidation());
 		assertEquals(Constants.RSA_SHA512, setting.getSignatureAlgorithm());
+		assertEquals(Constants.SHA512, setting.getDigestAlgorithm());
 		assertTrue(setting.getSignMetadata());
 
 		Organization org = new Organization("SP Java", "", "");
@@ -652,6 +659,7 @@ public class SettingBuilderTest {
 		assertEquals("exact", setting2.getRequestedAuthnContextComparison());
 		assertTrue(setting2.getWantXMLValidation());
 		assertEquals(Constants.RSA_SHA1, setting2.getSignatureAlgorithm());
+		assertEquals(Constants.SHA1, setting2.getDigestAlgorithm());
 		assertFalse(setting2.getSignMetadata());
 
 		assertNull(setting2.getOrganization());
@@ -713,6 +721,7 @@ public class SettingBuilderTest {
 		samlData.put(SECURITY_REQUESTED_AUTHNCONTEXTCOMPARISON, "exact");
 		samlData.put(SECURITY_WANT_XML_VALIDATION, "true");
 		samlData.put(SECURITY_SIGNATURE_ALGORITHM, "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512");
+		samlData.put(SECURITY_DIGEST_ALGORITHM, "http://www.w3.org/2001/04/xmlenc#sha512");
 
 		// Compress
 		samlData.put(COMPRESS_REQUEST, "false");
@@ -777,6 +786,7 @@ public class SettingBuilderTest {
 		assertEquals("exact", setting.getRequestedAuthnContextComparison());
 		assertTrue(setting.getWantXMLValidation());
 		assertEquals(Constants.RSA_SHA512, setting.getSignatureAlgorithm());
+		assertEquals(Constants.SHA512, setting.getDigestAlgorithm());
 		assertTrue(setting.getSignMetadata());
 		assertFalse(setting.getWantNameId());
 
@@ -868,6 +878,7 @@ public class SettingBuilderTest {
 		samlData.put(SECURITY_REQUESTED_AUTHNCONTEXTCOMPARISON, "exact");
 		samlData.put(SECURITY_WANT_XML_VALIDATION, true);
 		samlData.put(SECURITY_SIGNATURE_ALGORITHM, "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512");
+		samlData.put(SECURITY_DIGEST_ALGORITHM, "http://www.w3.org/2001/04/xmlenc#sha512");
 
 		// Compress
 		samlData.put(COMPRESS_REQUEST, "false");
@@ -924,6 +935,7 @@ public class SettingBuilderTest {
 		assertEquals("exact", setting.getRequestedAuthnContextComparison());
 		assertTrue(setting.getWantXMLValidation());
 		assertEquals(Constants.RSA_SHA512, setting.getSignatureAlgorithm());
+		assertEquals(Constants.SHA512, setting.getDigestAlgorithm());
 		assertTrue(setting.getSignMetadata());
 		assertFalse(setting.getWantNameId());
 

@@ -98,6 +98,7 @@ public class SettingsBuilder {
 	public final static String SECURITY_REQUESTED_AUTHNCONTEXTCOMPARISON = "onelogin.saml2.security.requested_authncontextcomparison";
 	public final static String SECURITY_WANT_XML_VALIDATION = "onelogin.saml2.security.want_xml_validation";
 	public final static String SECURITY_SIGNATURE_ALGORITHM = "onelogin.saml2.security.signature_algorithm";
+	public final static String SECURITY_DIGEST_ALGORITHM = "onelogin.saml2.security.digest_algorithm";
 	public final static String SECURITY_REJECT_UNSOLICITED_RESPONSES_WITH_INRESPONSETO = "onelogin.saml2.security.reject_unsolicited_responses_with_inresponseto";
 	public final static String SECURITY_ALLOW_REPEAT_ATTRIBUTE_NAME_PROPERTY_KEY = "onelogin.saml2.security.allow_duplicated_attribute_name";
 
@@ -216,7 +217,7 @@ public class SettingsBuilder {
 	/**
 	 * Builds the Saml2Settings object. Read the Properties object and set all the
 	 * SAML settings
-	 * 
+	 *
 	 * @return the Saml2Settings object with all the SAML settings loaded
 	 *
 	 */
@@ -364,6 +365,10 @@ public class SettingsBuilder {
 		String signatureAlgorithm = loadStringProperty(SECURITY_SIGNATURE_ALGORITHM);
 		if (signatureAlgorithm != null && !signatureAlgorithm.isEmpty())
 			saml2Setting.setSignatureAlgorithm(signatureAlgorithm);
+
+		String digestAlgorithm = loadStringProperty(SECURITY_DIGEST_ALGORITHM);
+		if (digestAlgorithm != null && !digestAlgorithm.isEmpty())
+			saml2Setting.setDigestAlgorithm(digestAlgorithm);
 
 		Boolean rejectUnsolicitedResponsesWithInResponseTo = loadBooleanProperty(SECURITY_REJECT_UNSOLICITED_RESPONSES_WITH_INRESPONSETO);
 		if (rejectUnsolicitedResponsesWithInResponseTo != null) {

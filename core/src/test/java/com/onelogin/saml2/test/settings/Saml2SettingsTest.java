@@ -299,7 +299,7 @@ public class Saml2SettingsTest {
 		assertEquals(Constants.C14NEXC, ds_signature_metadata.getFirstChild().getFirstChild().getAttributes().getNamedItem("Algorithm").getNodeValue());
 		
 		assertEquals(Constants.RSA_SHA512, ds_signature_metadata.getFirstChild().getFirstChild().getNextSibling().getAttributes().getNamedItem("Algorithm").getNodeValue());
-		assertEquals(Constants.SHA1, ds_signature_metadata.getFirstChild().getFirstChild().getNextSibling().getNextSibling().getFirstChild().getNextSibling().getAttributes().getNamedItem("Algorithm").getNodeValue());
+		assertEquals(Constants.SHA512, ds_signature_metadata.getFirstChild().getFirstChild().getNextSibling().getNextSibling().getFirstChild().getNextSibling().getAttributes().getNamedItem("Algorithm").getNodeValue());
 
 		assertEquals("md:SPSSODescriptor", metadataDoc.getDocumentElement().getFirstChild().getNextSibling().getNodeName());
 		
