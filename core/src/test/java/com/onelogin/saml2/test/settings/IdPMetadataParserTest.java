@@ -5,12 +5,14 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
 
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
+import com.onelogin.saml2.model.Contact;
 import com.onelogin.saml2.settings.IdPMetadataParser;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
@@ -211,7 +213,7 @@ public class IdPMetadataParserTest {
 	
 	@Test
 	public void testInjectIntoSettings() throws Exception {
-		Saml2Settings setting = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		Saml2Settings setting = new SettingsBuilder().fromFile("config/config.all.properties").build();
 
 		assertEquals("http://idp.example.com/", setting.getIdpEntityId());
 		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SSOService.php", setting.getIdpSingleSignOnServiceUrl().toString());
@@ -220,6 +222,14 @@ public class IdPMetadataParserTest {
 		assertEquals(setting.getIdpSingleLogoutServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
 		assertEquals(Util.loadCert(Util.getFileAsString("certs/certificate1")), setting.getIdpx509cert());
 		assertEquals(setting.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
+		assertEquals("http://localhost:8080/java-saml-jspsample/metadata.jsp", setting.getSpEntityId());
+		assertEquals(Constants.RSA_SHA512, setting.getSignatureAlgorithm());
+		assertEquals(Constants.SHA512, setting.getDigestAlgorithm());
+		assertEquals(2, setting.getContacts().size());
+		assertEquals("technical@example.com", setting.getContacts().get(0).getEmailAddress());
+		assertEquals("support@example.com", setting.getContacts().get(1).getEmailAddress());
+		assertEquals("SP Java", setting.getOrganization().getOrgName());
+		assertEquals("EXAMPLE", setting.getUniqueIDPrefix());
 
 		Map<String, Object> idpInfo = IdPMetadataParser.parseFileXML("data/metadata/idp/FederationMetadata.xml");
 		setting = IdPMetadataParser.injectIntoSettings(setting, idpInfo);
@@ -228,11 +238,52 @@ public class IdPMetadataParserTest {
 		assertEquals(setting.getIdpSingleSignOnServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
 		assertEquals("https://idp.adfs.example.com/adfs/ls/", setting.getIdpSingleLogoutServiceUrl().toString());
 		assertEquals(setting.getIdpSingleLogoutServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
-		assertEquals(setting.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress");
 		assertEquals(setting.getIdpx509cert(), Util.loadCert(
 				"MIICZDCCAc2gAwIBAgIBADANBgkqhkiG9w0BAQ0FADBPMQswCQYDVQQGEwJ1czEUMBIGA1UECAwLZXhhbXBsZS5jb20xFDASBgNVBAoMC2V4YW1wbGUuY29tMRQwEgYDVQQDDAtleGFtcGxlLmNvbTAeFw0xNzA0MTUxMjI3NTFaFw0yNzA0MTMxMjI3NTFaME8xCzAJBgNVBAYTAnVzMRQwEgYDVQQIDAtleGFtcGxlLmNvbTEUMBIGA1UECgwLZXhhbXBsZS5jb20xFDASBgNVBAMMC2V4YW1wbGUuY29tMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCYtEZ7hGZiNp+NecbcQXosYl8TzVOdL44b3Nl+BxL26Bvnt8YNnE63xiQzo7xDdO6+1MWWO26mMxwMpooTToOJgrot9YhlIX1VHIUPbOEGczSmXzCCmMhS26vR/leoLNah8QqCF1UdCoNQejb0fDCy+Q1yEdMXYkBWsFGfDSHSSQIDAQABo1AwTjAdBgNVHQ4EFgQUT1g33aGN0f6BJPgpYbr1pHrMZrYwHwYDVR0jBBgwFoAUT1g33aGN0f6BJPgpYbr1pHrMZrYwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQ0FAAOBgQB6233Ic9bb6OCMT6hE1mRzhoP+AbixeojtUuM1IUG4JI5YUGsjsym96VBw+/ciwDLuxNYg6ZWu++WxWNwF3LwVRZGQ8bDdxYldm6VorvIbps2tzyT5N32xgMAgzy/3SZf6YOihdotXJd5AZNVp/razVO17WrjsFvldAlKtk0SM7w=="));
 		assertEquals(setting.getIdpx509certMulti().get(0), Util.loadCert(
 				"MIIC9jCCAd6gAwIBAgIQI/B8CLE676pCR2/QaKih9TANBgkqhkiG9w0BAQsFADA3MTUwMwYDVQQDEyxBREZTIFNpZ25pbmcgLSBsb2dpbnRlc3Qub3dlbnNib3JvaGVhbHRoLm9yZzAeFw0xNjEwMjUxNjI4MzhaFw0xNzEwMjUxNjI4MzhaMDcxNTAzBgNVBAMTLEFERlMgU2lnbmluZyAtIGxvZ2ludGVzdC5vd2Vuc2Jvcm9oZWFsdGgub3JnMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjikmKRRVD5oK3fxm0xNfDqvWCujZIhtv2zeIwmoRKUAjo6KeUhauII4BHh5DclmbOFD4ruli3sNWGKgqVCX1AFW/p3m3/FtzeumFeZSmyfqeJEeOqAK5jAom/MfXxaQ85QHlGa0BTtdWdCuxhJz5G797o4s1Me/8QOQdmbkkwOHOVXRDW0QxBXvsRB1jPpIO+JvNcWFpvJrELccD0Fws91LH42j2C4gDNR8JLu5LrUGL6zAIq8NM7wfbwoax9n/0tIZKa6lo6szpXGqiMrDBJPpAqC5MSePyp5/SEX6jxwodQUGRgI5bKILQwOWDrkgfsK1MIeHfovtyqnDZj8e9VwIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQBKbK4qu7WTLYeQW7OcFAeWcT5D7ujo61QtPf+6eY8hpNntN8yF71vGm+5zdOjmw18igxUrf3W7dLk2wAogXK196WX34x9muorwmFK/HqmKuy0kWWzGcNzZHb0o4Md2Ux7QQVoHqD6dUSqUisOBs34ZPgT5R42LepJTGDEZSkvOxUv9V6fY5dYk8UaWbZ7MQAFi1CnOyybq2nVNjpuxWyJ6SsHQYKRhXa7XGurXFB2mlgcjVj9jxW0gO7djkgRD68b6PNpQmJkbKnkCtJg9YsSeOmuUjwgh4DlcIo5jZocKd5bnLbQ9XKJ3YQHRxFoZbP3BXKrfhVV3vqqzRxMwjZmK"));
+		assertEquals(setting.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress");
+		assertEquals("http://localhost:8080/java-saml-jspsample/metadata.jsp", setting.getSpEntityId());
+		assertEquals(Constants.RSA_SHA512, setting.getSignatureAlgorithm());
+		assertEquals(Constants.SHA512, setting.getDigestAlgorithm());
+		assertEquals(2, setting.getContacts().size());
+		assertEquals("technical@example.com", setting.getContacts().get(0).getEmailAddress());
+		assertEquals("support@example.com", setting.getContacts().get(1).getEmailAddress());
+		assertEquals("SP Java", setting.getOrganization().getOrgName());
+		assertEquals("EXAMPLE", setting.getUniqueIDPrefix());
+
+		Saml2Settings setting2 = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		assertEquals("http://idp.example.com/", setting2.getIdpEntityId());
+		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SSOService.php", setting2.getIdpSingleSignOnServiceUrl().toString());
+		assertEquals(setting2.getIdpSingleSignOnServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
+		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SingleLogoutService.php", setting2.getIdpSingleLogoutServiceUrl().toString());
+		assertEquals(setting2.getIdpSingleLogoutServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
+		assertEquals(Util.loadCert(Util.getFileAsString("certs/certificate1")), setting2.getIdpx509cert());
+		assertEquals(setting2.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
+		assertEquals("http://localhost:8080/java-saml-jspsample/metadata.jsp", setting2.getSpEntityId());
+		assertEquals(Constants.RSA_SHA1, setting2.getSignatureAlgorithm());
+		assertEquals(Constants.SHA1, setting2.getDigestAlgorithm());
+		assertEquals(0, setting2.getContacts().size());
+		assertNull(setting2.getOrganization());
+		assertEquals(Util.UNIQUE_ID_PREFIX, setting2.getUniqueIDPrefix());
+
+		setting2 = IdPMetadataParser.injectIntoSettings(setting2, idpInfo);
+		assertEquals("http://idp.adfs.example.com/adfs/services/trust", setting2.getIdpEntityId());
+		assertEquals("https://idp.adfs.example.com/adfs/ls/", setting2.getIdpSingleSignOnServiceUrl().toString());
+		assertEquals(setting2.getIdpSingleSignOnServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
+		assertEquals("https://idp.adfs.example.com/adfs/ls/", setting2.getIdpSingleLogoutServiceUrl().toString());
+		assertEquals(setting2.getIdpSingleLogoutServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
+		assertEquals(setting2.getIdpx509cert(), Util.loadCert(
+				"MIICZDCCAc2gAwIBAgIBADANBgkqhkiG9w0BAQ0FADBPMQswCQYDVQQGEwJ1czEUMBIGA1UECAwLZXhhbXBsZS5jb20xFDASBgNVBAoMC2V4YW1wbGUuY29tMRQwEgYDVQQDDAtleGFtcGxlLmNvbTAeFw0xNzA0MTUxMjI3NTFaFw0yNzA0MTMxMjI3NTFaME8xCzAJBgNVBAYTAnVzMRQwEgYDVQQIDAtleGFtcGxlLmNvbTEUMBIGA1UECgwLZXhhbXBsZS5jb20xFDASBgNVBAMMC2V4YW1wbGUuY29tMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCYtEZ7hGZiNp+NecbcQXosYl8TzVOdL44b3Nl+BxL26Bvnt8YNnE63xiQzo7xDdO6+1MWWO26mMxwMpooTToOJgrot9YhlIX1VHIUPbOEGczSmXzCCmMhS26vR/leoLNah8QqCF1UdCoNQejb0fDCy+Q1yEdMXYkBWsFGfDSHSSQIDAQABo1AwTjAdBgNVHQ4EFgQUT1g33aGN0f6BJPgpYbr1pHrMZrYwHwYDVR0jBBgwFoAUT1g33aGN0f6BJPgpYbr1pHrMZrYwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQ0FAAOBgQB6233Ic9bb6OCMT6hE1mRzhoP+AbixeojtUuM1IUG4JI5YUGsjsym96VBw+/ciwDLuxNYg6ZWu++WxWNwF3LwVRZGQ8bDdxYldm6VorvIbps2tzyT5N32xgMAgzy/3SZf6YOihdotXJd5AZNVp/razVO17WrjsFvldAlKtk0SM7w=="));
+		assertEquals(setting2.getIdpx509certMulti().get(0), Util.loadCert(
+				"MIIC9jCCAd6gAwIBAgIQI/B8CLE676pCR2/QaKih9TANBgkqhkiG9w0BAQsFADA3MTUwMwYDVQQDEyxBREZTIFNpZ25pbmcgLSBsb2dpbnRlc3Qub3dlbnNib3JvaGVhbHRoLm9yZzAeFw0xNjEwMjUxNjI4MzhaFw0xNzEwMjUxNjI4MzhaMDcxNTAzBgNVBAMTLEFERlMgU2lnbmluZyAtIGxvZ2ludGVzdC5vd2Vuc2Jvcm9oZWFsdGgub3JnMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjikmKRRVD5oK3fxm0xNfDqvWCujZIhtv2zeIwmoRKUAjo6KeUhauII4BHh5DclmbOFD4ruli3sNWGKgqVCX1AFW/p3m3/FtzeumFeZSmyfqeJEeOqAK5jAom/MfXxaQ85QHlGa0BTtdWdCuxhJz5G797o4s1Me/8QOQdmbkkwOHOVXRDW0QxBXvsRB1jPpIO+JvNcWFpvJrELccD0Fws91LH42j2C4gDNR8JLu5LrUGL6zAIq8NM7wfbwoax9n/0tIZKa6lo6szpXGqiMrDBJPpAqC5MSePyp5/SEX6jxwodQUGRgI5bKILQwOWDrkgfsK1MIeHfovtyqnDZj8e9VwIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQBKbK4qu7WTLYeQW7OcFAeWcT5D7ujo61QtPf+6eY8hpNntN8yF71vGm+5zdOjmw18igxUrf3W7dLk2wAogXK196WX34x9muorwmFK/HqmKuy0kWWzGcNzZHb0o4Md2Ux7QQVoHqD6dUSqUisOBs34ZPgT5R42LepJTGDEZSkvOxUv9V6fY5dYk8UaWbZ7MQAFi1CnOyybq2nVNjpuxWyJ6SsHQYKRhXa7XGurXFB2mlgcjVj9jxW0gO7djkgRD68b6PNpQmJkbKnkCtJg9YsSeOmuUjwgh4DlcIo5jZocKd5bnLbQ9XKJ3YQHRxFoZbP3BXKrfhVV3vqqzRxMwjZmK"));
+		assertEquals(setting2.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress");
+		assertEquals("http://localhost:8080/java-saml-jspsample/metadata.jsp", setting2.getSpEntityId());
+		assertEquals(Constants.RSA_SHA1, setting2.getSignatureAlgorithm());
+		assertEquals(Constants.SHA1, setting2.getDigestAlgorithm());
+		assertEquals(0, setting2.getContacts().size());
+		assertNull(setting2.getOrganization());
+		assertEquals(Util.UNIQUE_ID_PREFIX, setting2.getUniqueIDPrefix());
 	}
 
 }

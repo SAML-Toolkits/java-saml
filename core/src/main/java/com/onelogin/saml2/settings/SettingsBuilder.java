@@ -239,23 +239,36 @@ public class SettingsBuilder {
 		this.saml2Setting = saml2Setting;
 
 		Boolean strict = loadBooleanProperty(STRICT_PROPERTY_KEY);
-		if (strict != null)
+		if (strict != null) {
 			saml2Setting.setStrict(strict);
+		}
 
 		Boolean debug = loadBooleanProperty(DEBUG_PROPERTY_KEY);
-		if (debug != null)
+		if (debug != null) {
 			saml2Setting.setDebug(debug);
+		}
 
 		this.loadSpSetting();
 		this.loadIdpSetting();
 		this.loadSecuritySetting();
 		this.loadCompressSetting();
 
-		saml2Setting.setContacts(loadContacts());
+		List<Contact> contacts = this.loadContacts();
+		if (!contacts.isEmpty()) {
+			saml2Setting.setContacts(loadContacts());
+		}
 
-		saml2Setting.setOrganization(loadOrganization());
+		Organization org = this.loadOrganization();
+		if (org != null) {
+			saml2Setting.setOrganization(org);
+		}
 
-		saml2Setting.setUniqueIDPrefix(loadUniqueIDPrefix());
+		String uniqueIdPrefix = loadUniqueIDPrefix();
+		if (StringUtils.isNotEmpty(uniqueIdPrefix)) {
+			saml2Setting.setUniqueIDPrefix(uniqueIdPrefix);
+		} else if (saml2Setting.getUniqueIDPrefix() == null){
+			saml2Setting.setUniqueIDPrefix(Util.UNIQUE_ID_PREFIX);
+		}
 
 		return saml2Setting;
 	}
@@ -265,32 +278,39 @@ public class SettingsBuilder {
 	 */
 	private void loadIdpSetting() {
 		String idpEntityID = loadStringProperty(IDP_ENTITYID_PROPERTY_KEY);
-		if (idpEntityID != null)
+		if (idpEntityID != null) {
 			saml2Setting.setIdpEntityId(idpEntityID);
+		}
 
 		URL idpSingleSignOnServiceUrl = loadURLProperty(IDP_SINGLE_SIGN_ON_SERVICE_URL_PROPERTY_KEY);
-		if (idpSingleSignOnServiceUrl != null)
+		if (idpSingleSignOnServiceUrl != null) {
 			saml2Setting.setIdpSingleSignOnServiceUrl(idpSingleSignOnServiceUrl);
+		}
 
 		String idpSingleSignOnServiceBinding = loadStringProperty(IDP_SINGLE_SIGN_ON_SERVICE_BINDING_PROPERTY_KEY);
-		if (idpSingleSignOnServiceBinding != null)
+		if (idpSingleSignOnServiceBinding != null) {
 			saml2Setting.setIdpSingleSignOnServiceBinding(idpSingleSignOnServiceBinding);
+		}
 
 		URL idpSingleLogoutServiceUrl = loadURLProperty(IDP_SINGLE_LOGOUT_SERVICE_URL_PROPERTY_KEY);
-		if (idpSingleLogoutServiceUrl != null)
+		if (idpSingleLogoutServiceUrl != null) {
 			saml2Setting.setIdpSingleLogoutServiceUrl(idpSingleLogoutServiceUrl);
+		}
 
 		URL idpSingleLogoutServiceResponseUrl = loadURLProperty(IDP_SINGLE_LOGOUT_SERVICE_RESPONSE_URL_PROPERTY_KEY);
-		if (idpSingleLogoutServiceResponseUrl != null)
+		if (idpSingleLogoutServiceResponseUrl != null) {
 			saml2Setting.setIdpSingleLogoutServiceResponseUrl(idpSingleLogoutServiceResponseUrl);
+		}
 
 		String idpSingleLogoutServiceBinding = loadStringProperty(IDP_SINGLE_LOGOUT_SERVICE_BINDING_PROPERTY_KEY);
-		if (idpSingleLogoutServiceBinding != null)
+		if (idpSingleLogoutServiceBinding != null) {
 			saml2Setting.setIdpSingleLogoutServiceBinding(idpSingleLogoutServiceBinding);
+		}
 
 		List<X509Certificate> idpX509certMulti = loadCertificateListFromProp(IDP_X509CERTMULTI_PROPERTY_KEY);
-		if (idpX509certMulti != null)
+		if (idpX509certMulti != null) {
 			saml2Setting.setIdpx509certMulti(idpX509certMulti);
+		}
 
 		X509Certificate idpX509cert = loadCertificateFromProp(IDP_X509CERT_PROPERTY_KEY);
 		if (idpX509cert != null) {
@@ -298,12 +318,14 @@ public class SettingsBuilder {
 		}
 
 		String idpCertFingerprint = loadStringProperty(CERTFINGERPRINT_PROPERTY_KEY);
-		if (idpCertFingerprint != null)
+		if (idpCertFingerprint != null) {
 			saml2Setting.setIdpCertFingerprint(idpCertFingerprint);
+		}
 
 		String idpCertFingerprintAlgorithm = loadStringProperty(CERTFINGERPRINT_ALGORITHM_PROPERTY_KEY);
-		if (idpCertFingerprintAlgorithm != null && !idpCertFingerprintAlgorithm.isEmpty())
+		if (idpCertFingerprintAlgorithm != null && !idpCertFingerprintAlgorithm.isEmpty()) {
 			saml2Setting.setIdpCertFingerprintAlgorithm(idpCertFingerprintAlgorithm);
+		}
 	}
 
 	/**
@@ -376,8 +398,9 @@ public class SettingsBuilder {
 		}
 
 		Boolean allowRepeatAttributeName = loadBooleanProperty(SECURITY_ALLOW_REPEAT_ATTRIBUTE_NAME_PROPERTY_KEY);
-		if (allowRepeatAttributeName != null)
+		if (allowRepeatAttributeName != null) {
 			saml2Setting.setAllowRepeatAttributeName(allowRepeatAttributeName);
+		}
 	}
 
 	/**
@@ -443,11 +466,7 @@ public class SettingsBuilder {
 	 */
 	private String loadUniqueIDPrefix() {
 		String uniqueIDPrefix = loadStringProperty(UNIQUE_ID_PREFIX_PROPERTY_KEY);
-		if (StringUtils.isNotEmpty(uniqueIDPrefix)) {
-			return uniqueIDPrefix;
-		} else {
-			return Util.UNIQUE_ID_PREFIX;
-		}
+		return uniqueIDPrefix;
 	}
 
 	/**
@@ -455,28 +474,34 @@ public class SettingsBuilder {
 	 */
 	private void loadSpSetting() {
 		String spEntityID = loadStringProperty(SP_ENTITYID_PROPERTY_KEY);
-		if (spEntityID != null)
+		if (spEntityID != null) {
 			saml2Setting.setSpEntityId(spEntityID);
+		}
 
 		URL assertionConsumerServiceUrl = loadURLProperty(SP_ASSERTION_CONSUMER_SERVICE_URL_PROPERTY_KEY);
-		if (assertionConsumerServiceUrl != null)
+		if (assertionConsumerServiceUrl != null) {
 			saml2Setting.setSpAssertionConsumerServiceUrl(assertionConsumerServiceUrl);
+		}
 
 		String spAssertionConsumerServiceBinding = loadStringProperty(SP_ASSERTION_CONSUMER_SERVICE_BINDING_PROPERTY_KEY);
-		if (spAssertionConsumerServiceBinding != null)
+		if (spAssertionConsumerServiceBinding != null) {
 			saml2Setting.setSpAssertionConsumerServiceBinding(spAssertionConsumerServiceBinding);
+		}
 
 		URL spSingleLogoutServiceUrl = loadURLProperty(SP_SINGLE_LOGOUT_SERVICE_URL_PROPERTY_KEY);
-		if (spSingleLogoutServiceUrl != null)
+		if (spSingleLogoutServiceUrl != null) {
 			saml2Setting.setSpSingleLogoutServiceUrl(spSingleLogoutServiceUrl);
+		}
 
 		String spSingleLogoutServiceBinding = loadStringProperty(SP_SINGLE_LOGOUT_SERVICE_BINDING_PROPERTY_KEY);
-		if (spSingleLogoutServiceBinding != null)
+		if (spSingleLogoutServiceBinding != null) {
 			saml2Setting.setSpSingleLogoutServiceBinding(spSingleLogoutServiceBinding);
+		}
 
 		String spNameIDFormat = loadStringProperty(SP_NAMEIDFORMAT_PROPERTY_KEY);
-		if (spNameIDFormat != null && !spNameIDFormat.isEmpty())
+		if (spNameIDFormat != null && !spNameIDFormat.isEmpty()) {
 			saml2Setting.setSpNameIDFormat(spNameIDFormat);
+		}
 
 		boolean keyStoreEnabled = this.samlData.get(KEYSTORE_KEY) != null && this.samlData.get(KEYSTORE_ALIAS) != null
 				&& this.samlData.get(KEYSTORE_KEY_PASSWORD) != null;
@@ -496,14 +521,17 @@ public class SettingsBuilder {
 			spPrivateKey = loadPrivateKeyFromProp(SP_PRIVATEKEY_PROPERTY_KEY);
 		}
 
-		if (spX509cert != null)
+		if (spX509cert != null) {
 			saml2Setting.setSpX509cert(spX509cert);
-		if (spPrivateKey != null)
+		}
+		if (spPrivateKey != null) {
 			saml2Setting.setSpPrivateKey(spPrivateKey);
+		}
 
 		X509Certificate spX509certNew = loadCertificateFromProp(SP_X509CERTNEW_PROPERTY_KEY);
-		if (spX509certNew != null)
+		if (spX509certNew != null) {
 			saml2Setting.setSpX509certNew(spX509certNew);
+		}
 	}
 
 	/**
