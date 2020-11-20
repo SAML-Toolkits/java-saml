@@ -282,7 +282,7 @@ onelogin.saml2.idp.x509cert =
 # let the toolkit know which Algorithm was used. Possible values: sha1, sha256, sha384 or sha512
 # 'sha1' is the default value.
 # onelogin.saml2.idp.certfingerprint = 
-# onelogin.saml2.idp.certfingerprint_algorithm = sha1
+# onelogin.saml2.idp.certfingerprint_algorithm = sha256
 
 # Security settings
 #
@@ -342,7 +342,18 @@ onelogin.saml2.security.want_xml_validation = true
 #  'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256'
 #  'http://www.w3.org/2001/04/xmldsig-more#rsa-sha384'
 #  'http://www.w3.org/2001/04/xmldsig-more#rsa-sha512'
-onelogin.saml2.security.signature_algorithm = http://www.w3.org/2000/09/xmldsig#rsa-sha1
+onelogin.saml2.security.signature_algorithm = http://www.w3.org/2001/04/xmldsig-more#rsa-sha256
+
+# Algorithm that the toolkit will use on digest process. Options:
+#  'http://www.w3.org/2000/09/xmldsig#sha1'
+#  'http://www.w3.org/2001/04/xmlenc#sha256'
+#  'http://www.w3.org/2001/04/xmldsig-more#sha384'
+#  'http://www.w3.org/2001/04/xmlenc#sha512'
+onelogin.saml2.security.digest_algorithm = http://www.w3.org/2001/04/xmlenc#sha256
+
+
+# Reject Signatures with deprecated algorithms (sha1)
+onelogin.saml2.security.reject_deprecated_alg = true
 
 # Organization
 onelogin.saml2.organization.name = SP Java 
@@ -361,6 +372,7 @@ onelogin.saml2.contacts.support.email_address = support@example.com
 # At minimun, the prefix can be non-numeric character such as "_".
 # onelogin.saml2.unique_id_prefix = _
 ```
+
 
 ##### KeyStores
 

@@ -554,6 +554,43 @@ public class LogoutResponseTest {
 
 	/**
 	 * Tests the isValid method of LogoutResponse
+	 * Case: Signed with deprecated method and flag enabled
+	 *
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 * @throws XMLEntityException
+	 * @throws Error
+	 *
+	 * @see com.onelogin.saml2.logout.LogoutResponse#isValid
+	 */
+	@Test
+	public void testIsInValidSignWithDeprecatedAlg() throws URISyntaxException, IOException, XMLEntityException, Error {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		settings.setStrict(false);
+		settings.setWantMessagesSigned(true);
+
+		final String requestURL = "https://pitbulk.no-ip.org/newonelogin/demo1/index.php?sls";
+		String samlResponseEncoded = "fZJva8IwEMa/Ssl7TZrW/gnqGHMMwSlM8cXeyLU9NaxNQi9lfvxVZczB5ptwSe733MPdjQma2qmFPdjOvyE5awiDU1MbUpevCetaoyyQJmWgQVK+VOvH14WSQ6Fca70tbc1ukPsEEGHrtTUsmM8mbDfKUhnFci8gliGINI/yXIAAiYnsw6JIRgWWAKlkwRZb6skJ64V6nKjDuSEPxvdPIowHIhpIsQkTFaYqSt9ZMEPy2oC/UEfvHSnOnfZFV38MjR1oN7TtgRv8tAZre9CGV9jYkGtT4Wnoju6Bauprme/ebOyErZbPi9XLfLnDoohwhHGc5WVSVhjCKM6rBMpYQpWJrIizfZ4IZNPxuTPqYrmd/m+EdONqPOfy8yG5rhxv0EMFHs52xvxWaHyd3tqD7+j37clWGGyh7vD+POiSrdZdWSIR49NrhR9R/teGTL8A";
+		String relayState = "https://pitbulk.no-ip.org/newonelogin/demo1/index.php";
+		String sigAlg = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
+		String signature = "vfWbbc47PkP3ejx4bjKsRX7lo9Ml1WRoE5J5owF/0mnyKHfSY6XbhO1wwjBV5vWdrUVX+xp6slHyAf4YoAsXFS0qhan6txDiZY4Oec6yE+l10iZbzvie06I4GPak4QrQ4gAyXOSzwCrRmJu4gnpeUxZ6IqKtdrKfAYRAcVfNKGA=";
+
+		HttpRequest httpRequest = new HttpRequest(requestURL, (String)null)
+				.addParameter("SAMLResponse", samlResponseEncoded)
+				.addParameter("RelayState", relayState)
+				.addParameter("SigAlg", sigAlg)
+				.addParameter("Signature", signature);
+
+		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
+		assertTrue(logoutResponse.isValid());
+
+		settings.setRejectDeprecatedAlg(true);
+		LogoutResponse logoutResponse2 = new LogoutResponse(settings, httpRequest);
+		assertFalse(logoutResponse2.isValid());
+	}
+
+	/**
+	 * Tests the isValid method of LogoutResponse
 	 * Case: No SAML Logout Response
 	 *
 	 * @throws IOException
