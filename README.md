@@ -426,12 +426,13 @@ We can set a 'returnTo' url parameter to the login function and that will be con
 String targetUrl = 'https://example.com';
 auth.login(returnTo=targetUrl)
 ```
-The login method can receive 5 more optional parameters:
+The login method can receive 6 more optional parameters:
 - *forceAuthn* When true the AuthNRequest will have the 'ForceAuthn' attribute set to 'true'
 - *isPassive* When true the AuthNRequest will have the 'Ispassive' attribute set to 'true'
 - *setNameIdPolicy* When true the AuthNRequest will set a nameIdPolicy element.
 - *stay* Set to true to stay (returns the url string), otherwise set to false to execute a redirection to that url (IdP SSO URL)
 - *nameIdValueReq* Indicates to the IdP the subject that should be authenticated
+- *parameters* Use it to send extra parameters in addition to the AuthNRequest
 
 By default, the login method initiates a redirect to the SAML Identity Provider. You can use the *stay* parameter, to prevent that, and execute the redirection manually. We need to use that if a match on the future SAMLResponse ID and the AuthNRequest ID to be sent is required.  That AuthNRequest ID must be extracted and stored for future validation, so we can't execute the redirection on the login.  Instead, set *stay* to true, then get that ID by
 ```
@@ -598,11 +599,15 @@ String targetUrl = 'https://example.com';
 auth.logout(returnTo=targetUrl)
 ```
 
-Also there are 3 optional parameters that can be set:
+Also there are 7 optional parameters that can be set:
 - nameId. That will be used to build the LogoutRequest. If not name_id parameter is set and the auth object processed a SAML Response with a NameId, then this NameId will be used.
 - sessionIndex. Identifies the session of the user.
 If a match on the LogoutResponse ID and the LogoutRequest ID to be sent is required, that LogoutRequest ID must to be extracted and stored for future validation, we can get that ID by
 - stay. True if we want to stay (returns the url string) False to execute a redirection to that url (IdP SLS URL)
+- nameidFormat. The NameID Format that will be set in the LogoutRequest
+- nameIdNameQualifier. The NameID NameQualifier that will be set in the LogoutRequest
+- nameIdSPNameQualifier. The NameID SP Name Qualifier that will be set in the LogoutRequest
+- parameters. Use it to send extra parameters in addition to the LogoutRequest
 
 By default the logout method initiates a redirect to the SAML Identity Provider. You can use the stay parameter, to prevent that, and execute the redirection manually. We need to use that
 if a match on the future LogoutResponse ID and the LogoutRequest ID to be sent is required, that LogoutRequest ID must be extracted and stored for future validation so we can't execute the redirection on the logout, instead set stay to true, then get that ID by
