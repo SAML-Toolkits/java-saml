@@ -1283,7 +1283,7 @@ public class AuthTest {
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		when(request.getScheme()).thenReturn("http");
 		when(request.getServerPort()).thenReturn(8080);
-		when(request.getServerName()).thenReturn("localhost");		
+		when(request.getServerName()).thenReturn("localhost");
 		when(request.getRequestURI()).thenReturn("/initial.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
@@ -1311,7 +1311,7 @@ public class AuthTest {
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		when(request.getScheme()).thenReturn("http");
 		when(request.getServerPort()).thenReturn(8080);
-		when(request.getServerName()).thenReturn("localhost");		
+		when(request.getServerName()).thenReturn("localhost");
 		when(request.getRequestURI()).thenReturn("/initial.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
@@ -1352,6 +1352,37 @@ public class AuthTest {
 		verify(response).sendRedirect(urlCaptor.capture());
 		assertThat(urlCaptor.getValue(), startsWith("https://pitbulk.no-ip.org/simplesaml/saml2/idp/SSOService.php?SAMLRequest="));
 		assertThat(urlCaptor.getValue(), not(containsString("&RelayState=")));
+	}
+
+	/**
+	 * Tests the login method of Auth
+	 * Case: Login with extra parameters
+	 *
+	 * @throws SettingsException
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 * @throws Error
+	 *
+	 * @see com.onelogin.saml2.Auth#login
+	 */
+	@Test
+	public void testLoginWithExtraParameters() throws IOException, SettingsException, URISyntaxException, Error {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		when(request.getScheme()).thenReturn("http");
+		when(request.getServerPort()).thenReturn(8080);
+		when(request.getServerName()).thenReturn("localhost");
+		when(request.getRequestURI()).thenReturn("/initial.jsp");
+
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		settings.setAuthnRequestsSigned(false);
+
+		Auth auth = new Auth(settings, request, response);
+		Map<String, String> extraParameters = new HashMap<String, String>();
+		extraParameters.put("parameter1", "xxx");
+		String target = auth.login("", false, false, false, true, null, extraParameters);
+		assertThat(target, startsWith("https://pitbulk.no-ip.org/simplesaml/saml2/idp/SSOService.php?SAMLRequest="));
+		assertThat(target, containsString("&parameter1=xxx"));
 	}
 
 	/**
@@ -1454,7 +1485,7 @@ public class AuthTest {
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		when(request.getScheme()).thenReturn("http");
 		when(request.getServerPort()).thenReturn(8080);
-		when(request.getServerName()).thenReturn("localhost");		
+		when(request.getServerName()).thenReturn("localhost");
 		when(request.getRequestURI()).thenReturn("/initial.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
@@ -1483,7 +1514,7 @@ public class AuthTest {
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		when(request.getScheme()).thenReturn("http");
 		when(request.getServerPort()).thenReturn(8080);
-		when(request.getServerName()).thenReturn("localhost");		
+		when(request.getServerName()).thenReturn("localhost");
 		when(request.getRequestURI()).thenReturn("/initial.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
@@ -1517,7 +1548,7 @@ public class AuthTest {
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		when(request.getScheme()).thenReturn("http");
 		when(request.getServerPort()).thenReturn(8080);
-		when(request.getServerName()).thenReturn("localhost");		
+		when(request.getServerName()).thenReturn("localhost");
 		when(request.getRequestURI()).thenReturn("/initial.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
@@ -1527,6 +1558,36 @@ public class AuthTest {
 
 		verify(response).sendRedirect(matches("https:\\/\\/pitbulk.no-ip.org\\/simplesaml\\/saml2\\/idp\\/SingleLogoutService.php\\?SAMLRequest=(.)*&RelayState=http%3A%2F%2Flocalhost%3A8080%2Finitial.jsp"));
 		assertThat(auth.getLastRequestId(), startsWith(Util.UNIQUE_ID_PREFIX));
+	}
+
+	/**
+	 * Tests the logout method of Auth
+	 * Case: Logout with no parameters
+	 *
+	 * @throws IOException
+	 * @throws SettingsException
+	 * @throws XMLEntityException
+	 * @throws Error
+	 *
+	 * @see com.onelogin.saml2.Auth#logout
+	 */
+	@Test
+	public void testLogoutWithExtraParameters() throws IOException, SettingsException, XMLEntityException, Error {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		when(request.getScheme()).thenReturn("http");
+		when(request.getServerPort()).thenReturn(8080);
+		when(request.getServerName()).thenReturn("localhost");
+		when(request.getRequestURI()).thenReturn("/initial.jsp");
+
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		settings.setLogoutRequestSigned(false);
+		Auth auth = new Auth(settings, request, response);
+		Map<String, String> extraParameters = new HashMap<String, String>();
+		extraParameters.put("parameter1", "xxx");
+		String target = auth.logout("", null, null, true, null, null, null, extraParameters);
+		assertThat(target, startsWith("https://pitbulk.no-ip.org/simplesaml/saml2/idp/SingleLogoutService.php?SAMLRequest="));
+		assertThat(target, containsString("&parameter1=xxx"));
 	}
 
 	/**
@@ -1546,7 +1607,7 @@ public class AuthTest {
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		when(request.getScheme()).thenReturn("http");
 		when(request.getServerPort()).thenReturn(8080);
-		when(request.getServerName()).thenReturn("localhost");		
+		when(request.getServerName()).thenReturn("localhost");
 		when(request.getRequestURI()).thenReturn("/initial.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
@@ -1608,7 +1669,7 @@ public class AuthTest {
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		when(request.getScheme()).thenReturn("http");
 		when(request.getServerPort()).thenReturn(8080);
-		when(request.getServerName()).thenReturn("localhost");		
+		when(request.getServerName()).thenReturn("localhost");
 		when(request.getRequestURI()).thenReturn("/initial.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
@@ -1642,7 +1703,7 @@ public class AuthTest {
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		when(request.getScheme()).thenReturn("http");
 		when(request.getServerPort()).thenReturn(8080);
-		when(request.getServerName()).thenReturn("localhost");		
+		when(request.getServerName()).thenReturn("localhost");
 		when(request.getRequestURI()).thenReturn("/initial.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
@@ -1671,7 +1732,7 @@ public class AuthTest {
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		when(request.getScheme()).thenReturn("http");
 		when(request.getServerPort()).thenReturn(8080);
-		when(request.getServerName()).thenReturn("localhost");		
+		when(request.getServerName()).thenReturn("localhost");
 		when(request.getRequestURI()).thenReturn("/initial.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
