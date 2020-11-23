@@ -101,6 +101,7 @@ public class SettingsBuilder {
 	public final static String SECURITY_DIGEST_ALGORITHM = "onelogin.saml2.security.digest_algorithm";
 	public final static String SECURITY_REJECT_UNSOLICITED_RESPONSES_WITH_INRESPONSETO = "onelogin.saml2.security.reject_unsolicited_responses_with_inresponseto";
 	public final static String SECURITY_ALLOW_REPEAT_ATTRIBUTE_NAME_PROPERTY_KEY = "onelogin.saml2.security.allow_duplicated_attribute_name";
+	public final static String SECURITY_REJECT_DEPRECATED_ALGORITHM = "onelogin.saml2.security.reject_deprecated_alg";
 
 	// Compress
 	public final static String COMPRESS_REQUEST = "onelogin.saml2.compress.request";
@@ -376,8 +377,14 @@ public class SettingsBuilder {
 		}
 
 		Boolean allowRepeatAttributeName = loadBooleanProperty(SECURITY_ALLOW_REPEAT_ATTRIBUTE_NAME_PROPERTY_KEY);
-		if (allowRepeatAttributeName != null)
+		if (allowRepeatAttributeName != null) {
 			saml2Setting.setAllowRepeatAttributeName(allowRepeatAttributeName);
+		}
+
+		Boolean rejectDeprecatedAlg = loadBooleanProperty(SECURITY_REJECT_DEPRECATED_ALGORITHM);
+		if (rejectDeprecatedAlg != null) {
+			saml2Setting.setRejectDeprecatedAlg(rejectDeprecatedAlg);
+		}
 	}
 
 	/**

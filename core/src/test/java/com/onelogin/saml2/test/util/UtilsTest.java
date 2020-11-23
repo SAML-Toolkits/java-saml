@@ -1234,6 +1234,12 @@ public class UtilsTest {
 		assertTrue(Util.validateMetadataSign(signedMetadataDocument, null, fingerprint_sha1, null));
 		assertTrue(Util.validateMetadataSign(signedMetadataDocument, null, fingerprint_sha1, "SHA-1"));
 		assertTrue(Util.validateMetadataSign(signedMetadataDocument, null, fingerprint_sha256, "SHA-256"));		
+
+		// Deprecated Alg
+		String signed256MetadataStr = Util.getFileAsString("data/metadata/signed_metadata_settings256.xml");
+		Document signed256MetadataDocument = Util.loadXML(signed256MetadataStr);
+		assertFalse(Util.validateMetadataSign(signedMetadataDocument, null, fingerprint_sha1, "SHA-1", true));
+		assertTrue(Util.validateMetadataSign(signed256MetadataDocument, null, fingerprint_sha1, "SHA-1", true));
 	}
 	
 	/**

@@ -5,6 +5,7 @@ import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.exception.SettingsException;
 import com.onelogin.saml2.exception.ValidationError;
 import com.onelogin.saml2.http.HttpRequest;
+import com.onelogin.saml2.logout.LogoutRequest;
 import com.onelogin.saml2.model.SamlResponseStatus;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
@@ -2407,6 +2408,54 @@ public class AuthnResponseTest {
 		settings.setWantMessagesSigned(true);
 		assertResponseValid(settings, samlResponseEncoded, false, true, null);
 		assertResponseValid(settings, samlResponseEncoded, true, false, "The Message of the Response is not signed and the SP requires it");
+	}
+
+	/**
+	 * Tests the isValid method of SamlResponse
+	 * Case: Signed with deprecated method and flag enabled
+	 *
+	 * @throws ValidationError
+	 * @throws SettingsException
+	 * @throws IOException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws XPathExpressionException
+	 * @throws Error
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#isValid
+	 */
+	@Test
+	public void testIsInValidSignWithDeprecatedAlg() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		settings.setWantAssertionsSigned(false);
+		settings.setWantMessagesSigned(false);
+		String samlResponseEncoded = Util.getFileAsString("data/responses/signed_message_response.xml.base64");
+
+		settings.setStrict(true);
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertTrue(samlResponse.isValid());
+
+		settings.setRejectDeprecatedAlg(true);
+		SamlResponse samlResponse2 = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse2.isValid());
+
+		settings.setRejectDeprecatedAlg(false);
+		samlResponseEncoded = Util.getFileAsString("data/responses/signed_assertion_response.xml.base64");
+		SamlResponse samlResponse3 = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertTrue(samlResponse3.isValid());
+
+		settings.setRejectDeprecatedAlg(true);
+		SamlResponse samlResponse4 = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse4.isValid());
+
+		settings.setRejectDeprecatedAlg(false);
+		samlResponseEncoded = Util.getFileAsString("data/responses/double_signed_response.xml.base64");
+		SamlResponse samlResponse5 = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertTrue(samlResponse5.isValid());
+
+		settings.setRejectDeprecatedAlg(true);
+		SamlResponse samlResponse6 = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse6.isValid());
 	}
 
 	/**

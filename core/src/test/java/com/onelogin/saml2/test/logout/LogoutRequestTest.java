@@ -768,6 +768,40 @@ public class LogoutRequestTest {
 
 	/**
 	 * Tests the isValid method of LogoutRequest
+	 * Case: Signed with deprecated method and flag enabled
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.logout.LogoutRequest#isValid
+	 */
+	@Test
+	public void testIsInValidSignWithDeprecatedAlg() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		settings.setStrict(false);
+		settings.setWantMessagesSigned(true);
+
+		final String requestURL = "https://pitbulk.no-ip.org/newonelogin/demo1/index.php?sls";
+		String samlRequestEncoded = "lVLBitswEP0Vo7tjeWzJtki8LIRCYLvbNksPewmyPc6K2pJqyXQ/v1LSQlroQi/DMJr33rwZbZ2cJysezNms/gt+X9H55G2etBOXlx1ZFy2MdMoJLWd0wvfieP/xQcCGCrsYb3ozkRvI+wjpHC5eGU2Sw35HTg3lA8hqZFwWFcMKsStpxbEsxoLXeQN9OdY1VAgk+YqLC8gdCUQB7tyKB+281D6UaF6mtEiBPudcABcMXkiyD26Ulv6CevXeOpFlVvlunb5ttEmV3ZjlnGn8YTRO5qx0NuBs8kzpAd829tXeucmR5NH4J/203I8el6gFRUqbFPJnyEV51Wq30by4TLW0/9ZyarYTxt4sBsjUYLMZvRykl1Fxm90SXVkfwx4P++T4KSafVzmpUcVJ/sfSrQZJPphllv79W8WKGtLx0ir8IrVTqD1pT2MH3QAMSs4KTvui71jeFFiwirOmprwPkYW063+5uRq4urHiiC4e8hCX3J5wqAEGaPpw9XB5JmkBdeDqSlkz6CmUXdl0Qae5kv2F/1384wu3PwE=";
+		String relayState = "_1037fbc88ec82ce8e770b2bed1119747bb812a07e6";
+		String sigAlg = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
+		String signature = "XCwCyI5cs7WhiJlB5ktSlWxSBxv+6q2xT3c8L7dLV6NQG9LHWhN7gf8qNsahSXfCzA0Ey9dp5BQ0EdRvAk2DIzKmJY6e3hvAIEp1zglHNjzkgcQmZCcrkK9Czi2Y1WkjOwR/WgUTUWsGJAVqVvlRZuS3zk3nxMrLH6f7toyvuJc=";
+
+		HttpRequest httpRequest = new HttpRequest(requestURL, (String)null)
+						.addParameter("SAMLRequest", samlRequestEncoded)
+						.addParameter("RelayState", relayState)
+						.addParameter("SigAlg", sigAlg)
+						.addParameter("Signature", signature);
+		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
+		logoutRequest = new LogoutRequest(settings, httpRequest);
+		assertTrue(logoutRequest.isValid());
+
+		settings.setRejectDeprecatedAlg(true);
+		LogoutRequest logoutRequest2 = new LogoutRequest(settings, httpRequest);
+		assertFalse(logoutRequest2.isValid());
+	}
+
+	/**
+	 * Tests the isValid method of LogoutRequest
 	 * Case: No SAML Logout Request
 	 *
 	 * @throws Exception

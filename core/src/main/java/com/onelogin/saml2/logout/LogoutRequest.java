@@ -456,6 +456,12 @@ public class LogoutRequest {
 				if (signAlg == null || signAlg.isEmpty()) {
 					signAlg = Constants.RSA_SHA1;
 				}
+
+				Boolean rejectDeprecatedAlg = settings.getRejectDeprecatedAlg();
+				if (Util.mustRejectDeprecatedSignatureAlgo(signAlg, rejectDeprecatedAlg)) {
+					return false;
+				}
+
 				String relayState = request.getEncodedParameter("RelayState");
 
 				String signedQuery = "SAMLRequest=" + request.getEncodedParameter("SAMLRequest");

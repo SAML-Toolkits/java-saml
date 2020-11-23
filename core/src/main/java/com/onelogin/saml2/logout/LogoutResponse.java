@@ -258,6 +258,11 @@ public class LogoutResponse {
 					signAlg = Constants.RSA_SHA1;
 				}
 
+				Boolean rejectDeprecatedAlg = settings.getRejectDeprecatedAlg();
+				if (Util.mustRejectDeprecatedSignatureAlgo(signAlg, rejectDeprecatedAlg)) {
+					return false;
+				}
+
 				String signedQuery = "SAMLResponse=" + request.getEncodedParameter("SAMLResponse");
 
 				String relayState = request.getEncodedParameter("RelayState");
