@@ -76,6 +76,7 @@ public class Saml2Settings {
 	private String digestAlgorithm = Constants.SHA1;
 	private boolean rejectUnsolicitedResponsesWithInResponseTo = false;
 	private boolean allowRepeatAttributeName = false;
+	private boolean rejectDeprecatedAlg = false;
 	private String uniqueIDPrefix = null;
 
 	// Compress
@@ -140,8 +141,15 @@ public class Saml2Settings {
 	/**
 	 * @return the allowRepeatAttributeName setting value
 	 */
-	public boolean isAllowRepeatAttributeName () {
+	public boolean isAllowRepeatAttributeName() {
 		return allowRepeatAttributeName;
+	}
+
+	/**
+	 * @return the rejectDeprecatedAlg setting value
+	 */
+	public boolean getRejectDeprecatedAlg() {
+		return rejectDeprecatedAlg;
 	}
 
 	/**
@@ -476,6 +484,16 @@ public class Saml2Settings {
 	 */
 	public void setAllowRepeatAttributeName (boolean allowRepeatAttributeName) {
 		this.allowRepeatAttributeName = allowRepeatAttributeName;
+	}
+
+	/**
+	 * Set the rejectDeprecatedAlg setting value
+	 *
+	 * @param rejectDeprecatedAlg
+	 *        the rejectDeprecatedAlg value to be set
+	 */
+	public void setRejectDeprecatedAlg (boolean rejectDeprecatedAlg) {
+		this.rejectDeprecatedAlg = rejectDeprecatedAlg;
 	}
 
 	/**

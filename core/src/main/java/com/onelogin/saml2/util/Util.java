@@ -27,6 +27,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -115,6 +116,8 @@ public final class Util {
 	public static final String ASSERTION_SIGNATURE_XPATH = "/samlp:Response/saml:Assertion/ds:Signature";
 	/** Indicates if JAXP 1.5 support has been detected. */
 	private static boolean JAXP_15_SUPPORTED = isJaxp15Supported();
+
+	private static final Set<String> DEPRECATED_ALGOS = new HashSet<>(Arrays.asList(Constants.RSA_SHA1, Constants.DSA_SHA1));
 
 	static {
 		System.setProperty("org.apache.xml.security.ignoreLineBreaks", "true");
@@ -923,13 +926,30 @@ public final class Util {
 	 */
 	public static boolean validateSign(final Document doc, final List<X509Certificate> certList, final String fingerprint,
 									   final String alg, final String xpath) {
+		return validateSign(doc, certList, fingerprint,alg, xpath, false);
+	}
+
+	/**
+	 * Validate the signature pointed to by the xpath
+	 *
+	 * @param doc The document we should validate
+	 * @param certList The public certificates
+	 * @param fingerprint The fingerprint of the public certificate
+	 * @param alg The signature algorithm method
+	 * @param xpath the xpath of the ds:Signture node to validate
+	 * @param rejectDeprecatedAlg Flag to invalidate or not Signatures with deprecated alg
+	 *
+	 * @return True if the signature exists and is valid, false otherwise.
+	 */
+	public static boolean validateSign(final Document doc, final List<X509Certificate> certList, final String fingerprint,
+									   final String alg, final String xpath, final Boolean rejectDeprecatedAlg) {
 		try {
 			final NodeList signatures = query(doc, xpath);
 
 			if (signatures.getLength() == 1) {
 				final Node signNode = signatures.item(0);
 
-				Map<String,Object> signatureData = getSignatureData(signNode, alg);
+				Map<String,Object> signatureData = getSignatureData(signNode, alg, rejectDeprecatedAlg);
 				if (signatureData.isEmpty()) {
 					return false;
 				}
@@ -984,6 +1004,26 @@ public final class Util {
      * @return True if the sign is valid, false otherwise.
      */
     public static Boolean validateMetadataSign(Document doc, X509Certificate cert, String fingerprint, String alg) {
+		return validateMetadataSign(doc, cert, fingerprint, alg, false);
+    }
+
+	/**
+     * Validate signature (Metadata).
+     *
+     * @param doc
+     *               The document we should validate
+     * @param cert
+     *               The public certificate
+     * @param fingerprint
+     *               The fingerprint of the public certificate
+     * @param alg
+     *               The signature algorithm method
+     * @param rejectDeprecatedAlg
+     * 				 Flag to invalidate or not Signatures with deprecated alg
+     *
+     * @return True if the sign is valid, false otherwise.
+     */
+    public static Boolean validateMetadataSign(Document doc, X509Certificate cert, String fingerprint, String alg, Boolean rejectDeprecatedAlg) {
         NodeList signNodesToValidate;
 		try {
 			signNodesToValidate = query(doc, "/md:EntitiesDescriptor/ds:Signature");
@@ -999,7 +1039,7 @@ public final class Util {
 			if (signNodesToValidate.getLength() > 0) {
 				for (int i = 0; i < signNodesToValidate.getLength(); i++) {
 					Node signNode =  signNodesToValidate.item(i);
-					if (!validateSignNode(signNode, cert, fingerprint, alg)) {
+					if (!validateSignNode(signNode, cert, fingerprint, alg, rejectDeprecatedAlg)) {
 						return false;
 					}
 				}
@@ -1026,6 +1066,26 @@ public final class Util {
      * @return True if the sign is valid, false otherwise.
      */
     private static Map<String,Object> getSignatureData(Node signNode, String alg) {
+		return getSignatureData(signNode, alg, false);
+    }
+
+	/**
+     * Validate signature (Metadata).
+     *
+     * @param doc
+     *               The document we should validate
+     * @param cert
+     *               The public certificate
+     * @param fingerprint
+     *               The fingerprint of the public certificate
+     * @param alg
+     *               The signature algorithm method
+     * @param rejectDeprecatedAlg
+     *               Flag to invalidate or not Signatures with deprecated alg
+     *
+     * @return True if the sign is valid, false otherwise.
+     */
+    private static Map<String,Object> getSignatureData(Node signNode, String alg, Boolean rejectDeprecatedAlg) {
 		Map<String,Object> signatureData = new HashMap<>();
 		try {
 			Element sigElement = (Element) signNode;
@@ -1034,6 +1094,10 @@ public final class Util {
 			String sigMethodAlg = signature.getSignedInfo().getSignatureMethodURI();
 			if (!isAlgorithmWhitelisted(sigMethodAlg)){
 				throw new Exception(sigMethodAlg + " is not a valid supported algorithm");
+			}
+
+			if (Util.mustRejectDeprecatedSignatureAlgo(sigMethodAlg, rejectDeprecatedAlg)) {
+				return signatureData;
 			}
 
 			signatureData.put("signature", signature);
@@ -1056,6 +1120,19 @@ public final class Util {
 		return signatureData;
     }
 
+    public static Boolean mustRejectDeprecatedSignatureAlgo(String signAlg, Boolean rejectDeprecatedAlg) {
+		if (DEPRECATED_ALGOS.contains(signAlg)) {
+			String errorMsg = "Found a deprecated algorithm "+ signAlg +" related to the Signature element,";
+			if (rejectDeprecatedAlg) {
+				LOGGER.error(errorMsg + " rejecting it");
+				return true;
+			} else {
+				LOGGER.info(errorMsg + " consider requesting a more robust algorithm");
+			}
+    	}
+		return false;
+	}
+    
 	/**
 	 * Validate signature of the Node.
 	 *
@@ -1073,7 +1150,29 @@ public final class Util {
 	 * @throws Exception
 	 */
 	public static Boolean validateSignNode(Node signNode, X509Certificate cert, String fingerprint, String alg) {
-		Map<String,Object> signatureData = getSignatureData(signNode, alg);
+		return validateSignNode(signNode, cert, fingerprint, alg, false);
+	}
+
+	/**
+	 * Validate signature of the Node.
+	 *
+	 * @param signNode
+	 * 				 The document we should validate
+	 * @param cert
+	 * 				 The public certificate
+	 * @param fingerprint
+	 * 				 The fingerprint of the public certificate
+	 * @param alg
+	 * 				 The signature algorithm method
+     * @param rejectDeprecatedAlg
+     *               Flag to invalidate or not Signatures with deprecated alg
+	 *
+	 * @return True if the sign is valid, false otherwise.
+	 *
+	 * @throws Exception
+	 */
+	public static Boolean validateSignNode(Node signNode, X509Certificate cert, String fingerprint, String alg, Boolean rejectDeprecatedAlg) {
+		Map<String,Object> signatureData = getSignatureData(signNode, alg, rejectDeprecatedAlg);
 		if (signatureData.isEmpty()) {
 			return false;
 		}
