@@ -258,14 +258,9 @@ public class LogoutResponse {
 					signAlg = Constants.RSA_SHA1;
 				}
 
-				if (signAlg.equals(Constants.RSA_SHA1)) {
-					Boolean rejectDeprecatedAlg = settings.getRejectDeprecatedAlg();
-					if (rejectDeprecatedAlg) {
-						LOGGER.error("A deprecated algorithm (RSA_SHA1) found in the Signature element, rejecting it");
-						return false;
-					} else {
-						LOGGER.info("RSA_SHA1 alg found in a Signature element, consider request a more robust alg");
-					}
+				Boolean rejectDeprecatedAlg = settings.getRejectDeprecatedAlg();
+				if (Util.mustRejectDeprecatedSignatureAlgo(signAlg, rejectDeprecatedAlg)) {
+					return false;
 				}
 
 				String signedQuery = "SAMLResponse=" + request.getEncodedParameter("SAMLResponse");

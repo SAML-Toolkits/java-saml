@@ -27,6 +27,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -115,6 +116,8 @@ public final class Util {
 	public static final String ASSERTION_SIGNATURE_XPATH = "/samlp:Response/saml:Assertion/ds:Signature";
 	/** Indicates if JAXP 1.5 support has been detected. */
 	private static boolean JAXP_15_SUPPORTED = isJaxp15Supported();
+
+	private static final Set<String> DEPRECATED_ALGOS = new HashSet<>(Arrays.asList(Constants.RSA_SHA1, Constants.DSA_SHA1));
 
 	static {
 		System.setProperty("org.apache.xml.security.ignoreLineBreaks", "true");
@@ -1093,13 +1096,8 @@ public final class Util {
 				throw new Exception(sigMethodAlg + " is not a valid supported algorithm");
 			}
 
-			if (sigMethodAlg.equals(Constants.RSA_SHA1)) {
-				if (rejectDeprecatedAlg) {
-					LOGGER.error("A deprecated algorithm (RSA_SHA1) found in the Signature element, rejecting it");
-					return signatureData;
-				} else {
-					LOGGER.info("RSA_SHA1 alg found in a Signature element, consider request a more robust alg");
-				}
+			if (Util.mustRejectDeprecatedSignatureAlgo(sigMethodAlg, rejectDeprecatedAlg)) {
+				return signatureData;
 			}
 
 			signatureData.put("signature", signature);
@@ -1122,6 +1120,19 @@ public final class Util {
 		return signatureData;
     }
 
+    public static Boolean mustRejectDeprecatedSignatureAlgo(String signAlg, Boolean rejectDeprecatedAlg) {
+		if (DEPRECATED_ALGOS.contains(signAlg)) {
+			String errorMsg = "Found a deprecated algorithm "+ signAlg +" related to the Signature element,";
+			if (rejectDeprecatedAlg) {
+				LOGGER.error(errorMsg + " rejecting it");
+				return true;
+			} else {
+				LOGGER.info(errorMsg + " consider requesting a more robust algorithm");
+			}
+    	}
+		return false;
+	}
+    
 	/**
 	 * Validate signature of the Node.
 	 *
