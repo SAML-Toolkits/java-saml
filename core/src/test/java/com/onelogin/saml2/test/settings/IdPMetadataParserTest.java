@@ -210,6 +210,17 @@ public class IdPMetadataParserTest {
 		assertNull(idpInfo2.get(SettingsBuilder.IDP_X509CERTMULTI_PROPERTY_KEY + "." + "2"));
 		assertEquals("urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress", idpInfo2.get(SettingsBuilder.SP_NAMEIDFORMAT_PROPERTY_KEY));
 	}
+
+	@Test
+	public void testParseSeparateSingleLogoutServiceResponseLocation() throws Exception {
+		Map<String, Object> idpInfo = IdPMetadataParser.parseFileXML("data/metadata/idp/metadata_slo_responselocation.xml");
+		assertEquals("https://idp.examle.com/saml/metadata", idpInfo.get(SettingsBuilder.IDP_ENTITYID_PROPERTY_KEY));
+		assertEquals("https://idp.examle.com/saml/sso", idpInfo.get(SettingsBuilder.IDP_SINGLE_SIGN_ON_SERVICE_URL_PROPERTY_KEY));
+		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect", idpInfo.get(SettingsBuilder.IDP_SINGLE_SIGN_ON_SERVICE_BINDING_PROPERTY_KEY));
+		assertEquals("https://idp.examle.com/saml/slo", idpInfo.get(SettingsBuilder.IDP_SINGLE_LOGOUT_SERVICE_URL_PROPERTY_KEY));
+		assertEquals("https://idp.examle.com/saml/sloresp", idpInfo.get(SettingsBuilder.IDP_SINGLE_LOGOUT_SERVICE_RESPONSE_URL_PROPERTY_KEY));
+		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect", idpInfo.get(SettingsBuilder.IDP_SINGLE_LOGOUT_SERVICE_BINDING_PROPERTY_KEY));
+	}
 	
 	@Test
 	public void testInjectIntoSettings() throws Exception {

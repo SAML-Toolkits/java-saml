@@ -92,6 +92,10 @@ public class IdPMetadataParser {
 				if (sloNodes.getLength() > 0) {
 					metadataInfo.put(SettingsBuilder.IDP_SINGLE_LOGOUT_SERVICE_URL_PROPERTY_KEY, sloNodes.item(0).getAttributes().getNamedItem("Location").getNodeValue());
 					metadataInfo.put(SettingsBuilder.IDP_SINGLE_LOGOUT_SERVICE_BINDING_PROPERTY_KEY, sloNodes.item(0).getAttributes().getNamedItem("Binding").getNodeValue());
+					Node responseLocationNode = sloNodes.item(0).getAttributes().getNamedItem("ResponseLocation");
+					if (responseLocationNode != null) {
+						metadataInfo.put(SettingsBuilder.IDP_SINGLE_LOGOUT_SERVICE_RESPONSE_URL_PROPERTY_KEY, responseLocationNode.getNodeValue());
+					}
 				}
 
 				NodeList keyDescriptorCertSigningNodes = Util.query(xmlDocument, "./md:KeyDescriptor[not(contains(@use, \"encryption\"))]/ds:KeyInfo/ds:X509Data/ds:X509Certificate",
