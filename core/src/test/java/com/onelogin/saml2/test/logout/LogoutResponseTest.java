@@ -41,7 +41,7 @@ public class LogoutResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		final String logoutResponseString = Util.getFileAsString("data/logout_responses/logout_response.xml");
 		final String requestURL = "/";
-		HttpRequest httpRequest = new HttpRequest(requestURL, (String)null);
+		HttpRequest httpRequest = new HttpRequest("GET", requestURL, (String)null);
 
 		LogoutResponse logoutResponseBuilder = new LogoutResponse(settings, httpRequest) {
 			@Override
@@ -137,7 +137,7 @@ public class LogoutResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
 		final String requestURL = "/";
-		HttpRequest httpRequest = new HttpRequest(requestURL, (String)null);
+		HttpRequest httpRequest = new HttpRequest("GET", requestURL, (String)null);
 
 		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertFalse(logoutResponse.isValid());
@@ -266,7 +266,7 @@ public class LogoutResponseTest {
 		assertFalse(logoutResponse.isValid());
 		assertEquals("SAML Logout Response is not loaded", logoutResponse.getError());
 
-		httpRequest = new HttpRequest(requestURL, (String)null);
+		httpRequest = new HttpRequest("GET", requestURL, (String)null);
 		logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertFalse(logoutResponse.isValid());
 		assertEquals("SAML Logout Response is not loaded", logoutResponse.getError());
@@ -449,7 +449,7 @@ public class LogoutResponseTest {
 		//This signature is based on the query string above
 		String signature = "czxEy2WDRZS1U4b2PQFpE4KRhRs8jt5bBKdTFx5oIXpte6qtm0Lk/5lzw/2S6Y1NJpj5DJvSLJvylgNE+RYfJR1GX0zQplm2dZYtlo7CZUyfS3JCLsWviEtPXaon+8Z0lQQkPt4yxCf9v8Qd0pvxHglTUCK/sU0NXnZQdpSxxfsaNCcjQf5gTg/gj8oI7xdrnamBPFtsaH6tAirkjGMoYS4Otju3mcrdcNBIHG40wrffUDnE83Jw4AOFCp8Vsf0zPTQOQsxS4HF4VS78OvGn7jLi2MdabeAQcK5+tP3mUB4vO8AAt8QbkEEiWQbcvA9i1Ezma92CdNYgaf4B3JYpPA==";
 
-		HttpRequest httpRequest = new HttpRequest(requestURL, queryString)
+		HttpRequest httpRequest = new HttpRequest("GET", requestURL, queryString)
 				.addParameter("SAMLResponse", samlResponseEncoded)
 				.addParameter("RelayState", relayState)
 				.addParameter("SigAlg", sigAlg)
@@ -477,7 +477,7 @@ public class LogoutResponseTest {
 		//This signature is based on the query string above
 		String signature = "eSoTB+0GA/HfncASEFk7ONHbB3+9YrOBgK9xUyRoCDY97oXw49JYoXOL07kHrVvbngKmKFNx5fnYtDaL8WCe5LfRRgjJz1LLacriHn2ggeMmY/fTaXPoy2zQW0Fv1H362QXicTWQXgWFS5cJAIcBa2I7TLgNwXsMgjdBF2hyacW0IwfkAceGiBwDDTy6XIBAZk2Ff7w5lbZh+fa5JLNKrbvoveJk2NS3KK6INYO7UW5hukWz2cpzbHsx9lfxUJi8/ZCwUtFWZ4rdXVN+Qiw5y8S2eE2BIEfFmz7IfvrMRXa2la/rXFQfmteQo+N1sO3K1YZyoT/aA3k36glXvnj3kw==";
 
-		HttpRequest httpRequest = new HttpRequest(requestURL, queryString)
+		HttpRequest httpRequest = new HttpRequest("GET", requestURL, queryString)
 				.addParameter("SAMLResponse", samlResponseEncoded)
 				.addParameter("RelayState", relayState)
 				.addParameter("SigAlg", sigAlg)
@@ -509,7 +509,7 @@ public class LogoutResponseTest {
 		String sigAlg = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
 		String signature = "vfWbbc47PkP3ejx4bjKsRX7lo9Ml1WRoE5J5owF/0mnyKHfSY6XbhO1wwjBV5vWdrUVX+xp6slHyAf4YoAsXFS0qhan6txDiZY4Oec6yE+l10iZbzvie06I4GPak4QrQ4gAyXOSzwCrRmJu4gnpeUxZ6IqKtdrKfAYRAcVfNKGA=";
 
-		HttpRequest httpRequest = new HttpRequest(requestURL, (String)null)
+		HttpRequest httpRequest = new HttpRequest("GET", requestURL, (String)null)
 				.addParameter("SAMLResponse", samlResponseEncoded)
 				.addParameter("RelayState", relayState)
 				.addParameter("SigAlg", sigAlg)
@@ -575,7 +575,7 @@ public class LogoutResponseTest {
 		String sigAlg = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
 		String signature = "vfWbbc47PkP3ejx4bjKsRX7lo9Ml1WRoE5J5owF/0mnyKHfSY6XbhO1wwjBV5vWdrUVX+xp6slHyAf4YoAsXFS0qhan6txDiZY4Oec6yE+l10iZbzvie06I4GPak4QrQ4gAyXOSzwCrRmJu4gnpeUxZ6IqKtdrKfAYRAcVfNKGA=";
 
-		HttpRequest httpRequest = new HttpRequest(requestURL, (String)null)
+		HttpRequest httpRequest = new HttpRequest("GET", requestURL, (String)null)
 				.addParameter("SAMLResponse", samlResponseEncoded)
 				.addParameter("RelayState", relayState)
 				.addParameter("SigAlg", sigAlg)
@@ -644,6 +644,6 @@ public class LogoutResponseTest {
 	}
 
 	private static HttpRequest newHttpRequest(String requestURL, String samlResponseEncoded) {
-		return new HttpRequest(requestURL, (String)null).addParameter("SAMLResponse", samlResponseEncoded);
+		return new HttpRequest("GET", requestURL, (String)null).addParameter("SAMLResponse", samlResponseEncoded);
 	}
 }

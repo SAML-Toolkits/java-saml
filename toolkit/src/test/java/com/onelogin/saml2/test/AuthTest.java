@@ -7,10 +7,12 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.matches;
 import static org.mockito.Mockito.mock;
@@ -626,7 +628,7 @@ public class AuthTest {
 	 */
 	@Test
 	public void testProcessSLORequestKeepSession() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletRequest request = mockGet();
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		HttpSession session = mock(HttpSession.class);
 		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
@@ -655,7 +657,7 @@ public class AuthTest {
 	 */
 	@Test
 	public void testProcessSLORequestRemoveSession() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletRequest request = mockGet();
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		HttpSession session = mock(HttpSession.class);
 		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
@@ -683,7 +685,7 @@ public class AuthTest {
 	 */
 	@Test
 	public void testProcessSLORequestStay() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletRequest request = mockGet();
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		HttpSession session = mock(HttpSession.class);
 		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
@@ -711,7 +713,7 @@ public class AuthTest {
 	 */
 	@Test
 	public void testProcessSLORequestStayFalse() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletRequest request = mockGet();
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		HttpSession session = mock(HttpSession.class);
 		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
@@ -741,7 +743,7 @@ public class AuthTest {
 	 */
 	@Test
 	public void testProcessSLORequestStayTrue() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletRequest request = mockGet();
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		HttpSession session = mock(HttpSession.class);
 		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
@@ -762,6 +764,36 @@ public class AuthTest {
 
 	/**
 	 * Tests the processSLO methods of Auth
+	 * Case: message delivered over incorrect HTTP method (implying wrong binding is used)
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.Auth#processSLO
+	 */
+	@Test
+	public void testProcessSLOWrongMethod() throws Exception {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletResponse response = mock(HttpServletResponse.class);
+		HttpSession session = mock(HttpSession.class);
+		when(request.getMethod()).thenReturn("post");
+		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
+		when(request.getSession()).thenReturn(session);
+
+		Map<String, String[]> params = new HashMap<>();
+		params.put("SAMLRequest", new String[]{"doesnt-matter"});
+		params.put("SAMLResponse", new String[]{"ditto"});
+
+		when(request.getParameterMap()).thenReturn(params);
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		Auth auth = new Auth(settings, request, response);
+		assertFalse(auth.isAuthenticated());
+		assertTrue(auth.getErrors().isEmpty());
+		assertThrows(Error.class, ()->auth.processSLO(false, null, true));
+		assertThat(auth.getErrors().get(0), equalTo("invalid_binding"));
+	}
+
+	/**
+	 * Tests the processSLO methods of Auth
 	 * Case: process LogoutRequest, with RelayState and sign response
 	 *
 	 * @throws Exception
@@ -770,7 +802,7 @@ public class AuthTest {
 	 */
 	@Test
 	public void testProcessSLORequestSignRes() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletRequest request = mockGet();
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		HttpSession session = mock(HttpSession.class);
 		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
@@ -806,7 +838,7 @@ public class AuthTest {
 	 */
 	@Test
 	public void testProcessSLORequestInvalid() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletRequest request = mockGet();
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		HttpSession session = mock(HttpSession.class);
 		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/sls.jsp"));
@@ -837,7 +869,7 @@ public class AuthTest {
 	 */
 	@Test
 	public void testProcessSLOResponseKeepSession() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletRequest request = mockGet();
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		HttpSession session = mock(HttpSession.class);
 		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
@@ -864,7 +896,7 @@ public class AuthTest {
 	 */
 	@Test
 	public void testProcessSLOResponseRemoveSession() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletRequest request = mockGet();
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		HttpSession session = mock(HttpSession.class);
 		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
@@ -891,7 +923,7 @@ public class AuthTest {
 	 */
 	@Test
 	public void testProcessSLOResponseWrongRequestId() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletRequest request = mockGet();
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		HttpSession session = mock(HttpSession.class);
 		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
@@ -920,7 +952,7 @@ public class AuthTest {
 	 */
 	@Test
 	public void testProcessSLOResponseStatusResponder() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletRequest request = mockGet();
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		HttpSession session = mock(HttpSession.class);
 		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
@@ -2123,7 +2155,7 @@ public class AuthTest {
 	 */
 	@Test
 	public void testGetLastLogoutRequestReceived() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletRequest request = mockGet();
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		when(request.getRequestURL()).thenReturn(new StringBuffer("/"));
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request.xml.base64");
@@ -2177,7 +2209,7 @@ public class AuthTest {
 	 */
 	@Test
 	public void testGetLastLogoutResponseSent() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletRequest request = mockGet();
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
@@ -2201,7 +2233,7 @@ public class AuthTest {
 	 */
 	@Test
 	public void testGetLastLogoutResponseReceived() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
+		HttpServletRequest request = mockGet();
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		when(request.getRequestURL()).thenReturn(new StringBuffer("/"));
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response.xml.base64");
@@ -2213,4 +2245,11 @@ public class AuthTest {
 		String logoutResponseXML =  auth.getLastResponseXML();
 		assertThat(logoutResponseXML, containsString("<samlp:LogoutResponse"));
 	}
+
+	private HttpServletRequest mockGet() {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		when(request.getMethod()).thenReturn("GET");
+		return request;
+	}
+
 }

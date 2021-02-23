@@ -9,8 +9,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.util.Util;
 
@@ -32,14 +30,13 @@ public class ServletUtils {
      * @return a HttpRequest
      */
     public static HttpRequest makeHttpRequest(HttpServletRequest req) {
-    	@SuppressWarnings("unchecked")
-        final Map<String, String[]> paramsAsArray = (Map<String, String[]>) req.getParameterMap();
+        final Map<String, String[]> paramsAsArray = req.getParameterMap();
         final Map<String, List<String>> paramsAsList = new HashMap<>();
         for (Map.Entry<String, String[]> param : paramsAsArray.entrySet()) {
             paramsAsList.put(param.getKey(), Arrays.asList(param.getValue()));
         }
 
-        return new HttpRequest(req.getRequestURL().toString(), paramsAsList, req.getQueryString());
+        return new HttpRequest(req.getMethod(), req.getRequestURL().toString(), paramsAsList, req.getQueryString());
     }
 
     /**
@@ -52,7 +49,7 @@ public class ServletUtils {
      * @return the HOST URL
      */
     public static String getSelfURLhost(HttpServletRequest request) {
-        String hostUrl = StringUtils.EMPTY;
+        String hostUrl;
         final int serverPort = request.getServerPort();
         if ((serverPort == 80) || (serverPort == 443) || serverPort == 0) {
             hostUrl = String.format("%s://%s", request.getScheme(), request.getServerName());
