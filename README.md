@@ -249,8 +249,8 @@ onelogin.saml2.idp.entityid =
 # URL Target of the IdP where the SP will send the Authentication Request Message
 onelogin.saml2.idp.single_sign_on_service.url =
 
-# SAML protocol binding to be used when returning the <Response>
-# message.  Onelogin Toolkit supports for this endpoint the
+# SAML protocol binding to be used to deliver the <AuthnRequest> message 
+# to the IdP.  Onelogin Toolkit supports for this endpoint the
 # HTTP-Redirect binding only
 onelogin.saml2.idp.single_sign_on_service.binding = urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect
 
