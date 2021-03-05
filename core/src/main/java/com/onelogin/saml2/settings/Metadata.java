@@ -43,8 +43,11 @@ public class Metadata {
 	private static final int SECONDS_CACHED = 604800; // 1 week
 
 	/**
-     * AttributeConsumingService
-     */
+	 * AttributeConsumingService
+	 * 
+	 * @deprecated Attribute Consuming Services should be specified in settings
+	 */
+	@Deprecated
 	private AttributeConsumingService attributeConsumingService = null;
 
 	/**
@@ -70,7 +73,12 @@ public class Metadata {
 	 * @param cacheDuration             Duration of the cache in seconds
 	 * @param attributeConsumingService AttributeConsumingService of service provider
 	 * @throws CertificateEncodingException
+	 * @deprecated Attribute Consuming Services should be specified in settings; if
+	 *             a non-<code>null</code> service is specified here, it will be
+	 *             used in place of the ones specified in settings to generate
+	 *             metadata
 	 */
+	@Deprecated
 	public Metadata(Saml2Settings settings, Calendar validUntilTime, Integer cacheDuration, AttributeConsumingService attributeConsumingService) throws CertificateEncodingException {
 		this.validUntilTime = validUntilTime;
 		this.attributeConsumingService = attributeConsumingService;
@@ -169,7 +177,12 @@ public class Metadata {
 		valueMap.put("spAssertionConsumerServiceUrl", Util.toXml(settings.getSpAssertionConsumerServiceUrl().toString()));
 		valueMap.put("sls", toSLSXml(settings.getSpSingleLogoutServiceUrl(), settings.getSpSingleLogoutServiceBinding()));
 
-		valueMap.put("strAttributeConsumingService", getAttributeConsumingServiceXml());
+		// if an ACS was specified at construction time, use it in place of the ones specified in settings
+		// this is for backward compatibility
+		valueMap.put("strAttributeConsumingService",
+		            toAttributeConsumingServicesXml(attributeConsumingService != null 
+		            	? Arrays.asList(attributeConsumingService)
+		            	: settings.getSpAttributeConsumingServices()));
 
 		valueMap.put("strKeyDescriptor", toX509KeyDescriptorsXML(settings.getSPcert(), settings.getSPcertNew(), wantsEncrypted));
 
@@ -206,63 +219,86 @@ public class Metadata {
 
 	/**
 	 * Generates the AttributeConsumingService section of the metadata's template
+	 * 
+	 * @param attributeConsumingServices
+	 *              a list containing the Attribute Consuming Services to generate
+	 *              the metadata for
 	 *
 	 * @return the AttributeConsumingService section of the metadata's template
 	 */
-	private String getAttributeConsumingServiceXml() {
+	private String toAttributeConsumingServicesXml(List<AttributeConsumingService> attributeConsumingServices) {
+		final StringBuilder acssXml = new StringBuilder();
+		if (attributeConsumingServices != null)
+			attributeConsumingServices.stream().forEach(service -> acssXml.append(toAttributeConsumingServiceXml(service)));
+		return acssXml.toString();
+	}
+	
+	/**
+	 * Generates a single Attribute Consuming Service metadata fragment
+	 * 
+	 * @param service
+	 *              the Attribute Consuming Service for which the XML fragment
+	 *              should be generated
+	 * @return the generated XML fragment
+	 */
+	private String toAttributeConsumingServiceXml(AttributeConsumingService service) {
+		int index = service.getIndex();
+		Boolean isDefault = service.isDefault();
+		String serviceName = service.getServiceName();
+		String serviceDescription = service.getServiceDescription();
+		String lang = service.getLang();
+		List<RequestedAttribute> requestedAttributes = service.getRequestedAttributes();
 		StringBuilder attributeConsumingServiceXML = new StringBuilder();
-		if (attributeConsumingService != null) {
-			String serviceName = attributeConsumingService.getServiceName();
-			String serviceDescription = attributeConsumingService.getServiceDescription();
-			List<RequestedAttribute> requestedAttributes = attributeConsumingService.getRequestedAttributes();
+		attributeConsumingServiceXML.append("<md:AttributeConsumingService index=\"").append(index).append("\"");
+		if(isDefault != null)
+			attributeConsumingServiceXML.append(" isDefault=\"").append(isDefault).append("\"");
+		attributeConsumingServiceXML.append(">");
+		if (serviceName != null && !serviceName.isEmpty()) {
+			attributeConsumingServiceXML.append("<md:ServiceName xml:lang=\"").append(Util.toXml(lang)).append("\">")
+			            .append(Util.toXml(serviceName)).append("</md:ServiceName>");
+		}
+		if (serviceDescription != null && !serviceDescription.isEmpty()) {
+			attributeConsumingServiceXML.append("<md:ServiceDescription xml:lang=\"").append(Util.toXml(lang)).append("\">")
+			            .append(Util.toXml(serviceDescription)).append("</md:ServiceDescription>");
+		}
+		if (requestedAttributes != null && !requestedAttributes.isEmpty()) {
+			for (RequestedAttribute requestedAttribute : requestedAttributes) {
+				String name = requestedAttribute.getName();
+				String friendlyName = requestedAttribute.getFriendlyName();
+				String nameFormat = requestedAttribute.getNameFormat();
+				Boolean isRequired = requestedAttribute.isRequired();
+				List<String> attrValues = requestedAttribute.getAttributeValues();
 
-			attributeConsumingServiceXML.append("<md:AttributeConsumingService index=\"1\">");
-			if (serviceName != null && !serviceName.isEmpty()) {
-				attributeConsumingServiceXML.append("<md:ServiceName xml:lang=\"en\">" + Util.toXml(serviceName) + "</md:ServiceName>");
-			}
-			if (serviceDescription != null && !serviceDescription.isEmpty()) {
-				attributeConsumingServiceXML.append("<md:ServiceDescription xml:lang=\"en\">" + Util.toXml(serviceDescription) + "</md:ServiceDescription>");
-			}
-			if (requestedAttributes != null && !requestedAttributes.isEmpty()) {
-				for (RequestedAttribute requestedAttribute : requestedAttributes) {
-					String name = requestedAttribute.getName();
-					String friendlyName = requestedAttribute.getFriendlyName();
-					String nameFormat = requestedAttribute.getNameFormat();
-					Boolean isRequired = requestedAttribute.isRequired();
-					List<String> attrValues = requestedAttribute.getAttributeValues();
+				StringBuilder contentStr = new StringBuilder("<md:RequestedAttribute");
 
-					String contentStr = "<md:RequestedAttribute";
+				if (name != null && !name.isEmpty()) {
+					contentStr.append(" Name=\"").append(Util.toXml(name)).append("\"");
+				}
 
-					if (name != null && !name.isEmpty()) {
-						contentStr += " Name=\"" + Util.toXml(name) + "\"";
+				if (nameFormat != null && !nameFormat.isEmpty()) {
+					contentStr.append(" NameFormat=\"").append(Util.toXml(nameFormat)).append("\"");
+				}
+
+				if (friendlyName != null && !friendlyName.isEmpty()) {
+					contentStr.append(" FriendlyName=\"").append(Util.toXml(friendlyName)).append("\"");
+				}
+
+				if (isRequired != null) {
+					contentStr.append(" isRequired=\"").append(isRequired.toString()).append("\"");
+				}
+
+				if (attrValues != null && !attrValues.isEmpty()) {
+					contentStr.append(">");
+					for (String attrValue : attrValues) {
+						contentStr.append("<saml:AttributeValue xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\">").append(Util.toXml(attrValue)).append("</saml:AttributeValue>");
 					}
-
-					if (nameFormat != null && !nameFormat.isEmpty()) {
-						contentStr += " NameFormat=\"" + Util.toXml(nameFormat) + "\"";
-					}
-
-					if (friendlyName != null && !friendlyName.isEmpty()) {
-						contentStr += " FriendlyName=\"" + Util.toXml(friendlyName) + "\"";
-					}
-
-					if (isRequired != null) {
-						contentStr += " isRequired=\"" + isRequired.toString() + "\"";
-					}
-
-					if (attrValues != null && !attrValues.isEmpty()) {
-						contentStr += ">";
-						for (String attrValue : attrValues) {
-							contentStr += "<saml:AttributeValue xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\">" + Util.toXml(attrValue) + "</saml:AttributeValue>";
-						}
-						attributeConsumingServiceXML.append(contentStr + "</md:RequestedAttribute>");
-					} else {
-						attributeConsumingServiceXML.append(contentStr + " />");
-					}
+					attributeConsumingServiceXML.append(contentStr).append("</md:RequestedAttribute>");
+				} else {
+					attributeConsumingServiceXML.append(contentStr).append(" />");
 				}
 			}
-			attributeConsumingServiceXML.append("</md:AttributeConsumingService>");
 		}
-
+		attributeConsumingServiceXML.append("</md:AttributeConsumingService>");
 		return attributeConsumingServiceXML.toString();
 	}
 

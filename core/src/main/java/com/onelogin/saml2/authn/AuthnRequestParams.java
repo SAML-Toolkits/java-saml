@@ -27,8 +27,15 @@ public class AuthnRequestParams {
 	 */
 	private final String nameIdValueReq;
 
+	/*
+	 * / Selector to use to specify the Attribute Consuming Service index
+	 */
+	private AttributeConsumingServiceSelector attributeConsumingServiceSelector;
+
 	/**
-	 * Create a set of authentication request input parameters.
+	 * Create a set of authentication request input parameters. The
+	 * {@link AttributeConsumingServiceSelector#useDefault()} selector is used to
+	 * select the Attribute Consuming Service.
 	 *
 	 * @param forceAuthn
 	 *              whether the <code>ForceAuthn</code> attribute should be set to
@@ -71,6 +78,29 @@ public class AuthnRequestParams {
 	 *              whether the <code>ForceAuthn</code> attribute should be set to
 	 *              <code>true</code>
 	 * @param isPassive
+	 *              whether the <code>isPassive</code> attribute should be set to
+	 *              <code>true</code>
+	 * @param setNameIdPolicy
+	 *              whether a <code>NameIDPolicy</code> should be set
+	 * @param attributeConsumingServiceSelector
+	 *              the selector to use to specify the Attribute Consuming Service
+	 *              index; if <code>null</code>,
+	 *              {@link AttributeConsumingServiceSelector#useDefault()} is used
+	 */
+	public AuthnRequestParams(boolean forceAuthn, boolean isPassive, boolean setNameIdPolicy,
+	            AttributeConsumingServiceSelector attributeConsumingServiceSelector) {
+		this(forceAuthn, isPassive, setNameIdPolicy, true, null, attributeConsumingServiceSelector);
+	}
+
+	/**
+	 * Create a set of authentication request input parameters. The
+	 * {@link AttributeConsumingServiceSelector#useDefault()} selector is used to
+	 * select the Attribute Consuming Service.
+	 *
+	 * @param forceAuthn
+	 *              whether the <code>ForceAuthn</code> attribute should be set to
+	 *              <code>true</code>
+	 * @param isPassive
 	 *              whether the <code>IsPassive</code> attribute should be set to
 	 *              <code>true</code>
 	 * @param setNameIdPolicy
@@ -103,13 +133,44 @@ public class AuthnRequestParams {
 	 */
 	public AuthnRequestParams(boolean forceAuthn, boolean isPassive, boolean setNameIdPolicy, boolean allowCreate,
 	            String nameIdValueReq) {
+		this(forceAuthn, isPassive, setNameIdPolicy, allowCreate, nameIdValueReq, null);
+	}
+
+	/**
+	 * Create a set of authentication request input parameters.
+	 *
+	 * @param forceAuthn
+	 *              whether the <code>ForceAuthn</code> attribute should be set to
+	 *              <code>true</code>
+	 * @param isPassive
+	 *              whether the <code>isPassive</code> attribute should be set to
+	 *              <code>true</code>
+	 * @param setNameIdPolicy
+	 *              whether a <code>NameIDPolicy</code> should be set
+	 * @param allowCreate
+	 *              the value to set for the <code>allowCreate</code> attribute of
+	 *              <code>NameIDPolicy</code> element; <code>null</code> means it's
+	 *              not set at all; only meaningful when
+	 *              <code>setNameIdPolicy</code> is <code>true</code>
+	 * @param nameIdValueReq
+	 *              the subject that should be authenticated
+	 * @param attributeConsumingServiceSelector
+	 *              the selector to use to specify the Attribute Consuming Service
+	 *              index; if <code>null</code>,
+	 *              {@link AttributeConsumingServiceSelector#useDefault()} is used
+	 */
+	public AuthnRequestParams(boolean forceAuthn, boolean isPassive, boolean setNameIdPolicy, boolean allowCreate,
+	            String nameIdValueReq, AttributeConsumingServiceSelector attributeConsumingServiceSelector) {
 		this.forceAuthn = forceAuthn;
 		this.isPassive = isPassive;
 		this.setNameIdPolicy = setNameIdPolicy;
 		this.allowCreate = allowCreate;
 		this.nameIdValueReq = nameIdValueReq;
+		this.attributeConsumingServiceSelector = attributeConsumingServiceSelector != null
+		            ? attributeConsumingServiceSelector
+		            : AttributeConsumingServiceSelector.useDefault();
 	}
-
+	
 	/**
 	 * Create a set of authentication request input parameters, by copying them from
 	 * another set.
@@ -123,6 +184,7 @@ public class AuthnRequestParams {
 		this.setNameIdPolicy = source.isSetNameIdPolicy();
 		this.allowCreate = source.isAllowCreate();
 		this.nameIdValueReq = source.getNameIdValueReq();
+		this.attributeConsumingServiceSelector = source.getAttributeConsumingServiceSelector();
 	}
 
 	/**
@@ -162,5 +224,12 @@ public class AuthnRequestParams {
 	 */
 	public String getNameIdValueReq() {
 		return nameIdValueReq;
+	}
+
+	/**
+	 * @return the selector to use to specify the Attribute Consuming Service index
+	 */
+	public AttributeConsumingServiceSelector getAttributeConsumingServiceSelector() {
+		return attributeConsumingServiceSelector;
 	}
 }
