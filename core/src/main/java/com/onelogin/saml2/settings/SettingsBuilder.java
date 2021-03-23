@@ -786,7 +786,7 @@ public class SettingsBuilder {
 	 */
 	private void parseProperties(Properties properties) {
 		if (properties != null) {
-			for (String propertyKey : properties.stringPropertyNames()) {
+			for (String propertyKey : properties.propertyNames()) {
 				this.samlData.put(propertyKey, properties.getProperty(propertyKey));
 			}
 		}
