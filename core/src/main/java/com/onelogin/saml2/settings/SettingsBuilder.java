@@ -542,17 +542,17 @@ public class SettingsBuilder {
 	 */
 	private List<AttributeConsumingService> loadAttributeConsumingServices() {
 		// first split properties into a map of properties
-		// key = ACS index; value = ACS properties
+		// key = service index; value = service properties
 		final SortedMap<Integer, Map<String, Object>> acsProps = 
 				extractIndexedProperties(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX, samlData);
-		// then build each ACS
+		// then build each Attribute Consuming Service
 		if(acsProps.containsKey(-1) && acsProps.size() == 1)
-			// single ACS specified; use index 1 for backward compatibility
+			// single service specified; use index 1 for backward compatibility
 			return Arrays.asList(loadAttributeConsumingService(acsProps.get(-1), 1));
 		else
-			// multiple indexed ACSs specified
+			// multiple indexed services specified
 			return acsProps.entrySet().stream()
-					// ignore non-indexed ACS
+					// ignore non-indexed service
 					.filter(entry -> entry.getKey() != -1)
 			            .map(entry -> loadAttributeConsumingService(entry.getValue(), entry.getKey()))
 			            .collect(Collectors.toList());
@@ -562,10 +562,10 @@ public class SettingsBuilder {
 	 * Loads a single Attribute Consuming Service from settings.
 	 * 
 	 * @param acsProps
-	 *              a map containing the ACS settings
+	 *              a map containing the Attribute Consuming Service settings
 	 * @param index
-	 *              the index to be set on the returned ACS
-	 * @return the loaded ACS
+	 *              the index to be set on the returned Attribute Consuming Service
+	 * @return the loaded Attribute Consuming Service
 	 */
 	private AttributeConsumingService loadAttributeConsumingService(Map<String, Object> acsProps, int index) {
 		final String serviceName =  loadStringProperty(SP_ATTRIBUTE_CONSUMING_SERVICE_NAME_PROPERTY_KEY_SUFFIX, acsProps);

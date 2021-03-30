@@ -721,7 +721,7 @@ public class MetadataTest {
 	 * @see com.onelogin.saml2.settings.Metadata#toAttributeConsumingServicesXml
 	 */
 	@Test
-	public void testToAttributeConsumingServiceXmlSingleACS() throws IOException, CertificateEncodingException, Error {
+	public void testToAttributeConsumingServiceXmlSingleService() throws IOException, CertificateEncodingException, Error {
 		Saml2Settings settings = getSettingFromAllProperties();
 
 		Metadata metadataObj = new Metadata(settings, null, null);
@@ -792,8 +792,8 @@ public class MetadataTest {
 	 * @see com.onelogin.saml2.settings.Metadata#toAttributeConsumingServicesXml
 	 */
 	@Test
-	public void testToAttributeConsumingServiceXmlMultiACS() throws IOException, CertificateEncodingException, Error {
-		Saml2Settings settings = getSettingFromAllPropertiesMultiACS();
+	public void testToAttributeConsumingServiceXmlMultiServices() throws IOException, CertificateEncodingException, Error {
+		Saml2Settings settings = getSettingFromAllPropertiesMultiAttributeConsumingServices();
 
 		Metadata metadataObj = new Metadata(settings, null, null);
 		String metadataStr = metadataObj.getMetadataString();
@@ -927,7 +927,7 @@ public class MetadataTest {
 		return new SettingsBuilder().fromFile("config/config.all_specialchars.properties").build();
 	}
 
-	private Saml2Settings getSettingFromAllPropertiesMultiACS() throws Error, IOException {
+	private Saml2Settings getSettingFromAllPropertiesMultiAttributeConsumingServices() throws Error, IOException {
 		return new SettingsBuilder().fromFile("config/config.all_multi_attribute_consuming_services.properties").build();
 	}
 

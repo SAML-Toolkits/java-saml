@@ -177,7 +177,7 @@ public class Metadata {
 		valueMap.put("spAssertionConsumerServiceUrl", Util.toXml(settings.getSpAssertionConsumerServiceUrl().toString()));
 		valueMap.put("sls", toSLSXml(settings.getSpSingleLogoutServiceUrl(), settings.getSpSingleLogoutServiceBinding()));
 
-		// if an ACS was specified at construction time, use it in place of the ones specified in settings
+		// if an Attribute Consuming Service was specified at construction time, use it in place of the ones specified in settings
 		// this is for backward compatibility
 		valueMap.put("strAttributeConsumingService",
 		            toAttributeConsumingServicesXml(attributeConsumingService != null 
