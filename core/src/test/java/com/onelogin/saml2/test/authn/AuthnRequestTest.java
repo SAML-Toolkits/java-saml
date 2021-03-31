@@ -101,6 +101,32 @@ public class AuthnRequestTest {
 	}
 
 	/**
+	 * Tests the getEncodedAuthnRequest method of AuthnRequest
+	 * <p>
+	 * Case: Only settings provided and containing special chars.
+	 *
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.authn.AuthnRequest#getEncodedAuthnRequest
+	 */
+	@Test
+	public void testGetEncodedAuthnRequestOnlySettingsSpecialChars() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min_specialchars.properties").build();
+		AuthnRequest authnRequest = new AuthnRequest(settings);
+		String authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		String authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, not(containsString("ProviderName=\"S&amp;P Java Example\"")));
+		
+		settings = new SettingsBuilder().fromFile("config/config.all_specialchars.properties").build();
+		authnRequest = new AuthnRequest(settings);
+		authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, containsString("ProviderName=\"S&amp;P Java &quot;Example&quot;\""));
+	}
+
+	/**
 	 * Tests the getAuthnRequestXml method of AuthnRequest
 	 *
 	 * @throws Exception
@@ -274,6 +300,50 @@ public class AuthnRequestTest {
 
 	/**
 	 * Tests the AuthnRequest Constructor
+	 * The creation of a deflated SAML Request with and without AuthNContext
+	 * <p>
+	 * Case: AuthnContextClassRef contains custom URN with special chars.
+	 *
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.authn.AuthnRequest
+	 */
+	@Test
+	public void testAuthNContextSpecialChars() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min_specialchars.properties").build();
+
+		List<String> requestedAuthnContext = new ArrayList<String>();
+		settings.setRequestedAuthnContext(requestedAuthnContext);
+
+		AuthnRequest authnRequest = new AuthnRequest(settings);
+		String authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		String authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, not(containsString("<samlp:RequestedAuthnContext")));
+
+		requestedAuthnContext.add("urn:custom:a&b");
+		settings.setRequestedAuthnContext(requestedAuthnContext);
+		authnRequest = new AuthnRequest(settings);
+		authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, containsString("<samlp:RequestedAuthnContext Comparison=\"exact\">"));
+		assertThat(authnRequestStr, containsString("<saml:AuthnContextClassRef>urn:custom:a&amp;b</saml:AuthnContextClassRef>"));
+
+		requestedAuthnContext.add("urn:oasis:names:tc:SAML:2.0:ac:classes:X509");
+		settings.setRequestedAuthnContext(requestedAuthnContext);
+		settings.setRequestedAuthnContext(requestedAuthnContext);
+		authnRequest = new AuthnRequest(settings);
+		authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, containsString("<samlp:RequestedAuthnContext Comparison=\"exact\">"));
+		assertThat(authnRequestStr, containsString("<saml:AuthnContextClassRef>urn:custom:a&amp;b</saml:AuthnContextClassRef>"));
+		assertThat(authnRequestStr, containsString("<saml:AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:X509</saml:AuthnContextClassRef>"));
+	}
+
+	/**
+	 * Tests the AuthnRequest Constructor
 	 * The creation of a deflated SAML Request with and without Subject
 	 *
 	 * @throws Exception
@@ -305,6 +375,35 @@ public class AuthnRequestTest {
 		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
 		assertThat(authnRequestStr, containsString("<saml:Subject"));
 		assertThat(authnRequestStr, containsString("Format=\"urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress\">testuser@example.com</saml:NameID>"));
+		assertThat(authnRequestStr, containsString("<saml:SubjectConfirmation Method=\"urn:oasis:names:tc:SAML:2.0:cm:bearer\">"));
+	}
+
+	/**
+	 * Tests the AuthnRequest Constructor
+	 * The creation of a deflated SAML Request with and without Subject
+	 * <p>
+	 * Case: subject contains special chars.
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.authn.AuthnRequest
+	 */
+	@Test
+	public void testSubjectSpecialChars() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min_specialchars.properties").build();
+
+		AuthnRequest authnRequest = new AuthnRequest(settings);
+		String authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		String authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, not(containsString("<saml:Subject")));
+
+		authnRequest = new AuthnRequest(settings, false, false, false, "t&stuser@example.com");
+		authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, containsString("<saml:Subject"));
+		assertThat(authnRequestStr, containsString("Format=\"urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified\">t&amp;stuser@example.com</saml:NameID>"));
 		assertThat(authnRequestStr, containsString("<saml:SubjectConfirmation Method=\"urn:oasis:names:tc:SAML:2.0:cm:bearer\">"));
 	}
 
@@ -351,5 +450,33 @@ public class AuthnRequestTest {
 		authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);
 		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
 		assertThat(authnRequestStr, not(containsString("Destination=\"http://idp.example.com/simplesaml/saml2/idp/SSOService.php\"")));
+	}
+
+	/**
+	 * Tests the AuthnRequest Constructor
+	 * The creation of a deflated SAML Request with and without Destination
+	 * <p>
+	 * Case: destinations contain special chars.
+	 *
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.authn.AuthnRequest
+	 */
+	@Test
+	public void testAuthNDestinationSpecialChars() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min_specialchars.properties").build();
+
+		AuthnRequest authnRequest = new AuthnRequest(settings);
+		String authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		String authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, containsString("Destination=\"http://idp.example.com/simplesaml/saml2/idp/SSOService.php?a=1&amp;b=2\""));
+
+		settings = new Saml2Settings();
+		authnRequest = new AuthnRequest(settings);
+		authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, not(containsString("Destination=\"http://idp.example.com/simplesaml/saml2/idp/SSOService.php?a=1&amp;b=2\"")));
 	}
 }

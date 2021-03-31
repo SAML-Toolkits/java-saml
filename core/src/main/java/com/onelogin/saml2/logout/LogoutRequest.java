@@ -282,7 +282,7 @@ public class LogoutRequest {
 	private StrSubstitutor generateSubstitutor(Saml2Settings settings) {
 		Map<String, String> valueMap = new HashMap<String, String>();
 
-		valueMap.put("id", id);		
+		valueMap.put("id", Util.toXml(id));		
 
 		String issueInstantString = Util.formatDateTime(issueInstant.getTimeInMillis());
 		valueMap.put("issueInstant", issueInstantString);
@@ -290,11 +290,11 @@ public class LogoutRequest {
 		String destinationStr = "";
 		URL slo =  settings.getIdpSingleLogoutServiceUrl();
 		if (slo != null) {
-			destinationStr = " Destination=\"" + slo.toString() + "\"";
+			destinationStr = " Destination=\"" + Util.toXml(slo.toString()) + "\"";
 		}
 		valueMap.put("destinationStr", destinationStr);
 
-		valueMap.put("issuer", settings.getSpEntityId());
+		valueMap.put("issuer", Util.toXml(settings.getSpEntityId()));
 
 		String nameIdFormat = null;
 		String spNameQualifier = this.nameIdSPNameQualifier;
@@ -337,7 +337,7 @@ public class LogoutRequest {
 
 		String sessionIndexStr = "";
 		if (sessionIndex != null) {
-			sessionIndexStr = " <samlp:SessionIndex>" + sessionIndex + "</samlp:SessionIndex>";
+			sessionIndexStr = " <samlp:SessionIndex>" + Util.toXml(sessionIndex) + "</samlp:SessionIndex>";
 		}
 		valueMap.put("sessionIndexStr", sessionIndexStr);
 

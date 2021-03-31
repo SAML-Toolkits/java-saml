@@ -397,7 +397,7 @@ public class LogoutResponse {
 	private StrSubstitutor generateSubstitutor(Saml2Settings settings, String statusCode) {
 		Map<String, String> valueMap = new HashMap<String, String>();
 
-		valueMap.put("id", id);
+		valueMap.put("id", Util.toXml(id));
 
 		String issueInstantString = Util.formatDateTime(issueInstant.getTimeInMillis());
 		valueMap.put("issueInstant", issueInstantString);
@@ -405,23 +405,23 @@ public class LogoutResponse {
 		String destinationStr = "";
 		URL slo =  settings.getIdpSingleLogoutServiceResponseUrl();
 		if (slo != null) {
-			destinationStr = " Destination=\"" + slo.toString() + "\"";
+			destinationStr = " Destination=\"" + Util.toXml(slo.toString()) + "\"";
 		}
 		valueMap.put("destinationStr", destinationStr);
 
 		String inResponseStr = "";
 		if (inResponseTo != null) {
-			inResponseStr = " InResponseTo=\"" + inResponseTo + "\"";
+			inResponseStr = " InResponseTo=\"" + Util.toXml(inResponseTo) + "\"";
 		}
 		valueMap.put("inResponseStr", inResponseStr);		
 
 		String statusStr = "";
 		if (statusCode != null) {
-			statusStr = "Value=\"" + statusCode + "\"";
+			statusStr = "Value=\"" + Util.toXml(statusCode) + "\"";
 		}
 		valueMap.put("statusStr", statusStr);
 
-		valueMap.put("issuer", settings.getSpEntityId());
+		valueMap.put("issuer", Util.toXml(settings.getSpEntityId()));
 
 		return new StrSubstitutor(valueMap);
 	}
