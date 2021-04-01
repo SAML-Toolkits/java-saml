@@ -691,4 +691,24 @@ public class LogoutResponseTest {
 	private static HttpRequest newHttpRequest(String requestURL, String samlResponseEncoded) {
 		return new HttpRequest(requestURL, (String)null).addParameter("SAMLResponse", samlResponseEncoded);
 	}
+
+	/**
+	 * Tests the postProcessXml method of LogoutResponse
+	 *
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.logout.LogoutResponse#postProcessXml
+	 */
+	@Test
+	public void testPostProcessXml() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		LogoutResponse logoutResponse = new LogoutResponse(settings, null) {
+			@Override
+			protected String postProcessXml(String authRequestXml) {
+				return "changed";
+			}
+		};
+		logoutResponse.build();
+		assertEquals("changed", logoutResponse.getLogoutResponseXml());
+	}
 }

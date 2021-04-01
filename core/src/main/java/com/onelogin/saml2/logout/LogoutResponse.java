@@ -364,7 +364,7 @@ public class LogoutResponse {
 		this.inResponseTo = inResponseTo;
 
 		StrSubstitutor substitutor = generateSubstitutor(settings, statusCode);
-		this.logoutResponseString = substitutor.replace(getLogoutResponseTemplate());
+		this.logoutResponseString = postProcessXml(substitutor.replace(getLogoutResponseTemplate()));
 	}
 
     /**
@@ -385,6 +385,24 @@ public class LogoutResponse {
 		build(null);
 	}	
 
+	/**
+	 * Allows for an extension class to post-process the LogoutResponse XML
+	 * generated for this response, in order to customize the result.
+	 * <p>
+	 * This method is invoked by {@link #build(String, String)} (and all of its
+	 * overloadings) and hence only in the logout response sending scenario. Its
+	 * default implementation simply returns the input XML as-is, with no change.
+	 * 
+	 * @param logoutResponseXml
+	 *              the XML produced for this LogoutResponse by the standard
+	 *              implementation provided by {@link LogoutResponse}
+	 * @return the post-processed XML for this LogoutResponse, which will then be
+	 *         returned by any call to {@link #getLogoutResponseXml()}
+	 */
+	protected String postProcessXml(final String logoutResponseXml) {
+		return logoutResponseXml;
+	}
+	
 	/**
 	 * Substitutes LogoutResponse variables within a string by values.
 	 *

@@ -382,4 +382,23 @@ public class AuthnRequestTest {
 		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
 		assertThat(authnRequestStr, not(containsString("Destination=\"http://idp.example.com/simplesaml/saml2/idp/SSOService.php\"")));
 	}
+	
+	/**
+	 * Tests the postProcessXml method of AuthnRequest
+	 *
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.authn.AuthnRequest#postProcessXml
+	 */
+	@Test
+	public void testPostProcessXml() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		AuthnRequest authnRequest = new AuthnRequest(settings) {
+			@Override
+			protected String postProcessXml(String authRequestXml) {
+				return "changed";
+			}
+		};
+		assertEquals("changed", authnRequest.getAuthnRequestXml());
+	}
 }

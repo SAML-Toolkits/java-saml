@@ -520,4 +520,23 @@ public class MetadataTest {
 		assertNull("should not set cache duration attribute", cacheDurationNode);
 
 	}
+	
+	/**
+	 * Tests the postProcessXml method of Metadata
+	 *
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.settings.Metadata#postProcessXml
+	 */
+	@Test
+	public void testPostProcessXml() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		Metadata metadata = new Metadata(settings) {
+			@Override
+			protected String postProcessXml(String authRequestXml) {
+				return "changed";
+			}
+		};
+		assertEquals("changed", metadata.getMetadataString());
+	}
 }
