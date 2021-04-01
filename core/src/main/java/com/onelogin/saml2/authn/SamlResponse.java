@@ -1033,7 +1033,7 @@ public class SamlResponse {
 	 * @throws XPathExpressionException
 	 *
 	 */
-	private NodeList queryAssertion(String assertionXpath) throws XPathExpressionException {
+	protected NodeList queryAssertion(String assertionXpath) throws XPathExpressionException {
         final String assertionExpr = "/saml:Assertion";
         final String signatureExpr = "ds:Signature/ds:SignedInfo/ds:Reference";
 
@@ -1084,16 +1084,9 @@ public class SamlResponse {
      *
      * @return DOMNodeList The queried nodes
      */
-	private NodeList query(String nameQuery, Node context) throws XPathExpressionException {
-		Document doc;
-		if (encrypted) {
-			doc = decryptedDocument;
-		} else {
-        	doc = samlResponseDocument;
-		}
-
+	protected NodeList query(String nameQuery, Node context) throws XPathExpressionException {
 		// LOGGER.debug("Executing query " + nameQuery);
-		return Util.query(doc, nameQuery, context);
+		return Util.query(getSAMLResponseDocument(), nameQuery, context);
 	}
 
 	/**
