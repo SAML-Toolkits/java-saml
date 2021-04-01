@@ -475,4 +475,33 @@ public class LogoutResponse {
 	public Exception getValidationException() {
 		return validationException;
 	}
+	
+	/**
+	 * Returns the issue instant of this message.
+	 *
+	 * @return a new {@link Calendar} instance carrying the issue instant of this message
+	 * @throws ValidationError
+	 *             if this logout response was received and parsed and the found IssueInstant 
+	 *             attribute is not in the expected UTC form of ISO-8601 format
+	 */
+	public Calendar getIssueInstant() throws ValidationError {
+		if(logoutResponseDocument != null) {
+			final Element rootElement = logoutResponseDocument
+					.getDocumentElement();
+			final String issueInstantString = rootElement.hasAttribute(
+					"IssueInstant")? rootElement.getAttribute("IssueInstant"): null;
+			if(issueInstantString == null)
+				return null;
+			final Calendar result = Calendar.getInstance();
+			try {
+				result.setTimeInMillis(Util.parseDateTime(issueInstantString).getMillis());
+			} catch (final IllegalArgumentException e) {
+				throw new ValidationError(
+						"The Response IssueInstant attribute is not in the expected UTC form of ISO-8601 format",
+						ValidationError.INVALID_ISSUE_INSTANT_FORMAT);
+			}
+			return result;
+		} else
+			return issueInstant == null? null: (Calendar) issueInstant.clone();
+	}
 }

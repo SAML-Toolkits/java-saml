@@ -6,6 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -102,6 +103,11 @@ public class Auth {
 	 * The ID of the last message processed
 	 */
 	private String lastMessageId;
+	
+	/**
+	 * The issue instant of the last message processed
+	 */
+	private Calendar lastMessageIssueInstant;
 
 	/**
 	 * The ID of the last assertion processed
@@ -142,6 +148,11 @@ public class Auth {
 	 * The id of the last request (Authn or Logout) generated
 	 */
 	private String lastRequestId;
+
+	/**
+	 * The issue instant of the last request (Authn or Logout) generated
+	 */
+	private Calendar lastRequestIssueInstant;
 
 	/**
 	 * The most recently-constructed/processed XML SAML request
@@ -392,6 +403,7 @@ public class Auth {
 
 		String ssoUrl = getSSOurl();
 		lastRequestId = authnRequest.getId();
+		lastRequestIssueInstant = authnRequest.getIssueInstant();
 		lastRequest = authnRequest.getAuthnRequestXml();
 
 		if (!stay) {
@@ -565,6 +577,7 @@ public class Auth {
 
 		String sloUrl = getSLOurl();
 		lastRequestId = logoutRequest.getId();
+		lastRequestIssueInstant = logoutRequest.getIssueInstant();
 		lastRequest = logoutRequest.getLogoutRequestXml();
 
 		if (!stay) {
@@ -814,6 +827,7 @@ public class Auth {
 				sessionIndex = samlResponse.getSessionIndex();
 				sessionExpiration = samlResponse.getSessionNotOnOrAfter();
 				lastMessageId = samlResponse.getId();
+				lastMessageIssueInstant = samlResponse.getResponseIssueInstant();
 				lastAssertionId = samlResponse.getAssertionId();
 				lastAssertionNotOnOrAfter = samlResponse.getAssertionNotOnOrAfter();
 				LOGGER.debug("processResponse success --> " + samlResponseParameter);
@@ -894,6 +908,7 @@ public class Auth {
 					}
 				} else {
 					lastMessageId = logoutResponse.getId();
+					lastMessageIssueInstant = logoutResponse.getIssueInstant();
 					LOGGER.debug("processSLO success --> " + samlResponseParameter);
 					if (!keepLocalSession) {
 						request.getSession().invalidate();
@@ -913,6 +928,7 @@ public class Auth {
 				return null;
 			} else {
 				lastMessageId = logoutRequest.getId();
+				lastMessageIssueInstant = logoutRequest.getIssueInstant();
 				LOGGER.debug("processSLO success --> " + samlRequestParameter);
 				if (!keepLocalSession) {
 					request.getSession().invalidate();
@@ -1059,6 +1075,15 @@ public class Auth {
 	public String getLastMessageId() {
 		return lastMessageId;
 	}
+	
+	/**
+	 * Returns the issue instant of the last message processed.
+	 * 
+	 * @return The issue instant of the last message processed
+	 */
+	public Calendar getLastMessageIssueInstant() {
+		return lastMessageIssueInstant;
+	}
 
 	/**
 	 * @return The ID of the last assertion processed
@@ -1102,6 +1127,16 @@ public class Auth {
 	 */
 	public String getLastRequestId() {
 		return lastRequestId;
+	}
+	
+	/**
+	 * Returns the issue instant of the last request generated (AuthnRequest or LogoutRequest).
+	 * 
+	 * @return the issue instant of the last request generated (AuthnRequest or LogoutRequest),
+	 *         <code>null</code> if none
+	 */
+	public Calendar getLastRequestIssueInstant() {
+		return lastRequestIssueInstant;
 	}
 
 	/**

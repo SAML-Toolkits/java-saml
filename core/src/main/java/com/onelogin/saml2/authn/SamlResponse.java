@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -1238,5 +1239,31 @@ public class SamlResponse {
 		if (settings.isStrict() && !spNameQualifier.equals(settings.getSpEntityId())) {
 			throw new ValidationError("The SPNameQualifier value mismatch the SP entityID value.", ValidationError.SP_NAME_QUALIFIER_NAME_MISMATCH);
 		}
+	}
+
+	/**
+	 * Returns the issue instant of this message.
+	 *
+	 * @return a new {@link Calendar} instance carrying the issue instant of this message
+	 * @throws ValidationError
+	 *             if the found IssueInstant attribute is not in the expected
+	 *             UTC form of ISO-8601 format
+	 */
+	public Calendar getResponseIssueInstant() throws ValidationError {
+		final Element rootElement = getSAMLResponseDocument()
+				.getDocumentElement();
+		final String issueInstantString = rootElement.hasAttribute(
+				"IssueInstant")? rootElement.getAttribute("IssueInstant"): null;
+		if(issueInstantString == null)
+			return null;
+		final Calendar result = Calendar.getInstance();
+		try {
+			result.setTimeInMillis(Util.parseDateTime(issueInstantString).getMillis());
+		} catch (final IllegalArgumentException e) {
+			throw new ValidationError(
+					"The Response IssueInstant attribute is not in the expected UTC form of ISO-8601 format",
+					ValidationError.INVALID_ISSUE_INSTANT_FORMAT);
+		}
+		return result;
 	}
 }

@@ -53,6 +53,7 @@ public class ValidationError extends SAMLException {
 	public static final int NOT_SUPPORTED = 46;
 	public static final int KEY_ALGORITHM_ERROR = 47;
 	public static final int MISSING_ENCRYPTED_ELEMENT = 48;
+	public static final int INVALID_ISSUE_INSTANT_FORMAT = 49;
 
 	private int errorCode;
 
