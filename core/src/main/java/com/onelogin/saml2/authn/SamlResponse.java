@@ -249,8 +249,10 @@ public class SamlResponse {
 				}
 
 				// Validate Conditions element exists
-				if (!this.checkOneCondition()) {
-					throw new ValidationError("The Assertion must include a Conditions element", ValidationError.MISSING_CONDITIONS);
+				if (settings.isWantConditionsPresent()) {
+					if (!this.checkOneCondition()) {
+						throw new ValidationError("The Assertion must include a Conditions element", ValidationError.MISSING_CONDITIONS);
+					}
 				}
 
 				// Validate Assertion timestamps
