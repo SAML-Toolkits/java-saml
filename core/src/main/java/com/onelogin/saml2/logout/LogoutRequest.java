@@ -21,7 +21,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.onelogin.saml2.exception.ValidationError;
-import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.exception.SettingsException;
 import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.settings.Saml2Settings;
@@ -61,31 +60,6 @@ public class LogoutRequest {
 	private final HttpRequest request;
 
 	/**
-     * NameID.
-     */	
-	private String nameId;
-
-	/**
-     * NameID Format.
-     */
-	private String nameIdFormat;
-
-	/**
-     * nameId NameQualifier
-     */
-	private String nameIdNameQualifier;
-
-	/**
-     * nameId SP NameQualifier
-     */
-	private String nameIdSPNameQualifier;
-	
-	/**
-     * SessionIndex. When the user is logged, this stored it from the AuthnStatement of the SAML Response
-     */
-	private String sessionIndex;
-
-	/**
 	 * URL of the current host + current view
 	 */
 	private String currentUrl;
@@ -117,7 +91,14 @@ public class LogoutRequest {
 	 *				The NameID NameQualifier that will be set in the LogoutRequest.
 	 * @param nameIdSPNameQualifier
 	 *				The SP Name Qualifier that will be set in the LogoutRequest.
+	 *
+	 * @deprecated use {@link #LogoutRequest(Saml2Settings, HttpRequest)} to build a
+	 *             received request from the HTTP request, or
+	 *             {@link #LogoutRequest(Saml2Settings, LogoutRequestParams)} with
+	 *             {@link LogoutRequestParams#LogoutRequestParams(String, String, String, String, String)}
+	 *             to build a new request to be sent
 	 */
+	@Deprecated
 	public LogoutRequest(Saml2Settings settings, HttpRequest request, String nameId, String sessionIndex, String nameIdFormat, String nameIdNameQualifier, String nameIdSPNameQualifier) {
 		this.settings = settings;
 		this.request = request;
@@ -130,16 +111,12 @@ public class LogoutRequest {
 		}
 	
 		if (samlLogoutRequest == null) {
+			LogoutRequestParams params = new LogoutRequestParams(sessionIndex, nameId, nameIdFormat, nameIdNameQualifier, nameIdSPNameQualifier);
 			id = Util.generateUniqueID(settings.getUniqueIDPrefix());
 			issueInstant = Calendar.getInstance();
-			this.nameId = nameId;
-			this.nameIdFormat = nameIdFormat;
-			this.nameIdNameQualifier = nameIdNameQualifier;
-			this.nameIdSPNameQualifier = nameIdSPNameQualifier;
-			this.sessionIndex = sessionIndex;
 	
-			StrSubstitutor substitutor = generateSubstitutor(settings);
-			logoutRequestString = postProcessXml(substitutor.replace(getLogoutRequestTemplate()), settings);
+			StrSubstitutor substitutor = generateSubstitutor(params, settings);
+			logoutRequestString = postProcessXml(substitutor.replace(getLogoutRequestTemplate()), params, settings);
 		} else {
 			logoutRequestString = Util.base64decodedInflated(samlLogoutRequest);
 			Document doc = Util.loadXML(logoutRequestString);
@@ -163,7 +140,14 @@ public class LogoutRequest {
 	 *              The nameIdFormat that will be set in the LogoutRequest.
 	 * @param nameIdNameQualifier
 	 *				The NameID NameQualifier will be set in the LogoutRequest.
+	 *
+	 * @deprecated use {@link #LogoutRequest(Saml2Settings, HttpRequest)} to build a
+	 *             received request from the HTTP request, or
+	 *             {@link #LogoutRequest(Saml2Settings, LogoutRequestParams)} with
+	 *             {@link LogoutRequestParams#LogoutRequestParams(String, String, String, String)}
+	 *             to build a new request to be sent
 	 */
+	@Deprecated
 	public LogoutRequest(Saml2Settings settings, HttpRequest request, String nameId, String sessionIndex, String nameIdFormat, String nameIdNameQualifier) {
 		this(settings, request, nameId, sessionIndex, nameIdFormat, nameIdNameQualifier, null);
 	}
@@ -181,7 +165,14 @@ public class LogoutRequest {
 	 *              The SessionIndex (taken from the SAML Response in the SSO process).
 	 * @param nameIdFormat
 	 *              The nameIdFormat that will be set in the LogoutRequest.
+	 *
+	 * @deprecated use {@link #LogoutRequest(Saml2Settings, HttpRequest)} to build a
+	 *             received request from the HTTP request, or
+	 *             {@link #LogoutRequest(Saml2Settings, LogoutRequestParams)} with
+	 *             {@link LogoutRequestParams#LogoutRequestParams(String, String, String)}
+	 *             to build a new request to be sent
 	 */
+	@Deprecated
 	public LogoutRequest(Saml2Settings settings, HttpRequest request, String nameId, String sessionIndex, String nameIdFormat) {
 		this(settings, request, nameId, sessionIndex, nameIdFormat, null);
 	}
@@ -197,23 +188,34 @@ public class LogoutRequest {
 	 *              The NameID that will be set in the LogoutRequest.
 	 * @param sessionIndex
 	 *              The SessionIndex (taken from the SAML Response in the SSO process).
+	 *
+	 * @deprecated use {@link #LogoutRequest(Saml2Settings, HttpRequest)} to build a
+	 *             received request from the HTTP request, or
+	 *             {@link #LogoutRequest(Saml2Settings, LogoutRequestParams)} with
+	 *             {@link LogoutRequestParams#LogoutRequestParams(String, String)}
+	 *             to build a new request to be sent
 	 */
+	@Deprecated
 	public LogoutRequest(Saml2Settings settings, HttpRequest request, String nameId, String sessionIndex) {
 		this(settings, request, nameId, sessionIndex, null);
 	}
 
 	/**
-	 * Constructs the LogoutRequest object.
+	 * Constructs a LogoutRequest object when a new request should be generated
+	 * and sent.
 	 *
 	 * @param settings
 	 *            OneLogin_Saml2_Settings
+	 *
+	 * @see #LogoutRequest(Saml2Settings, LogoutRequestParams)
 	 */
 	public LogoutRequest(Saml2Settings settings) {
-		this(settings, null, null, null);
+		this(settings, new LogoutRequestParams());
 	}
 
 	/**
-	 * Constructs the LogoutRequest object.
+	 * Constructs the LogoutRequest object when a received request should be extracted
+	 * from the HTTP request and parsed.
 	 *
 	 * @param settings
 	 *            OneLogin_Saml2_Settings
@@ -222,6 +224,26 @@ public class LogoutRequest {
 	 */
 	public LogoutRequest(Saml2Settings settings, HttpRequest request) {
 		this(settings, request, null, null);
+	}
+
+	/**
+	 * Constructs the LogoutRequest object when a new request should be generated
+	 * and sent.
+	 *
+	 * @param settings
+	 *              OneLogin_Saml2_Settings
+	 * @param params
+	 *              a set of authentication request input parameters that shape the
+	 *              request to create
+	 */
+	public LogoutRequest(Saml2Settings settings, LogoutRequestParams params) {
+		this.settings = settings;
+		this.request = null;
+		id = Util.generateUniqueID(settings.getUniqueIDPrefix());
+		issueInstant = Calendar.getInstance();
+
+		StrSubstitutor substitutor = generateSubstitutor(params, settings);
+		logoutRequestString = postProcessXml(substitutor.replace(getLogoutRequestTemplate()), params, settings);
 	}
 
 	/**
@@ -237,12 +259,14 @@ public class LogoutRequest {
 	 * @param logoutRequestXml
 	 *              the XML produced for this LogoutRequest by the standard
 	 *              implementation provided by {@link LogoutRequest}
+	 * @param params
+	 *              the logout request input parameters
 	 * @param settings
 	 *              the settings
 	 * @return the post-processed XML for this LogoutRequest, which will then be
 	 *         returned by any call to {@link #getLogoutRequestXml()}
 	 */
-	protected String postProcessXml(final String logoutRequestXml, final Saml2Settings settings) {
+	protected String postProcessXml(final String logoutRequestXml, final LogoutRequestParams params, final Saml2Settings settings) {
 		return logoutRequestXml;
 	}
 
@@ -286,12 +310,14 @@ public class LogoutRequest {
 	/**
 	 * Substitutes LogoutRequest variables within a string by values.
 	 *
+	 * @param params
+	 *              the logout request input parameters
 	 * @param settings
-	 * 				Saml2Settings object. Setting data
+	 *              Saml2Settings object. Setting data
 	 * 
-	 * @return the StrSubstitutor object of the LogoutRequest 
+	 * @return the StrSubstitutor object of the LogoutRequest
 	 */
-	private StrSubstitutor generateSubstitutor(Saml2Settings settings) {
+	private StrSubstitutor generateSubstitutor(LogoutRequestParams params, Saml2Settings settings) {
 		Map<String, String> valueMap = new HashMap<String, String>();
 
 		valueMap.put("id", Util.toXml(id));		
@@ -308,14 +334,16 @@ public class LogoutRequest {
 
 		valueMap.put("issuer", Util.toXml(settings.getSpEntityId()));
 
+		String nameId = params.getNameId();
+		String requestedNameIdFormat = params.getNameIdFormat();
 		String nameIdFormat = null;
-		String spNameQualifier = this.nameIdSPNameQualifier;
-		String nameQualifier = this.nameIdNameQualifier;
+		String spNameQualifier = params.getNameIdSPNameQualifier();
+		String nameQualifier = params.getNameIdNameQualifier();
 		if (nameId != null) {
-			if (this.nameIdFormat == null && !settings.getSpNameIDFormat().equals(Constants.NAMEID_UNSPECIFIED)) {
+			if (requestedNameIdFormat == null && !settings.getSpNameIDFormat().equals(Constants.NAMEID_UNSPECIFIED)) {
 				nameIdFormat = settings.getSpNameIDFormat();
 			} else {
-				nameIdFormat = this.nameIdFormat;
+				nameIdFormat = requestedNameIdFormat;
 			}
 		} else {
 			nameId = settings.getIdpEntityId();
@@ -348,6 +376,7 @@ public class LogoutRequest {
 		valueMap.put("nameIdStr", nameIdStr);
 
 		String sessionIndexStr = "";
+		String sessionIndex = params.getSessionIndex();
 		if (sessionIndex != null) {
 			sessionIndexStr = " <samlp:SessionIndex>" + Util.toXml(sessionIndex) + "</samlp:SessionIndex>";
 		}

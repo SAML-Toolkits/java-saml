@@ -29,6 +29,7 @@ import com.onelogin.saml2.exception.SettingsException;
 import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.logout.LogoutRequest;
+import com.onelogin.saml2.logout.LogoutRequestParams;
 import com.onelogin.saml2.logout.LogoutResponse;
 import com.onelogin.saml2.model.SamlResponseStatus;
 import com.onelogin.saml2.model.KeyStoreSettings;
@@ -645,43 +646,59 @@ public class Auth {
 	/**
 	 * Initiates the SLO process.
 	 *
-	 * @param relayState      	  a state information to pass forth and back between
-	 * 				  	  the Service Provider and the Identity Provider; 
-	 * 				  	  in the most simple case, it may be a URL to which
-	 * 				  	  the logged out user should be redirected after the
-	 * 				  	  logout response has been received back from the 
-	 * 				  	  Identity Provider and validated correctly with
-	 * 				  	  {@link #processSLO()}; please note that SAML 2.0 
-	 * 				  	  specification imposes a limit of max 80 characters for 
-	 * 				  	  this relayState data and that protection strategies 
-	 * 				  	  against tampering should better be implemented;
-	 * 				  	  it will be a self-routed URL when <code>null</code>, 
-	 * 				  	  otherwise no relayState at all will be appended if an empty 
-	 * 				  	  string is provided
-	 * @param nameId                The NameID that will be set in the
-	 *                              LogoutRequest.
-	 * @param sessionIndex          The SessionIndex (taken from the SAML Response
-	 *                              in the SSO process).
-	 * @param stay                  True if we want to stay (returns the url string)
-	 *                              False to execute redirection
-	 * @param nameidFormat          The NameID Format that will be set in the
-	 *                              LogoutRequest.
-	 * @param nameIdNameQualifier   The NameID NameQualifier that will be set in the
-	 *                              LogoutRequest.
-	 * @param nameIdSPNameQualifier The NameID SP Name Qualifier that will be set in
-	 *                              the LogoutRequest.
+	 * @param relayState
+	 *              a state information to pass forth and back between the Service
+	 *              Provider and the Identity Provider; in the most simple case, it
+	 *              may be a URL to which the logged out user should be redirected
+	 *              after the logout response has been received back from the
+	 *              Identity Provider and validated correctly with
+	 *              {@link #processSLO()}; please note that SAML 2.0 specification
+	 *              imposes a limit of max 80 characters for this relayState data
+	 *              and that protection strategies against tampering should better
+	 *              be implemented; it will be a self-routed URL when
+	 *              <code>null</code>, otherwise no relayState at all will be
+	 *              appended if an empty string is provided
+	 * @param stay
+	 *              True if we want to stay (returns the url string) False to
+	 *              execute redirection
+	 * @param logoutRequestParams
+	 *              the logout request input parameters
 	 *
 	 * @return the SLO URL with the LogoutRequest if stay = True
 	 *
 	 * @throws IOException
 	 * @throws SettingsException
 	 */
-	public String logout(String relayState, String nameId, String sessionIndex, Boolean stay, String nameidFormat,
-			String nameIdNameQualifier, String nameIdSPNameQualifier)
+	public String logout(String relayState, LogoutRequestParams logoutRequestParams, Boolean stay)
 			throws IOException, SettingsException {
 		Map<String, String> parameters = new HashMap<String, String>();
-		return logout(relayState, nameId, sessionIndex, stay, nameidFormat,
-				nameIdNameQualifier, nameIdSPNameQualifier, parameters);
+		return logout(relayState, logoutRequestParams, stay, parameters);
+	}
+
+	/**
+	 * Initiates the SLO process.
+	 *
+	 * @param relayState
+	 *              a state information to pass forth and back between the Service
+	 *              Provider and the Identity Provider; in the most simple case, it
+	 *              may be a URL to which the logged out user should be redirected
+	 *              after the logout response has been received back from the
+	 *              Identity Provider and validated correctly with
+	 *              {@link #processSLO()}; please note that SAML 2.0 specification
+	 *              imposes a limit of max 80 characters for this relayState data
+	 *              and that protection strategies against tampering should better
+	 *              be implemented; it will be a self-routed URL when
+	 *              <code>null</code>, otherwise no relayState at all will be
+	 *              appended if an empty string is provided
+	 * @param logoutRequestParams
+	 *              the logout request input parameters
+	 *
+	 * @throws IOException
+	 * @throws SettingsException
+	 */
+	public void logout(String relayState, LogoutRequestParams logoutRequestParams)
+			throws IOException, SettingsException {
+		logout(relayState, logoutRequestParams, false);
 	}
 
 	/**
@@ -712,23 +729,58 @@ public class Auth {
 	 *                              LogoutRequest.
 	 * @param nameIdSPNameQualifier The NameID SP Name Qualifier that will be set in
 	 *                              the LogoutRequest.
-	 * @param parameters      	  Use it to send extra parameters in addition to the LogoutRequest
+	 *
+	 * @return the SLO URL with the LogoutRequest if stay = True
+	 *
+	 * @throws IOException
+	 * @throws SettingsException
+	 * @deprecated use {@link #logout(String, LogoutRequestParams, Boolean)} with
+	 *             {@link LogoutRequestParams#LogoutRequestParams(String, String, String, String, String)}
+	 *             instead
+	 */
+	public String logout(String relayState, String nameId, String sessionIndex, Boolean stay, String nameidFormat,
+			String nameIdNameQualifier, String nameIdSPNameQualifier)
+			throws IOException, SettingsException {
+		Map<String, String> parameters = new HashMap<String, String>();
+		return logout(relayState, new LogoutRequestParams(sessionIndex, nameId, nameidFormat, nameIdNameQualifier, nameIdSPNameQualifier), stay, parameters);
+	}
+
+	/**
+	 * Initiates the SLO process.
+	 *
+	 * @param relayState
+	 *              a state information to pass forth and back between the Service
+	 *              Provider and the Identity Provider; in the most simple case, it
+	 *              may be a URL to which the logged out user should be redirected
+	 *              after the logout response has been received back from the
+	 *              Identity Provider and validated correctly with
+	 *              {@link #processSLO()}; please note that SAML 2.0 specification
+	 *              imposes a limit of max 80 characters for this relayState data
+	 *              and that protection strategies against tampering should better
+	 *              be implemented; it will be a self-routed URL when
+	 *              <code>null</code>, otherwise no relayState at all will be
+	 *              appended if an empty string is provided
+	 * @param logoutRequestParams
+	 *              the logout request input parameters
+	 * @param stay
+	 *              True if we want to stay (returns the url string) False to
+	 *              execute redirection
+	 * @param parameters
+	 *              Use it to send extra parameters in addition to the LogoutRequest
 	 *
 	 * @return the SLO URL with the LogoutRequest if stay = True
 	 *
 	 * @throws IOException
 	 * @throws SettingsException
 	 */
-	public String logout(String relayState, String nameId, String sessionIndex, Boolean stay, String nameidFormat,
-			String nameIdNameQualifier, String nameIdSPNameQualifier, Map<String, String> parameters)
+	public String logout(String relayState, LogoutRequestParams logoutRequestParams, Boolean stay, Map<String, String> parameters)
 			throws IOException, SettingsException {
 
 		if (parameters == null) {
 			parameters = new HashMap<String, String>();
 		}
 
-		LogoutRequest logoutRequest = new LogoutRequest(settings, null, nameId, sessionIndex, nameidFormat,
-				nameIdNameQualifier, nameIdSPNameQualifier);
+		LogoutRequest logoutRequest = new LogoutRequest(settings, logoutRequestParams);
 		String samlLogoutRequest = logoutRequest.getEncodedLogoutRequest();
 		parameters.put("SAMLRequest", samlLogoutRequest);
 
@@ -775,6 +827,51 @@ public class Auth {
 	 * 				  	it will be a self-routed URL when <code>null</code>, 
 	 * 				  	otherwise no relayState at all will be appended if an empty 
 	 * 				  	string is provided
+	 * @param nameId                The NameID that will be set in the
+	 *                              LogoutRequest.
+	 * @param sessionIndex          The SessionIndex (taken from the SAML Response
+	 *                              in the SSO process).
+	 * @param stay                  True if we want to stay (returns the url string)
+	 *                              False to execute redirection
+	 * @param nameidFormat          The NameID Format that will be set in the
+	 *                              LogoutRequest.
+	 * @param nameIdNameQualifier   The NameID NameQualifier that will be set in the
+	 *                              LogoutRequest.
+	 * @param nameIdSPNameQualifier The NameID SP Name Qualifier that will be set in
+	 *                              the LogoutRequest.
+	 * @param parameters      		Use it to send extra parameters in addition to the LogoutRequest
+	 *
+	 * @return the SLO URL with the LogoutRequest if stay = True
+	 *
+	 * @throws IOException
+	 * @throws SettingsException
+	 * @deprecated use {@link #logout(String, LogoutRequestParams, Boolean, Map)} with
+	 *             {@link LogoutRequestParams#LogoutRequestParams(String, String, String, String, String)}
+	 *             instead
+	 */
+	@Deprecated
+	public String logout(String relayState, String nameId, String sessionIndex, Boolean stay, String nameidFormat,
+			String nameIdNameQualifier, String nameIdSPNameQualifier, Map<String, String> parameters)
+			throws IOException, SettingsException {
+		return logout(relayState, new LogoutRequestParams(sessionIndex, nameId, nameidFormat, nameIdNameQualifier, nameIdSPNameQualifier), stay, parameters);
+	}
+
+	/**
+	 * Initiates the SLO process.
+	 *
+	 * @param relayState      	a state information to pass forth and back between
+	 * 				  	the Service Provider and the Identity Provider; 
+	 * 				  	in the most simple case, it may be a URL to which
+	 * 				  	the logged out user should be redirected after the
+	 * 				  	logout response has been received back from the 
+	 * 				  	Identity Provider and validated correctly with
+	 * 				  	{@link #processSLO()}; please note that SAML 2.0 
+	 * 				  	specification imposes a limit of max 80 characters for 
+	 * 				  	this relayState data and that protection strategies 
+	 * 				  	against tampering should better be implemented;
+	 * 				  	it will be a self-routed URL when <code>null</code>, 
+	 * 				  	otherwise no relayState at all will be appended if an empty 
+	 * 				  	string is provided
 	 * @param nameId              The NameID that will be set in the LogoutRequest.
 	 * @param sessionIndex        The SessionIndex (taken from the SAML Response in
 	 *                            the SSO process).
@@ -789,10 +886,14 @@ public class Auth {
 	 *
 	 * @throws IOException
 	 * @throws SettingsException
+	 * @deprecated use {@link #logout(String, LogoutRequestParams, Boolean)} with
+	 *             {@link LogoutRequestParams#LogoutRequestParams(String, String, String, String)}
+	 *             instead
 	 */
+	@Deprecated
 	public String logout(String relayState, String nameId, String sessionIndex, Boolean stay, String nameidFormat,
 			String nameIdNameQualifier) throws IOException, SettingsException {
-		return logout(relayState, nameId, sessionIndex, stay, nameidFormat, nameIdNameQualifier, null);
+		return logout(relayState, new LogoutRequestParams(sessionIndex, nameId, nameidFormat, nameIdNameQualifier), stay, null);
 	}
 
 	/**
@@ -822,10 +923,14 @@ public class Auth {
 	 *
 	 * @throws IOException
 	 * @throws SettingsException
+	 * @deprecated use {@link #logout(String, LogoutRequestParams, Boolean)} with
+	 *             {@link LogoutRequestParams#LogoutRequestParams(String, String, String)}
+	 *             instead
 	 */
+	@Deprecated
 	public String logout(String relayState, String nameId, String sessionIndex, Boolean stay, String nameidFormat)
 			throws IOException, SettingsException {
-		return logout(relayState, nameId, sessionIndex, stay, nameidFormat, null);
+		return logout(relayState, new LogoutRequestParams(sessionIndex, nameId, nameidFormat), stay, null);
 	}
 
 	/**
@@ -854,10 +959,14 @@ public class Auth {
 	 *
 	 * @throws IOException
 	 * @throws SettingsException
+	 * @deprecated use {@link #logout(String, LogoutRequestParams, Boolean)} with
+	 *             {@link LogoutRequestParams#LogoutRequestParams(String, String)}
+	 *             instead
 	 */
+	@Deprecated
 	public String logout(String relayState, String nameId, String sessionIndex, Boolean stay)
 			throws IOException, SettingsException {
-		return logout(relayState, nameId, sessionIndex, stay, null);
+		return logout(relayState, new LogoutRequestParams(sessionIndex, nameId), stay, null);
 	}
 
 	/**
@@ -888,11 +997,15 @@ public class Auth {
 	 *                              the LogoutRequest.
 	 * @throws IOException
 	 * @throws SettingsException
+	 * @deprecated use {@link #logout(String, LogoutRequestParams)} with
+	 *             {@link LogoutRequestParams#LogoutRequestParams(String, String, String, String, String)}
+	 *             instead
 	 */
+	@Deprecated
 	public void logout(String relayState, String nameId, String sessionIndex, String nameidFormat,
 			String nameIdNameQualifier, String nameIdSPNameQualifier)
 			throws IOException, SettingsException {
-		logout(relayState, nameId, sessionIndex, false, nameidFormat, nameIdNameQualifier, nameIdSPNameQualifier);
+		logout(relayState, new LogoutRequestParams(sessionIndex, nameId, nameidFormat, nameIdNameQualifier, nameIdSPNameQualifier), false);
 	}
 
 	/**
@@ -921,10 +1034,14 @@ public class Auth {
 	 *
 	 * @throws IOException
 	 * @throws SettingsException
+	 * @deprecated use {@link #logout(String, LogoutRequestParams)} with
+	 *             {@link LogoutRequestParams#LogoutRequestParams(String, String, String, String)}
+	 *             instead
 	 */
+	@Deprecated
 	public void logout(String relayState, String nameId, String sessionIndex, String nameidFormat,
 			String nameIdNameQualifier) throws IOException, SettingsException {
-		logout(relayState, nameId, sessionIndex, false, nameidFormat, nameIdNameQualifier);
+		logout(relayState, new LogoutRequestParams(sessionIndex, nameId, nameidFormat, nameIdNameQualifier), false);
 	}
 
 	/**
@@ -949,10 +1066,14 @@ public class Auth {
 	 * @param nameidFormat The NameID Format will be set in the LogoutRequest.
 	 * @throws IOException
 	 * @throws SettingsException
+	 * @deprecated use {@link #logout(String, LogoutRequestParams)} with
+	 *             {@link LogoutRequestParams#LogoutRequestParams(String, String, String)}
+	 *             instead
 	 */
+	@Deprecated
 	public void logout(String relayState, String nameId, String sessionIndex, String nameidFormat)
 			throws IOException, SettingsException {
-		logout(relayState, nameId, sessionIndex, false, nameidFormat);
+		logout(relayState, new LogoutRequestParams(sessionIndex, nameId, nameidFormat), false);
 	}
 
 	/**
@@ -977,10 +1098,14 @@ public class Auth {
 	 *
 	 * @throws IOException
 	 * @throws SettingsException
+	 * @deprecated use {@link #logout(String, LogoutRequestParams)} with
+	 *             {@link LogoutRequestParams#LogoutRequestParams(String, String)}
+	 *             instead
 	 */
+	@Deprecated
 	public void logout(String relayState, String nameId, String sessionIndex)
 			throws IOException, SettingsException {
-		logout(relayState, nameId, sessionIndex, false, null);
+		logout(relayState, new LogoutRequestParams(sessionIndex, nameId), false, null);
 	}
 
 	/**
@@ -990,7 +1115,7 @@ public class Auth {
 	 * @throws SettingsException
 	 */
 	public void logout() throws IOException, SettingsException {
-		logout(null, null, null, false);
+		logout(null, new LogoutRequestParams(), false);
 	}
 
 	/**
@@ -1014,7 +1139,7 @@ public class Auth {
 	 * @throws SettingsException
 	 */
 	public void logout(String relayState) throws IOException, SettingsException {
-		logout(relayState, null, null);
+		logout(relayState, new LogoutRequestParams(), false);
 	}
 
 	/**

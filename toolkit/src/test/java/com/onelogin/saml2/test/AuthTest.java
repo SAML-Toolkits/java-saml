@@ -52,6 +52,7 @@ import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.exception.SettingsException;
 import com.onelogin.saml2.exception.ValidationError;
 import com.onelogin.saml2.exception.XMLEntityException;
+import com.onelogin.saml2.logout.LogoutRequestParams;
 import com.onelogin.saml2.model.KeyStoreSettings;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
@@ -1586,7 +1587,7 @@ public class AuthTest {
 		Auth auth = new Auth(settings, request, response);
 		Map<String, String> extraParameters = new HashMap<String, String>();
 		extraParameters.put("parameter1", "xxx");
-		String target = auth.logout("", null, null, true, null, null, null, extraParameters);
+		String target = auth.logout("", new LogoutRequestParams(), true, extraParameters);
 		assertThat(target, startsWith("https://pitbulk.no-ip.org/simplesaml/saml2/idp/SingleLogoutService.php?SAMLRequest="));
 		assertThat(target, containsString("&parameter1=xxx"));
 	}
@@ -1677,12 +1678,12 @@ public class AuthTest {
 		settings.setLogoutRequestSigned(false);
 
 		Auth auth = new Auth(settings, request, response);
-		String target = auth.logout("", null, null, true);
+		String target = auth.logout("", new LogoutRequestParams(), true);
 		assertThat(target, startsWith("https://pitbulk.no-ip.org/simplesaml/saml2/idp/SingleLogoutService.php?SAMLRequest="));
 		assertThat(target, not(containsString("&RelayState=")));
 		
 		String relayState = "http://localhost:8080/expected.jsp";
-		target = auth.logout(relayState, null, null, true);
+		target = auth.logout(relayState, new LogoutRequestParams(), true);
 		assertThat(target, startsWith("https://pitbulk.no-ip.org/simplesaml/saml2/idp/SingleLogoutService.php?SAMLRequest="));
 		assertThat(target, containsString("&RelayState=http%3A%2F%2Flocalhost%3A8080%2Fexpected.jsp"));
 	}
@@ -2112,7 +2113,7 @@ public class AuthTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
 		Auth auth = new Auth(settings, request, response);
-		String targetSLOURL = auth.logout(null, null, null, true);
+		String targetSLOURL = auth.logout(null, new LogoutRequestParams(), true);
 		String logoutRequestXML = auth.getLastRequestXML();
 		assertThat(targetSLOURL, containsString(Util.urlEncoder(Util.deflatedBase64encoded(logoutRequestXML))));
 
