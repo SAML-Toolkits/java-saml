@@ -95,8 +95,10 @@ public class LogoutResponse {
 	 * @param settings
 	 *              OneLogin_Saml2_Settings
 	 * @param request
-     *              the HttpRequest object to be processed (Contains GET and POST parameters, request URL, ...).
-     *
+	 *              the HttpRequest object to be processed (Contains GET and POST
+	 *              parameters, request URL, ...); may be <code>null</code> when
+	 *              building an outgoing logout response
+	 *
 	 */
 	public LogoutResponse(Saml2Settings settings, HttpRequest request) {
 		this.settings = settings;
