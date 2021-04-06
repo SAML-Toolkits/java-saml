@@ -129,14 +129,14 @@ public class AuthnRequest {
 	 * this class have already been initialised. Its default implementation simply
 	 * returns the input XML as-is, with no change.
 	 * 
-	 * @param authRequestXml
+	 * @param authnRequestXml
 	 *              the XML produced for this AuthnRequest by the standard
 	 *              implementation provided by {@link AuthnRequest}
 	 * @return the post-processed XML for this AuthnRequest, which will then be
 	 *         returned by any call to {@link #getAuthnRequestXml()}
 	 */
-	protected String postProcessXml(final String authRequestXml) {
-		return authRequestXml;
+	protected String postProcessXml(final String authnRequestXml) {
+		return authnRequestXml;
 	}
 	
 	/**
