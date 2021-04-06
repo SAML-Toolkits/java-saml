@@ -291,15 +291,47 @@ public class SettingBuilderTest {
 		assertTrue(org.equalsTo(setting.getOrganization()));
 
 		List<Contact> contacts = setting.getContacts();
-		assertEquals(2, contacts.size());
+		assertEquals(4, contacts.size());
 		Contact c1 = contacts.get(0);
-		assertEquals("technical", c1.getContactType());
-		assertEquals("technical@example.com", c1.getEmailAddress());
-		assertEquals("Technical Guy", c1.getGivenName());
+		assertEquals("administrative", c1.getContactType());
+		assertEquals("ACME", c1.getCompany());
+		assertEquals("Guy", c1.getGivenName());
+		assertEquals("Administrative", c1.getSurName());
+		assertEquals(2, c1.getEmailAddresses().size());
+		assertEquals("administrative@example.com", c1.getEmailAddresses().get(0));
+		assertEquals("administrative2@example.com", c1.getEmailAddresses().get(1));
+		List<String> c1Phones = c1.getTelephoneNumbers();
+		assertEquals(2, c1Phones.size());
+		assertEquals("+1-123456789", c1Phones.get(0));
+		assertEquals("+1-987654321", c1Phones.get(1));
 		Contact c2 = contacts.get(1);
-		assertEquals("support", c2.getContactType());
-		assertEquals("support@example.com", c2.getEmailAddress());
-		assertEquals("Support Guy", c2.getGivenName());
+		assertEquals("other", c2.getContactType());
+		assertEquals("Big Corp", c2.getCompany());
+		assertNull(c2.getGivenName());
+		assertNull(c2.getSurName());
+		assertEquals(1, c2.getEmailAddresses().size());
+		assertEquals("info@example.com", c2.getEmailAddresses().get(0));
+		assertEquals(0, c2.getTelephoneNumbers().size());
+		Contact c3 = contacts.get(2);
+		assertEquals("technical", c3.getContactType());
+		assertNull(c3.getCompany());
+		assertEquals("Technical Guy", c3.getGivenName());
+		assertNull(c3.getSurName());
+		List<String> c3Emails = c3.getEmailAddresses();
+		assertEquals(1, c3Emails.size());
+		assertEquals("technical@example.com", c3Emails.get(0));
+		assertEquals("technical@example.com", c3.getEmailAddress());
+		assertEquals(0, c3.getTelephoneNumbers().size());
+		Contact c4 = contacts.get(3);
+		assertEquals("support", c4.getContactType());
+		assertNull(c4.getCompany());
+		assertEquals("Support Guy", c4.getGivenName());
+		assertNull(c4.getSurName());
+		List<String> c4Emails = c4.getEmailAddresses();
+		assertEquals(1, c4Emails.size());
+		assertEquals("support@example.com", c4Emails.get(0));
+		assertEquals("support@example.com", c4.getEmailAddress());
+		assertEquals(0, c4.getTelephoneNumbers().size());
 
 		assertEquals("EXAMPLE", setting.getUniqueIDPrefix());
 	}
@@ -753,6 +785,19 @@ public class SettingBuilderTest {
 		samlData.put(ORGANIZATION_LANG, "en");
 
 		// Contacts
+		samlData.put(SP_CONTACT_PROPERTY_KEY_PREFIX + "[0]." + SP_CONTACT_CONTACT_TYPE_PROPERTY_KEY_SUFFIX, "administrative");
+		samlData.put(SP_CONTACT_PROPERTY_KEY_PREFIX + "[0]." + SP_CONTACT_COMPANY_PROPERTY_KEY_SUFFIX, "ACME");
+		samlData.put(SP_CONTACT_PROPERTY_KEY_PREFIX + "[0]." + SP_CONTACT_GIVEN_NAME_PROPERTY_KEY_SUFFIX, "Guy");
+		samlData.put(SP_CONTACT_PROPERTY_KEY_PREFIX + "[0]." + SP_CONTACT_SUR_NAME_PROPERTY_KEY_SUFFIX, "Administrative");
+		samlData.put(SP_CONTACT_PROPERTY_KEY_PREFIX + "[0]." + SP_CONTACT_EMAIL_ADDRESS_PROPERTY_KEY_PREFIX + "[0]", "administrative@example.com");
+		samlData.put(SP_CONTACT_PROPERTY_KEY_PREFIX + "[0]." + SP_CONTACT_EMAIL_ADDRESS_PROPERTY_KEY_PREFIX + "[1]", "administrative2@example.com");
+		samlData.put(SP_CONTACT_PROPERTY_KEY_PREFIX + "[0]." + SP_CONTACT_TELEPHONE_NUMBER_PROPERTY_KEY_PREFIX + "[0]", "+1-123456789");
+		samlData.put(SP_CONTACT_PROPERTY_KEY_PREFIX + "[0]." + SP_CONTACT_TELEPHONE_NUMBER_PROPERTY_KEY_PREFIX + "[1]", "+1-987654321");
+		samlData.put(SP_CONTACT_PROPERTY_KEY_PREFIX + "[1]." + SP_CONTACT_CONTACT_TYPE_PROPERTY_KEY_SUFFIX, "other");
+		samlData.put(SP_CONTACT_PROPERTY_KEY_PREFIX + "[1]." + SP_CONTACT_COMPANY_PROPERTY_KEY_SUFFIX, "Big Corp");
+		samlData.put(SP_CONTACT_PROPERTY_KEY_PREFIX + "[1]." + SP_CONTACT_EMAIL_ADDRESS_PROPERTY_KEY_PREFIX, "info@example.com");
+		
+		// Legacy contacts
 		samlData.put(CONTACT_TECHNICAL_GIVEN_NAME, "Technical Guy");
 		samlData.put(CONTACT_TECHNICAL_EMAIL_ADDRESS, "technical@example.org");
 		samlData.put(CONTACT_SUPPORT_GIVEN_NAME, "Support Guy");
@@ -819,15 +864,48 @@ public class SettingBuilderTest {
 		assertTrue(org.equalsTo(setting.getOrganization()));
 
 		List<Contact> contacts = setting.getContacts();
-		assertEquals(2, contacts.size());
+		assertEquals(4, contacts.size());
 		Contact c1 = contacts.get(0);
-		assertEquals("technical", c1.getContactType());
-		assertEquals("technical@example.org", c1.getEmailAddress());
-		assertEquals("Technical Guy", c1.getGivenName());
+		assertEquals("administrative", c1.getContactType());
+		assertEquals("ACME", c1.getCompany());
+		assertEquals("Guy", c1.getGivenName());
+		assertEquals("Administrative", c1.getSurName());
+		List<String> c1Emails = c1.getEmailAddresses();
+		assertEquals(2, c1Emails.size());
+		assertEquals("administrative@example.com", c1Emails.get(0));
+		assertEquals("administrative2@example.com", c1Emails.get(1));
+		List<String> c1Phones = c1.getTelephoneNumbers();
+		assertEquals(2, c1Phones.size());
+		assertEquals("+1-123456789", c1Phones.get(0));
+		assertEquals("+1-987654321", c1Phones.get(1));
 		Contact c2 = contacts.get(1);
-		assertEquals("support", c2.getContactType());
-		assertEquals("support@example.org", c2.getEmailAddress());
-		assertEquals("Support Guy", c2.getGivenName());
+		assertEquals("other", c2.getContactType());
+		assertEquals("Big Corp", c2.getCompany());
+		assertNull(c2.getGivenName());
+		assertNull(c2.getSurName());
+		List<String> c2Emails = c2.getEmailAddresses();
+		assertEquals(1, c2Emails.size());
+		assertTrue(c2.getTelephoneNumbers().isEmpty());
+		Contact c3 = contacts.get(2);
+		assertEquals("technical", c3.getContactType());
+		assertNull(c3.getCompany());
+		assertEquals("Technical Guy", c3.getGivenName());
+		assertNull(c3.getSurName());
+		List<String> c3Emails = c3.getEmailAddresses();
+		assertEquals(1, c3Emails.size());
+		assertEquals("technical@example.org", c3Emails.get(0));
+		assertEquals("technical@example.org", c3.getEmailAddress());
+		assertTrue(c3.getTelephoneNumbers().isEmpty());
+		Contact c4 = contacts.get(3);
+		assertEquals("support", c4.getContactType());
+		assertNull(c4.getCompany());
+		assertEquals("Support Guy", c4.getGivenName());
+		assertNull(c4.getSurName());
+		List<String> c4Emails = c4.getEmailAddresses();
+		assertEquals(1, c4Emails.size());
+		assertEquals("support@example.org", c4Emails.get(0));
+		assertEquals("support@example.org", c4.getEmailAddress());
+		assertTrue(c4.getTelephoneNumbers().isEmpty());
 
 		assertEquals("_", setting.getUniqueIDPrefix());
 
@@ -917,6 +995,19 @@ public class SettingBuilderTest {
 		samlData.put(ORGANIZATION_LANG, "en");
 
 		// Contacts
+		samlData.put(SP_CONTACT_PROPERTY_KEY_PREFIX + "[0]." + SP_CONTACT_CONTACT_TYPE_PROPERTY_KEY_SUFFIX, "administrative");
+		samlData.put(SP_CONTACT_PROPERTY_KEY_PREFIX + "[0]." + SP_CONTACT_COMPANY_PROPERTY_KEY_SUFFIX, "ACME");
+		samlData.put(SP_CONTACT_PROPERTY_KEY_PREFIX + "[0]." + SP_CONTACT_GIVEN_NAME_PROPERTY_KEY_SUFFIX, "Guy");
+		samlData.put(SP_CONTACT_PROPERTY_KEY_PREFIX + "[0]." + SP_CONTACT_SUR_NAME_PROPERTY_KEY_SUFFIX, "Administrative");
+		samlData.put(SP_CONTACT_PROPERTY_KEY_PREFIX + "[0]." + SP_CONTACT_EMAIL_ADDRESS_PROPERTY_KEY_PREFIX + "[0]", "administrative@example.com");
+		samlData.put(SP_CONTACT_PROPERTY_KEY_PREFIX + "[0]." + SP_CONTACT_EMAIL_ADDRESS_PROPERTY_KEY_PREFIX + "[1]", "administrative2@example.com");
+		samlData.put(SP_CONTACT_PROPERTY_KEY_PREFIX + "[0]." + SP_CONTACT_TELEPHONE_NUMBER_PROPERTY_KEY_PREFIX + "[0]", "+1-123456789");
+		samlData.put(SP_CONTACT_PROPERTY_KEY_PREFIX + "[0]." + SP_CONTACT_TELEPHONE_NUMBER_PROPERTY_KEY_PREFIX + "[1]", "+1-987654321");
+		samlData.put(SP_CONTACT_PROPERTY_KEY_PREFIX + "[1]." + SP_CONTACT_CONTACT_TYPE_PROPERTY_KEY_SUFFIX, "other");
+		samlData.put(SP_CONTACT_PROPERTY_KEY_PREFIX + "[1]." + SP_CONTACT_COMPANY_PROPERTY_KEY_SUFFIX, "Big Corp");
+		samlData.put(SP_CONTACT_PROPERTY_KEY_PREFIX + "[1]." + SP_CONTACT_EMAIL_ADDRESS_PROPERTY_KEY_PREFIX, "info@example.com");
+		
+		// Legacy contacts
 		samlData.put(CONTACT_TECHNICAL_GIVEN_NAME, "Technical Guy");
 		samlData.put(CONTACT_TECHNICAL_EMAIL_ADDRESS, "technical@example.org");
 		samlData.put(CONTACT_SUPPORT_GIVEN_NAME, "Support Guy");
@@ -975,15 +1066,48 @@ public class SettingBuilderTest {
 		assertTrue(org.equalsTo(setting.getOrganization()));
 
 		List<Contact> contacts = setting.getContacts();
-		assertEquals(2, contacts.size());
+		assertEquals(4, contacts.size());
 		Contact c1 = contacts.get(0);
-		assertEquals("technical", c1.getContactType());
-		assertEquals("technical@example.org", c1.getEmailAddress());
-		assertEquals("Technical Guy", c1.getGivenName());
+		assertEquals("administrative", c1.getContactType());
+		assertEquals("ACME", c1.getCompany());
+		assertEquals("Guy", c1.getGivenName());
+		assertEquals("Administrative", c1.getSurName());
+		List<String> c1Emails = c1.getEmailAddresses();
+		assertEquals(2, c1Emails.size());
+		assertEquals("administrative@example.com", c1Emails.get(0));
+		assertEquals("administrative2@example.com", c1Emails.get(1));
+		List<String> c1Phones = c1.getTelephoneNumbers();
+		assertEquals(2, c1Phones.size());
+		assertEquals("+1-123456789", c1Phones.get(0));
+		assertEquals("+1-987654321", c1Phones.get(1));
 		Contact c2 = contacts.get(1);
-		assertEquals("support", c2.getContactType());
-		assertEquals("support@example.org", c2.getEmailAddress());
-		assertEquals("Support Guy", c2.getGivenName());
+		assertEquals("other", c2.getContactType());
+		assertEquals("Big Corp", c2.getCompany());
+		assertNull(c2.getGivenName());
+		assertNull(c2.getSurName());
+		List<String> c2Emails = c2.getEmailAddresses();
+		assertEquals(1, c2Emails.size());
+		assertTrue(c2.getTelephoneNumbers().isEmpty());
+		Contact c3 = contacts.get(2);
+		assertEquals("technical", c3.getContactType());
+		assertNull(c3.getCompany());
+		assertEquals("Technical Guy", c3.getGivenName());
+		assertNull(c3.getSurName());
+		List<String> c3Emails = c3.getEmailAddresses();
+		assertEquals(1, c3Emails.size());
+		assertEquals("technical@example.org", c3Emails.get(0));
+		assertEquals("technical@example.org", c3.getEmailAddress());
+		assertTrue(c3.getTelephoneNumbers().isEmpty());
+		Contact c4 = contacts.get(3);
+		assertEquals("support", c4.getContactType());
+		assertNull(c4.getCompany());
+		assertEquals("Support Guy", c4.getGivenName());
+		assertNull(c4.getSurName());
+		List<String> c4Emails = c4.getEmailAddresses();
+		assertEquals(1, c4Emails.size());
+		assertEquals("support@example.org", c4Emails.get(0));
+		assertEquals("support@example.org", c4.getEmailAddress());
+		assertTrue(c4.getTelephoneNumbers().isEmpty());
 
 		assertEquals("ONELOGIN_", setting.getUniqueIDPrefix());
 	}

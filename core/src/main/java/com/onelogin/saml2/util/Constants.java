@@ -83,6 +83,13 @@ public final class Constants {
 	public static final String STATUS_UNKNOWN_PRINCIPAL = "urn:oasis:names:tc:SAML:2.0:status:UnknownPrincipal";
 	public static final String STATUS_UNSUPPORTED_BINDING = "urn:oasis:names:tc:SAML:2.0:status:UnsupportedBinding";
 
+	// Contact types
+	public static final String CONTACT_TYPE_TECHNICAL = "technical";
+	public static final String CONTACT_TYPE_SUPPORT = "support";
+	public static final String CONTACT_TYPE_ADMINISTRATIVE = "administrative";
+	public static final String CONTACT_TYPE_BILLING = "billing";
+	public static final String CONTACT_TYPE_OTHER = "other";
+
 	// Canonization
 	public static final String C14N = "http://www.w3.org/TR/2001/REC-xml-c14n-20010315";
 	public static final String C14N_WC = "http://www.w3.org/TR/2001/REC-xml-c14n-20010315#WithComments";
@@ -91,7 +98,7 @@ public final class Constants {
 	public static final String C14NEXC = "http://www.w3.org/2001/10/xml-exc-c14n#";
 	public static final String C14NEXC_WC = "http://www.w3.org/2001/10/xml-exc-c14n#WithComments";
 	
-    // Sign & Crypt   
+      // Sign & Crypt   
 	// https://www.w3.org/TR/xmlenc-core/#sec-Alg-MessageDigest
 	// https://www.w3.org/TR/xmlsec-algorithms/#signature-method-uris
 	// https://tools.ietf.org/html/rfc6931

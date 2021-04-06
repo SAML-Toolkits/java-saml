@@ -147,21 +147,24 @@ public class MetadataTest {
 		Metadata metadataObj = new Metadata(settings);
 		String metadataStr = metadataObj.getMetadataString();
 
-		String contactStr = "<md:ContactPerson contactType=\"technical\"><md:GivenName>Technical Guy</md:GivenName><md:EmailAddress>technical@example.com</md:EmailAddress></md:ContactPerson><md:ContactPerson contactType=\"support\"><md:GivenName>Support Guy</md:GivenName><md:EmailAddress>support@example.com</md:EmailAddress></md:ContactPerson>";
-		assertThat(metadataStr, containsString(contactStr));
+		String administrativeContactStr = "<md:ContactPerson contactType=\"administrative\"><md:Company>ACME</md:Company><md:GivenName>Guy</md:GivenName><md:SurName>Administrative</md:SurName><md:EmailAddress>administrative@example.com</md:EmailAddress><md:EmailAddress>administrative2@example.com</md:EmailAddress><md:TelephoneNumber>+1-123456789</md:TelephoneNumber><md:TelephoneNumber>+1-987654321</md:TelephoneNumber></md:ContactPerson>";
+		assertThat(metadataStr, containsString(administrativeContactStr));
+		String otherContactStr = "<md:ContactPerson contactType=\"other\"><md:Company>Big Corp</md:Company><md:EmailAddress>info@example.com</md:EmailAddress></md:ContactPerson>";
+		assertThat(metadataStr, containsString(otherContactStr));
 
 		Saml2Settings settings2 = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		Metadata metadataObj2 = new Metadata(settings2);
 		String metadataStr2 = metadataObj2.getMetadataString();
 
-		assertThat(metadataStr2, not(containsString(contactStr)));
+		assertThat(metadataStr2, not(containsString(administrativeContactStr)));
+		assertThat(metadataStr2, not(containsString(otherContactStr)));
 	}
 
 	/**
 	 * Tests the toContactsXml method of Metadata
 	 * <p>
 	 * Case: contacts text containing special chars.
-	 *
+	 * 
 	 * @throws IOException
 	 * @throws CertificateEncodingException
 	 * @throws Error
@@ -173,8 +176,66 @@ public class MetadataTest {
 		Metadata metadataObj = new Metadata(settings);
 		String metadataStr = metadataObj.getMetadataString();
 
-		String contactStr = "<md:ContactPerson contactType=\"technical\"><md:GivenName>T&amp;chnical Guy</md:GivenName><md:EmailAddress>t&amp;chnical@example.com</md:EmailAddress></md:ContactPerson><md:ContactPerson contactType=\"support\"><md:GivenName>&quot;Support Guy&quot;</md:GivenName><md:EmailAddress>supp&amp;rt@example.com</md:EmailAddress></md:ContactPerson>";
-		assertThat(metadataStr, containsString(contactStr));
+		String administrativeContactStr = "<md:ContactPerson contactType=\"administrative\"><md:Company>ACME &amp; C.</md:Company><md:GivenName>&quot;Guy&quot;</md:GivenName><md:SurName>&lt;Administrative&gt;</md:SurName><md:EmailAddress>administrativ&amp;@example.com</md:EmailAddress><md:EmailAddress>administrativ&amp;2@example.com</md:EmailAddress><md:TelephoneNumber>&lt;+1&gt;-123456789</md:TelephoneNumber><md:TelephoneNumber>&lt;+1&gt;-987654321</md:TelephoneNumber></md:ContactPerson>";
+		assertThat(metadataStr, containsString(administrativeContactStr));
+		String otherContactStr = "<md:ContactPerson contactType=\"other\"><md:Company>Big Corp</md:Company><md:EmailAddress>info@example.com</md:EmailAddress></md:ContactPerson>";
+		assertThat(metadataStr, containsString(otherContactStr));
+
+		Saml2Settings settings2 = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		Metadata metadataObj2 = new Metadata(settings2);
+		String metadataStr2 = metadataObj2.getMetadataString();
+
+		assertThat(metadataStr2, not(containsString(administrativeContactStr)));
+		assertThat(metadataStr2, not(containsString(otherContactStr)));
+	}
+
+	/**
+	 * Tests the toContactsXml method of Metadata with regards to legacy contacts definition
+	 *
+	 * @throws IOException
+	 * @throws CertificateEncodingException
+	 * @throws Error
+	 * @see com.onelogin.saml2.settings.Metadata#toContactsXml
+	 */
+	@Test
+	public void testToContactsXmlLegacy() throws IOException, CertificateEncodingException, Error {
+		Saml2Settings settings = getSettingFromAllProperties();
+		Metadata metadataObj = new Metadata(settings);
+		String metadataStr = metadataObj.getMetadataString();
+
+		String technicalContactStr = "<md:ContactPerson contactType=\"technical\"><md:GivenName>Technical Guy</md:GivenName><md:EmailAddress>technical@example.com</md:EmailAddress></md:ContactPerson>";
+		assertThat(metadataStr, containsString(technicalContactStr));
+		String supportContactStr = "<md:ContactPerson contactType=\"support\"><md:GivenName>Support Guy</md:GivenName><md:EmailAddress>support@example.com</md:EmailAddress></md:ContactPerson>";
+		assertThat(metadataStr, containsString(supportContactStr));
+
+		Saml2Settings settings2 = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		Metadata metadataObj2 = new Metadata(settings2);
+		String metadataStr2 = metadataObj2.getMetadataString();
+
+		assertThat(metadataStr2, not(containsString(technicalContactStr)));
+		assertThat(metadataStr2, not(containsString(supportContactStr)));
+	}
+
+	/**
+	 * Tests the toContactsXml method of Metadata with regards to legacy contact definition
+	 * <p>
+	 * Case: contacts text containing special chars.
+	 *
+	 * @throws IOException
+	 * @throws CertificateEncodingException
+	 * @throws Error
+	 * @see com.onelogin.saml2.settings.Metadata#toContactsXml
+	 */
+	@Test
+	public void testToContactsXmlLegacySpecialChars() throws IOException, CertificateEncodingException, Error {
+		Saml2Settings settings = getSettingFromAllSpecialCharsProperties();
+		Metadata metadataObj = new Metadata(settings);
+		String metadataStr = metadataObj.getMetadataString();
+
+		String technicalContactStr = "<md:ContactPerson contactType=\"technical\"><md:GivenName>T&amp;chnical Guy</md:GivenName><md:EmailAddress>t&amp;chnical@example.com</md:EmailAddress></md:ContactPerson>";
+		assertThat(metadataStr, containsString(technicalContactStr));
+		String supportContactStr = "<md:ContactPerson contactType=\"support\"><md:GivenName>&quot;Support Guy&quot;</md:GivenName><md:EmailAddress>supp&amp;rt@example.com</md:EmailAddress></md:ContactPerson>";
+		assertThat(metadataStr, containsString(supportContactStr));
 	}
 
 	/**

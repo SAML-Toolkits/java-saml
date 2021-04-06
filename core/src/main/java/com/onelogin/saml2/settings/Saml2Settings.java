@@ -9,6 +9,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.onelogin.saml2.model.hsm.HSM;
+
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -1032,7 +1034,10 @@ public class Saml2Settings {
 				}
 */
 
-				if (contact.getEmailAddress().isEmpty() || contact.getGivenName().isEmpty()) {
+				if (contact.getEmailAddresses().isEmpty() || contact.getEmailAddresses().stream().allMatch(StringUtils::isEmpty) || 
+						(StringUtils.isEmpty(contact.getCompany()) && 
+						StringUtils.isEmpty(contact.getGivenName()) && 
+						StringUtils.isEmpty(contact.getSurName()))) {
 					errorMsg = "contact_not_enough_data";
 					errors.add(errorMsg);
 					LOGGER.error(errorMsg);

@@ -277,8 +277,21 @@ public class Metadata {
 
 		for (Contact contact : contacts) {
 			contactsXml.append("<md:ContactPerson contactType=\"" + Util.toXml(contact.getContactType()) + "\">");
-			contactsXml.append("<md:GivenName>" + Util.toXml(contact.getGivenName()) + "</md:GivenName>");
-			contactsXml.append("<md:EmailAddress>" + Util.toXml(contact.getEmailAddress()) + "</md:EmailAddress>");
+			final String company = contact.getCompany();
+			if(company != null)
+				contactsXml.append("<md:Company>" + Util.toXml(company) + "</md:Company>");
+			final String givenName = contact.getGivenName();
+			if(givenName != null)
+				contactsXml.append("<md:GivenName>" + Util.toXml(givenName) + "</md:GivenName>");
+			final String surName = contact.getSurName();
+			if(surName != null)
+				contactsXml.append("<md:SurName>" + Util.toXml(surName) + "</md:SurName>");
+			final List<String> emailAddresses = contact.getEmailAddresses();
+			emailAddresses.forEach(emailAddress -> contactsXml
+			            .append("<md:EmailAddress>" + Util.toXml(emailAddress) + "</md:EmailAddress>"));
+			final List<String> telephoneNumbers = contact.getTelephoneNumbers();
+			telephoneNumbers.forEach(telephoneNumber -> contactsXml
+			            .append("<md:TelephoneNumber>" + Util.toXml(telephoneNumber) + "</md:TelephoneNumber>"));
 			contactsXml.append("</md:ContactPerson>");
 		}
 
