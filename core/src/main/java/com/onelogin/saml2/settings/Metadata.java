@@ -83,7 +83,7 @@ public class Metadata {
 		this.cacheDuration = cacheDuration;
 
 		StrSubstitutor substitutor = generateSubstitutor(settings);
-		String unsignedMetadataString = substitutor.replace(getMetadataTemplate());
+		String unsignedMetadataString = postProcessXml(substitutor.replace(getMetadataTemplate()));
 
 		LOGGER.debug("metadata --> " + unsignedMetadataString);
 		metadataString = unsignedMetadataString;
