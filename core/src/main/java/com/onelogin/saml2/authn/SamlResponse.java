@@ -1022,6 +1022,17 @@ public class SamlResponse {
 	public Exception getValidationException() {
 		return validationException;
 	}
+	
+	/**
+	 * Sets the validation exception that this {@link SamlResponse} should return
+	 * when a validation error occurs.
+	 * 
+	 * @param validationException
+	 *              the validation exception to set
+	 */
+	protected void setValidationException(Exception validationException) {
+		this.validationException = validationException;
+	}
 
 	/**
 	 * Extracts a node from the DOMDocument (Assertion).
