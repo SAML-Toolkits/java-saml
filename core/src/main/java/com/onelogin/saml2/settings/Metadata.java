@@ -63,6 +63,11 @@ public class Metadata {
 	private final Integer cacheDuration;
 
 	/**
+       * Settings data.
+       */
+	private final Saml2Settings settings;
+
+	/**
 	 * Constructs the Metadata object.
 	 *
 	 * @param settings                  Saml2Settings object. Setting data
@@ -72,6 +77,7 @@ public class Metadata {
 	 * @throws CertificateEncodingException
 	 */
 	public Metadata(Saml2Settings settings, Calendar validUntilTime, Integer cacheDuration, AttributeConsumingService attributeConsumingService) throws CertificateEncodingException {
+		this.settings = settings;
 		this.validUntilTime = validUntilTime;
 		this.attributeConsumingService = attributeConsumingService;
 		this.cacheDuration = cacheDuration;
@@ -102,7 +108,7 @@ public class Metadata {
 	 * @throws CertificateEncodingException
 	 */
 	public Metadata(Saml2Settings settings) throws CertificateEncodingException {
-
+		this.settings = settings;
 		this.validUntilTime = Calendar.getInstance();
 		this.validUntilTime.add(Calendar.DAY_OF_YEAR, N_DAYS_VALID_UNTIL);
 
@@ -406,5 +412,14 @@ public class Metadata {
 		String signedMetadata = Util.addSign(metadataDoc, key, cert, signAlgorithm, digestAlgorithm);
 		LOGGER.debug("Signed metadata --> " + signedMetadata);
 		return signedMetadata;
+	}
+	
+	/**
+	 * Returns the SAML settings specified at construction time.
+	 * 
+	 * @return the SAML settings
+	 */
+	protected Saml2Settings getSettings() {
+		return settings;
 	}
 }

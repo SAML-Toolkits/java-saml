@@ -41,13 +41,13 @@ import com.onelogin.saml2.util.Util;
  */
 public class SamlResponse {
 	/**
-     * Private property to construct a logger for this class.
-     */
+       * Private property to construct a logger for this class.
+       */
 	private static final Logger LOGGER = LoggerFactory.getLogger(SamlResponse.class);
 
 	/**
-     * Settings data.
-     */
+       * Settings data.
+       */
 	private final Saml2Settings settings;
 
 	/**
@@ -1321,5 +1321,14 @@ public class SamlResponse {
 					ValidationError.INVALID_ISSUE_INSTANT_FORMAT);
 		}
 		return result;
+	}
+
+	/**
+	 * Returns the SAML settings specified at construction time.
+	 * 
+	 * @return the SAML settings
+	 */
+	protected Saml2Settings getSettings() {
+		return settings;
 	}
 }
