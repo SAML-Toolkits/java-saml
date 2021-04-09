@@ -57,7 +57,7 @@ public class AttributeConsumingService {
 		this.index = index;
 		this.isDefault = isDefault;
 		this.serviceName = serviceName != null? serviceName : "";
-		this.serviceDescription = serviceDescription != null? serviceDescription : "";
+		this.serviceDescription = serviceDescription;
 		this.lang = lang != null? lang: "en";
 		this.requestedAttributes = new ArrayList<RequestedAttribute>(); 
 	}
@@ -79,18 +79,21 @@ public class AttributeConsumingService {
 	}
 
 	/**
-	 * Constructor for a non-default attribute consuming service with index <code>1</code>
-	 * and service name and descriptions in English.
-	 * Mainly kept for backward compatibility, this constructor can be used when an only
-	 * attribute consuming service is required.
+	 * Constructor for a non-default attribute consuming service with index
+	 * <code>1</code> and service name and descriptions in English.
+	 * <p>
+	 * Mainly kept for backward compatibility, this constructor can be used when an
+	 * only attribute consuming service is required. Please also note that, to
+	 * maintain full backward compatibility, if the service description is
+	 * <code>null</code> this constructor will set is as an empty string.
 	 *
 	 * @param serviceName
 	 *              String. Service Name
 	 * @param serviceDescription
-	 *              String. Service Description
+	 *              String. Service Description; if <code>null</code>, an empty string will be set
 	 */
 	public AttributeConsumingService(String serviceName, String serviceDescription) {
-		this(1, null, serviceName, serviceDescription, null);
+		this(1, null, serviceName, serviceDescription != null? serviceDescription : "", null);
 	}
 
 	/**

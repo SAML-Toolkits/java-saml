@@ -33,9 +33,11 @@ import org.junit.rules.ExpectedException;
 
 import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.exception.SettingsException;
+import com.onelogin.saml2.model.AttributeConsumingService;
 import com.onelogin.saml2.model.Contact;
 import com.onelogin.saml2.model.KeyStoreSettings;
 import com.onelogin.saml2.model.Organization;
+import com.onelogin.saml2.model.RequestedAttribute;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
 import com.onelogin.saml2.util.Constants;
@@ -135,6 +137,7 @@ public class SettingBuilderTest {
 		assertNull(setting.getSpSingleLogoutServiceUrl());
 		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect", setting.getSpSingleLogoutServiceBinding());
 		assertEquals("urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified", setting.getSpNameIDFormat());
+		assertTrue(setting.getSpAttributeConsumingServices().isEmpty());
 
 		assertTrue(setting.getIdpEntityId().isEmpty());
 		assertNull(setting.getIdpSingleSignOnServiceUrl());
@@ -193,6 +196,7 @@ public class SettingBuilderTest {
 		assertEquals("http://localhost:8080/java-saml-jspsample/sls.jsp", setting.getSpSingleLogoutServiceUrl().toString());
 		assertEquals(setting.getSpSingleLogoutServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
 		assertEquals(setting.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
+		assertTrue(setting.getSpAttributeConsumingServices().isEmpty());
 
 		assertEquals("http://idp.example.com/", setting.getIdpEntityId());
 		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SSOService.php", setting.getIdpSingleSignOnServiceUrl().toString());
@@ -254,6 +258,31 @@ public class SettingBuilderTest {
 		assertEquals("http://localhost:8080/java-saml-jspsample/sls.jsp", setting.getSpSingleLogoutServiceUrl().toString());
 		assertEquals(setting.getSpSingleLogoutServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
 		assertEquals(setting.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
+		final List<AttributeConsumingService> attributeConsumingServices = setting.getSpAttributeConsumingServices();
+		assertEquals(1, attributeConsumingServices.size());
+		final AttributeConsumingService attributeConsumingService = attributeConsumingServices.get(0);
+		assertEquals(1, attributeConsumingService.getIndex());
+		assertNull(attributeConsumingService.isDefault());
+		assertEquals("My service", attributeConsumingService.getServiceName());
+		assertEquals("My service description", attributeConsumingService.getServiceDescription());
+		assertEquals("en", attributeConsumingService.getLang());
+		final List<RequestedAttribute> requestedAttributes = attributeConsumingService.getRequestedAttributes();
+		assertEquals(2, requestedAttributes.size());
+		final RequestedAttribute requestedAttribute1 = requestedAttributes.get(0);
+		assertEquals("Email", requestedAttribute1.getName());
+		assertEquals("urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress", requestedAttribute1.getNameFormat());
+		assertEquals("E-mail address", requestedAttribute1.getFriendlyName());
+		assertTrue(requestedAttribute1.isRequired());
+		final List<String> requestedAttribute1Values = requestedAttribute1.getAttributeValues();
+		assertEquals(2, requestedAttribute1Values.size());
+		assertEquals("foo@example.org", requestedAttribute1Values.get(0));
+		assertEquals("bar@example.org", requestedAttribute1Values.get(1));
+		final RequestedAttribute requestedAttribute2 = requestedAttributes.get(1);
+		assertEquals("FirstName", requestedAttribute2.getName());
+		assertNull(requestedAttribute2.getNameFormat());
+		assertNull(requestedAttribute2.getFriendlyName());
+		assertNull(requestedAttribute2.isRequired());
+		assertTrue(requestedAttribute2.getAttributeValues().isEmpty());
 
 		assertEquals("http://idp.example.com/", setting.getIdpEntityId());
 		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SSOService.php", setting.getIdpSingleSignOnServiceUrl().toString());
@@ -338,6 +367,72 @@ public class SettingBuilderTest {
 
 	/**
 	 * Tests SettingsBuilder fromFile method
+	 * <p>
+	 * Case: all settings config file with multiple Attribute Consuming Services
+	 *
+	 * @throws IOException
+	 * @throws CertificateException
+	 * @throws URISyntaxException
+	 * @throws SettingsException
+	 * @throws Error
+	 *
+	 * @see com.onelogin.saml2.settings.SettingsBuilder#fromFile
+	 */
+	@Test
+	public void testLoadFromFileAllPropMultiAttributeConsumingServices() throws IOException, CertificateException, URISyntaxException, SettingsException, Error {
+		Saml2Settings setting = new SettingsBuilder().fromFile("config/config.all_multi_attribute_consuming_services.properties").build();
+
+		// let's test only the Attribute Consuming Service part - no need to test again all the rest
+		final List<AttributeConsumingService> attributeConsumingServices = setting.getSpAttributeConsumingServices();
+		assertEquals(2, attributeConsumingServices.size());
+
+		{
+      		final AttributeConsumingService attributeConsumingService1 = attributeConsumingServices.get(0);
+      		assertEquals(0, attributeConsumingService1.getIndex());
+      		assertNull(attributeConsumingService1.isDefault());
+      		assertEquals("Just e-mail", attributeConsumingService1.getServiceName());
+      		assertNull(attributeConsumingService1.getServiceDescription());
+      		assertEquals("en", attributeConsumingService1.getLang());
+      		final List<RequestedAttribute> requestedAttributes1 = attributeConsumingService1.getRequestedAttributes();
+      		assertEquals(1, requestedAttributes1.size());
+      		final RequestedAttribute requestedAttribute11 = requestedAttributes1.get(0);
+      		assertEquals("Email", requestedAttribute11.getName());
+      		assertEquals("urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress", requestedAttribute11.getNameFormat());
+      		assertEquals("E-mail address", requestedAttribute11.getFriendlyName());
+      		assertTrue(requestedAttribute11.isRequired());
+      		final List<String> requestedAttribute11Values = requestedAttribute11.getAttributeValues();
+      		assertEquals(2, requestedAttribute11Values.size());
+      		assertEquals("foo@example.org", requestedAttribute11Values.get(0));
+      		assertEquals("bar@example.org", requestedAttribute11Values.get(1));
+		}
+	
+		{
+      		final AttributeConsumingService attributeConsumingService2 = attributeConsumingServices.get(1);
+      		assertEquals(1, attributeConsumingService2.getIndex());
+      		assertTrue(attributeConsumingService2.isDefault());
+      		assertEquals("Anagrafica \"completa\"", attributeConsumingService2.getServiceName());
+      		assertEquals("Dati anagrafici \"completi\"", attributeConsumingService2.getServiceDescription());
+      		assertEquals("it", attributeConsumingService2.getLang());
+      		final List<RequestedAttribute> requestedAttributes2 = attributeConsumingService2.getRequestedAttributes();
+      		assertEquals(2, requestedAttributes2.size());
+      		final RequestedAttribute requestedAttribute21 = requestedAttributes2.get(0);
+      		assertEquals("Birth date", requestedAttribute21.getName());
+      		assertNull(requestedAttribute21.getNameFormat());
+      		assertNull(requestedAttribute21.getFriendlyName());
+      		assertNull(requestedAttribute21.isRequired());
+      		final List<String> requestedAttribute21Values = requestedAttribute21.getAttributeValues();
+      		assertTrue(requestedAttribute21Values.isEmpty());
+      		final RequestedAttribute requestedAttribute22 = requestedAttributes2.get(1);
+      		assertEquals("First & Last Name", requestedAttribute22.getName());
+      		assertNull(requestedAttribute22.getNameFormat());
+      		assertNull(requestedAttribute22.getFriendlyName());
+      		assertTrue(requestedAttribute22.isRequired());
+      		assertTrue(requestedAttribute22.getAttributeValues().isEmpty());
+		}
+	}
+
+	/**
+	 * Tests SettingsBuilder fromFile method
 	 * Case: settings config file with certificate string
 	 *
 	 * @throws IOException
@@ -361,6 +456,7 @@ public class SettingBuilderTest {
 		assertEquals("http://localhost:8080/java-saml-jspsample/sls.jsp", setting.getSpSingleLogoutServiceUrl().toString());
 		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect", setting.getSpSingleLogoutServiceBinding());
 		assertEquals("urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified", setting.getSpNameIDFormat());
+		assertTrue(setting.getSpAttributeConsumingServices().isEmpty());
 
 		assertEquals("http://idp.example.com/", setting.getIdpEntityId());
 		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SSOService.php", setting.getIdpSingleSignOnServiceUrl().toString());
@@ -416,6 +512,7 @@ public class SettingBuilderTest {
 		assertEquals("http://localhost:8080/java-saml-jspsample/sls.jsp", setting.getSpSingleLogoutServiceUrl().toString());
 		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect", setting.getSpSingleLogoutServiceBinding());
 		assertEquals("urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified", setting.getSpNameIDFormat());
+		assertTrue(setting.getSpAttributeConsumingServices().isEmpty());
 
 		assertEquals("http://idp.example.com/", setting.getIdpEntityId());
 		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SSOService.php", setting.getIdpSingleSignOnServiceUrl().toString());
@@ -527,6 +624,7 @@ public class SettingBuilderTest {
 		assertEquals("http://localhost:8080/java-saml-jspsample/sls.jsp", setting.getSpSingleLogoutServiceUrl().toString());
 		assertEquals(setting.getSpSingleLogoutServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
 		assertEquals(setting.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
+		assertTrue(setting.getSpAttributeConsumingServices().isEmpty());
 
 		assertEquals("http://idp.example.com/", setting.getIdpEntityId());
 		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SSOService.php", setting.getIdpSingleSignOnServiceUrl().toString());
@@ -581,6 +679,7 @@ public class SettingBuilderTest {
 		assertEquals("http://localhost:8080/java-saml-jspsample/sls.jsp", setting.getSpSingleLogoutServiceUrl().toString());
 		assertEquals(setting.getSpSingleLogoutServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
 		assertEquals(setting.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
+		assertTrue(setting.getSpAttributeConsumingServices().isEmpty());
 
 		assertEquals("http://idp.example.com/", setting.getIdpEntityId());
 		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SSOService.php", setting.getIdpSingleSignOnServiceUrl().toString());
@@ -679,6 +778,7 @@ public class SettingBuilderTest {
 		assertEquals("http://localhost:8080/java-saml-jspsample/sls.jsp", setting2.getSpSingleLogoutServiceUrl().toString());
 		assertEquals(setting2.getSpSingleLogoutServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
 		assertEquals(setting2.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
+		assertTrue(setting.getSpAttributeConsumingServices().isEmpty());
 
 		assertEquals("http://idp.example.com/", setting2.getIdpEntityId());
 		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SSOService.php", setting2.getIdpSingleSignOnServiceUrl().toString());
@@ -739,6 +839,16 @@ public class SettingBuilderTest {
 		samlData.put(SP_X509CERT_PROPERTY_KEY, "-----BEGIN CERTIFICATE-----MIICeDCCAeGgAwIBAgIBADANBgkqhkiG9w0BAQ0FADBZMQswCQYDVQQGEwJ1czETMBEGA1UECAwKQ2FsaWZvcm5pYTEVMBMGA1UECgwMT25lTG9naW4gSW5jMR4wHAYDVQQDDBVqYXZhLXNhbWwuZXhhbXBsZS5jb20wHhcNMTUxMDE4MjAxMjM1WhcNMTgwNzE0MjAxMjM1WjBZMQswCQYDVQQGEwJ1czETMBEGA1UECAwKQ2FsaWZvcm5pYTEVMBMGA1UECgwMT25lTG9naW4gSW5jMR4wHAYDVQQDDBVqYXZhLXNhbWwuZXhhbXBsZS5jb20wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBALvwEktX1+4y2AhEqxVwOO6HO7Wtzi3hr5becRkfLYGjNSyhzZCjI1DsNL61JSWDO3nviZd9fSkFnRC4akFUm0CS6GJ7TZe4T5o+9aowQ6N8e8cts9XPXyP6Inz7q4sD8pO2EInlfwHYPQCqFmz/SDW7cDgIC8vb0ygOsiXdreANAgMBAAGjUDBOMB0GA1UdDgQWBBTifMwN3CQ5ZOPkV5tDJsutU8teFDAfBgNVHSMEGDAWgBTifMwN3CQ5ZOPkV5tDJsutU8teFDAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBDQUAA4GBAG3nAEUjJaA75SkzID5FKLolsxG5TE/0HU0+yEUAVkXiqvqN4mPWq/JjoK5+uP4LEZIb4pRrCqI3iHp+vazLLYSeyV3kaGN7q35Afw8nk8WM0f7vImbQ69j1S8GQ+6E0PEI26qBLykGkMn3GUVtBBWSdpP093NuNLJiOomnHqhqj-----END CERTIFICATE-----");
 		samlData.put(SP_X509CERTNEW_PROPERTY_KEY, "-----BEGIN CERTIFICATE-----MIICeDCCAeGgAwIBAgIBADANBgkqhkiG9w0BAQ0FADBZMQswCQYDVQQGEwJ1czETMBEGA1UECAwKQ2FsaWZvcm5pYTEVMBMGA1UECgwMT25lTG9naW4gSW5jMR4wHAYDVQQDDBVqYXZhLXNhbWwuZXhhbXBsZS5jb20wHhcNMTUxMDE4MjAxMjM1WhcNMTgwNzE0MjAxMjM1WjBZMQswCQYDVQQGEwJ1czETMBEGA1UECAwKQ2FsaWZvcm5pYTEVMBMGA1UECgwMT25lTG9naW4gSW5jMR4wHAYDVQQDDBVqYXZhLXNhbWwuZXhhbXBsZS5jb20wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBALvwEktX1+4y2AhEqxVwOO6HO7Wtzi3hr5becRkfLYGjNSyhzZCjI1DsNL61JSWDO3nviZd9fSkFnRC4akFUm0CS6GJ7TZe4T5o+9aowQ6N8e8cts9XPXyP6Inz7q4sD8pO2EInlfwHYPQCqFmz/SDW7cDgIC8vb0ygOsiXdreANAgMBAAGjUDBOMB0GA1UdDgQWBBTifMwN3CQ5ZOPkV5tDJsutU8teFDAfBgNVHSMEGDAWgBTifMwN3CQ5ZOPkV5tDJsutU8teFDAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBDQUAA4GBAG3nAEUjJaA75SkzID5FKLolsxG5TE/0HU0+yEUAVkXiqvqN4mPWq/JjoK5+uP4LEZIb4pRrCqI3iHp+vazLLYSeyV3kaGN7q35Afw8nk8WM0f7vImbQ69j1S8GQ+6E0PEI26qBLykGkMn3GUVtBBWSdpP093NuNLJiOomnHqhqj-----END CERTIFICATE-----");
 		samlData.put(SP_PRIVATEKEY_PROPERTY_KEY, "-----BEGIN PRIVATE KEY-----MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBALvwEktX1+4y2AhEqxVwOO6HO7Wtzi3hr5becRkfLYGjNSyhzZCjI1DsNL61JSWDO3nviZd9fSkFnRC4akFUm0CS6GJ7TZe4T5o+9aowQ6N8e8cts9XPXyP6Inz7q4sD8pO2EInlfwHYPQCqFmz/SDW7cDgIC8vb0ygOsiXdreANAgMBAAECgYA7VPVRl+/xoVeWdKdWY1F17HerSa23ynI2vQ8TkUY6kR3ucz6ElRxHJesY8fNCPoX+XuMfUly7IKyPZMkWyvEgDPo7J5mYqP5VsTK0Li4AwR/BA93Aw6gaX7/EYi3HjBh8QdNSt4fi9yOea/hv04yfR9Lx/a5fvQIyhqaDtT2QeQJBAOnCgnxnj70/sv9UsFPa8t1OGdAfXtOgEoklh1F2NR9jid6FPw5E98eCpdZ00MfRrmUavgqg6Y4swZISyzJIjGMCQQDN0YNsC4S+eJJM6aOCpupKluWE/cCWB01UQYekyXH7OdUtl49NlKEUPBSAvtaLMuMKlTNOjlPrx4Q+/c5i0vTPAkEA5H7CR9J/OZETaewhc8ZYkaRvLPYNHjWhCLhLXoB6itUkhgOfUFZwEXAOpOOI1VmL675JN2B1DAmJqTx/rQYnWwJBAMx3ztsAmnBq8dTM6y65ydouDHhRawjg2jbRHwNbSQvuyVSQ08Gb3WZvxWKdtB/3fsydqqnpBYAf5sZ5eJZ+wssCQAOiIKnhdYe+RBbBwykzjUqtzEmt4fwCFE8tD4feEx77D05j5f7u7KYh1mL0G2zIbnUryi7jwc4ye98VirRpZ1w=-----END PRIVATE KEY-----");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_NAME_PROPERTY_KEY_SUFFIX, "My service");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_DESCRIPTION_PROPERTY_KEY_SUFFIX, "My service description");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_LANG_PROPERTY_KEY_SUFFIX, "en");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_NAME_PROPERTY_KEY_SUFFIX, "Email");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_NAME_FORMAT_PROPERTY_KEY_SUFFIX, "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_FRIENDLY_NAME_PROPERTY_KEY_SUFFIX, "E-mail address");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_REQUIRED_PROPERTY_KEY_SUFFIX, "true");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_VALUE_PROPERTY_KEY_PREFIX + "[0]", "foo@example.org");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_VALUE_PROPERTY_KEY_PREFIX + "[1]", "bar@example.org");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[1]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_NAME_PROPERTY_KEY_SUFFIX, "FirstName");
 
 		// Build IdP
 		samlData.put(IDP_ENTITYID_PROPERTY_KEY, "http://idp.example.com/");
@@ -817,6 +927,31 @@ public class SettingBuilderTest {
 		assertEquals(setting.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
 		assertNotNull(setting.getSPcert());
 		assertNotNull(setting.getSPcertNew());
+		final List<AttributeConsumingService> attributeConsumingServices = setting.getSpAttributeConsumingServices();
+		assertEquals(1, attributeConsumingServices.size());
+		final AttributeConsumingService attributeConsumingService = attributeConsumingServices.get(0);
+		assertEquals(1, attributeConsumingService.getIndex());
+		assertNull(attributeConsumingService.isDefault());
+		assertEquals("My service", attributeConsumingService.getServiceName());
+		assertEquals("My service description", attributeConsumingService.getServiceDescription());
+		assertEquals("en", attributeConsumingService.getLang());
+		final List<RequestedAttribute> requestedAttributes = attributeConsumingService.getRequestedAttributes();
+		assertEquals(2, requestedAttributes.size());
+		final RequestedAttribute requestedAttribute1 = requestedAttributes.get(0);
+		assertEquals("Email", requestedAttribute1.getName());
+		assertEquals("urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress", requestedAttribute1.getNameFormat());
+		assertEquals("E-mail address", requestedAttribute1.getFriendlyName());
+		assertTrue(requestedAttribute1.isRequired());
+		final List<String> requestedAttribute1Values = requestedAttribute1.getAttributeValues();
+		assertEquals(2, requestedAttribute1Values.size());
+		assertEquals("foo@example.org", requestedAttribute1Values.get(0));
+		assertEquals("bar@example.org", requestedAttribute1Values.get(1));
+		final RequestedAttribute requestedAttribute2 = requestedAttributes.get(1);
+		assertEquals("FirstName", requestedAttribute2.getName());
+		assertNull(requestedAttribute2.getNameFormat());
+		assertNull(requestedAttribute2.getFriendlyName());
+		assertNull(requestedAttribute2.isRequired());
+		assertTrue(requestedAttribute2.getAttributeValues().isEmpty());
 
 		assertEquals("http://idp.example.com/", setting.getIdpEntityId());
 		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SSOService.php", setting.getIdpSingleSignOnServiceUrl().toString());
@@ -951,6 +1086,16 @@ public class SettingBuilderTest {
 		samlData.put(SP_X509CERT_PROPERTY_KEY, "-----BEGIN CERTIFICATE-----MIICeDCCAeGgAwIBAgIBADANBgkqhkiG9w0BAQ0FADBZMQswCQYDVQQGEwJ1czETMBEGA1UECAwKQ2FsaWZvcm5pYTEVMBMGA1UECgwMT25lTG9naW4gSW5jMR4wHAYDVQQDDBVqYXZhLXNhbWwuZXhhbXBsZS5jb20wHhcNMTUxMDE4MjAxMjM1WhcNMTgwNzE0MjAxMjM1WjBZMQswCQYDVQQGEwJ1czETMBEGA1UECAwKQ2FsaWZvcm5pYTEVMBMGA1UECgwMT25lTG9naW4gSW5jMR4wHAYDVQQDDBVqYXZhLXNhbWwuZXhhbXBsZS5jb20wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBALvwEktX1+4y2AhEqxVwOO6HO7Wtzi3hr5becRkfLYGjNSyhzZCjI1DsNL61JSWDO3nviZd9fSkFnRC4akFUm0CS6GJ7TZe4T5o+9aowQ6N8e8cts9XPXyP6Inz7q4sD8pO2EInlfwHYPQCqFmz/SDW7cDgIC8vb0ygOsiXdreANAgMBAAGjUDBOMB0GA1UdDgQWBBTifMwN3CQ5ZOPkV5tDJsutU8teFDAfBgNVHSMEGDAWgBTifMwN3CQ5ZOPkV5tDJsutU8teFDAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBDQUAA4GBAG3nAEUjJaA75SkzID5FKLolsxG5TE/0HU0+yEUAVkXiqvqN4mPWq/JjoK5+uP4LEZIb4pRrCqI3iHp+vazLLYSeyV3kaGN7q35Afw8nk8WM0f7vImbQ69j1S8GQ+6E0PEI26qBLykGkMn3GUVtBBWSdpP093NuNLJiOomnHqhqj-----END CERTIFICATE-----");
 		samlData.put(SP_X509CERTNEW_PROPERTY_KEY, "-----BEGIN CERTIFICATE-----MIICeDCCAeGgAwIBAgIBADANBgkqhkiG9w0BAQ0FADBZMQswCQYDVQQGEwJ1czETMBEGA1UECAwKQ2FsaWZvcm5pYTEVMBMGA1UECgwMT25lTG9naW4gSW5jMR4wHAYDVQQDDBVqYXZhLXNhbWwuZXhhbXBsZS5jb20wHhcNMTUxMDE4MjAxMjM1WhcNMTgwNzE0MjAxMjM1WjBZMQswCQYDVQQGEwJ1czETMBEGA1UECAwKQ2FsaWZvcm5pYTEVMBMGA1UECgwMT25lTG9naW4gSW5jMR4wHAYDVQQDDBVqYXZhLXNhbWwuZXhhbXBsZS5jb20wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBALvwEktX1+4y2AhEqxVwOO6HO7Wtzi3hr5becRkfLYGjNSyhzZCjI1DsNL61JSWDO3nviZd9fSkFnRC4akFUm0CS6GJ7TZe4T5o+9aowQ6N8e8cts9XPXyP6Inz7q4sD8pO2EInlfwHYPQCqFmz/SDW7cDgIC8vb0ygOsiXdreANAgMBAAGjUDBOMB0GA1UdDgQWBBTifMwN3CQ5ZOPkV5tDJsutU8teFDAfBgNVHSMEGDAWgBTifMwN3CQ5ZOPkV5tDJsutU8teFDAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBDQUAA4GBAG3nAEUjJaA75SkzID5FKLolsxG5TE/0HU0+yEUAVkXiqvqN4mPWq/JjoK5+uP4LEZIb4pRrCqI3iHp+vazLLYSeyV3kaGN7q35Afw8nk8WM0f7vImbQ69j1S8GQ+6E0PEI26qBLykGkMn3GUVtBBWSdpP093NuNLJiOomnHqhqj-----END CERTIFICATE-----");
 		samlData.put(SP_PRIVATEKEY_PROPERTY_KEY, "-----BEGIN PRIVATE KEY-----MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBALvwEktX1+4y2AhEqxVwOO6HO7Wtzi3hr5becRkfLYGjNSyhzZCjI1DsNL61JSWDO3nviZd9fSkFnRC4akFUm0CS6GJ7TZe4T5o+9aowQ6N8e8cts9XPXyP6Inz7q4sD8pO2EInlfwHYPQCqFmz/SDW7cDgIC8vb0ygOsiXdreANAgMBAAECgYA7VPVRl+/xoVeWdKdWY1F17HerSa23ynI2vQ8TkUY6kR3ucz6ElRxHJesY8fNCPoX+XuMfUly7IKyPZMkWyvEgDPo7J5mYqP5VsTK0Li4AwR/BA93Aw6gaX7/EYi3HjBh8QdNSt4fi9yOea/hv04yfR9Lx/a5fvQIyhqaDtT2QeQJBAOnCgnxnj70/sv9UsFPa8t1OGdAfXtOgEoklh1F2NR9jid6FPw5E98eCpdZ00MfRrmUavgqg6Y4swZISyzJIjGMCQQDN0YNsC4S+eJJM6aOCpupKluWE/cCWB01UQYekyXH7OdUtl49NlKEUPBSAvtaLMuMKlTNOjlPrx4Q+/c5i0vTPAkEA5H7CR9J/OZETaewhc8ZYkaRvLPYNHjWhCLhLXoB6itUkhgOfUFZwEXAOpOOI1VmL675JN2B1DAmJqTx/rQYnWwJBAMx3ztsAmnBq8dTM6y65ydouDHhRawjg2jbRHwNbSQvuyVSQ08Gb3WZvxWKdtB/3fsydqqnpBYAf5sZ5eJZ+wssCQAOiIKnhdYe+RBbBwykzjUqtzEmt4fwCFE8tD4feEx77D05j5f7u7KYh1mL0G2zIbnUryi7jwc4ye98VirRpZ1w=-----END PRIVATE KEY-----");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_NAME_PROPERTY_KEY_SUFFIX, "My service");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_DESCRIPTION_PROPERTY_KEY_SUFFIX, "My service description");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_LANG_PROPERTY_KEY_SUFFIX, "en");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_NAME_PROPERTY_KEY_SUFFIX, "Email");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_NAME_FORMAT_PROPERTY_KEY_SUFFIX, "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_FRIENDLY_NAME_PROPERTY_KEY_SUFFIX, "E-mail address");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_REQUIRED_PROPERTY_KEY_SUFFIX, Boolean.TRUE);
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_VALUE_PROPERTY_KEY_PREFIX + "[0]", "foo@example.org");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_VALUE_PROPERTY_KEY_PREFIX + "[1]", "bar@example.org");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[1]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_NAME_PROPERTY_KEY_SUFFIX, "FirstName");
 
 		// Build IdP
 		samlData.put(IDP_ENTITYID_PROPERTY_KEY, "http://idp.example.com/");
@@ -1025,6 +1170,31 @@ public class SettingBuilderTest {
 		assertEquals(setting.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
 		assertNotNull(setting.getSPcert());
 		assertNotNull(setting.getSPcertNew());
+		final List<AttributeConsumingService> attributeConsumingServices = setting.getSpAttributeConsumingServices();
+		assertEquals(1, attributeConsumingServices.size());
+		final AttributeConsumingService attributeConsumingService = attributeConsumingServices.get(0);
+		assertEquals(1, attributeConsumingService.getIndex());
+		assertNull(attributeConsumingService.isDefault());
+		assertEquals("My service", attributeConsumingService.getServiceName());
+		assertEquals("My service description", attributeConsumingService.getServiceDescription());
+		assertEquals("en", attributeConsumingService.getLang());
+		final List<RequestedAttribute> requestedAttributes = attributeConsumingService.getRequestedAttributes();
+		assertEquals(2, requestedAttributes.size());
+		final RequestedAttribute requestedAttribute1 = requestedAttributes.get(0);
+		assertEquals("Email", requestedAttribute1.getName());
+		assertEquals("urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress", requestedAttribute1.getNameFormat());
+		assertEquals("E-mail address", requestedAttribute1.getFriendlyName());
+		assertTrue(requestedAttribute1.isRequired());
+		final List<String> requestedAttribute1Values = requestedAttribute1.getAttributeValues();
+		assertEquals(2, requestedAttribute1Values.size());
+		assertEquals("foo@example.org", requestedAttribute1Values.get(0));
+		assertEquals("bar@example.org", requestedAttribute1Values.get(1));
+		final RequestedAttribute requestedAttribute2 = requestedAttributes.get(1);
+		assertEquals("FirstName", requestedAttribute2.getName());
+		assertNull(requestedAttribute2.getNameFormat());
+		assertNull(requestedAttribute2.getFriendlyName());
+		assertNull(requestedAttribute2.isRequired());
+		assertTrue(requestedAttribute2.getAttributeValues().isEmpty());
 
 		assertEquals("http://idp.example.com/", setting.getIdpEntityId());
 		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SSOService.php", setting.getIdpSingleSignOnServiceUrl().toString());
@@ -1112,6 +1282,95 @@ public class SettingBuilderTest {
 		assertEquals("ONELOGIN_", setting.getUniqueIDPrefix());
 	}
 
+	/**
+	 * Tests SettingsBuilder constructor
+	 * Case: settings from values when multiple Attribute Consuming Services are defined
+	 *
+	 * @throws IOException
+	 *
+	 * @see com.onelogin.saml2.settings.SettingsBuilder
+	 */
+	@Test
+	public void testLoadFromValuesMultiAttributeConsumingServices() throws Exception {
+		Map<String, Object> samlData = new LinkedHashMap<>();
+		
+		// just build Attribute Consuming Services
+		// the following must be ignored, because indexed properties are present
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_NAME_PROPERTY_KEY_SUFFIX, "My service");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_DESCRIPTION_PROPERTY_KEY_SUFFIX, "My service description");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_LANG_PROPERTY_KEY_SUFFIX, "en");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_NAME_PROPERTY_KEY_SUFFIX, "Email");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_NAME_FORMAT_PROPERTY_KEY_SUFFIX, "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_FRIENDLY_NAME_PROPERTY_KEY_SUFFIX, "E-mail address");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_REQUIRED_PROPERTY_KEY_SUFFIX, Boolean.TRUE);
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_VALUE_PROPERTY_KEY_PREFIX + "[0]", "foo@example.org");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_VALUE_PROPERTY_KEY_PREFIX + "[1]", "bar@example.org");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[1]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_NAME_PROPERTY_KEY_SUFFIX, "FirstName");
+		// the following, instead, must be processed
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_NAME_PROPERTY_KEY_SUFFIX, "Just e-mail");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_NAME_PROPERTY_KEY_SUFFIX, "Email");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_NAME_FORMAT_PROPERTY_KEY_SUFFIX, "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_FRIENDLY_NAME_PROPERTY_KEY_SUFFIX, "E-mail address");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_REQUIRED_PROPERTY_KEY_SUFFIX, "true");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_VALUE_PROPERTY_KEY_PREFIX + "[0]", "foo@example.org");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_VALUE_PROPERTY_KEY_PREFIX + "[1]", "bar@example.org");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "[1]." + SP_ATTRIBUTE_CONSUMING_SERVICE_NAME_PROPERTY_KEY_SUFFIX, "Anagrafica");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "[1]." + SP_ATTRIBUTE_CONSUMING_SERVICE_DESCRIPTION_PROPERTY_KEY_SUFFIX, "Servizio completo");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "[1]." + SP_ATTRIBUTE_CONSUMING_SERVICE_LANG_PROPERTY_KEY_SUFFIX, "it");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "[1]." + SP_ATTRIBUTE_CONSUMING_SERVICE_DEFAULT_PROPERTY_KEY_SUFFIX, "true");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "[1]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[0]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_NAME_PROPERTY_KEY_SUFFIX, "FirstName");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "[1]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[1]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_NAME_PROPERTY_KEY_SUFFIX, "LastName");
+		samlData.put(SP_ATTRIBUTE_CONSUMING_SERVICE_PROPERTY_KEY_PREFIX + "[1]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_PROPERTY_KEY_PREFIX + "[1]." + SP_ATTRIBUTE_CONSUMING_SERVICE_ATTRIBUTE_REQUIRED_PROPERTY_KEY_SUFFIX, "true");
+
+		Saml2Settings setting = new SettingsBuilder().fromValues(samlData).build();
+
+		final List<AttributeConsumingService> attributeConsumingServices = setting.getSpAttributeConsumingServices();
+		assertEquals(2, attributeConsumingServices.size());
+
+		{
+      		final AttributeConsumingService attributeConsumingService1 = attributeConsumingServices.get(0);
+      		assertEquals(0, attributeConsumingService1.getIndex());
+      		assertNull(attributeConsumingService1.isDefault());
+      		assertEquals("Just e-mail", attributeConsumingService1.getServiceName());
+      		assertNull(attributeConsumingService1.getServiceDescription());
+      		assertEquals("en", attributeConsumingService1.getLang());
+      		final List<RequestedAttribute> requestedAttributes1 = attributeConsumingService1.getRequestedAttributes();
+      		assertEquals(1, requestedAttributes1.size());
+      		final RequestedAttribute requestedAttribute11 = requestedAttributes1.get(0);
+      		assertEquals("Email", requestedAttribute11.getName());
+      		assertEquals("urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress", requestedAttribute11.getNameFormat());
+      		assertEquals("E-mail address", requestedAttribute11.getFriendlyName());
+      		assertTrue(requestedAttribute11.isRequired());
+      		final List<String> requestedAttribute11Values = requestedAttribute11.getAttributeValues();
+      		assertEquals(2, requestedAttribute11Values.size());
+      		assertEquals("foo@example.org", requestedAttribute11Values.get(0));
+      		assertEquals("bar@example.org", requestedAttribute11Values.get(1));
+		}
+	
+		{
+      		final AttributeConsumingService attributeConsumingService2 = attributeConsumingServices.get(1);
+      		assertEquals(1, attributeConsumingService2.getIndex());
+      		assertTrue(attributeConsumingService2.isDefault());
+      		assertEquals("Anagrafica", attributeConsumingService2.getServiceName());
+      		assertEquals("Servizio completo", attributeConsumingService2.getServiceDescription());
+      		assertEquals("it", attributeConsumingService2.getLang());
+      		final List<RequestedAttribute> requestedAttributes2 = attributeConsumingService2.getRequestedAttributes();
+      		assertEquals(2, requestedAttributes2.size());
+      		final RequestedAttribute requestedAttribute21 = requestedAttributes2.get(0);
+      		assertEquals("FirstName", requestedAttribute21.getName());
+      		assertNull(requestedAttribute21.getNameFormat());
+      		assertNull(requestedAttribute21.getFriendlyName());
+      		assertNull(requestedAttribute21.isRequired());
+      		final List<String> requestedAttribute21Values = requestedAttribute21.getAttributeValues();
+      		assertTrue(requestedAttribute21Values.isEmpty());
+      		final RequestedAttribute requestedAttribute22 = requestedAttributes2.get(1);
+      		assertEquals("LastName", requestedAttribute22.getName());
+      		assertNull(requestedAttribute22.getNameFormat());
+      		assertNull(requestedAttribute22.getFriendlyName());
+      		assertTrue(requestedAttribute22.isRequired());
+      		assertTrue(requestedAttribute22.getAttributeValues().isEmpty());
+		}
+	}
 	/**
 	 * Tests SettingsBuilder constructor
 	 * Case: settings config file with certificate loaded from file
