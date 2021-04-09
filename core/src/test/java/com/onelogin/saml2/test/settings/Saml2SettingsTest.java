@@ -5,11 +5,16 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -20,6 +25,7 @@ import com.onelogin.saml2.settings.SettingsBuilder;
 import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.SchemaFactory;
 import com.onelogin.saml2.util.Util;
+import com.onelogin.saml2.model.AssertionConsumerService;
 import com.onelogin.saml2.model.hsm.AzureKeyVault;
 
 /**
@@ -99,7 +105,7 @@ public class Saml2SettingsTest {
 
 	/**
 	 * Tests the checkSPSettings method of the Saml2Settings
-	 * Case: Check that all possible IdP errors are found
+	 * Case: Check that all possible SP errors are found
 	 *
 	 * @throws IOException
 	 * @throws Error
@@ -117,6 +123,17 @@ public class Saml2SettingsTest {
 		assertThat(settingsErrors, hasItem("contact_type_invalid"));
 		assertThat(settingsErrors, hasItem("contact_not_enough_data"));
 		assertThat(settingsErrors, hasItem("organization_not_enough_data"));
+		
+		Saml2Settings settings2 = new SettingsBuilder().fromFile("config/config.sperrors_multi_assertion_consumer_services.properties").build();
+		List<String> settings2Errors = settings2.checkSPSettings();
+		assertFalse(settings2Errors.isEmpty());
+		assertThat(settings2Errors, hasItem("sp_entityId_not_found"));
+		assertThat(settings2Errors, hasItem("sp_acs_not_enough_data"));
+		assertThat(settings2Errors, hasItem("sp_acs_multiple_defaults"));
+		assertThat(settings2Errors, hasItem("sp_cert_not_found_and_required"));
+		assertThat(settings2Errors, hasItem("contact_type_invalid"));
+		assertThat(settings2Errors, hasItem("contact_not_enough_data"));
+		assertThat(settings2Errors, hasItem("organization_not_enough_data"));
 	}
 
 	/**
@@ -133,6 +150,10 @@ public class Saml2SettingsTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
 		List<String> settingsErrors = settings.checkSPSettings();
 		assertTrue(settingsErrors.isEmpty());
+
+		Saml2Settings settings2 = new SettingsBuilder().fromFile("config/config.all_multi_assertion_consumer_services.properties").build();
+		List<String> settings2Errors = settings2.checkSPSettings();
+		assertTrue(settings2Errors.isEmpty());
 	}
 
 	/**
@@ -159,6 +180,20 @@ public class Saml2SettingsTest {
 		assertThat(settingsErrors, hasItem("idp_sso_url_invalid"));
 		assertThat(settingsErrors, hasItem("idp_cert_or_fingerprint_not_found_and_required"));
 		assertThat(settingsErrors, hasItem("idp_cert_not_found_and_required"));
+
+		Saml2Settings settings2 = new SettingsBuilder().fromFile("config/config.allerrors_multi_assertion_consumer_services.properties").build();
+		List<String> settings2Errors = settings2.checkSettings();
+		assertThat(settings2Errors, hasItem("sp_entityId_not_found"));
+		assertThat(settings2Errors, hasItem("sp_acs_not_enough_data"));
+		assertThat(settings2Errors, hasItem("sp_acs_multiple_defaults"));
+		assertThat(settings2Errors, hasItem("sp_cert_not_found_and_required"));
+		assertThat(settings2Errors, hasItem("contact_type_invalid"));
+		assertThat(settings2Errors, hasItem("contact_not_enough_data"));
+		assertThat(settings2Errors, hasItem("organization_not_enough_data"));
+		assertThat(settings2Errors, hasItem("idp_entityId_not_found"));
+		assertThat(settings2Errors, hasItem("idp_sso_url_invalid"));
+		assertThat(settings2Errors, hasItem("idp_cert_or_fingerprint_not_found_and_required"));
+		assertThat(settings2Errors, hasItem("idp_cert_not_found_and_required"));
 	}
 
 	/**
@@ -214,6 +249,10 @@ public class Saml2SettingsTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
 		List<String> settingsErrors = settings.checkSettings();
 		assertTrue(settingsErrors.isEmpty());
+
+		Saml2Settings settings2 = new SettingsBuilder().fromFile("config/config.all_multi_assertion_consumer_services.properties").build();
+		List<String> settings2Errors = settings2.checkSPSettings();
+		assertTrue(settings2Errors.isEmpty());
 	}
 
 	/**
@@ -283,6 +322,40 @@ public class Saml2SettingsTest {
 		assertThat(metadataStr, containsString("WantAssertionsSigned=\"false\""));
 		assertThat(metadataStr, not(containsString("<md:KeyDescriptor use=\"signing\">")));
 		assertThat(metadataStr, containsString("<md:AssertionConsumerService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST\" Location=\"http://localhost:8080/java-saml-jspsample/acs.jsp\" index=\"1\"/>"));
+		assertThat(metadataStr, containsString("<md:SingleLogoutService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect\" Location=\"http://localhost:8080/java-saml-jspsample/sls.jsp\"/>"));
+		assertThat(metadataStr, containsString("<md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</md:NameIDFormat>"));
+	}
+
+	/**
+	 * Tests the getSPMetadata method of the Saml2Settings
+	 * <p>
+	 * * Case Unsigned metadata with multiple Assertion Consumer Services
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.settings.Saml2Settings#getSPMetadata
+	 */
+	@Test
+	public void testGetSPMetadataUnsignedMultiAssertionConsumerServices() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min_multi_assertion_consumer_services.properties").build();
+
+		String metadataStr = settings.getSPMetadata();
+
+		Document metadataDoc = Util.loadXML(metadataStr);
+		assertTrue(metadataDoc instanceof Document);
+
+		assertEquals("md:EntityDescriptor", metadataDoc.getDocumentElement().getNodeName());
+		assertEquals("md:SPSSODescriptor", metadataDoc.getDocumentElement().getFirstChild().getNodeName());
+
+		assertTrue(Util.validateXML(metadataDoc, SchemaFactory.SAML_SCHEMA_METADATA_2_0));
+
+		assertThat(metadataStr, containsString("<md:SPSSODescriptor"));
+		assertThat(metadataStr, containsString("entityID=\"http://localhost:8080/java-saml-jspsample/metadata.jsp\""));
+		assertThat(metadataStr, containsString("AuthnRequestsSigned=\"false\""));
+		assertThat(metadataStr, containsString("WantAssertionsSigned=\"false\""));
+		assertThat(metadataStr, not(containsString("<md:KeyDescriptor use=\"signing\">")));
+		assertThat(metadataStr, containsString("<md:AssertionConsumerService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST\" Location=\"http://localhost:8081/java-saml-jspsample/acs1.jsp\" index=\"0\"/>"));
+		assertThat(metadataStr, containsString("<md:AssertionConsumerService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST\" Location=\"http://localhost:8081/java-saml-jspsample/acs2.jsp\" index=\"1\" isDefault=\"true\"/>"));
 		assertThat(metadataStr, containsString("<md:SingleLogoutService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect\" Location=\"http://localhost:8080/java-saml-jspsample/sls.jsp\"/>"));
 		assertThat(metadataStr, containsString("<md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</md:NameIDFormat>"));
 	}
@@ -377,6 +450,12 @@ public class Saml2SettingsTest {
 
 		List<String> errors = Saml2Settings.validateMetadata(metadataStr);
 		assertTrue(errors.isEmpty());
+		
+		Saml2Settings settings2 = new SettingsBuilder().fromFile("config/config.all_multi_assertion_consumer_services.properties").build();
+		String metadataStr2 = settings2.getSPMetadata();
+
+		List<String> errors2 = Saml2Settings.validateMetadata(metadataStr2);
+		assertTrue(errors2.isEmpty());
 	}
 
 	/**
@@ -490,5 +569,44 @@ public class Saml2SettingsTest {
 		List<String> errors = Saml2Settings.validateMetadata(metadataStr);
 		assertFalse(errors.isEmpty());
 		assertTrue(errors.contains("expired_xml"));
+	}
+	
+	/**
+	 * Tests the getSpDefaultAssertionConsumerService method of the Saml2Settings
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.settings.Saml2Settings#getSpDefaultAssertionConsumerService()
+	 */
+	@Test
+	public void testGetSpDefaultAssertionConsumerService() throws Exception {
+		// just one ACS with no explicit "default" attribute
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		Optional<AssertionConsumerService> defaultAcs = settings.getSpDefaultAssertionConsumerService();
+		assertTrue(defaultAcs.isPresent());
+		assertNull(defaultAcs.get().isDefault());
+		assertEquals(settings.getSpAssertionConsumerServices().get(0), defaultAcs.get());
+		// multiple ACSes with a default one
+		Saml2Settings settings2 = new SettingsBuilder().fromFile("config/config.min_multi_assertion_consumer_services.properties").build();
+		defaultAcs = settings2.getSpDefaultAssertionConsumerService();
+		assertTrue(defaultAcs.isPresent());
+		assertTrue(defaultAcs.get().isDefault());
+		assertEquals(settings2.getSpAssertionConsumerServices().get(1), defaultAcs.get());
+		// multiple ACSes with multiple default ones
+		Saml2Settings settings3 = new SettingsBuilder().fromFile("config/config.sperrors_multi_assertion_consumer_services.properties").build();
+		defaultAcs = settings3.getSpDefaultAssertionConsumerService();
+		assertFalse(defaultAcs.isPresent());
+		// no ACSses at all
+		Saml2Settings settings4 = new SettingsBuilder().fromFile("config/config.empty.properties").build();
+		defaultAcs = settings4.getSpDefaultAssertionConsumerService();
+		assertFalse(defaultAcs.isPresent());
+		// edge case: just one ACS but with explicit default=false
+		settings.getSpAssertionConsumerServices().set(0, new AssertionConsumerService(1, false, new URL("http://www.example.com")));
+		defaultAcs = settings.getSpDefaultAssertionConsumerService();
+		assertFalse(defaultAcs.isPresent());
+		// edge case: multiple ACS but no one with default=true
+		settings2.getSpAssertionConsumerServices().set(1, new AssertionConsumerService(1, false, new URL("http://www.example.com")));
+		defaultAcs = settings2.getSpDefaultAssertionConsumerService();
+		assertFalse(defaultAcs.isPresent());
 	}
 }
