@@ -1009,6 +1009,44 @@ public class Saml2Settings {
 
 		return this.getIdpx509certMulti() != null && !this.getIdpx509certMulti().isEmpty();
 	}
+	
+	/*
+	 * Auxiliary method to check Attribute Consuming Services are properly
+	 * configured.
+	 * 
+	 * @param errors the list to add to when an error is encountered
+	 */
+	private void checkAttributeConsumingServices(List<String> errors) {
+		List<AttributeConsumingService> attributeConsumingServices = getSpAttributeConsumingServices();
+		if(!attributeConsumingServices.isEmpty()) {
+			String errorMsg;
+			// all Attribute Consuming Services must have a service name
+			if(attributeConsumingServices.stream().anyMatch(service -> StringUtils.isEmpty(service.getServiceName()))) {
+				errorMsg = "sp_attribute_consuming_service_not_enough_data";
+				errors.add(errorMsg);
+				LOGGER.error(errorMsg);
+			}
+			// all Attribute Consuming Services must have at least one requested attribute
+			if(attributeConsumingServices.stream().anyMatch(service -> service.getRequestedAttributes().isEmpty())) {
+				errorMsg = "sp_attribute_consuming_service_no_requested_attribute";
+				errors.add(errorMsg);
+				LOGGER.error(errorMsg);
+			}
+			// there must be at most one with default = true
+			if(attributeConsumingServices.stream().filter(service -> Boolean.TRUE.equals(service.isDefault())).count() > 1) {
+				errorMsg = "sp_attribute_consuming_service_multiple_defaults";
+				errors.add(errorMsg);
+				LOGGER.error(errorMsg);
+			}
+			// all requested attributes must have a name
+			if(attributeConsumingServices.stream().flatMap(service -> service.getRequestedAttributes().stream())
+					.anyMatch(attribute -> StringUtils.isEmpty(attribute.getName()))) {
+				errorMsg = "sp_attribute_consuming_service_not_enough_requested_attribute_data";
+				errors.add(errorMsg);
+				LOGGER.error(errorMsg);
+			}
+		}
+	}
 
 	/**
 	 * Checks the SP settings .
@@ -1030,6 +1068,8 @@ public class Saml2Settings {
 			errors.add(errorMsg);
 			LOGGER.error(errorMsg);
 		}
+		
+		checkAttributeConsumingServices(errors);
 
 		if (this.getHsm() == null && (this.getAuthnRequestsSigned() || this.getLogoutRequestSigned()
 			|| this.getLogoutResponseSigned() || this.getWantAssertionsEncrypted() || this.getWantNameIdEncrypted()) && !this.checkSPCerts()) {

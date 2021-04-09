@@ -117,6 +117,19 @@ public class Saml2SettingsTest {
 		assertThat(settingsErrors, hasItem("contact_type_invalid"));
 		assertThat(settingsErrors, hasItem("contact_not_enough_data"));
 		assertThat(settingsErrors, hasItem("organization_not_enough_data"));
+
+		Saml2Settings settings2 = new SettingsBuilder().fromFile("config/config.sperrors_multi_attribute_consuming_services.properties").build();
+		List<String> settings2Errors = settings2.checkSPSettings();
+		assertFalse(settings2Errors.isEmpty());
+		assertThat(settings2Errors, hasItem("sp_entityId_not_found"));
+		assertThat(settings2Errors, hasItem("sp_attribute_consuming_service_not_enough_data"));
+		assertThat(settings2Errors, hasItem("sp_attribute_consuming_service_no_requested_attribute"));
+		assertThat(settings2Errors, hasItem("sp_attribute_consuming_service_multiple_defaults"));
+		assertThat(settings2Errors, hasItem("sp_attribute_consuming_service_not_enough_requested_attribute_data"));
+		assertThat(settings2Errors, hasItem("sp_cert_not_found_and_required"));
+		assertThat(settings2Errors, hasItem("contact_type_invalid"));
+		assertThat(settings2Errors, hasItem("contact_not_enough_data"));
+		assertThat(settings2Errors, hasItem("organization_not_enough_data"));
 	}
 
 	/**
@@ -133,6 +146,15 @@ public class Saml2SettingsTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
 		List<String> settingsErrors = settings.checkSPSettings();
 		assertTrue(settingsErrors.isEmpty());
+		
+		Saml2Settings settings2 = new SettingsBuilder().fromFile("config/config.all_multi_attribute_consuming_services.properties").build();
+		List<String> settings2Errors = settings2.checkSPSettings();
+		assertTrue(settings2Errors.isEmpty());
+		
+		// no attribute consuming services at all
+		Saml2Settings settings3 = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		List<String> settings3Errors = settings3.checkSPSettings();
+		assertTrue(settings3Errors.isEmpty());
 	}
 
 	/**
@@ -159,6 +181,23 @@ public class Saml2SettingsTest {
 		assertThat(settingsErrors, hasItem("idp_sso_url_invalid"));
 		assertThat(settingsErrors, hasItem("idp_cert_or_fingerprint_not_found_and_required"));
 		assertThat(settingsErrors, hasItem("idp_cert_not_found_and_required"));
+
+		Saml2Settings settings2 = new SettingsBuilder().fromFile("config/config.allerrors_multi_attribute_consuming_services.properties").build();
+		List<String> settings2Errors = settings2.checkSettings();
+		assertFalse(settings2Errors.isEmpty());
+		assertThat(settings2Errors, hasItem("sp_entityId_not_found"));
+		assertThat(settings2Errors, hasItem("sp_attribute_consuming_service_not_enough_data"));
+		assertThat(settings2Errors, hasItem("sp_attribute_consuming_service_no_requested_attribute"));
+		assertThat(settings2Errors, hasItem("sp_attribute_consuming_service_multiple_defaults"));
+		assertThat(settings2Errors, hasItem("sp_attribute_consuming_service_not_enough_requested_attribute_data"));
+		assertThat(settings2Errors, hasItem("sp_cert_not_found_and_required"));
+		assertThat(settings2Errors, hasItem("contact_type_invalid"));
+		assertThat(settings2Errors, hasItem("contact_not_enough_data"));
+		assertThat(settings2Errors, hasItem("organization_not_enough_data"));
+		assertThat(settings2Errors, hasItem("idp_entityId_not_found"));
+		assertThat(settings2Errors, hasItem("idp_sso_url_invalid"));
+		assertThat(settings2Errors, hasItem("idp_cert_or_fingerprint_not_found_and_required"));
+		assertThat(settings2Errors, hasItem("idp_cert_not_found_and_required"));
 	}
 
 	/**
@@ -285,6 +324,49 @@ public class Saml2SettingsTest {
 		assertThat(metadataStr, containsString("<md:AssertionConsumerService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST\" Location=\"http://localhost:8080/java-saml-jspsample/acs.jsp\" index=\"1\"/>"));
 		assertThat(metadataStr, containsString("<md:SingleLogoutService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect\" Location=\"http://localhost:8080/java-saml-jspsample/sls.jsp\"/>"));
 		assertThat(metadataStr, containsString("<md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</md:NameIDFormat>"));
+	}
+
+	/**
+	 * Tests the getSPMetadata method of the Saml2Settings
+	 * <p>
+	 * Case Unsigned metadata with multiple Attribute Consuming Services
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.settings.Saml2Settings#getSPMetadata
+	 */
+	@Test
+	public void testGetSPMetadataUnsignedMultiAttributeConsumingServices() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min_multi_attribute_consuming_services.properties").build();
+
+		String metadataStr = settings.getSPMetadata();
+
+		Document metadataDoc = Util.loadXML(metadataStr);
+		assertTrue(metadataDoc instanceof Document);
+
+		assertEquals("md:EntityDescriptor", metadataDoc.getDocumentElement().getNodeName());
+		assertEquals("md:SPSSODescriptor", metadataDoc.getDocumentElement().getFirstChild().getNodeName());
+
+		assertTrue(Util.validateXML(metadataDoc, SchemaFactory.SAML_SCHEMA_METADATA_2_0));
+
+		assertThat(metadataStr, containsString("<md:SPSSODescriptor"));
+		assertThat(metadataStr, containsString("entityID=\"http://localhost:8080/java-saml-jspsample/metadata.jsp\""));
+		assertThat(metadataStr, containsString("AuthnRequestsSigned=\"false\""));
+		assertThat(metadataStr, containsString("WantAssertionsSigned=\"false\""));
+		assertThat(metadataStr, not(containsString("<md:KeyDescriptor use=\"signing\">")));
+		assertThat(metadataStr, containsString("<md:AssertionConsumerService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST\" Location=\"http://localhost:8080/java-saml-jspsample/acs.jsp\" index=\"1\"/>"));
+		assertThat(metadataStr, containsString("<md:SingleLogoutService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect\" Location=\"http://localhost:8080/java-saml-jspsample/sls.jsp\"/>"));
+		assertThat(metadataStr, containsString("<md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</md:NameIDFormat>"));
+		assertThat(metadataStr, containsString("<md:AttributeConsumingService index=\"0\">"));
+		assertThat(metadataStr, containsString("<md:ServiceName xml:lang=\"en\">Just e-mail</md:ServiceName>"));
+		assertThat(metadataStr, containsString("<md:RequestedAttribute Name=\"Email\" NameFormat=\"urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress\" FriendlyName=\"E-mail address\" isRequired=\"true\">"));
+		assertThat(metadataStr, containsString("<saml:AttributeValue xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\">foo@example.org</saml:AttributeValue>"));
+		assertThat(metadataStr, containsString("<saml:AttributeValue xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\">bar@example.org</saml:AttributeValue>"));
+		assertThat(metadataStr, containsString("<md:AttributeConsumingService index=\"1\" isDefault=\"true\">"));
+		assertThat(metadataStr, containsString("<md:ServiceName xml:lang=\"it\">Anagrafica</md:ServiceName>"));
+		assertThat(metadataStr, containsString("<md:ServiceDescription xml:lang=\"it\">Servizio completo</md:ServiceDescription>"));
+		assertThat(metadataStr, containsString("<md:RequestedAttribute Name=\"FirstName\" />"));
+		assertThat(metadataStr, containsString("<md:RequestedAttribute Name=\"LastName\" isRequired=\"true\" />"));
 	}
 
 	/**
