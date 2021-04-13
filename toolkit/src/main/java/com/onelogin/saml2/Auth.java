@@ -116,7 +116,7 @@ public class Auth {
 	/**
 	 * User attributes data.
 	 */
-	private Map<String, List<String>> attributes = new HashMap<String, List<String>>();
+	private Map<String, List<String>> attributes = new LinkedHashMap<String, List<String>>();
 
 	/**
 	 * If user is authenticated.

@@ -5,6 +5,7 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -572,7 +573,7 @@ public class SamlResponse {
      *
      */
 	public HashMap<String, List<String>> getAttributes() throws XPathExpressionException, ValidationError {
-		HashMap<String, List<String>> attributes = new HashMap<String, List<String>>();
+		HashMap<String, List<String>> attributes = new LinkedHashMap<String, List<String>>();
 
 		NodeList nodes = this.queryAssertion("/saml:AttributeStatement/saml:Attribute");
 
