@@ -877,6 +877,32 @@ public class AuthnResponseTest {
 
 	/**
 	 * Tests the getIssuers method of SamlResponse
+	 * <p>
+	 * Case: different issuers for response and assertion
+	 *
+	 * @throws Error
+	 * @throws IOException
+	 * @throws ValidationError
+	 * @throws SettingsException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws XPathExpressionException
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#getIssuers
+	 */
+	@Test
+	public void testGetIssuersDifferentIssuers() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/different_issuers.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		List<String> expectedIssuers = new ArrayList<String>();
+		expectedIssuers.add("https://response-issuer.com");
+		expectedIssuers.add("https://assertion-issuer.com");
+		assertEquals(expectedIssuers, samlResponse.getIssuers());
+	}
+
+	/**
+	 * Tests the getIssuers method of SamlResponse
 	 * Case: Issuer of the assertion not found
 	 *
 	 * @throws Error
@@ -1787,8 +1813,7 @@ public class AuthnResponseTest {
 		settings.setStrict(true);
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
-		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
-		
+		assertEquals("Invalid issuer in the Assertion/Response. Was 'http://invalid.isser.example.com/', but expected 'http://idp.example.com/'", samlResponse.getError());
 	}
 
 	/**

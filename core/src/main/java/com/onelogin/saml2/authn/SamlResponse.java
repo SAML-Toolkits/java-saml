@@ -717,7 +717,7 @@ public class SamlResponse {
 		List<String> issuers = new ArrayList<String>();
 		String value;
 		NodeList responseIssuer = Util.query(samlResponseDocument, "/samlp:Response/saml:Issuer");
-		if (responseIssuer.getLength() > 1) {
+		if (responseIssuer.getLength() > 0) {
 			if (responseIssuer.getLength() == 1) {
 				value = responseIssuer.item(0).getTextContent();
 				if (!issuers.contains(value)) {
