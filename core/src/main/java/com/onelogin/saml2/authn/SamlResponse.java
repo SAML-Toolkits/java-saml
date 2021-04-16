@@ -14,6 +14,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
 import com.onelogin.saml2.model.hsm.HSM;
+
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Instant;
 import org.slf4j.Logger;
@@ -469,7 +471,10 @@ public class SamlResponse {
 
 			if (nameIdElem != null) {
 				String value = nameIdElem.getTextContent();
-				if (settings.isStrict() && value.isEmpty()) {
+				if(value != null) {
+					value = value.trim();
+				}
+				if (settings.isStrict() && StringUtils.isEmpty(value)) {
 					throw new ValidationError("An empty NameID value found", ValidationError.EMPTY_NAMEID);
 				}
 
@@ -699,8 +704,10 @@ public class SamlResponse {
 		for (int i = 0; i < entries.getLength(); i++) {
 			if (entries.item(i) != null) {
 				String value = entries.item(i).getTextContent();
-				if (value != null && !value.trim().isEmpty()) {
-					audiences.add(value.trim());
+				if(value != null)
+					value = value.trim();
+				if(!StringUtils.isEmpty(value)) {
+					audiences.add(value);
 				}
 			}
 		}
