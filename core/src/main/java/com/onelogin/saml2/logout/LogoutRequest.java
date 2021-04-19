@@ -586,7 +586,11 @@ public class LogoutRequest {
 		Map<String, String> nameIdData = new HashMap<String, String>();
 		
 		if (nameIdElem != null) {
-			nameIdData.put("Value", nameIdElem.getTextContent());
+			String value = nameIdElem.getTextContent();
+			if(value != null) {
+				value = value.trim();
+			}
+			nameIdData.put("Value", value);
 
 			if (nameIdElem.hasAttribute("Format")) {
 				nameIdData.put("Format", nameIdElem.getAttribute("Format"));
@@ -702,9 +706,11 @@ public class LogoutRequest {
         NodeList nodes = Util.query(samlLogoutRequestDocument, "/samlp:LogoutRequest/saml:Issuer");
 
         if (nodes.getLength() == 1) {
-			issuer = nodes.item(0).getTextContent();
-		}
-
+      	  issuer = nodes.item(0).getTextContent();
+	  }
+        if(issuer != null) {
+      	  issuer = issuer.trim();
+        }
         return issuer;
     }
 
@@ -740,7 +746,11 @@ public class LogoutRequest {
         NodeList nodes = Util.query(samlLogoutRequestDocument, "/samlp:LogoutRequest/samlp:SessionIndex");
 
         for (int i = 0; i < nodes.getLength(); i++) {
-        	sessionIndexes.add(nodes.item(i).getTextContent());
+        	String sessionIndex = nodes.item(i).getTextContent();
+        	if(sessionIndex != null) {
+        		sessionIndex = sessionIndex.trim();
+      		sessionIndexes.add(sessionIndex);
+        	}
         }
 
         return sessionIndexes;
