@@ -358,14 +358,12 @@ public class LogoutRequest {
 		return template;
 	}
 
-	 /**
-     * Determines if the SAML LogoutRequest is valid or not
-     *
-     * @return true if the SAML LogoutRequest is valid
-     *
-	 * @throws Exception
-     */
-	public Boolean isValid() throws Exception {
+	/**
+       * Determines if the SAML LogoutRequest is valid or not
+       *
+       * @return true if the SAML LogoutRequest is valid
+       */
+	public Boolean isValid() {
 		validationException = null;
 
 		try {
