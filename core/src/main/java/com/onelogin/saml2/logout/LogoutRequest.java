@@ -758,6 +758,16 @@ public class LogoutRequest {
 		return validationException;
 	}
 
+	/**
+	 * Sets the validation exception that this {@link LogoutRequest} should return
+	 * when a validation error occurs.
+	 * 
+	 * @param validationException
+	 *              the validation exception to set
+	 */
+	protected void setValidationException(Exception validationException) {
+		this.validationException = validationException;
+	}
 
 	/**
 	 * @return the ID of the Logout Request
