@@ -24,6 +24,7 @@ import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.logout.LogoutResponse;
+import com.onelogin.saml2.model.SamlResponseStatus;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
 import com.onelogin.saml2.test.NaiveUrlEncoder;
@@ -162,12 +163,34 @@ public class LogoutResponseTest {
 		assertThat(logoutRequestStr, containsString("StatusCode Value=\"urn:oasis:names:tc:SAML:2.0:status:Success\""));
 
 		LogoutResponse logoutResponse3 = new LogoutResponse(settings, httpRequest);
-		logoutResponse3.build("inResponseValue", Constants.STATUS_REQUEST_DENIED);
+		logoutResponse3.build("inResponseValue", Constants.STATUS_VERSION_MISMATCH);
 		logoutRequestStringBase64 = logoutResponse3.getEncodedLogoutResponse();
 		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		assertThat(logoutRequestStr, containsString("<samlp:LogoutResponse"));
 		assertThat(logoutRequestStr, containsString("InResponseTo=\"inResponseValue\""));
-		assertThat(logoutRequestStr, containsString("StatusCode Value=\"" + Constants.STATUS_REQUEST_DENIED + "\""));
+		assertThat(logoutRequestStr, containsString("<samlp:StatusCode Value=\"" + Constants.STATUS_VERSION_MISMATCH + "\" />"));
+		assertThat(logoutRequestStr, not(containsString("</samlp:StatusCode>")));
+		assertThat(logoutRequestStr, not(containsString("<samlp:StatusMessage>")));
+		
+		LogoutResponse logoutResponse4 = new LogoutResponse(settings, httpRequest);
+		SamlResponseStatus responseStatus = new SamlResponseStatus(Constants.STATUS_RESPONDER);
+		responseStatus.setSubStatusCode(Constants.STATUS_PARTIAL_LOGOUT);
+		logoutResponse4.build("inResponseValue", responseStatus);
+		logoutRequestStringBase64 = logoutResponse4.getEncodedLogoutResponse();
+		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
+		assertThat(logoutRequestStr, containsString("<samlp:LogoutResponse"));
+		assertThat(logoutRequestStr, containsString("InResponseTo=\"inResponseValue\""));
+		assertThat(logoutRequestStr, containsString("<samlp:StatusCode Value=\"" + Constants.STATUS_RESPONDER + "\"><samlp:StatusCode Value=\"" + Constants.STATUS_PARTIAL_LOGOUT + "\" /></samlp:StatusCode>"));
+		assertThat(logoutRequestStr, not(containsString("<samlp:StatusMessage>")));
+
+		responseStatus.setStatusMessage("status message");
+		logoutResponse4.build("inResponseValue", responseStatus);
+		logoutRequestStringBase64 = logoutResponse4.getEncodedLogoutResponse();
+		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
+		assertThat(logoutRequestStr, containsString("<samlp:LogoutResponse"));
+		assertThat(logoutRequestStr, containsString("InResponseTo=\"inResponseValue\""));
+		assertThat(logoutRequestStr, containsString("<samlp:StatusCode Value=\"" + Constants.STATUS_RESPONDER + "\"><samlp:StatusCode Value=\"" + Constants.STATUS_PARTIAL_LOGOUT + "\" /></samlp:StatusCode>"));
+		assertThat(logoutRequestStr, containsString("<samlp:StatusMessage>status message</samlp:StatusMessage>"));
 	}
 
 	/**
