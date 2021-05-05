@@ -25,7 +25,6 @@ import com.onelogin.saml2.authn.AuthnRequest;
 import com.onelogin.saml2.authn.SamlResponse;
 import com.onelogin.saml2.exception.SettingsException;
 import com.onelogin.saml2.exception.Error;
-import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.logout.LogoutRequest;
 import com.onelogin.saml2.logout.LogoutResponse;
@@ -545,12 +544,11 @@ public class Auth {
 	 * @return the SLO URL with the LogoutRequest if stay = True
 	 *
 	 * @throws IOException
-	 * @throws XMLEntityException
 	 * @throws SettingsException
 	 */
 	public String logout(String relayState, String nameId, String sessionIndex, Boolean stay, String nameidFormat,
 			String nameIdNameQualifier, String nameIdSPNameQualifier)
-			throws IOException, XMLEntityException, SettingsException {
+			throws IOException, SettingsException {
 		Map<String, String> parameters = new HashMap<String, String>();
 		return logout(relayState, nameId, sessionIndex, stay, nameidFormat,
 				nameIdNameQualifier, nameIdSPNameQualifier, parameters);
@@ -589,12 +587,11 @@ public class Auth {
 	 * @return the SLO URL with the LogoutRequest if stay = True
 	 *
 	 * @throws IOException
-	 * @throws XMLEntityException
 	 * @throws SettingsException
 	 */
 	public String logout(String relayState, String nameId, String sessionIndex, Boolean stay, String nameidFormat,
 			String nameIdNameQualifier, String nameIdSPNameQualifier, Map<String, String> parameters)
-			throws IOException, XMLEntityException, SettingsException {
+			throws IOException, SettingsException {
 
 		if (parameters == null) {
 			parameters = new HashMap<String, String>();
@@ -660,11 +657,10 @@ public class Auth {
 	 * @return the SLO URL with the LogoutRequest if stay = True
 	 *
 	 * @throws IOException
-	 * @throws XMLEntityException
 	 * @throws SettingsException
 	 */
 	public String logout(String relayState, String nameId, String sessionIndex, Boolean stay, String nameidFormat,
-			String nameIdNameQualifier) throws IOException, XMLEntityException, SettingsException {
+			String nameIdNameQualifier) throws IOException, SettingsException {
 		return logout(relayState, nameId, sessionIndex, stay, nameidFormat, nameIdNameQualifier, null);
 	}
 
@@ -694,11 +690,10 @@ public class Auth {
 	 * @return the SLO URL with the LogoutRequest if stay = True
 	 *
 	 * @throws IOException
-	 * @throws XMLEntityException
 	 * @throws SettingsException
 	 */
 	public String logout(String relayState, String nameId, String sessionIndex, Boolean stay, String nameidFormat)
-			throws IOException, XMLEntityException, SettingsException {
+			throws IOException, SettingsException {
 		return logout(relayState, nameId, sessionIndex, stay, nameidFormat, null);
 	}
 
@@ -727,11 +722,10 @@ public class Auth {
 	 * @return the SLO URL with the LogoutRequest if stay = True
 	 *
 	 * @throws IOException
-	 * @throws XMLEntityException
 	 * @throws SettingsException
 	 */
 	public String logout(String relayState, String nameId, String sessionIndex, Boolean stay)
-			throws IOException, XMLEntityException, SettingsException {
+			throws IOException, SettingsException {
 		return logout(relayState, nameId, sessionIndex, stay, null);
 	}
 
@@ -762,12 +756,11 @@ public class Auth {
 	 * @param nameIdSPNameQualifier The NameID SP Name Qualifier that will be set in
 	 *                              the LogoutRequest.
 	 * @throws IOException
-	 * @throws XMLEntityException
 	 * @throws SettingsException
 	 */
 	public void logout(String relayState, String nameId, String sessionIndex, String nameidFormat,
 			String nameIdNameQualifier, String nameIdSPNameQualifier)
-			throws IOException, XMLEntityException, SettingsException {
+			throws IOException, SettingsException {
 		logout(relayState, nameId, sessionIndex, false, nameidFormat, nameIdNameQualifier, nameIdSPNameQualifier);
 	}
 
@@ -796,11 +789,10 @@ public class Auth {
 	 *                            LogoutRequest.
 	 *
 	 * @throws IOException
-	 * @throws XMLEntityException
 	 * @throws SettingsException
 	 */
 	public void logout(String relayState, String nameId, String sessionIndex, String nameidFormat,
-			String nameIdNameQualifier) throws IOException, XMLEntityException, SettingsException {
+			String nameIdNameQualifier) throws IOException, SettingsException {
 		logout(relayState, nameId, sessionIndex, false, nameidFormat, nameIdNameQualifier);
 	}
 
@@ -825,11 +817,10 @@ public class Auth {
 	 *                     process).
 	 * @param nameidFormat The NameID Format will be set in the LogoutRequest.
 	 * @throws IOException
-	 * @throws XMLEntityException
 	 * @throws SettingsException
 	 */
 	public void logout(String relayState, String nameId, String sessionIndex, String nameidFormat)
-			throws IOException, XMLEntityException, SettingsException {
+			throws IOException, SettingsException {
 		logout(relayState, nameId, sessionIndex, false, nameidFormat);
 	}
 
@@ -854,11 +845,10 @@ public class Auth {
 	 *                     process).
 	 *
 	 * @throws IOException
-	 * @throws XMLEntityException
 	 * @throws SettingsException
 	 */
 	public void logout(String relayState, String nameId, String sessionIndex)
-			throws IOException, XMLEntityException, SettingsException {
+			throws IOException, SettingsException {
 		logout(relayState, nameId, sessionIndex, false, null);
 	}
 
@@ -866,10 +856,9 @@ public class Auth {
 	 * Initiates the SLO process.
 	 * 
 	 * @throws IOException
-	 * @throws XMLEntityException
 	 * @throws SettingsException
 	 */
-	public void logout() throws IOException, XMLEntityException, SettingsException {
+	public void logout() throws IOException, SettingsException {
 		logout(null, null, null, false);
 	}
 
@@ -891,10 +880,9 @@ public class Auth {
 	 * 			   string is provided
 	 *
 	 * @throws IOException
-	 * @throws XMLEntityException
 	 * @throws SettingsException
 	 */
-	public void logout(String relayState) throws IOException, XMLEntityException, SettingsException {
+	public void logout(String relayState) throws IOException, SettingsException {
 		logout(relayState, null, null);
 	}
 
