@@ -338,14 +338,15 @@ public class LogoutResponse {
     }
 
 	/**
-     * Extracts nodes that match the query from the DOMDocument (Logout Response Menssage)
-     *
-     * @param query
-     *				Xpath Expression
-     *
-     * @return DOMNodeList The queried nodes
-     */
-	private NodeList query (String query) throws XPathExpressionException {
+       * Extracts nodes that match the query from the DOMDocument (Logout Response Menssage)
+       *
+       * @param query
+       *				Xpath Expression
+       *
+       * @return DOMNodeList The queried nodes
+	 * @throws XPathExpressionException 
+       */
+	protected NodeList query (String query) throws XPathExpressionException {
 		return Util.query(this.logoutResponseDocument, query, null);
 	}
 
@@ -474,6 +475,17 @@ public class LogoutResponse {
 	 */
 	public Exception getValidationException() {
 		return validationException;
+	}
+	
+	/**
+ 	 * Sets the validation exception that this {@link LogoutResponse} should return
+	 * when a validation error occurs.
+	 * 
+	 * @param validationException
+	 *              the validation exception to set
+	 */
+	protected void setValidationException(Exception validationException) {
+		this.validationException = validationException;
 	}
 	
 	/**

@@ -117,10 +117,8 @@ public class LogoutRequest {
 	 *				The NameID NameQualifier that will be set in the LogoutRequest.
 	 * @param nameIdSPNameQualifier
 	 *				The SP Name Qualifier that will be set in the LogoutRequest.
-	 *
-	 * @throws XMLEntityException
 	 */
-	public LogoutRequest(Saml2Settings settings, HttpRequest request, String nameId, String sessionIndex, String nameIdFormat, String nameIdNameQualifier, String nameIdSPNameQualifier) throws XMLEntityException {
+	public LogoutRequest(Saml2Settings settings, HttpRequest request, String nameId, String sessionIndex, String nameIdFormat, String nameIdNameQualifier, String nameIdSPNameQualifier) {
 		this.settings = settings;
 		this.request = request;
 	
@@ -165,10 +163,8 @@ public class LogoutRequest {
 	 *              The nameIdFormat that will be set in the LogoutRequest.
 	 * @param nameIdNameQualifier
 	 *				The NameID NameQualifier will be set in the LogoutRequest.
-	 *
-	 * @throws XMLEntityException
 	 */
-	public LogoutRequest(Saml2Settings settings, HttpRequest request, String nameId, String sessionIndex, String nameIdFormat, String nameIdNameQualifier) throws XMLEntityException {
+	public LogoutRequest(Saml2Settings settings, HttpRequest request, String nameId, String sessionIndex, String nameIdFormat, String nameIdNameQualifier) {
 		this(settings, request, nameId, sessionIndex, nameIdFormat, nameIdNameQualifier, null);
 	}
 
@@ -185,10 +181,8 @@ public class LogoutRequest {
 	 *              The SessionIndex (taken from the SAML Response in the SSO process).
 	 * @param nameIdFormat
 	 *              The nameIdFormat that will be set in the LogoutRequest.
-	 *
-	 * @throws XMLEntityException
 	 */
-	public LogoutRequest(Saml2Settings settings, HttpRequest request, String nameId, String sessionIndex, String nameIdFormat) throws XMLEntityException {
+	public LogoutRequest(Saml2Settings settings, HttpRequest request, String nameId, String sessionIndex, String nameIdFormat) {
 		this(settings, request, nameId, sessionIndex, nameIdFormat, null);
 	}
 
@@ -203,10 +197,8 @@ public class LogoutRequest {
 	 *              The NameID that will be set in the LogoutRequest.
 	 * @param sessionIndex
 	 *              The SessionIndex (taken from the SAML Response in the SSO process).
-	 *
-	 * @throws XMLEntityException
 	 */
-	public LogoutRequest(Saml2Settings settings, HttpRequest request, String nameId, String sessionIndex) throws XMLEntityException {
+	public LogoutRequest(Saml2Settings settings, HttpRequest request, String nameId, String sessionIndex) {
 		this(settings, request, nameId, sessionIndex, null);
 	}
 
@@ -215,10 +207,8 @@ public class LogoutRequest {
 	 *
 	 * @param settings
 	 *            OneLogin_Saml2_Settings
-	 *
-	 * @throws XMLEntityException 
 	 */
-	public LogoutRequest(Saml2Settings settings) throws XMLEntityException {
+	public LogoutRequest(Saml2Settings settings) {
 		this(settings, null, null, null);
 	}
 
@@ -228,11 +218,9 @@ public class LogoutRequest {
 	 * @param settings
 	 *            OneLogin_Saml2_Settings
 	 * @param request
-     *              the HttpRequest object to be processed (Contains GET and POST parameters, request URL, ...).
-     *
-	 * @throws XMLEntityException 
+       *              the HttpRequest object to be processed (Contains GET and POST parameters, request URL, ...).
 	 */
-	public LogoutRequest(Saml2Settings settings, HttpRequest request) throws XMLEntityException {
+	public LogoutRequest(Saml2Settings settings, HttpRequest request) {
 		this(settings, request, null, null);
 	}
 
@@ -360,14 +348,12 @@ public class LogoutRequest {
 		return template;
 	}
 
-	 /**
-     * Determines if the SAML LogoutRequest is valid or not
-     *
-     * @return true if the SAML LogoutRequest is valid
-     *
-	 * @throws Exception
-     */
-	public Boolean isValid() throws Exception {
+	/**
+       * Determines if the SAML LogoutRequest is valid or not
+       *
+       * @return true if the SAML LogoutRequest is valid
+       */
+	public Boolean isValid() {
 		validationException = null;
 
 		try {
@@ -796,6 +782,16 @@ public class LogoutRequest {
 		return validationException;
 	}
 
+	/**
+	 * Sets the validation exception that this {@link LogoutRequest} should return
+	 * when a validation error occurs.
+	 * 
+	 * @param validationException
+	 *              the validation exception to set
+	 */
+	protected void setValidationException(Exception validationException) {
+		this.validationException = validationException;
+	}
 
 	/**
 	 * @return the ID of the Logout Request

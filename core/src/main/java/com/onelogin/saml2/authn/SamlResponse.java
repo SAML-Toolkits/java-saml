@@ -1023,6 +1023,17 @@ public class SamlResponse {
 	public Exception getValidationException() {
 		return validationException;
 	}
+	
+	/**
+	 * Sets the validation exception that this {@link SamlResponse} should return
+	 * when a validation error occurs.
+	 * 
+	 * @param validationException
+	 *              the validation exception to set
+	 */
+	protected void setValidationException(Exception validationException) {
+		this.validationException = validationException;
+	}
 
 	/**
 	 * Extracts a node from the DOMDocument (Assertion).
@@ -1034,7 +1045,7 @@ public class SamlResponse {
 	 * @throws XPathExpressionException
 	 *
 	 */
-	private NodeList queryAssertion(String assertionXpath) throws XPathExpressionException {
+	protected NodeList queryAssertion(String assertionXpath) throws XPathExpressionException {
         final String assertionExpr = "/saml:Assertion";
         final String signatureExpr = "ds:Signature/ds:SignedInfo/ds:Reference";
 
@@ -1085,16 +1096,9 @@ public class SamlResponse {
      *
      * @return DOMNodeList The queried nodes
      */
-	private NodeList query(String nameQuery, Node context) throws XPathExpressionException {
-		Document doc;
-		if (encrypted) {
-			doc = decryptedDocument;
-		} else {
-        	doc = samlResponseDocument;
-		}
-
+	protected NodeList query(String nameQuery, Node context) throws XPathExpressionException {
 		// LOGGER.debug("Executing query " + nameQuery);
-		return Util.query(doc, nameQuery, context);
+		return Util.query(getSAMLResponseDocument(), nameQuery, context);
 	}
 
 	/**
