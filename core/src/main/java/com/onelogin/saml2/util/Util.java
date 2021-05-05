@@ -1647,11 +1647,7 @@ public final class Util {
 
 			NodeList messageEntry = Util.query(dom, statusXpath + "/samlp:StatusMessage", (Element) statusEntry.item(0));
 			if (messageEntry.getLength() == 1) {
-				String statusMessage = messageEntry.item(0).getTextContent();
-				if(statusMessage != null) {
-					statusMessage = statusMessage.trim();
-				}
-				status.setStatusMessage(statusMessage);
+				status.setStatusMessage(messageEntry.item(0).getTextContent());
 			}
 
 			return status;

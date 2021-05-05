@@ -471,7 +471,7 @@ public class SamlResponse {
 
 			if (nameIdElem != null) {
 				String value = nameIdElem.getTextContent();
-				if(value != null) {
+				if(value != null && settings.isTrimNameIds()) {
 					value = value.trim();
 				}
 				if (settings.isStrict() && StringUtils.isEmpty(value)) {
@@ -602,8 +602,8 @@ public class SamlResponse {
 				for (int j = 0; j < childrens.getLength(); j++) {
 					if ("AttributeValue".equals(childrens.item(j).getLocalName())) {
 						String attrValue = childrens.item(j).getTextContent();
-						if(attrValue != null) {
-							attrValue = attrValue.toString();
+						if(attrValue != null && settings.isTrimAttributeValues()) {
+							attrValue = attrValue.trim();
 						}
 						attrValues.add(attrValue);
 					}
@@ -735,7 +735,7 @@ public class SamlResponse {
 		if (responseIssuer.getLength() > 0) {
 			if (responseIssuer.getLength() == 1) {
 				String value = responseIssuer.item(0).getTextContent();
-				if(value != null) {
+				if(value != null && settings.isTrimNameIds()) {
 					value = value.trim();
 				}
 				return value;
@@ -762,7 +762,7 @@ public class SamlResponse {
 		NodeList assertionIssuer = this.queryAssertion("/saml:Issuer");
 		if (assertionIssuer.getLength() == 1) {
 			String value = assertionIssuer.item(0).getTextContent();
-			if(value != null) {
+			if(value != null && settings.isTrimNameIds()) {
 				value = value.trim();
 			}
 			return value;

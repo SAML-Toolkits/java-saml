@@ -29,7 +29,6 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -446,6 +445,29 @@ public class AuthnResponseTest {
 	}
 
 	/**
+	 * Tests the getNameId method of SamlResponse
+	 * <p>
+	 * Case: with or without trimming 
+	 *
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.authn.SamlResponse#getNameId
+	 */
+	@Test
+	public void testGetNameIdTrimming() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		settings.setStrict(false);
+		String samlResponseEncoded = Util.getFileAsString("data/responses/response3_with_whitespace.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		String nameId = samlResponse.getNameId();
+		assertEquals("\n      \tsomeone@example.com\n      ", nameId);
+		settings.setTrimNameIds(true);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		nameId = samlResponse.getNameId();
+		assertEquals("someone@example.com", nameId);
+	}
+
+	/**
 	 * Tests the getNameIdData method of SamlResponse
 	 *
 	 * @throws Exception
@@ -584,7 +606,30 @@ public class AuthnResponseTest {
 		expectedEx.expectMessage("An empty NameID value found");
 		samlResponse2.getNameIdData();
 	}
-	
+
+	/**
+	 * Tests the getNameIdData method of SamlResponse
+	 * <p>
+	 * Case: with or without trimming 
+	 *
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.authn.SamlResponse#getNameIdData
+	 */
+	@Test
+	public void testGetNameIdDataTrimming() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		settings.setStrict(false);
+		String samlResponseEncoded = Util.getFileAsString("data/responses/response3_with_whitespace.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		Map<String, String> nameIdData = samlResponse.getNameIdData();
+		assertEquals("\n      \tsomeone@example.com\n      ", nameIdData.get("Value"));
+		settings.setTrimNameIds(true);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		nameIdData = samlResponse.getNameIdData();
+		assertEquals("someone@example.com", nameIdData.get("Value"));
+	}
+
 	/**
 	 * Tests the checkOneCondition method of SamlResponse
 	 *
@@ -971,8 +1016,34 @@ public class AuthnResponseTest {
 	}
 
 	/**
-	 * Tests the getIssuers methods of SamlResponse
+	 * Tests the getIssuers method of SamlResponse
 	 * <p>
+	 * Case: with or without trimming
+	 *
+	 * @throws Error
+	 * @throws IOException
+	 * @throws ValidationError
+	 * @throws SettingsException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws XPathExpressionException
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#getIssuers
+	 */
+	@Test
+	public void testGetIssuersTrimming() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
+		// disabled by now
+//		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+//		String samlResponseEncoded = Util.getFileAsString("data/responses/response3_with_whitespace.xml.base64");
+//		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+//		assertEquals(Arrays.asList("\n  \thttp://example.com/services/trust\n  ", "\n    \thttp://example.com/services/trust\n    "), samlResponse.getIssuers());
+//		settings.setTrimNameIds(true);
+//		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+//		assertEquals(Arrays.asList("http://example.com/services/trust"), samlResponse.getIssuers());
+	}
+
+	/**
+	 * Tests the getIssuers method of SamlResponse
 	 * Case: Issuer of the assertion not found
 	 *
 	 * @throws Error
@@ -1099,6 +1170,41 @@ public class AuthnResponseTest {
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/encrypted_attrs.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertTrue(samlResponse.getAttributes().isEmpty());
+	}
+
+	/**
+	 * Tests the getAttributes method of SamlResponse
+	 * <p>
+	 * Case: with or without trimming
+	 *
+	 * @throws Error
+	 * @throws IOException
+	 * @throws ValidationError
+	 * @throws SettingsException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws XPathExpressionException
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#getAttributes
+	 */
+	@Test
+	public void testGetAttributesTrimming() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/response3_with_whitespace.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		HashMap<String, List<String>> expectedAttributes = new HashMap<String, List<String>>();
+		List<String> attrValuesTrimmed = new ArrayList<String>();
+		attrValuesTrimmed.add("someone@example.com");
+		List<String> attrValuesNonTrimmed = new ArrayList<String>();
+		attrValuesNonTrimmed.add("\n        \tsomeone@example.com\n        ");
+		
+		expectedAttributes.put("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress", attrValuesNonTrimmed);
+		assertEquals(expectedAttributes, samlResponse.getAttributes());
+
+		settings.setTrimAttributeValues(true);
+		expectedAttributes.put("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress", attrValuesTrimmed);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertEquals(expectedAttributes, samlResponse.getAttributes());
 	}
 
 	/**

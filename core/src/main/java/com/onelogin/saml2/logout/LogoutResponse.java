@@ -304,8 +304,8 @@ public class LogoutResponse {
 	    if (issuers.getLength() == 1) {
 		    issuer = issuers.item(0).getTextContent();
 	    }
-	    if (issuer != null) {
-		    issuer = issuer.toString();
+	    if (issuer != null && settings.isTrimNameIds()) {
+		    issuer = issuer.trim();
 	    }
 	    return issuer;
     }

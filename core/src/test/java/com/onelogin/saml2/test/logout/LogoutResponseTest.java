@@ -290,6 +290,32 @@ public class LogoutResponseTest {
 		long millis = issueInstant.getTimeInMillis();
 		assertTrue(millis >= start && millis <= end);
 	}
+	
+	/**
+	 * Tests the getIssuer method of LogoutResponse
+	 * <p>
+	 * Case: with or without trimming
+	 *
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 * @throws XMLEntityException
+	 * @throws XPathExpressionException
+	 * @throws Error
+	 *
+	 * @see com.onelogin.saml2.logout.LogoutResponse#getIssuer
+	 */
+	@Test
+	public void testGetIssuerTrimming() throws Error, IOException, XPathExpressionException  {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_with_whitespace.xml.base64");
+		HttpRequest httpRequest = newHttpRequest("/", samlResponseEncoded);
+		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
+		assertEquals("\n    \thttp://idp.example.com/\n    ", logoutResponse.getIssuer());
+		
+		settings.setTrimNameIds(true);
+		logoutResponse = new LogoutResponse(settings, httpRequest);
+		assertEquals("http://idp.example.com/", logoutResponse.getIssuer());
+	}
 
 	/**
 	 * Tests the isValid method of LogoutResponse

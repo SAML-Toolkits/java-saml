@@ -404,10 +404,10 @@ public class LogoutRequest {
 				}
 
 				// Try get the nameID
-				String nameID = getNameId(logoutRequestDocument, settings.getSPkey());
+				String nameID = getNameId(logoutRequestDocument, settings.getSPkey(), settings.isTrimNameIds());
 
 				// Check the issuer
-				String issuer = getIssuer(logoutRequestDocument);
+				String issuer = getIssuer(logoutRequestDocument, settings.isTrimNameIds());
 				if (issuer != null && (issuer.isEmpty() || !issuer.equals(settings.getIdpEntityId()))) {
 					throw new ValidationError(
 							String.format("Invalid issuer in the Logout Request. Was '%s', but expected '%s'", issuer, settings.getIdpEntityId()),
@@ -544,18 +544,36 @@ public class LogoutRequest {
 	}
 
 	/**
-     * Gets the NameID Data from the the Logout Request Document.
-     *
-     * @param samlLogoutRequestDocument
-     * 				A DOMDocument object loaded from the SAML Logout Request.
-     * @param key
-     *              The SP key to decrypt the NameID if encrypted
-     *
-     * @return the Name ID Data (Value, Format, NameQualifier, SPNameQualifier)
-     *
+	 * Gets the NameID Data from the the Logout Request Document.
+	 *
+	 * @param samlLogoutRequestDocument
+	 *              A DOMDocument object loaded from the SAML Logout Request.
+	 * @param key
+	 *              The SP key to decrypt the NameID if encrypted
+	 *
+	 * @return the Name ID Data (Value, Format, NameQualifier, SPNameQualifier)
+	 *
 	 * @throws Exception
-     */
+	 */
 	public static Map<String, String> getNameIdData(Document samlLogoutRequestDocument, PrivateKey key) throws Exception {
+		return getNameIdData(samlLogoutRequestDocument, key, false);
+	}
+	
+	/**
+	 * Gets the NameID Data from the the Logout Request Document.
+	 *
+	 * @param samlLogoutRequestDocument
+	 *              A DOMDocument object loaded from the SAML Logout Request.
+	 * @param key
+	 *              The SP key to decrypt the NameID if encrypted
+	 * @param trimValue
+	 *              whether the extracted Name ID value should be trimmed
+	 *
+	 * @return the Name ID Data (Value, Format, NameQualifier, SPNameQualifier)
+	 *
+	 * @throws Exception
+	 */
+	public static Map<String, String> getNameIdData(Document samlLogoutRequestDocument, PrivateKey key, boolean trimValue) throws Exception {
 		NodeList encryptedIDNodes = Util.query(samlLogoutRequestDocument, "/samlp:LogoutRequest/saml:EncryptedID");
 		NodeList nameIdNodes;
 		Element nameIdElem;
@@ -587,7 +605,7 @@ public class LogoutRequest {
 		
 		if (nameIdElem != null) {
 			String value = nameIdElem.getTextContent();
-			if(value != null) {
+			if(value != null && trimValue) {
 				value = value.trim();
 			}
 			nameIdData.put("Value", value);
@@ -606,169 +624,287 @@ public class LogoutRequest {
 	}
 
 	/**
-     * Gets the NameID Data from the the Logout Request String.
-     *
-     * @param samlLogoutRequestString
-     * 				A DOMDocument object loaded from the SAML Logout Request.
-     * @param key
-     *              The SP key to decrypt the NameID if encrypted
-     *
-     * @return the Name ID Data (Value, Format, NameQualifier, SPNameQualifier)
-     *
+	 * Gets the NameID Data from the the Logout Request String.
+	 *
+	 * @param samlLogoutRequestString
+	 *              A DOMDocument object loaded from the SAML Logout Request.
+	 * @param key
+	 *              The SP key to decrypt the NameID if encrypted
+	 *
+	 * @return the Name ID Data (Value, Format, NameQualifier, SPNameQualifier)
+	 *
 	 * @throws Exception
-     */
+	 */
 	public static Map<String, String> getNameIdData(String samlLogoutRequestString, PrivateKey key) throws Exception {
-		Document doc = Util.loadXML(samlLogoutRequestString);
-		return getNameIdData(doc, key);
+		return getNameIdData(samlLogoutRequestString, key, false);
 	}
 
 	/**
-     * Gets the NameID value provided from the SAML Logout Request Document.
-     *
-     * @param samlLogoutRequestDocument
-     * 				A DOMDocument object loaded from the SAML Logout Request.
-     * @param key
-     *              The SP key to decrypt the NameID if encrypted
-     *
-     * @return the Name ID value
-     *
-	 * @throws Exception 
-     */
-    public static String getNameId(Document samlLogoutRequestDocument, PrivateKey key) throws Exception
-    {
-    	Map<String, String> nameIdData = getNameIdData(samlLogoutRequestDocument, key);
+	 * Gets the NameID Data from the the Logout Request String.
+	 *
+	 * @param samlLogoutRequestString
+	 *              A DOMDocument object loaded from the SAML Logout Request.
+	 * @param key
+	 *              The SP key to decrypt the NameID if encrypted
+	 * @param trimValue
+	 *              whether the extracted Name ID value should be trimmed
+	 *
+	 * @return the Name ID Data (Value, Format, NameQualifier, SPNameQualifier)
+	 *
+	 * @throws Exception
+	 */
+	public static Map<String, String> getNameIdData(String samlLogoutRequestString, PrivateKey key, boolean trimValue) throws Exception {
+		Document doc = Util.loadXML(samlLogoutRequestString);
+		return getNameIdData(doc, key, trimValue);
+	}
+
+	/**
+	 * Gets the NameID value provided from the SAML Logout Request Document.
+	 *
+	 * @param samlLogoutRequestDocument
+	 *              A DOMDocument object loaded from the SAML Logout Request.
+	 * 
+	 * @param key
+	 *              The SP key to decrypt the NameID if encrypted
+	 * 
+	 * @return the Name ID value
+	 *
+	 * @throws Exception
+	 */
+	public static String getNameId(Document samlLogoutRequestDocument, PrivateKey key) throws Exception {
+		return getNameId(samlLogoutRequestDocument, key, false);
+	}
+
+	/**
+	 * Gets the NameID value provided from the SAML Logout Request Document.
+	 *
+	 * @param samlLogoutRequestDocument
+	 *              A DOMDocument object loaded from the SAML Logout Request.
+	 * 
+	 * @param key
+	 *              The SP key to decrypt the NameID if encrypted
+	 * 
+	 * @param trimValue
+	 *              whether the extracted Name ID value should be trimmed
+	 *
+	 * @return the Name ID value
+	 *
+	 * @throws Exception
+	 */
+	public static String getNameId(Document samlLogoutRequestDocument, PrivateKey key, boolean trimValue)
+	            throws Exception {
+		Map<String, String> nameIdData = getNameIdData(samlLogoutRequestDocument, key, trimValue);
 		LOGGER.debug("LogoutRequest has NameID --> " + nameIdData.get("Value"));
-        return nameIdData.get("Value");
-    }
+		return nameIdData.get("Value");
+	}
 
 	/**
-     * Gets the NameID value provided from the SAML Logout Request Document.
-     *
+	 * Gets the NameID value provided from the SAML Logout Request Document.
+	 *
+	 * @param samlLogoutRequestDocument
+	 *              A DOMDocument object loaded from the SAML Logout Request.
+	 *
+	 * @return the Name ID value
+	 *
+	 * @throws Exception
+	 */
+	public static String getNameId(Document samlLogoutRequestDocument) throws Exception {
+		return getNameId(samlLogoutRequestDocument, null);
+	}
+    
+	/**
+	 * Gets the NameID value provided from the SAML Logout Request String.
+	 *
+	 * @param samlLogoutRequestString
+	 *              A Logout Request string.
+	 * @param key
+	 *              The SP key to decrypt the NameID if encrypted
+	 *
+	 * @return the Name ID value
+	 *
+	 * @throws Exception
+	 */
+	public static String getNameId(String samlLogoutRequestString, PrivateKey key) throws Exception {
+		return getNameId(samlLogoutRequestString, key, false);
+	}
+
+	/**
+	 * Gets the NameID value provided from the SAML Logout Request String.
+	 *
+	 * @param samlLogoutRequestString
+	 *              A Logout Request string.
+	 * @param key
+	 *              The SP key to decrypt the NameID if encrypted
+	 * @param trimValue
+	 *              whether the extracted Name ID value should be trimmed
+	 *
+	 * @return the Name ID value
+	 *
+	 * @throws Exception
+	 */
+	public static String getNameId(String samlLogoutRequestString, PrivateKey key, boolean trimValue)
+	            throws Exception {
+		Map<String, String> nameId = getNameIdData(samlLogoutRequestString, key, trimValue);
+		return nameId.get("Value");
+	}
+
+	/**
+	 * Gets the NameID value provided from the SAML Logout Request String.
+	 *
+	 * @param samlLogoutRequestString
+	 *              A Logout Request string.
+	 *
+	 * @return the Name ID value
+	 *
+	 * @throws Exception
+	 */
+	public static String getNameId(String samlLogoutRequestString) throws Exception {
+		return getNameId(samlLogoutRequestString, null);
+	}
+    
+    /**
+     * Gets the Issuer from Logout Request Document.
+     * 
      * @param samlLogoutRequestDocument
-     * 				A DOMDocument object loaded from the SAML Logout Request.
+     *              A DOMDocument object loaded from the SAML Logout Request.
      *
-     * @return the Name ID value
+     * @return the issuer of the logout request
      *
-	 * @throws Exception 
+     * @throws XPathExpressionException
      */
-    public static String getNameId(Document samlLogoutRequestDocument) throws Exception
-    {
-    	return  getNameId(samlLogoutRequestDocument, null);
+    public static String getIssuer(Document samlLogoutRequestDocument) throws XPathExpressionException {
+	    return getIssuer(samlLogoutRequestDocument, false);
     }
-    
-	/**
-     * Gets the NameID value provided from the SAML Logout Request String.
+
+    /**
+     * Gets the Issuer from Logout Request Document.
+     * 
+     * @param samlLogoutRequestDocument
+     *              A DOMDocument object loaded from the SAML Logout Request.
+     * @param trim
+     *              whether the extracted issuer value should be trimmed
      *
+     * @return the issuer of the logout request
+     *
+     * @throws XPathExpressionException
+     */
+    public static String getIssuer(Document samlLogoutRequestDocument, boolean trim) throws XPathExpressionException {
+	    String issuer = null;
+
+	    NodeList nodes = Util.query(samlLogoutRequestDocument, "/samlp:LogoutRequest/saml:Issuer");
+
+	    if (nodes.getLength() == 1) {
+		    issuer = nodes.item(0).getTextContent();
+	    }
+	    if (issuer != null && trim) {
+		    issuer = issuer.trim();
+	    }
+	    return issuer;
+    }
+
+    /**
+     * Gets the Issuer from Logout Request String.
+     * 
      * @param samlLogoutRequestString
-     * 				A Logout Request string.
-     * @param key
-     *              The SP key to decrypt the NameID if encrypted
+     *              A Logout Request string.
      *
-     * @return the Name ID value
-     *
-	 * @throws Exception
+     * @return the issuer of the logout request
+     * 
+     * @throws XPathExpressionException
      */
-    public static String getNameId(String samlLogoutRequestString, PrivateKey key) throws Exception
-    {
-    	Map<String, String> nameId =  getNameIdData(samlLogoutRequestString, key);
-        return nameId.get("Value");
+    public static String getIssuer(String samlLogoutRequestString) throws XPathExpressionException {
+	    return getIssuer(samlLogoutRequestString, false);
     }
 
-	/**
-     * Gets the NameID value provided from the SAML Logout Request String.
-     *
+    /**
+     * Gets the Issuer from Logout Request String.
+     * 
      * @param samlLogoutRequestString
-     * 				A Logout Request string.
+     *              A Logout Request string.
+     * @param trim
+     *              whether the extracted issuer value should be trimmed
      *
-     * @return the Name ID value
-     *
-	 * @throws Exception
+     * @return the issuer of the logout request
+     * 
+     * @throws XPathExpressionException
      */
-    public static String getNameId(String samlLogoutRequestString) throws Exception
-    {
-    	return getNameId(samlLogoutRequestString, null);
-    }
-    
-	/**
-	 * Gets the Issuer from Logout Request Document.
-	 * 
-	 * @param samlLogoutRequestDocument 
-	 * 				A DOMDocument object loaded from the SAML Logout Request.
-	 *
-	 * @return the issuer of the logout request
-	 *
-	 * @throws XPathExpressionException
-	 */
-    public static String getIssuer(Document samlLogoutRequestDocument) throws XPathExpressionException
-    {
-        String issuer = null;
-
-        NodeList nodes = Util.query(samlLogoutRequestDocument, "/samlp:LogoutRequest/saml:Issuer");
-
-        if (nodes.getLength() == 1) {
-      	  issuer = nodes.item(0).getTextContent();
-	  }
-        if(issuer != null) {
-      	  issuer = issuer.trim();
-        }
-        return issuer;
+    public static String getIssuer(String samlLogoutRequestString, boolean trim) throws XPathExpressionException {
+	    Document doc = Util.loadXML(samlLogoutRequestString);
+	    return getIssuer(doc, trim);
     }
 
-	/**
-	 * Gets the Issuer from Logout Request String.
-	 * 
-	 * @param samlLogoutRequestString 
-	 * 				A Logout Request string.
-	 *
-	 * @return the issuer of the logout request
-	 * 
-	 * @throws XPathExpressionException
-	 */
-    public static String getIssuer(String samlLogoutRequestString) throws XPathExpressionException
-    {
-		Document doc = Util.loadXML(samlLogoutRequestString);
-		return getIssuer(doc);
+
+    /**
+     * Gets the SessionIndexes from the LogoutRequest.
+     * 
+     * @param samlLogoutRequestDocument
+     *              A DOMDocument object loaded from the SAML Logout Request.
+     * @return the SessionIndexes
+     *
+     * @throws XPathExpressionException
+     */
+    public static List<String> getSessionIndexes(Document samlLogoutRequestDocument) throws XPathExpressionException {
+	    return getSessionIndexes(samlLogoutRequestDocument, false);
     }
 
     /**
      * Gets the SessionIndexes from the LogoutRequest.
-	 * 
-	 * @param samlLogoutRequestDocument 
-	 * 				A DOMDocument object loaded from the SAML Logout Request.
+     * 
+     * @param samlLogoutRequestDocument
+     *              A DOMDocument object loaded from the SAML Logout Request.
+     * @param trim
+     *              whether the extracted session indexes should be trimmed
      * @return the SessionIndexes
      *
-     * @throws XPathExpressionException 
+     * @throws XPathExpressionException
      */
-    public static List<String> getSessionIndexes(Document samlLogoutRequestDocument) throws XPathExpressionException
-    {
-        List<String> sessionIndexes = new ArrayList<String>(); 
+    public static List<String> getSessionIndexes(Document samlLogoutRequestDocument, boolean trim)
+                throws XPathExpressionException {
+	    List<String> sessionIndexes = new ArrayList<String>();
 
-        NodeList nodes = Util.query(samlLogoutRequestDocument, "/samlp:LogoutRequest/samlp:SessionIndex");
+	    NodeList nodes = Util.query(samlLogoutRequestDocument, "/samlp:LogoutRequest/samlp:SessionIndex");
 
-        for (int i = 0; i < nodes.getLength(); i++) {
-        	String sessionIndex = nodes.item(i).getTextContent();
-        	if(sessionIndex != null) {
-        		sessionIndex = sessionIndex.trim();
-      		sessionIndexes.add(sessionIndex);
-        	}
-        }
+	    for (int i = 0; i < nodes.getLength(); i++) {
+		    String sessionIndex = nodes.item(i).getTextContent();
+		    if (sessionIndex != null) {
+			    if (trim) {
+				    sessionIndex = sessionIndex.trim();
+			    }
+			    sessionIndexes.add(sessionIndex);
+		    }
+	    }
 
-        return sessionIndexes;
+	    return sessionIndexes;
     }
 
     /**
      * Gets the SessionIndexes from the LogoutRequest.
-	 * 
-	 * @param samlLogoutRequestString 
-	 * 				A Logout Request string.
+     * 
+     * @param samlLogoutRequestString
+     *              A Logout Request string.
      * @return the SessionIndexes
      *
-     * @throws XPathExpressionException 
+     * @throws XPathExpressionException
      */
-    public static List<String> getSessionIndexes(String samlLogoutRequestString) throws XPathExpressionException
-    {
-		Document doc = Util.loadXML(samlLogoutRequestString);
-		return getSessionIndexes(doc);
+    public static List<String> getSessionIndexes(String samlLogoutRequestString) throws XPathExpressionException {
+	    return getSessionIndexes(samlLogoutRequestString, false);
+    }
+
+    /**
+     * Gets the SessionIndexes from the LogoutRequest.
+     * 
+     * @param samlLogoutRequestString
+     *              A Logout Request string.
+     * @param trim
+     *              whether the extracted session indexes should be trimmed
+     * @return the SessionIndexes
+     *
+     * @throws XPathExpressionException
+     */
+    public static List<String> getSessionIndexes(String samlLogoutRequestString, boolean trim)
+                throws XPathExpressionException {
+	    Document doc = Util.loadXML(samlLogoutRequestString);
+	    return getSessionIndexes(doc, trim);
     }
 
 	/**
