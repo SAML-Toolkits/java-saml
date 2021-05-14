@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        java: [ '7', '8', '9', '10', '11' ]
+        java: [ '8', '9', '10', '11' ]
         os: [ 'ubuntu-latest', 'macos-latest', 'windows-latest' ]
     name: Java ${{ matrix.Java }} (${{ matrix.os }})
     steps:
