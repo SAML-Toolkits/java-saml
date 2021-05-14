@@ -9,10 +9,10 @@ jobs:
   test:
 
     runs-on: ${{ matrix.os }}
-      strategy:
-        matrix:
-          java: [ '7', '8', '9', '10', '11' ]
-          os: [ 'ubuntu-latest', 'macos-latest', 'windows-latest' ]
+    strategy:
+      matrix:
+        java: [ '7', '8', '9', '10', '11' ]
+        os: [ 'ubuntu-latest', 'macos-latest', 'windows-latest' ]
     name: Java ${{ matrix.Java }} (${{ matrix.os }})
     steps:
     - uses: actions/checkout@v2
