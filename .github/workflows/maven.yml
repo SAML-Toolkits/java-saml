@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '9', '10', '11' ]
         os: [ 'ubuntu-latest' ]
     name: Java ${{ matrix.Java }} (${{ matrix.os }})
     steps:
@@ -23,4 +23,4 @@ jobs:
         distribution: 'adopt'
         java-version: ${{ matrix.java }}
     - name: Maven Test
-      run: mvn --batch-mode clean verify org.jacoco:jacoco-maven-plugin:report
+      run: mvn -Dcom.sun.security.enableAIAcaIssuers=true --batch-mode clean verify org.jacoco:jacoco-maven-plugin:report
