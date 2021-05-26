@@ -72,6 +72,13 @@ In production, the **onelogin.saml2.strict** setting parameter MUST be set as **
 
 In production also we highly recommend to register on the settings the IdP certificate instead of using the fingerprint method. The fingerprint, is a hash, so at the end is open to a collision attack that can end on a signature validation bypass. Other SAML toolkits deprecated that mechanism, we maintain it for compatibility and also to be used on test environment.
 
+The IdPMetadataParser class does not validate in any way the URL that is introduced in order to be parsed. 
+
+Usually the same administrator that handles the Service Provider also sets the URL to the IdP, which should be a trusted resource.
+
+But there are other scenarios, like a SAAS app where the administrator of the app delegates this functionality to other users. In this case, extra precaution should be taken in order to validate such URL inputs and avoid attacks like SSRF.
+
+
 ## Installation
 ### Hosting
 #### Github
