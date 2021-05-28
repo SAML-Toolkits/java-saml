@@ -396,7 +396,11 @@ public class Auth {
 		if (!stay) {
 			LOGGER.debug("AuthNRequest sent to " + ssoUrl + " --> " + samlRequest);
 		}
-		return ServletUtils.sendRedirect(response, ssoUrl, parameters, stay);
+
+		if (Constants.BINDING_HTTP_POST.equals(settings.getIdpSingleSignOnServiceBinding()))
+			return ServletUtils.sendPost(response, ssoUrl, parameters, stay);
+		else // Anything else is assumed to be a redirect
+			return ServletUtils.sendRedirect(response, ssoUrl, parameters, stay);
 	}
 
 	/**

@@ -9,6 +9,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.onelogin.saml2.http.HttpRequest;
@@ -178,6 +179,24 @@ public class ServletUtils {
         }
 
         return target;
+    }
+
+    public static String sendPost(HttpServletResponse response, String location, Map<String, String> parameters, Boolean stay) throws IOException {
+      StringBuilder html = new StringBuilder();
+      html.append("<html>\n<head>\n<title>SAML Post</title>\n</head>\n")
+          .append("<body onload=\"document.getElementById('theform').submit();\">\n")
+          .append("<form id=\"theform\" action=\"").append(location).append("\" method=\"post\">\n");
+      for (String name : parameters.keySet()) {
+        String value = parameters.get(name);
+        html.append("<input type=\"hidden\" name=\"").append(name).append("\" value=\"").append(StringEscapeUtils.escapeHtml4(value)).append("\"/>\n");
+      }
+      html.append("</form>\n</body>\n</html>");
+      if (!stay) {
+        response.setContentType("text/html;charset=UTF-8");
+        response.setContentLength(html.toString().getBytes("UTF-8").length);
+        response.getWriter().write(html.toString());
+      }
+      return html.toString();
     }
 
     /**
