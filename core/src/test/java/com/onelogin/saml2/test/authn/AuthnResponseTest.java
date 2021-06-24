@@ -846,7 +846,7 @@ public class AuthnResponseTest {
 	}
 
 	/**
-	 * Tests the getIssuers method of SamlResponse
+	 * Tests the getIssuers methods of SamlResponse
 	 *
 	 * @throws Error
 	 * @throws IOException
@@ -861,46 +861,118 @@ public class AuthnResponseTest {
 	@Test
 	public void testGetIssuers() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
-		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
+		String samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		String expectedIssuer = "http://idp.example.com/";
 		List<String> expectedIssuers = new ArrayList<String>();
-		expectedIssuers.add("http://idp.example.com/");
-		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
-		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		expectedIssuers.add(expectedIssuer);
+		assertEquals(expectedIssuer, samlResponse.getResponseIssuer());
+		assertEquals(expectedIssuer, samlResponse.getAssertionIssuer());
 		assertEquals(expectedIssuers, samlResponse.getIssuers());
 
 		expectedIssuers.remove(0);
-		expectedIssuers.add("https://pitbulk.no-ip.org/simplesaml/saml2/idp/metadata.php");
+		expectedIssuer = "https://pitbulk.no-ip.org/simplesaml/saml2/idp/metadata.php";
+		expectedIssuers.add(expectedIssuer);
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/signed_message_encrypted_assertion.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertEquals(expectedIssuer, samlResponse.getResponseIssuer());
+		assertEquals(expectedIssuer, samlResponse.getAssertionIssuer());
 		assertEquals(expectedIssuers, samlResponse.getIssuers());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/double_signed_encrypted_assertion.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertEquals(expectedIssuer, samlResponse.getResponseIssuer());
+		assertEquals(expectedIssuer, samlResponse.getAssertionIssuer());
 		assertEquals(expectedIssuers, samlResponse.getIssuers());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/signed_encrypted_assertion.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertEquals(expectedIssuer, samlResponse.getResponseIssuer());
+		assertEquals(expectedIssuer, samlResponse.getAssertionIssuer());
 		assertEquals(expectedIssuers, samlResponse.getIssuers());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/double_signed_response.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertEquals(expectedIssuer, samlResponse.getResponseIssuer());
+		assertEquals(expectedIssuer, samlResponse.getAssertionIssuer());
 		assertEquals(expectedIssuers, samlResponse.getIssuers());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/signed_assertion_response.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertEquals(expectedIssuer, samlResponse.getResponseIssuer());
+		assertEquals(expectedIssuer, samlResponse.getAssertionIssuer());
 		assertEquals(expectedIssuers, samlResponse.getIssuers());
 
+		expectedIssuer = "https://app.onelogin.com/saml/metadata/13590";
 		expectedIssuers = new ArrayList<String>();
-		expectedIssuers.add("https://app.onelogin.com/saml/metadata/13590");
+		expectedIssuers.add(expectedIssuer);
 		samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_issuer_response.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertNull(expectedIssuer, samlResponse.getResponseIssuer());
+		assertEquals(expectedIssuer, samlResponse.getAssertionIssuer());
 		assertEquals(expectedIssuers, samlResponse.getIssuers());
 	}
 
 	/**
-	 * Tests the getIssuers method of SamlResponse
+	 * Tests the getIssuers methods of SamlResponse
+	 * <p>
+	 * Case: different issuers for response and assertion
+	 *
+	 * @throws Error
+	 * @throws IOException
+	 * @throws ValidationError
+	 * @throws SettingsException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws XPathExpressionException
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#getIssuers
+	 */
+	@Test
+	public void testGetIssuersDifferentIssuers() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/different_issuers.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		List<String> expectedIssuers = new ArrayList<String>();
+		String expectedResponseIssuer = "https://response-issuer.com";
+		String expectedAssertionIssuer = "https://assertion-issuer.com";
+		expectedIssuers.add(expectedResponseIssuer);
+		expectedIssuers.add(expectedAssertionIssuer);
+		assertEquals(expectedResponseIssuer, samlResponse.getResponseIssuer());
+		assertEquals(expectedAssertionIssuer, samlResponse.getAssertionIssuer());
+		assertEquals(expectedIssuers, samlResponse.getIssuers());
+	}
+
+	/**
+	 * Tests the getAssertionIssuer method of SamlResponse
+	 * <p>
+	 * Case: Issuer of the assertion not found
+	 *
+	 * @throws Error
+	 * @throws IOException
+	 * @throws ValidationError
+	 * @throws SettingsException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws XPathExpressionException
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#getIssuers
+	 */
+	@Test
+	public void testGetAssertionIssuerNoInAssertion() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_issuer_assertion.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		
+		expectedEx.expect(ValidationError.class);
+		expectedEx.expectMessage("Issuer of the Assertion not found or multiple.");
+		samlResponse.getAssertionIssuer();
+	}
+
+	/**
+	 * Tests the getIssuers methods of SamlResponse
+	 * <p>
 	 * Case: Issuer of the assertion not found
 	 *
 	 * @throws Error
@@ -919,11 +991,12 @@ public class AuthnResponseTest {
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_issuer_assertion.xml.base64");
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		
+		samlResponse.getResponseIssuer(); // this should not fail
 		expectedEx.expect(ValidationError.class);
 		expectedEx.expectMessage("Issuer of the Assertion not found or multiple.");
 		samlResponse.getIssuers();
 	}
-	
+
 	/**
 	 * Tests the getSessionIndex method of SamlResponse
 	 *
@@ -1811,8 +1884,7 @@ public class AuthnResponseTest {
 		settings.setStrict(true);
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
-		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
-		
+		assertEquals("Invalid issuer in the Assertion/Response. Was 'http://invalid.isser.example.com/', but expected 'http://idp.example.com/'", samlResponse.getError());
 	}
 
 	/**

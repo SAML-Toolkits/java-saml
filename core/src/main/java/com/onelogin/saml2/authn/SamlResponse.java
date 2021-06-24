@@ -707,38 +707,89 @@ public class SamlResponse {
 	}
 
 	/**
-	 * Gets the Issuers (from Response and Assertion).
+	 * Gets the Response Issuer.
+	 *
+	 * @return the Response Issuer, or <code>null</code> if not specified
+	 *
+	 * @throws XPathExpressionException
+	 * @throws ValidationError
+	 *               if multiple Response issuers were found
+	 * @see #getAssertionIssuer()
+	 * @see #getIssuers()
+	 */
+	public String getResponseIssuer() throws XPathExpressionException, ValidationError {
+		NodeList responseIssuer = Util.query(samlResponseDocument, "/samlp:Response/saml:Issuer");
+		if (responseIssuer.getLength() > 0) {
+			if (responseIssuer.getLength() == 1) {
+				return responseIssuer.item(0).getTextContent();
+			} else {
+				throw new ValidationError("Issuer of the Response is multiple.", ValidationError.ISSUER_MULTIPLE_IN_RESPONSE);
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Gets the Assertion Issuer.
+	 *
+	 * @return the Assertion Issuer
+	 *
+	 * @throws XPathExpressionException
+	 * @throws ValidationError
+	 *               if no Assertion Issuer could be found, or if multiple Assertion
+	 *               issuers were found
+	 * @see #getResponseIssuer()
+	 * @see #getIssuers()
+	 */
+	public String getAssertionIssuer() throws XPathExpressionException, ValidationError {
+		NodeList assertionIssuer = this.queryAssertion("/saml:Issuer");
+		if (assertionIssuer.getLength() == 1) {
+			return assertionIssuer.item(0).getTextContent();
+		} else {
+			throw new ValidationError("Issuer of the Assertion not found or multiple.", ValidationError.ISSUER_NOT_FOUND_IN_ASSERTION);
+		}
+	}
+	
+	/**
+	 * Gets the Issuers (from Response and Assertion). If the same issuer appears
+	 * both in the Response and in the Assertion (as it should), the returned list
+	 * will contain it just once. Hence, the returned list should always return one
+	 * element and in particular:
+	 * <ul>
+	 * <li>it will never contain zero elements (it means an Assertion Issuer could
+	 * not be found, hence a {@link ValidationError} will be thrown instead)
+	 * <li>if it contains more than one element, it means that the response is
+	 * invalid and one of the returned issuers won't pass the check performed by
+	 * {@link #isValid(String)} (which requires both issuers to be equal to the
+	 * Identity Provider entity id)
+	 * </ul>
+	 * <p>
+	 * Warning: as a consequence of the above, if this response status code is not a
+	 * successful one, this method will throw a {@link ValidationError} because it
+	 * won't find any Assertion Issuer. In this case, if you need to retrieve the
+	 * Response Issuer any way, you must use {@link #getResponseIssuer()} instead.
 	 *
 	 * @return the issuers of the assertion/response
 	 *
 	 * @throws XPathExpressionException
 	 * @throws ValidationError
+	 *               if multiple Response Issuers or multiple Assertion Issuers were
+	 *               found, or if no Assertion Issuer could be found
+	 * @see #getResponseIssuer()
+	 * @see #getAssertionIssuer()
+	 * @deprecated use {@link #getResponseIssuer()} and/or
+	 *             {@link #getAssertionIssuer()}; the contract of this method is
+	 *             quite controversial
 	 */
+	@Deprecated
 	public List<String> getIssuers() throws XPathExpressionException, ValidationError {
 		List<String> issuers = new ArrayList<String>();
-		String value;
-		NodeList responseIssuer = Util.query(samlResponseDocument, "/samlp:Response/saml:Issuer");
-		if (responseIssuer.getLength() > 1) {
-			if (responseIssuer.getLength() == 1) {
-				value = responseIssuer.item(0).getTextContent();
-				if (!issuers.contains(value)) {
-					issuers.add(value);
-				}
-			} else {
-				throw new ValidationError("Issuer of the Response is multiple.", ValidationError.ISSUER_MULTIPLE_IN_RESPONSE);
-			}
-		}
-
-		NodeList assertionIssuer = this.queryAssertion("/saml:Issuer");
-		if (assertionIssuer.getLength() == 1) {
-			value = assertionIssuer.item(0).getTextContent();
-			if (!issuers.contains(value)) {
-				issuers.add(value);
-			}
-		} else {
-			throw new ValidationError("Issuer of the Assertion not found or multiple.", ValidationError.ISSUER_NOT_FOUND_IN_ASSERTION);
-		}
-
+		String responseIssuer = getResponseIssuer();
+		if(responseIssuer != null)
+			issuers.add(responseIssuer);
+		String assertionIssuer = getAssertionIssuer();
+		if(!issuers.contains(assertionIssuer))
+			issuers.add(assertionIssuer);
 		return issuers;
 	}
 
