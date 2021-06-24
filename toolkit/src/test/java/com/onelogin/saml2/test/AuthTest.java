@@ -2088,6 +2088,9 @@ public class AuthTest {
 		String targetSSOURL = auth.login(null, false, false, false, true);
 		String authNRequestXML = auth.getLastRequestXML();
 		assertThat(targetSSOURL, containsString(Util.urlEncoder(Util.deflatedBase64encoded(authNRequestXML))));
+		
+		assertThat(authNRequestXML, containsString("ID=\"" + auth.getLastRequestId() + "\""));
+		assertThat(authNRequestXML, containsString("IssueInstant=\"" + Util.formatDateTime(auth.getLastRequestIssueInstant().getTimeInMillis()) + "\""));
 	}
 
 	/**
@@ -2111,6 +2114,9 @@ public class AuthTest {
 		String targetSLOURL = auth.logout(null, null, null, true);
 		String logoutRequestXML = auth.getLastRequestXML();
 		assertThat(targetSLOURL, containsString(Util.urlEncoder(Util.deflatedBase64encoded(logoutRequestXML))));
+
+		assertThat(logoutRequestXML, containsString("ID=\"" + auth.getLastRequestId() + "\""));
+		assertThat(logoutRequestXML, containsString("IssueInstant=\"" + Util.formatDateTime(auth.getLastRequestIssueInstant().getTimeInMillis()) + "\""));
 	}
 
 	/**

@@ -142,7 +142,9 @@ public class LogoutRequest {
 			logoutRequestString = substitutor.replace(getLogoutRequestTemplate());
 		} else {
 			logoutRequestString = Util.base64decodedInflated(samlLogoutRequest);
-			id = getId(logoutRequestString);
+			Document doc = Util.loadXML(logoutRequestString);
+			id = getId(doc);
+			issueInstant = getIssueInstant(doc);
 		}
 	}
 
@@ -473,14 +475,14 @@ public class LogoutRequest {
 		}
 	}
 
-    /**
-     * Returns the ID of the Logout Request Document.
-     *
+      /**
+       * Returns the ID of the Logout Request Document.
+       *
 	 * @param samlLogoutRequestDocument
 	 * 				A DOMDocument object loaded from the SAML Logout Request.
 	 *
-     * @return the ID of the Logout Request.
-     */
+       * @return the ID of the Logout Request.
+       */
 	public static String getId(Document samlLogoutRequestDocument) {
 		String id = null;
 		try {
@@ -491,18 +493,54 @@ public class LogoutRequest {
 		return id;
 	}
 
-    /**
-     * Returns the ID of the Logout Request String.
-     *
-	 * @param samlLogoutRequestString
-	 * 				A Logout Request string.
-	 *
-     * @return the ID of the Logout Request.
-     *
-     */
+      /**
+       * Returns the issue instant of the Logout Request Document.
+       *
+       * @param samlLogoutRequestDocument
+       * 				A DOMDocument object loaded from the SAML Logout Request.
+       *
+       * @return the issue instant of the Logout Request.
+       */
+	public static Calendar getIssueInstant(Document samlLogoutRequestDocument) {
+		Calendar issueInstant = null;
+		try {
+			Element rootElement = samlLogoutRequestDocument.getDocumentElement();
+			rootElement.normalize();
+			String issueInstantString = rootElement.hasAttribute(
+					"IssueInstant")? rootElement.getAttribute("IssueInstant"): null;
+			if(issueInstantString == null)
+				return null;
+			issueInstant = Calendar.getInstance();
+			issueInstant.setTimeInMillis(Util.parseDateTime(issueInstantString).getMillis());
+		} catch (Exception e) {}
+		return issueInstant;
+	}
+
+      /**
+       * Returns the ID of the Logout Request String.
+       *
+       * @param samlLogoutRequestString
+       * 				A Logout Request string.
+       *
+       * @return the ID of the Logout Request.
+       *
+       */
 	public static String getId(String samlLogoutRequestString) {
 		Document doc = Util.loadXML(samlLogoutRequestString);
 		return getId(doc);
+	}
+	
+      /**
+       * Returns the issue instant of the Logout Request Document.
+       *
+       * @param samlLogoutRequestDocument
+       * 				A DOMDocument object loaded from the SAML Logout Request.
+       *
+       * @return the issue instant of the Logout Request.
+       */
+	public static Calendar getIssueInstant(String samlLogoutRequestString) {
+		Document doc = Util.loadXML(samlLogoutRequestString);
+		return getIssueInstant(doc);
 	}
 
 	/**
@@ -761,5 +799,14 @@ public class LogoutRequest {
 	public String getId()
 	{
 		return id;
+	}
+
+	/**
+	 * Returns the issue instant of this message.
+	 * 
+	 * @return a new {@link Calendar} instance carrying the issue instant of this message
+	 */
+	public Calendar getIssueInstant() {
+		return issueInstant == null? null: (Calendar) issueInstant.clone();
 	}
 }

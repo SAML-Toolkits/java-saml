@@ -4,11 +4,15 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.onelogin.saml2.authn.AuthnRequest;
@@ -325,6 +329,32 @@ public class AuthnRequestTest {
 
 		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
 		assertThat(authnRequestStr, containsString("ID=\"" + authnRequest.getId() + "\""));
+	}
+
+	/**
+	 * Tests the getId method of AuthnRequest
+	 *
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.authn.AuthnRequest.getId
+	 */
+	@Test
+	public void testGetIssueInstant() throws Exception
+	{
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+
+		final long start = System.currentTimeMillis();
+		AuthnRequest authnRequest = new AuthnRequest(settings);
+		final long end = System.currentTimeMillis();
+		final String authnRequestStr = Util.base64decodedInflated(authnRequest.getEncodedAuthnRequest());
+
+		final Calendar issueInstant = authnRequest.getIssueInstant();
+		assertNotNull(issueInstant);
+		final long millis = issueInstant.getTimeInMillis();
+		assertTrue(millis >= start && millis <= end);
+		
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, containsString("IssueInstant=\"" + Util.formatDateTime(millis) + "\""));
 	}
 
 	/**

@@ -261,4 +261,13 @@ public class AuthnRequest {
 	{
 		return id;
 	}
+	
+	/**
+	 * Returns the issue instant of this message.
+	 * 
+	 * @return a new {@link Calendar} instance carrying the issue instant of this message
+	 */
+	public Calendar getIssueInstant() {
+		return issueInstant == null? null: (Calendar) issueInstant.clone();
+	}
 }

@@ -7,9 +7,11 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -24,6 +26,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import com.onelogin.saml2.logout.LogoutRequest;
+import com.onelogin.saml2.logout.LogoutResponse;
 import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.exception.Error;
@@ -307,6 +310,56 @@ public class LogoutRequestTest {
 		assertEquals(expectedId, id);
 
 		assertNull(LogoutRequest.getId(""));
+	}
+
+	/**
+	 * Tests the getIssueInstant method of LogoutRequest
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.logout.LogoutRequest#getIssueInstant(String)
+	 */
+	@Test
+	public void testGetIssueInstant() throws Exception {
+		String samlRequest = Util.getFileAsString("data/logout_requests/logout_request.xml");
+		Calendar issueInstant = LogoutRequest.getIssueInstant(samlRequest);
+		String expectedIssueInstant = "2013-12-10T04:39:31Z";
+		assertEquals(expectedIssueInstant, Util.formatDateTime(issueInstant.getTimeInMillis()));
+
+		Document samlRequestDoc = Util.loadXML(samlRequest);
+		issueInstant = LogoutRequest.getIssueInstant(samlRequestDoc);
+		assertEquals(expectedIssueInstant, Util.formatDateTime(issueInstant.getTimeInMillis()));
+
+		assertNull(LogoutRequest.getIssueInstant(""));
+		
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request.xml.base64");
+		final String requestURL = "http://stuff.com/endpoints/endpoints/sls.php";
+		HttpRequest httpRequest = newHttpRequest(requestURL, samlRequestEncoded);
+
+		issueInstant = new LogoutRequest(settings, httpRequest).getIssueInstant();
+		assertEquals(expectedIssueInstant, Util.formatDateTime(issueInstant.getTimeInMillis()));
+	}
+
+	/**
+	 * Tests the getIssueInstant method of LogoutRequest
+	 * <p>
+	 * Case: LogoutRequest message built by the caller
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.logout.LogoutRequest#getIssueInstant(String)
+	 */
+	@Test
+	public void testGetIssueInstantBuiltMessage() throws Exception  {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		long start = System.currentTimeMillis();
+		LogoutRequest logoutRequest = new LogoutRequest(settings, null);
+		long end = System.currentTimeMillis();
+		Calendar issueInstant = logoutRequest.getIssueInstant();
+		assertNotNull(issueInstant);
+		long millis = issueInstant.getTimeInMillis();
+		assertTrue(millis >= start && millis <= end);
 	}
 
 	/**

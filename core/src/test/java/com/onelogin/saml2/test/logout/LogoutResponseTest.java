@@ -7,11 +7,13 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import com.onelogin.saml2.exception.ValidationError;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Calendar;
 
 import javax.xml.xpath.XPathExpressionException;
 
@@ -244,6 +246,49 @@ public class LogoutResponseTest {
 		httpRequest = newHttpRequest(requestURL, samlResponseEncoded);
 		logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertNull(logoutResponse.getIssuer());
+	}
+
+	/**
+	 * Tests the getIssueInstant method of LogoutResponse
+	 * 
+	 * @throws IOException 
+	 * @throws Error 
+	 * @throws ValidationError 
+	 *
+	 * @see com.onelogin.saml2.logout.LogoutResponse#getIssueInstant()
+	 */
+	@Test
+	public void testGetIssueInstant() throws IOException, Error, ValidationError {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
+		final String requestURL = "/";
+		HttpRequest httpRequest = newHttpRequest(requestURL, samlResponseEncoded);
+		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
+		assertEquals("2013-12-10T04:39:31Z", Util.formatDateTime(logoutResponse.getIssueInstant().getTimeInMillis()));
+	}
+
+	/**
+	 * Tests the getIssueInstant method of LogoutResponse
+	 * <p>
+	 * Case: LogoutResponse message built by the caller.
+	 * 
+	 * @throws IOException 
+	 * @throws Error 
+	 * @throws ValidationError 
+	 *
+	 * @see com.onelogin.saml2.logout.LogoutResponse#getIssueInstant()
+	 */
+	@Test
+	public void testGetIssueInstantBuiltMessage() throws IOException, Error, ValidationError {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		long start = System.currentTimeMillis();
+		LogoutResponse logoutResponse = new LogoutResponse(settings, null);
+		logoutResponse.build();
+		long end = System.currentTimeMillis();
+		Calendar issueInstant = logoutResponse.getIssueInstant();
+		assertNotNull(issueInstant);
+		long millis = issueInstant.getTimeInMillis();
+		assertTrue(millis >= start && millis <= end);
 	}
 
 	/**

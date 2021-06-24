@@ -29,6 +29,7 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -478,6 +479,29 @@ public class AuthnResponseTest {
 		assertTrue(samlResponse.getNameIdData().isEmpty());
 	}
 
+	/**
+	 * Tests the getIssueInstant method of SamlResponse
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#getResponseIssueInstant()
+	 */
+	@Test
+	public void testGetIssueInstant() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertEquals("2010-11-18T21:57:37Z", Util.formatDateTime(samlResponse.getResponseIssueInstant().getTimeInMillis()));
+
+		samlResponseEncoded = Util.getFileAsString("data/responses/response_encrypted_nameid.xml.base64");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertEquals("2014-03-09T12:23:37Z", Util.formatDateTime(samlResponse.getResponseIssueInstant().getTimeInMillis()));
+
+		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertEquals("2014-03-29T12:01:57Z", Util.formatDateTime(samlResponse.getResponseIssueInstant().getTimeInMillis()));
+	}
+	
 	/**
 	 * Tests the decryptAssertion method of SamlResponse
 	 * Case: EncryptedAssertion with an encryptedData element with a KeyInfo
