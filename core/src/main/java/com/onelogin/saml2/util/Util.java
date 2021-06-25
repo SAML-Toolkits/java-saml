@@ -989,7 +989,7 @@ public final class Util {
 		return false;
 	}
 
-	/**
+    /**
      * Validate signature (Metadata).
      *
      * @param doc
@@ -1007,7 +1007,7 @@ public final class Util {
 		return validateMetadataSign(doc, cert, fingerprint, alg, false);
     }
 
-	/**
+    /**
      * Validate signature (Metadata).
      *
      * @param doc
@@ -1051,39 +1051,31 @@ public final class Util {
 		return false;
     }
 
-	/**
-     * Validate signature (Metadata).
+    /**
+     * Extract signature data from a DOM {@link Node}.
      *
-     * @param doc
-     *               The document we should validate
-     * @param cert
-     *               The public certificate
-     * @param fingerprint
-     *               The fingerprint of the public certificate
+     * @param signNode
+     *               The signed node
      * @param alg
      *               The signature algorithm method
      *
-     * @return True if the sign is valid, false otherwise.
+     * @return a Map containing the signature data (actual signature, certificate, fingerprint)
      */
     private static Map<String,Object> getSignatureData(Node signNode, String alg) {
 		return getSignatureData(signNode, alg, false);
     }
 
-	/**
-     * Validate signature (Metadata).
+    /**
+     * Extract signature data from a DOM {@link Node}.
      *
-     * @param doc
-     *               The document we should validate
-     * @param cert
-     *               The public certificate
-     * @param fingerprint
-     *               The fingerprint of the public certificate
+     * @param signNode
+     *               The signed node
      * @param alg
      *               The signature algorithm method
      * @param rejectDeprecatedAlg
-     *               Flag to invalidate or not Signatures with deprecated alg
+     *               Whether to ignore signature if a deprecated algorithm is used
      *
-     * @return True if the sign is valid, false otherwise.
+     * @return a Map containing the signature data (actual signature, certificate, fingerprint)
      */
     private static Map<String,Object> getSignatureData(Node signNode, String alg, Boolean rejectDeprecatedAlg) {
 		Map<String,Object> signatureData = new HashMap<>();
