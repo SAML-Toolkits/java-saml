@@ -440,10 +440,10 @@ The AuthNRequest will be sent signed or unsigned based on the security settings 
 
 The IdP will then return the SAML Response to the user's client. The client is then forwarded to the Attribute Consumer Service of the SP with this information.
 
-We can set a 'returnTo' url parameter to the login function and that will be converted as a 'RelayState' parameter:
+We can set a 'RelayState' parameter containing a return url to the login function:
 ```
-String targetUrl = 'https://example.com';
-auth.login(returnTo=targetUrl)
+String returnUrl = 'https://example.com';
+auth.login(relayState=returnUrl)
 ```
 The login method can receive 6 more optional parameters:
 - *forceAuthn* When true the AuthNRequest will have the 'ForceAuthn' attribute set to 'true'
@@ -612,10 +612,10 @@ The Logout Request will be sent signed or unsigned based on the security setting
 
 The IdP will return the Logout Response through the user's client to the Single Logout Service of the SP.
 
-We can set a 'returnTo' url parameter to the logout function and that will be converted as a 'RelayState' parameter:
+We can set a 'RelayState' parameter containing a return url to the login function:
 ```
-String targetUrl = 'https://example.com';
-auth.logout(returnTo=targetUrl)
+String returnUrl = 'https://example.com';
+auth.logout(relayState=returnUrl)
 ```
 
 Also there are 7 optional parameters that can be set:
