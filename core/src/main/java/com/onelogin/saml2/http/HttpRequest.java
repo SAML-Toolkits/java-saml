@@ -29,6 +29,7 @@ public final class HttpRequest {
     private final String requestURL;
     private final Map<String, List<String>> parameters;
     private final String queryString;
+    private final String method;
 
     /**
      * Creates a new HttpRequest.
@@ -77,6 +78,29 @@ public final class HttpRequest {
         this.requestURL = checkNotNull(requestURL, "requestURL");
         this.parameters = unmodifiableCopyOf(checkNotNull(parameters, "queryParams"));
         this.queryString = StringUtils.trimToEmpty(queryString);
+    }
+
+    /**
+     * @param method The HTTP method of the request
+     */
+    public void setMethod(String method) {
+        this.method = method;
+    }
+
+    /**
+     * @return the HTTP method of the request
+     */
+    public String getMethod() {
+        return this.method;
+    }
+
+    /**
+     * Check if the request is a POST
+     *
+     * @return true if the request method is POST
+     */
+    public boolean isPOST() {
+        return "POST".equals(this.method);
     }
 
     /**

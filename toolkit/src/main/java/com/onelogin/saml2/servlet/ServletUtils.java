@@ -39,7 +39,9 @@ public class ServletUtils {
             paramsAsList.put(param.getKey(), Arrays.asList(param.getValue()));
         }
 
-        return new HttpRequest(req.getRequestURL().toString(), paramsAsList, req.getQueryString());
+        HttpRequest request = new HttpRequest(req.getRequestURL().toString(), paramsAsList, req.getQueryString());
+        request.setMethod(req.getMethod());
+        return request;
     }
 
     /**
@@ -82,6 +84,18 @@ public class ServletUtils {
      */
     public static boolean isHTTPS(HttpServletRequest request) {
         return request.isSecure();
+    }
+
+    /**
+     * Check if the request is a POST
+     *
+     * @param request
+     *              HttpServletRequest object to be processed
+     *
+     * @return true if the request method is POST
+     */
+    public static boolean isPOST(HttpServletRequest request) {
+        return "POST".equals(request.getMethod());
     }
 
     /**

@@ -1005,7 +1005,7 @@ public class Auth {
 		final String samlRequestParameter = httpRequest.getParameter("SAMLRequest");
 		final String samlResponseParameter = httpRequest.getParameter("SAMLResponse");
 
-		if (samlResponseParameter != null) {
+		if (!httpRequest.isPOST() && samlResponseParameter != null) {
 			LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
 			lastResponse = logoutResponse.getLogoutResponseXml();
 			if (!logoutResponse.isValid(requestId)) {
@@ -1035,7 +1035,7 @@ public class Auth {
 				}
 			}
 			return null;
-		} else if (samlRequestParameter != null) {
+		} else if (!httpRequest.isPOST() && samlRequestParameter != null) {
 			LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
 			lastRequest = logoutRequest.getLogoutRequestXml();
 			if (!logoutRequest.isValid()) {
