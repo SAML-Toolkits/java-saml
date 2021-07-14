@@ -29,6 +29,7 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -891,6 +892,86 @@ public class AuthnResponseTest {
 	}
 
 	/**
+	 * Tests the getResponseIssuer method of SamlResponse
+	 * <p>
+	 * Case: with or without trimming
+	 *
+	 * @throws Error
+	 * @throws IOException
+	 * @throws ValidationError
+	 * @throws SettingsException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws XPathExpressionException
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#getIssuers
+	 */
+	@Test
+	public void testGetResponseIssuerTrimming() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
+		// disabled by now
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/response3_with_whitespace.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertEquals("\n  \thttp://example.com/services/trust\n  ", samlResponse.getResponseIssuer());
+		settings.setTrimNameIds(true);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertEquals("http://example.com/services/trust", samlResponse.getResponseIssuer());
+	}
+
+	/**
+	 * Tests the getAssertionIssuer method of SamlResponse
+	 * <p>
+	 * Case: Issuer of the assertion not found
+	 *
+	 * @throws Error
+	 * @throws IOException
+	 * @throws ValidationError
+	 * @throws SettingsException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws XPathExpressionException
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#getIssuers
+	 */
+	@Test
+	public void testGetAssertionIssuerNoInAssertion() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_issuer_assertion.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		
+		expectedEx.expect(ValidationError.class);
+		expectedEx.expectMessage("Issuer of the Assertion not found or multiple.");
+		samlResponse.getAssertionIssuer();
+	}
+
+	/**
+	 * Tests the getAssertionIssuer method of SamlResponse
+	 * <p>
+	 * Case: with or without trimming
+	 *
+	 * @throws Error
+	 * @throws IOException
+	 * @throws ValidationError
+	 * @throws SettingsException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws XPathExpressionException
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#getIssuers
+	 */
+	@Test
+	public void testGetAssertionIssuerTrimming() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
+		// disabled by now
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/response3_with_whitespace.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertEquals("\n    \thttp://example.com/services/trust\n    ", samlResponse.getAssertionIssuer());
+		settings.setTrimNameIds(true);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertEquals("http://example.com/services/trust", samlResponse.getAssertionIssuer());
+	}
+
+	/**
 	 * Tests the getIssuers methods of SamlResponse
 	 *
 	 * @throws Error
@@ -990,59 +1071,6 @@ public class AuthnResponseTest {
 	}
 
 	/**
-	 * Tests the getAssertionIssuer method of SamlResponse
-	 * <p>
-	 * Case: Issuer of the assertion not found
-	 *
-	 * @throws Error
-	 * @throws IOException
-	 * @throws ValidationError
-	 * @throws SettingsException
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws XPathExpressionException
-	 *
-	 * @see com.onelogin.saml2.authn.SamlResponse#getIssuers
-	 */
-	@Test
-	public void testGetAssertionIssuerNoInAssertion() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
-		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
-		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_issuer_assertion.xml.base64");
-		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
-		
-		expectedEx.expect(ValidationError.class);
-		expectedEx.expectMessage("Issuer of the Assertion not found or multiple.");
-		samlResponse.getAssertionIssuer();
-	}
-
-	/**
-	 * Tests the getIssuers method of SamlResponse
-	 * <p>
-	 * Case: with or without trimming
-	 *
-	 * @throws Error
-	 * @throws IOException
-	 * @throws ValidationError
-	 * @throws SettingsException
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws XPathExpressionException
-	 *
-	 * @see com.onelogin.saml2.authn.SamlResponse#getIssuers
-	 */
-	@Test
-	public void testGetIssuersTrimming() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
-		// disabled by now
-//		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
-//		String samlResponseEncoded = Util.getFileAsString("data/responses/response3_with_whitespace.xml.base64");
-//		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
-//		assertEquals(Arrays.asList("\n  \thttp://example.com/services/trust\n  ", "\n    \thttp://example.com/services/trust\n    "), samlResponse.getIssuers());
-//		settings.setTrimNameIds(true);
-//		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
-//		assertEquals(Arrays.asList("http://example.com/services/trust"), samlResponse.getIssuers());
-	}
-
-	/**
 	 * Tests the getIssuers method of SamlResponse
 	 * Case: Issuer of the assertion not found
 	 *
@@ -1066,6 +1094,33 @@ public class AuthnResponseTest {
 		expectedEx.expect(ValidationError.class);
 		expectedEx.expectMessage("Issuer of the Assertion not found or multiple.");
 		samlResponse.getIssuers();
+	}
+
+	/**
+	 * Tests the getIssuers method of SamlResponse
+	 * <p>
+	 * Case: with or without trimming
+	 *
+	 * @throws Error
+	 * @throws IOException
+	 * @throws ValidationError
+	 * @throws SettingsException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws XPathExpressionException
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#getIssuers
+	 */
+	@Test
+	public void testGetIssuersTrimming() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
+		// disabled by now
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/response3_with_whitespace.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertEquals(Arrays.asList("\n  \thttp://example.com/services/trust\n  ", "\n    \thttp://example.com/services/trust\n    "), samlResponse.getIssuers());
+		settings.setTrimNameIds(true);
+		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertEquals(Arrays.asList("http://example.com/services/trust"), samlResponse.getIssuers());
 	}
 
 	/**
