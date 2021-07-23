@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>com.onelogin</groupId>
 		<artifactId>java-saml-toolkit</artifactId>
-		<version>2.6.1-SNAPSHOT</version>
+		<version>2.7.0</version>
 	</parent>
 
 	<artifactId>java-saml-tookit-samples</artifactId>
