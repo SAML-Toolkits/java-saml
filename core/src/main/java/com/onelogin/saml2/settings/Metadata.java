@@ -77,7 +77,7 @@ public class Metadata {
 		this.cacheDuration = cacheDuration;
 
 		StrSubstitutor substitutor = generateSubstitutor(settings);
-		String unsignedMetadataString = postProcessXml(substitutor.replace(getMetadataTemplate()));
+		String unsignedMetadataString = postProcessXml(substitutor.replace(getMetadataTemplate()), settings);
 
 		LOGGER.debug("metadata --> " + unsignedMetadataString);
 		metadataString = unsignedMetadataString;
@@ -109,7 +109,7 @@ public class Metadata {
 		this.cacheDuration = SECONDS_CACHED;
 
 		StrSubstitutor substitutor = generateSubstitutor(settings);
-		String unsignedMetadataString = postProcessXml(substitutor.replace(getMetadataTemplate()));
+		String unsignedMetadataString = postProcessXml(substitutor.replace(getMetadataTemplate()), settings);
 
 		LOGGER.debug("metadata --> " + unsignedMetadataString);
 		metadataString = unsignedMetadataString;
@@ -126,10 +126,12 @@ public class Metadata {
 	 * @param metadataXml
 	 *              the XML produced for this metadata instance by the standard
 	 *              implementation provided by {@link Metadata}
+	 * @param settings
+	 *              the settings
 	 * @return the post-processed XML for this metadata instance, which will then be
 	 *         returned by any call to {@link #getMetadataString()}
 	 */
-	protected String postProcessXml(final String metadataXml) {
+	protected String postProcessXml(final String metadataXml, final Saml2Settings settings) {
 		return metadataXml;
 	}
 

@@ -11,8 +11,8 @@ import org.apache.commons.lang3.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.model.Organization;
+import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.Util;
 
@@ -101,7 +101,7 @@ public class AuthnRequest {
 		this.nameIdValueReq = nameIdValueReq;
 
 		StrSubstitutor substitutor = generateSubstitutor(settings);
-		authnRequestString = postProcessXml(substitutor.replace(getAuthnRequestTemplate()));
+		authnRequestString = postProcessXml(substitutor.replace(getAuthnRequestTemplate()), settings);
 		LOGGER.debug("AuthNRequest --> " + authnRequestString);
 	}
 
@@ -132,10 +132,12 @@ public class AuthnRequest {
 	 * @param authnRequestXml
 	 *              the XML produced for this AuthnRequest by the standard
 	 *              implementation provided by {@link AuthnRequest}
+	 * @param settings
+	 *              the settings
 	 * @return the post-processed XML for this AuthnRequest, which will then be
 	 *         returned by any call to {@link #getAuthnRequestXml()}
 	 */
-	protected String postProcessXml(final String authnRequestXml) {
+	protected String postProcessXml(final String authnRequestXml, final Saml2Settings settings) {
 		return authnRequestXml;
 	}
 	

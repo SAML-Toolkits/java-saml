@@ -364,7 +364,7 @@ public class LogoutResponse {
 		this.inResponseTo = inResponseTo;
 
 		StrSubstitutor substitutor = generateSubstitutor(settings, statusCode);
-		this.logoutResponseString = postProcessXml(substitutor.replace(getLogoutResponseTemplate()));
+		this.logoutResponseString = postProcessXml(substitutor.replace(getLogoutResponseTemplate()), settings);
 	}
 
     /**
@@ -396,10 +396,12 @@ public class LogoutResponse {
 	 * @param logoutResponseXml
 	 *              the XML produced for this LogoutResponse by the standard
 	 *              implementation provided by {@link LogoutResponse}
+	 * @param settings
+	 *              the settings
 	 * @return the post-processed XML for this LogoutResponse, which will then be
 	 *         returned by any call to {@link #getLogoutResponseXml()}
 	 */
-	protected String postProcessXml(final String logoutResponseXml) {
+	protected String postProcessXml(final String logoutResponseXml, final Saml2Settings settings) {
 		return logoutResponseXml;
 	}
 	

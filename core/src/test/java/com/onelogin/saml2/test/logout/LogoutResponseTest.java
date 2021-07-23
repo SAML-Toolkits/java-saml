@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -704,7 +705,9 @@ public class LogoutResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		LogoutResponse logoutResponse = new LogoutResponse(settings, null) {
 			@Override
-			protected String postProcessXml(String authRequestXml) {
+			protected String postProcessXml(String authRequestXml, Saml2Settings sett) {
+				assertEquals(authRequestXml, super.postProcessXml(authRequestXml, sett));
+				assertSame(settings, sett);
 				return "changed";
 			}
 		};

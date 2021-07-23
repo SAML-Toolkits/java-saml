@@ -7,7 +7,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
-
+import static org.junit.Assert.assertSame;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -533,7 +533,9 @@ public class MetadataTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		Metadata metadata = new Metadata(settings) {
 			@Override
-			protected String postProcessXml(String authRequestXml) {
+			protected String postProcessXml(String authRequestXml, Saml2Settings sett) {
+				assertEquals(authRequestXml, super.postProcessXml(authRequestXml, sett));
+				assertSame(settings, sett);
 				return "changed";
 			}
 		};

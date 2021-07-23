@@ -139,7 +139,7 @@ public class LogoutRequest {
 			this.sessionIndex = sessionIndex;
 	
 			StrSubstitutor substitutor = generateSubstitutor(settings);
-			logoutRequestString = postProcessXml(substitutor.replace(getLogoutRequestTemplate()));
+			logoutRequestString = postProcessXml(substitutor.replace(getLogoutRequestTemplate()), settings);
 		} else {
 			logoutRequestString = Util.base64decodedInflated(samlLogoutRequest);
 			Document doc = Util.loadXML(logoutRequestString);
@@ -237,10 +237,12 @@ public class LogoutRequest {
 	 * @param logoutRequestXml
 	 *              the XML produced for this LogoutRequest by the standard
 	 *              implementation provided by {@link LogoutRequest}
+	 * @param settings
+	 *              the settings
 	 * @return the post-processed XML for this LogoutRequest, which will then be
 	 *         returned by any call to {@link #getLogoutRequestXml()}
 	 */
-	protected String postProcessXml(final String logoutRequestXml) {
+	protected String postProcessXml(final String logoutRequestXml, final Saml2Settings settings) {
 		return logoutRequestXml;
 	}
 
