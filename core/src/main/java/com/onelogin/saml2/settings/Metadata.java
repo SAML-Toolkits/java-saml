@@ -318,7 +318,7 @@ public class Metadata {
 	            keyDescriptorXml.append("<md:KeyDescriptor use=\"signing\">");
 	            keyDescriptorXml.append("<ds:KeyInfo xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\">");
 	            keyDescriptorXml.append("<ds:X509Data>");
-	            keyDescriptorXml.append("<ds:X509Certificate>"+Util.toXml(certString)+"</ds:X509Certificate>");
+	            keyDescriptorXml.append("<ds:X509Certificate>"+certString+"</ds:X509Certificate>");
 	            keyDescriptorXml.append("</ds:X509Data>");
 	            keyDescriptorXml.append("</ds:KeyInfo>");
 	            keyDescriptorXml.append("</md:KeyDescriptor>");
@@ -327,7 +327,7 @@ public class Metadata {
 	                keyDescriptorXml.append("<md:KeyDescriptor use=\"encryption\">");
 	                keyDescriptorXml.append("<ds:KeyInfo xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\">");
 	                keyDescriptorXml.append("<ds:X509Data>");
-	                keyDescriptorXml.append("<ds:X509Certificate>"+Util.toXml(certString)+"</ds:X509Certificate>");
+	                keyDescriptorXml.append("<ds:X509Certificate>"+certString+"</ds:X509Certificate>");
 	                keyDescriptorXml.append("</ds:X509Data>");
 	                keyDescriptorXml.append("</ds:KeyInfo>");
 	                keyDescriptorXml.append("</md:KeyDescriptor>");
