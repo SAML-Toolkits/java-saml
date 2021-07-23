@@ -63,9 +63,9 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import javax.xml.xpath.XPathFactoryConfigurationException;
 
-import com.onelogin.saml2.model.hsm.HSM;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xml.security.encryption.EncryptedData;
 import org.apache.xml.security.encryption.EncryptedKey;
@@ -95,6 +95,7 @@ import org.xml.sax.SAXException;
 import com.onelogin.saml2.exception.ValidationError;
 import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.model.SamlResponseStatus;
+import com.onelogin.saml2.model.hsm.HSM;
 
 
 /**
@@ -445,7 +446,7 @@ public final class Util {
 	 * @return the Document object
 	 */
 	public static String convertDocumentToString(Document doc) {
-		return convertDocumentToString(doc, false);
+		 return convertDocumentToString(doc, false);
 	}
 
 	/**
@@ -1975,6 +1976,17 @@ public final class Util {
 			return DATE_TIME_FORMAT_MILLS.parseDateTime(dateTime);
 		}
 		return parsedData;
+	}
+	
+	/**
+	 * Escape a text so that it can be safely used within an XML element contents or attribute value.
+	 * 
+	 * @param text 
+	 * 				the text to escape
+	 * @return the escaped text (<code>null</code> if the input is <code>null</code>)
+	 */
+	public static String toXml(String text) {
+		return StringEscapeUtils.escapeXml10(text);
 	}
 
 	private static String toStringUtf8(byte[] bytes) {

@@ -2146,4 +2146,27 @@ public class UtilsTest {
 		assertEquals("saml2:Assertion", assertion_2.getNodeName());
 	}
 
+	/**
+	 * Tests the toXml method
+	 * 
+	 * @see com.onelogin.saml2.util.Util#toXml(String)
+	 */
+	@Test
+	public void testToXml() {
+		assertEquals("", Util.toXml(""));
+		assertEquals("No escape", Util.toXml("No escape"));
+		assertEquals("&amp;&quot;&lt;&gt;&apos;", Util.toXml("&\"<>'"));
+	}	
+
+	/**
+	 * Tests the toXml method
+	 * <p>
+	 * Case: the input is <code>null</code>.
+	 * 
+	 * @see com.onelogin.saml2.util.Util#toXml(String)
+	 */
+	@Test
+	public void testToXmlNull() {
+		assertNull(Util.toXml(null));
+	}	
 }

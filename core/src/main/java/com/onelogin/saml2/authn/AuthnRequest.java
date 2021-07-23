@@ -206,7 +206,7 @@ public class AuthnRequest {
 		String destinationStr = "";
 		URL sso =  settings.getIdpSingleSignOnServiceUrl();
 		if (sso != null) {
-			destinationStr = " Destination=\"" + sso.toString() + "\"";
+			destinationStr = " Destination=\"" + Util.toXml(sso.toString()) + "\"";
 		}
 		valueMap.put("destinationStr", destinationStr);
 
@@ -214,7 +214,7 @@ public class AuthnRequest {
 		if (nameIdValueReq != null && !nameIdValueReq.isEmpty()) {
 			String nameIDFormat = settings.getSpNameIDFormat();
 			subjectStr = "<saml:Subject>";
-			subjectStr += "<saml:NameID Format=\"" + nameIDFormat + "\">" + nameIdValueReq + "</saml:NameID>";
+			subjectStr += "<saml:NameID Format=\"" + Util.toXml(nameIDFormat) + "\">" + Util.toXml(nameIdValueReq) + "</saml:NameID>";
 			subjectStr += "<saml:SubjectConfirmation Method=\"urn:oasis:names:tc:SAML:2.0:cm:bearer\"></saml:SubjectConfirmation>";
 			subjectStr += "</saml:Subject>";
         }
@@ -226,7 +226,7 @@ public class AuthnRequest {
 			if (settings.getWantNameIdEncrypted()) {
 				nameIDPolicyFormat = Constants.NAMEID_ENCRYPTED;
 			}
-			nameIDPolicyStr = "<samlp:NameIDPolicy Format=\"" + nameIDPolicyFormat + "\" AllowCreate=\"true\" />";
+			nameIDPolicyStr = "<samlp:NameIDPolicy Format=\"" + Util.toXml(nameIDPolicyFormat) + "\" AllowCreate=\"true\" />";
 		}
 		valueMap.put("nameIDPolicyStr", nameIDPolicyStr);
 
@@ -235,25 +235,25 @@ public class AuthnRequest {
 		if (organization != null) {
 			String displayName = organization.getOrgDisplayName();
 			if (!displayName.isEmpty()) {
-				providerStr = " ProviderName=\""+ displayName + "\""; 
+				providerStr = " ProviderName=\""+ Util.toXml(displayName) + "\""; 
 			}
 		}
 		valueMap.put("providerStr", providerStr);
 
 		String issueInstantString = Util.formatDateTime(issueInstant.getTimeInMillis());
 		valueMap.put("issueInstant", issueInstantString);
-		valueMap.put("id", String.valueOf(id));
-		valueMap.put("assertionConsumerServiceURL", String.valueOf(settings.getSpAssertionConsumerServiceUrl()));
-		valueMap.put("protocolBinding", settings.getSpAssertionConsumerServiceBinding());
-		valueMap.put("spEntityid", settings.getSpEntityId());
+		valueMap.put("id", Util.toXml(String.valueOf(id)));
+		valueMap.put("assertionConsumerServiceURL", Util.toXml(String.valueOf(settings.getSpAssertionConsumerServiceUrl())));
+		valueMap.put("protocolBinding", Util.toXml(settings.getSpAssertionConsumerServiceBinding()));
+		valueMap.put("spEntityid", Util.toXml(settings.getSpEntityId()));
 
 		String requestedAuthnContextStr = "";
 		List<String> requestedAuthnContexts = settings.getRequestedAuthnContext();
 		if (requestedAuthnContexts != null && !requestedAuthnContexts.isEmpty()) {
 			String requestedAuthnContextCmp = settings.getRequestedAuthnContextComparison();
-			requestedAuthnContextStr = "<samlp:RequestedAuthnContext Comparison=\"" + requestedAuthnContextCmp + "\">";
+			requestedAuthnContextStr = "<samlp:RequestedAuthnContext Comparison=\"" + Util.toXml(requestedAuthnContextCmp) + "\">";
 			for (String requestedAuthnContext : requestedAuthnContexts) {
-				requestedAuthnContextStr += "<saml:AuthnContextClassRef>" + requestedAuthnContext + "</saml:AuthnContextClassRef>";
+				requestedAuthnContextStr += "<saml:AuthnContextClassRef>" + Util.toXml(requestedAuthnContext) + "</saml:AuthnContextClassRef>";
 			}
 			requestedAuthnContextStr += "</samlp:RequestedAuthnContext>";
 		}

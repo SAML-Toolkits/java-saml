@@ -178,12 +178,39 @@ public class LogoutResponseTest {
 	 * @see com.onelogin.saml2.logout.LogoutResponse#getLogoutResponseXml
 	 */
 	@Test
-	public void testGetLogoutRequestXml() throws Exception {
+	public void testGetLogoutResponseXml() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		LogoutResponse logoutResponse = new LogoutResponse(settings, null);
 		logoutResponse.build();
 		String logoutResponseXML = logoutResponse.getLogoutResponseXml();
 		assertThat(logoutResponseXML, containsString("<samlp:LogoutResponse"));
+		assertThat(logoutResponseXML, containsString("Destination=\"http://idp.example.com/simplesaml/saml2/idp/SingleLogoutService.php\""));
+
+		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response.xml.base64");
+		String requestURL = "/";
+		HttpRequest httpRequest = newHttpRequest(requestURL, samlResponseEncoded);
+		logoutResponse = new LogoutResponse(settings, httpRequest);
+		logoutResponseXML = logoutResponse.getLogoutResponseXml();
+		assertThat(logoutResponseXML, containsString("<samlp:LogoutResponse"));
+	}
+
+	/**
+	 * Tests the getLogoutResponseXml method of LogoutResponse
+	 * <p>
+	 * Case: logout destination contains special chars.
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.logout.LogoutResponse#getLogoutResponseXml
+	 */
+	@Test
+	public void testGetLogoutResponseXmlSpecialChars() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min_specialchars.properties").build();
+		LogoutResponse logoutResponse = new LogoutResponse(settings, null);
+		logoutResponse.build();
+		String logoutResponseXML = logoutResponse.getLogoutResponseXml();
+		assertThat(logoutResponseXML, containsString("<samlp:LogoutResponse"));
+		assertThat(logoutResponseXML, containsString("Destination=\"http://idp.example.com/simplesaml/saml2/idp/SingleLogoutService.php?a=1&amp;b=2\""));
 
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response.xml.base64");
 		String requestURL = "/";
@@ -206,7 +233,7 @@ public class LogoutResponseTest {
 	 * @see com.onelogin.saml2.logout.LogoutResponse#getStatus
 	 */
 	@Test
-	public void testGestStatus() throws IOException, URISyntaxException, XMLEntityException, XPathExpressionException, Error {
+	public void testGetStatus() throws IOException, URISyntaxException, XMLEntityException, XPathExpressionException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
 		final String requestURL = "/";

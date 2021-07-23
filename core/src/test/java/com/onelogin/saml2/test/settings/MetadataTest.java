@@ -71,6 +71,39 @@ public class MetadataTest {
 	}
 
 	/**
+	 * Tests the constructor method of Metadata
+	 * <p>
+	 * Case: main SP text containing special chars.
+	 *
+	 * @throws Exception
+	 * @see com.onelogin.saml2.settings.Metadata
+	 */
+	@Test
+	public void testMetadataSpecialChars() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min_specialchars.properties").build();
+
+		Metadata metadataObj = new Metadata(settings);
+		String metadataStr = metadataObj.getMetadataString();
+		Document metadataDoc = Util.loadXML(metadataStr);
+
+		assertTrue(metadataDoc instanceof Document);
+
+		assertEquals("md:EntityDescriptor", metadataDoc.getDocumentElement().getNodeName());
+		assertEquals("md:SPSSODescriptor", metadataDoc.getDocumentElement().getFirstChild().getNodeName());
+
+		assertTrue(Util.validateXML(metadataDoc, SchemaFactory.SAML_SCHEMA_METADATA_2_0));
+
+		assertThat(metadataStr, containsString("<md:SPSSODescriptor"));
+		assertThat(metadataStr, containsString("entityID=\"http://localhost:8080/java-saml-jspsample/metadata.jsp?a=1&amp;b=2\""));
+		assertThat(metadataStr, containsString("AuthnRequestsSigned=\"false\""));
+		assertThat(metadataStr, containsString("WantAssertionsSigned=\"false\""));
+		assertThat(metadataStr, not(containsString("<md:KeyDescriptor use=\"signing\">")));
+		assertThat(metadataStr, containsString("<md:AssertionConsumerService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST\" Location=\"http://localhost:8080/java-saml-jspsample/acs.jsp?a=1&amp;b=2\" index=\"1\"/>"));
+		assertThat(metadataStr, containsString("<md:SingleLogoutService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect\" Location=\"http://localhost:8080/java-saml-jspsample/sls.jsp?a=1&amp;b=2\"/>"));
+		assertThat(metadataStr, containsString("<md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</md:NameIDFormat>"));
+	}
+
+	/**
 	 * Tests the constructor method of Metadata (Expiration)
 	 *
 	 * @throws IOException
@@ -125,6 +158,26 @@ public class MetadataTest {
 	}
 
 	/**
+	 * Tests the toContactsXml method of Metadata
+	 * <p>
+	 * Case: contacts text containing special chars.
+	 *
+	 * @throws IOException
+	 * @throws CertificateEncodingException
+	 * @throws Error
+	 * @see com.onelogin.saml2.settings.Metadata#toContactsXml
+	 */
+	@Test
+	public void testToContactsXmlSpecialChars() throws IOException, CertificateEncodingException, Error {
+		Saml2Settings settings = getSettingFromAllSpecialCharsProperties();
+		Metadata metadataObj = new Metadata(settings);
+		String metadataStr = metadataObj.getMetadataString();
+
+		String contactStr = "<md:ContactPerson contactType=\"technical\"><md:GivenName>T&amp;chnical Guy</md:GivenName><md:EmailAddress>t&amp;chnical@example.com</md:EmailAddress></md:ContactPerson><md:ContactPerson contactType=\"support\"><md:GivenName>&quot;Support Guy&quot;</md:GivenName><md:EmailAddress>supp&amp;rt@example.com</md:EmailAddress></md:ContactPerson>";
+		assertThat(metadataStr, containsString(contactStr));
+	}
+
+	/**
 	 * Tests the toOrganizationXml method of Metadata (Expiration)
 	 *
 	 * @throws IOException
@@ -134,7 +187,7 @@ public class MetadataTest {
 	 */
 	@Test
 	public void testToOrganizationXml() throws IOException, CertificateEncodingException, Error {
-		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
+		Saml2Settings settings = getSettingFromAllProperties();
 		Metadata metadataObj = new Metadata(settings);
 		String metadataStr = metadataObj.getMetadataString();
 
@@ -198,6 +251,26 @@ public class MetadataTest {
 	}
 
 	/**
+	 * Tests the toOrganizationXml method of Metadata (Expiration)
+	 * <p>
+	 * Case: organization text containing special chars.
+	 *
+	 * @throws IOException
+	 * @throws CertificateEncodingException
+	 * @throws Error
+	 * @see com.onelogin.saml2.settings.Metadata#toOrganizationXml
+	 */
+	@Test
+	public void testToOrganizationXmlSpecialChars() throws IOException, CertificateEncodingException, Error {
+		Saml2Settings settings = getSettingFromAllSpecialCharsProperties();
+		Metadata metadataObj = new Metadata(settings);
+		String metadataStr = metadataObj.getMetadataString();
+
+		String orgStr = "<md:Organization><md:OrganizationName xml:lang=\"en\">S&amp;P Java</md:OrganizationName><md:OrganizationDisplayName xml:lang=\"en\">S&amp;P Java &quot;Example&quot;</md:OrganizationDisplayName><md:OrganizationURL xml:lang=\"en\">http://sp.example.com?a=1&amp;b=2</md:OrganizationURL></md:Organization>";
+		assertThat(metadataStr, containsString(orgStr));
+	}
+
+	/**
 	 * Tests the toSLSXml method of Metadata
 	 *
 	 * @throws IOException
@@ -220,6 +293,27 @@ public class MetadataTest {
 		String metadataStr2 = metadataObj2.getMetadataString();
 
 		assertThat(metadataStr2, not(containsString(slsStr)));
+	}
+
+	/**
+	 * Tests the toSLSXml method of Metadata
+	 * <p>
+	 * Case: SLS definition containing special chars.
+	 *
+	 * @throws IOException
+	 * @throws CertificateEncodingException
+	 * @throws Error
+	 * @see com.onelogin.saml2.settings.Metadata#toSLSXml
+	 */
+	@Test
+	public void testToSLSXmlSpecialChars() throws IOException, CertificateEncodingException, Error {
+		Saml2Settings settings = getSettingFromAllSpecialCharsProperties();
+		Metadata metadataObj = new Metadata(settings);
+		String metadataStr = metadataObj.getMetadataString();
+
+		String slsStr = "<md:SingleLogoutService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect\" Location=\"http://localhost:8080/java-saml-jspsample/sls.jsp?a=1&amp;b=2\"/>";
+
+		assertThat(metadataStr, containsString(slsStr));
 	}
 
 	/**
@@ -338,7 +432,47 @@ public class MetadataTest {
 
 	/**
 	 * Tests the getAttributeConsumingServiceXml method of Metadata
-	 * Case: AttributeConsumingService Multiple AttributeValue
+	 * <p>
+	 * Case: Attribute Consuming Service definition contains special chars.
+	 *
+	 * @throws IOException
+	 * @throws CertificateEncodingException
+	 * @throws Error
+	 * @see com.onelogin.saml2.settings.Metadata#getAttributeConsumingServiceXml
+	 */
+	@Test
+	public void testGetAttributeConsumingServiceXmlSpecialChars() throws IOException, CertificateEncodingException, Error {
+		Saml2Settings settings = getSettingFromAllProperties();
+
+		AttributeConsumingService attributeConsumingService = new AttributeConsumingService("T&st Service", "T&st Service Desc");
+		RequestedAttribute requestedAttribute = new RequestedAttribute("Email", "Email \"address\"", true, "urn:oasis:names:tc:SAML:2.0:attrname-format:uri", null);
+		RequestedAttribute requestedAttribute2 = new RequestedAttribute("FirstName&LastName", null, true, "urn:oasis:names:tc:SAML:2.0:attrname-format:uri", null);
+
+		attributeConsumingService.addRequestedAttribute(requestedAttribute);
+		attributeConsumingService.addRequestedAttribute(requestedAttribute2);
+
+		Metadata metadataObj = new Metadata(settings, null, null, attributeConsumingService);
+		String metadataStr = metadataObj.getMetadataString();
+
+		String headerStr = "<md:AttributeConsumingService index=\"1\">";
+		String sNameStr = "<md:ServiceName xml:lang=\"en\">T&amp;st Service</md:ServiceName>";
+		String sDescStr = "<md:ServiceDescription xml:lang=\"en\">T&amp;st Service Desc</md:ServiceDescription>";
+		String reqAttr1Str = "<md:RequestedAttribute Name=\"Email\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:uri\" FriendlyName=\"Email &quot;address&quot;\" isRequired=\"true\" />";
+		String reqAttr2Str = "<md:RequestedAttribute Name=\"FirstName&amp;LastName\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:uri\" isRequired=\"true\" />";
+		String footerStr = "</md:AttributeConsumingService>";
+
+		assertThat(metadataStr, containsString(headerStr));
+		assertThat(metadataStr, containsString(sNameStr));
+		assertThat(metadataStr, containsString(sDescStr));
+		assertThat(metadataStr, containsString(reqAttr1Str));
+		assertThat(metadataStr, containsString(reqAttr2Str));
+		assertThat(metadataStr, containsString(footerStr));
+	}
+
+	/**
+	 * Tests the getAttributeConsumingServiceXml method of Metadata
+	 * <p>
+	 * Case: AttributeConsumingService Multiple AttributeValue.
 	 *
 	 * @throws IOException
 	 * @throws CertificateEncodingException
@@ -367,6 +501,52 @@ public class MetadataTest {
 		String sDescStr = "<md:ServiceDescription xml:lang=\"en\">Test Service Desc</md:ServiceDescription>";
 		String reqAttr1Str = "<md:RequestedAttribute Name=\"userType\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:basic\" isRequired=\"false\">";
 		String reqAttr1Atr1Str = "<saml:AttributeValue xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\">userType</saml:AttributeValue>";
+		String reqAttr1Attr2Str = "<saml:AttributeValue xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\">admin</saml:AttributeValue>";
+		String reqAttr2Str = "<md:RequestedAttribute Name=\"urn:oid:0.9.2342.19200300.100.1.1\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:uri\" FriendlyName=\"uid\" isRequired=\"true\" />";
+		String footerStr = "</md:AttributeConsumingService>";
+
+		assertThat(metadataStr, containsString(headerStr));
+		assertThat(metadataStr, containsString(sNameStr));
+		assertThat(metadataStr, containsString(sDescStr));
+		assertThat(metadataStr, containsString(reqAttr1Str));
+		assertThat(metadataStr, containsString(reqAttr1Atr1Str));
+		assertThat(metadataStr, containsString(reqAttr1Attr2Str));
+		assertThat(metadataStr, containsString(reqAttr2Str));
+		assertThat(metadataStr, containsString(footerStr));
+	}
+
+	/**
+	 * Tests the getAttributeConsumingServiceXml method of Metadata
+	 * <p>
+	 * Case: AttributeConsumingService Multiple AttributeValue with special chars.
+	 *
+	 * @throws IOException
+	 * @throws CertificateEncodingException
+	 * @throws Error
+	 * @see com.onelogin.saml2.settings.Metadata#getAttributeConsumingServiceXml
+	 */
+	@Test
+	public void testGetAttributeConsumingServiceXmlWithMultipleAttributeValueSpecialChars() throws IOException, CertificateEncodingException, Error {
+		Saml2Settings settings = getSettingFromAllProperties();
+
+		AttributeConsumingService attributeConsumingService = new AttributeConsumingService("T&st Service", "T&st Service Desc");
+		List<String> attrValues = new ArrayList<String>();
+		attrValues.add("us&rType");
+		attrValues.add("admin");
+		RequestedAttribute requestedAttribute = new RequestedAttribute("us&rType", null, false, "urn:oasis:names:tc:SAML:2.0:attrname-format:basic", attrValues);
+		RequestedAttribute requestedAttribute2 = new RequestedAttribute("urn:oid:0.9.2342.19200300.100.1.1", "uid", true, "urn:oasis:names:tc:SAML:2.0:attrname-format:uri", null);
+
+		attributeConsumingService.addRequestedAttribute(requestedAttribute);
+		attributeConsumingService.addRequestedAttribute(requestedAttribute2);
+
+		Metadata metadataObj = new Metadata(settings, null, null, attributeConsumingService);
+		String metadataStr = metadataObj.getMetadataString();
+
+		String headerStr = "<md:AttributeConsumingService index=\"1\">";
+		String sNameStr = "<md:ServiceName xml:lang=\"en\">T&amp;st Service</md:ServiceName>";
+		String sDescStr = "<md:ServiceDescription xml:lang=\"en\">T&amp;st Service Desc</md:ServiceDescription>";
+		String reqAttr1Str = "<md:RequestedAttribute Name=\"us&amp;rType\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:basic\" isRequired=\"false\">";
+		String reqAttr1Atr1Str = "<saml:AttributeValue xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\">us&amp;rType</saml:AttributeValue>";
 		String reqAttr1Attr2Str = "<saml:AttributeValue xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\">admin</saml:AttributeValue>";
 		String reqAttr2Str = "<md:RequestedAttribute Name=\"urn:oid:0.9.2342.19200300.100.1.1\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:uri\" FriendlyName=\"uid\" isRequired=\"true\" />";
 		String footerStr = "</md:AttributeConsumingService>";
@@ -460,6 +640,10 @@ public class MetadataTest {
 
 	private Saml2Settings getSettingFromAllProperties() throws Error, IOException {
 		return new SettingsBuilder().fromFile("config/config.all.properties").build();
+	}
+
+	private Saml2Settings getSettingFromAllSpecialCharsProperties() throws Error, IOException {
+		return new SettingsBuilder().fromFile("config/config.all_specialchars.properties").build();
 	}
 
 	@Test
