@@ -12,7 +12,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
@@ -416,6 +418,22 @@ public class LogoutRequestTest {
 	}
 
 	/**
+	 * Tests the getNameIdData method of LogoutRequest.
+	 * <p>
+	 * Case: with or without trimming
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testGetNameIdDataTrimming() throws Exception {
+		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_with_whitespace.xml");
+		Map<String, String> nameIdData = LogoutRequest.getNameIdData(logoutRequestStr, null, true);
+		assertEquals("ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c", nameIdData.get("Value"));
+		nameIdData = LogoutRequest.getNameIdData(logoutRequestStr, null, false);
+		assertEquals("\n\t\tONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c\n\t", nameIdData.get("Value"));
+	}
+
+	/**
 	 * Tests the getNameId method of LogoutRequest
 	 * Case: Able to get the NameID
 	 *
@@ -508,6 +526,22 @@ public class LogoutRequestTest {
 	}
 
 	/**
+	 * Tests the getNameId method of LogoutRequest.
+	 * <p>
+	 * Case: with or without trimming
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testGetNameIdTrimming() throws Exception {
+		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_with_whitespace.xml");
+		String nameId = LogoutRequest.getNameId(logoutRequestStr, null, true);
+		assertEquals("ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c", nameId);
+		nameId = LogoutRequest.getNameId(logoutRequestStr, null, false);
+		assertEquals("\n\t\tONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c\n\t", nameId);
+	}
+
+	/**
 	 * Tests the getIssuer method of LogoutRequest
 	 *
 	 * @throws IOException
@@ -526,6 +560,26 @@ public class LogoutRequestTest {
 		logoutRequestStr = logoutRequestStr.replace("<saml:Issuer>http://idp.example.com/</saml:Issuer>", "");
 		issuer = LogoutRequest.getIssuer(logoutRequestStr);
 		assertNull(issuer);
+	}
+
+	/**
+	 * Tests the getIssuer method of LogoutRequest
+	 * <p>
+	 * Case: with or without trimming
+	 *
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 * @throws XPathExpressionException
+	 *
+	 * @see com.onelogin.saml2.logout.LogoutRequest#getIssuer
+	 */
+	@Test
+	public void testGetIssuerTrimming() throws URISyntaxException, IOException, XPathExpressionException {
+		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_with_whitespace.xml");
+		String issuer = LogoutRequest.getIssuer(logoutRequestStr, true);
+		assertEquals("http://idp.example.com/", issuer);
+		issuer = LogoutRequest.getIssuer(logoutRequestStr, false);
+		assertEquals("\n    \thttp://idp.example.com/\n    ", issuer);
 	}
 
 	/**
@@ -554,6 +608,28 @@ public class LogoutRequestTest {
 		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		indexes = LogoutRequest.getSessionIndexes(logoutRequestStr);
 		assertEquals(expectedIndexes, indexes);
+	}
+
+	/**
+	 * Tests the getSessionIndexes method of LogoutRequest
+	 * <p>
+	 * Case: with or without trimming
+	 *
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 * @throws XPathExpressionException
+	 * @throws XMLEntityException
+	 * @throws Error
+	 *
+	 * @see com.onelogin.saml2.logout.LogoutRequest#getSessionIndexes
+	 */
+	@Test
+	public void testGetSessionIndexesTrimming() throws IOException, XPathExpressionException  {
+		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_with_whitespace.xml");
+		List <String> indexes = LogoutRequest.getSessionIndexes(logoutRequestStr, true);
+		assertEquals(Arrays.asList("_ac72a76526cb6ca19f8438e73879a0e6c8ae5131"), indexes);
+		indexes = LogoutRequest.getSessionIndexes(logoutRequestStr, false);
+		assertEquals(Arrays.asList("\n\t\t_ac72a76526cb6ca19f8438e73879a0e6c8ae5131\n\t"), indexes);
 	}
 
 	/**

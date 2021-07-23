@@ -362,6 +362,15 @@ onelogin.saml2.security.digest_algorithm = http://www.w3.org/2001/04/xmlenc#sha2
 # Reject Signatures with deprecated algorithms (sha1)
 onelogin.saml2.security.reject_deprecated_alg = true
 
+# Enable trimming of parsed Name IDs and attribute values
+# SAML specification states that no trimming for string elements should be performed, so no trimming will be
+# performed by default on extracted Name IDs and attribute values. However, some SAML implementations may add
+# undesirable surrounding whitespace when outputting XML (possibly due to formatting/pretty-printing).
+# These two options allow to optionally enable value trimming on extracted Name IDs (including issuers) and 
+# attribute values.
+onelogin.saml2.parsing.trim_name_ids = false
+onelogin.saml2.parsing.trim_attribute_values = false
+
 # Organization
 onelogin.saml2.organization.name = SP Java 
 onelogin.saml2.organization.displayname = SP Java Example

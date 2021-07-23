@@ -299,12 +299,15 @@ public class LogoutResponse {
 	 * @throws XPathExpressionException
 	 */
     public String getIssuer() throws XPathExpressionException {
-    	String issuer = null;
-		NodeList issuers = this.query("/samlp:LogoutResponse/saml:Issuer");
-		if (issuers.getLength() == 1) {
-			issuer = issuers.item(0).getTextContent();
-		}
-        return issuer;
+	    String issuer = null;
+	    NodeList issuers = this.query("/samlp:LogoutResponse/saml:Issuer");
+	    if (issuers.getLength() == 1) {
+		    issuer = issuers.item(0).getTextContent();
+	    }
+	    if (issuer != null && settings.isTrimNameIds()) {
+		    issuer = issuer.trim();
+	    }
+	    return issuer;
     }
 
     /**

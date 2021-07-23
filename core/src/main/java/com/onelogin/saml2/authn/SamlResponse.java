@@ -14,6 +14,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
 import com.onelogin.saml2.model.hsm.HSM;
+
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Instant;
 import org.slf4j.Logger;
@@ -469,7 +471,10 @@ public class SamlResponse {
 
 			if (nameIdElem != null) {
 				String value = nameIdElem.getTextContent();
-				if (settings.isStrict() && value.isEmpty()) {
+				if(value != null && settings.isTrimNameIds()) {
+					value = value.trim();
+				}
+				if (settings.isStrict() && StringUtils.isEmpty(value)) {
 					throw new ValidationError("An empty NameID value found", ValidationError.EMPTY_NAMEID);
 				}
 
@@ -596,7 +601,11 @@ public class SamlResponse {
 				}
 				for (int j = 0; j < childrens.getLength(); j++) {
 					if ("AttributeValue".equals(childrens.item(j).getLocalName())) {
-						attrValues.add(childrens.item(j).getTextContent());
+						String attrValue = childrens.item(j).getTextContent();
+						if(attrValue != null && settings.isTrimAttributeValues()) {
+							attrValue = attrValue.trim();
+						}
+						attrValues.add(attrValue);
 					}
 				}
 
@@ -699,8 +708,11 @@ public class SamlResponse {
 		for (int i = 0; i < entries.getLength(); i++) {
 			if (entries.item(i) != null) {
 				String value = entries.item(i).getTextContent();
-				if (value != null && !value.trim().isEmpty()) {
-					audiences.add(value.trim());
+				if(value != null) {
+					value = value.trim();
+				}
+				if(!StringUtils.isEmpty(value)) {
+					audiences.add(value);
 				}
 			}
 		}
@@ -722,7 +734,11 @@ public class SamlResponse {
 		NodeList responseIssuer = Util.query(samlResponseDocument, "/samlp:Response/saml:Issuer");
 		if (responseIssuer.getLength() > 0) {
 			if (responseIssuer.getLength() == 1) {
-				return responseIssuer.item(0).getTextContent();
+				String value = responseIssuer.item(0).getTextContent();
+				if(value != null && settings.isTrimNameIds()) {
+					value = value.trim();
+				}
+				return value;
 			} else {
 				throw new ValidationError("Issuer of the Response is multiple.", ValidationError.ISSUER_MULTIPLE_IN_RESPONSE);
 			}
@@ -745,7 +761,11 @@ public class SamlResponse {
 	public String getAssertionIssuer() throws XPathExpressionException, ValidationError {
 		NodeList assertionIssuer = this.queryAssertion("/saml:Issuer");
 		if (assertionIssuer.getLength() == 1) {
-			return assertionIssuer.item(0).getTextContent();
+			String value = assertionIssuer.item(0).getTextContent();
+			if(value != null && settings.isTrimNameIds()) {
+				value = value.trim();
+			}
+			return value;
 		} else {
 			throw new ValidationError("Issuer of the Assertion not found or multiple.", ValidationError.ISSUER_NOT_FOUND_IN_ASSERTION);
 		}
