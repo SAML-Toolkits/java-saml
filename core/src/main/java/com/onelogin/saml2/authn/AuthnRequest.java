@@ -288,13 +288,4 @@ public class AuthnRequest {
 	public Calendar getIssueInstant() {
 		return issueInstant == null? null: (Calendar) issueInstant.clone();
 	}
-
-	/**
-	 * Returns the SAML settings specified at construction time.
-	 * 
-	 * @return the SAML settings
-	 */
-	protected Saml2Settings getSettings() {
-		return settings;
-	}
 }
