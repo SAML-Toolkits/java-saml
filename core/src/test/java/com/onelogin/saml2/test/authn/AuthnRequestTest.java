@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -381,5 +382,26 @@ public class AuthnRequestTest {
 		authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);
 		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
 		assertThat(authnRequestStr, not(containsString("Destination=\"http://idp.example.com/simplesaml/saml2/idp/SSOService.php\"")));
+	}
+	
+	/**
+	 * Tests the postProcessXml method of AuthnRequest
+	 *
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.authn.AuthnRequest#postProcessXml
+	 */
+	@Test
+	public void testPostProcessXml() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		AuthnRequest authnRequest = new AuthnRequest(settings) {
+			@Override
+			protected String postProcessXml(String authRequestXml, Saml2Settings sett) {
+				assertEquals(authRequestXml, super.postProcessXml(authRequestXml, sett));
+				assertSame(settings, sett);
+				return "changed";
+			}
+		};
+		assertEquals("changed", authnRequest.getAuthnRequestXml());
 	}
 }

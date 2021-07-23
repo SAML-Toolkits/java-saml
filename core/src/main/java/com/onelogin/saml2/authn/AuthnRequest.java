@@ -11,8 +11,8 @@ import org.apache.commons.lang3.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.model.Organization;
+import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.Util;
 
@@ -101,7 +101,7 @@ public class AuthnRequest {
 		this.nameIdValueReq = nameIdValueReq;
 
 		StrSubstitutor substitutor = generateSubstitutor(settings);
-		authnRequestString = substitutor.replace(getAuthnRequestTemplate());
+		authnRequestString = postProcessXml(substitutor.replace(getAuthnRequestTemplate()), settings);
 		LOGGER.debug("AuthNRequest --> " + authnRequestString);
 	}
 
@@ -121,6 +121,26 @@ public class AuthnRequest {
 		this(settings, forceAuthn, isPassive, setNameIdPolicy, null);
 	}
 
+	/**
+	 * Allows for an extension class to post-process the AuthnRequest XML generated
+	 * for this request, in order to customize the result.
+	 * <p>
+	 * This method is invoked at construction time, after all the other fields of
+	 * this class have already been initialised. Its default implementation simply
+	 * returns the input XML as-is, with no change.
+	 * 
+	 * @param authnRequestXml
+	 *              the XML produced for this AuthnRequest by the standard
+	 *              implementation provided by {@link AuthnRequest}
+	 * @param settings
+	 *              the settings
+	 * @return the post-processed XML for this AuthnRequest, which will then be
+	 *         returned by any call to {@link #getAuthnRequestXml()}
+	 */
+	protected String postProcessXml(final String authnRequestXml, final Saml2Settings settings) {
+		return authnRequestXml;
+	}
+	
 	/**
 	 * @return the base64 encoded unsigned AuthnRequest (deflated or not)
 	 *
