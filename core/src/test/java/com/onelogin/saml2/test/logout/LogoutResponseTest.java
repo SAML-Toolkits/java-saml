@@ -5,13 +5,16 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import com.onelogin.saml2.exception.ValidationError;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Calendar;
 
 import javax.xml.xpath.XPathExpressionException;
 
@@ -271,6 +274,75 @@ public class LogoutResponseTest {
 		httpRequest = newHttpRequest(requestURL, samlResponseEncoded);
 		logoutResponse = new LogoutResponse(settings, httpRequest);
 		assertNull(logoutResponse.getIssuer());
+	}
+
+	/**
+	 * Tests the getIssueInstant method of LogoutResponse
+	 * 
+	 * @throws IOException 
+	 * @throws Error 
+	 * @throws ValidationError 
+	 *
+	 * @see com.onelogin.saml2.logout.LogoutResponse#getIssueInstant()
+	 */
+	@Test
+	public void testGetIssueInstant() throws IOException, Error, ValidationError {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
+		final String requestURL = "/";
+		HttpRequest httpRequest = newHttpRequest(requestURL, samlResponseEncoded);
+		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
+		assertEquals("2013-12-10T04:39:31Z", Util.formatDateTime(logoutResponse.getIssueInstant().getTimeInMillis()));
+	}
+
+	/**
+	 * Tests the getIssueInstant method of LogoutResponse
+	 * <p>
+	 * Case: LogoutResponse message built by the caller.
+	 * 
+	 * @throws IOException 
+	 * @throws Error 
+	 * @throws ValidationError 
+	 *
+	 * @see com.onelogin.saml2.logout.LogoutResponse#getIssueInstant()
+	 */
+	@Test
+	public void testGetIssueInstantBuiltMessage() throws IOException, Error, ValidationError {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		long start = System.currentTimeMillis();
+		LogoutResponse logoutResponse = new LogoutResponse(settings, null);
+		logoutResponse.build();
+		long end = System.currentTimeMillis();
+		Calendar issueInstant = logoutResponse.getIssueInstant();
+		assertNotNull(issueInstant);
+		long millis = issueInstant.getTimeInMillis();
+		assertTrue(millis >= start && millis <= end);
+	}
+	
+	/**
+	 * Tests the getIssuer method of LogoutResponse
+	 * <p>
+	 * Case: with or without trimming
+	 *
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 * @throws XMLEntityException
+	 * @throws XPathExpressionException
+	 * @throws Error
+	 *
+	 * @see com.onelogin.saml2.logout.LogoutResponse#getIssuer
+	 */
+	@Test
+	public void testGetIssuerTrimming() throws Error, IOException, XPathExpressionException  {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_with_whitespace.xml.base64");
+		HttpRequest httpRequest = newHttpRequest("/", samlResponseEncoded);
+		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
+		assertEquals("\n    \thttp://idp.example.com/\n    ", logoutResponse.getIssuer());
+		
+		settings.setTrimNameIds(true);
+		logoutResponse = new LogoutResponse(settings, httpRequest);
+		assertEquals("http://idp.example.com/", logoutResponse.getIssuer());
 	}
 
 	/**
@@ -672,5 +744,27 @@ public class LogoutResponseTest {
 
 	private static HttpRequest newHttpRequest(String requestURL, String samlResponseEncoded) {
 		return new HttpRequest(requestURL, (String)null).addParameter("SAMLResponse", samlResponseEncoded);
+	}
+
+	/**
+	 * Tests the postProcessXml method of LogoutResponse
+	 *
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.logout.LogoutResponse#postProcessXml
+	 */
+	@Test
+	public void testPostProcessXml() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		LogoutResponse logoutResponse = new LogoutResponse(settings, null) {
+			@Override
+			protected String postProcessXml(String authRequestXml, Saml2Settings sett) {
+				assertEquals(authRequestXml, super.postProcessXml(authRequestXml, sett));
+				assertSame(settings, sett);
+				return "changed";
+			}
+		};
+		logoutResponse.build();
+		assertEquals("changed", logoutResponse.getLogoutResponseXml());
 	}
 }

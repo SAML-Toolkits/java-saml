@@ -1,3 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.2.xsd">
+  <suppress>
+    <notes><![CDATA[
+    file name: simple-xml-2.7.1.jar
+    ]]></notes>
+    <sha1>dd91fb744c2ff921407475cb29a1e3fee397d411</sha1>
+    <cve>CVE-2017-1000190</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: guava-19.0.jar
+    ]]></notes>
+    <sha1>6ce200f6b23222af3d8abb6b6459e6c44f4bb0e9</sha1>
+    <cve>CVE-2018-10237</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: guava-19.0.jar
+    ]]></notes>
+    <sha1>6ce200f6b23222af3d8abb6b6459e6c44f4bb0e9</sha1>
+    <cve>CVE-2020-8908</cve>
+  </suppress> 
+  <suppress>
+    <notes><![CDATA[
+    file name: lang-tag-1.5.jar
+    ]]></notes>
+    <sha1>7e82e3c4c593f85addf4bd209abde4f8ff933a07</sha1>
+    <cve>CVE-2020-29242</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: lang-tag-1.5.jar
+    ]]></notes>
+    <sha1>7e82e3c4c593f85addf4bd209abde4f8ff933a07</sha1>
+    <cve>CVE-2020-29243</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: lang-tag-1.5.jar
+    ]]></notes>
+    <sha1>7e82e3c4c593f85addf4bd209abde4f8ff933a07</sha1>
+    <cve>CVE-2020-29244</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+    file name: lang-tag-1.5.jar
+    ]]></notes>
+    <sha1>7e82e3c4c593f85addf4bd209abde4f8ff933a07</sha1>
+    <cve>CVE-2020-29245</cve>
+ </suppress>
 </suppressions>

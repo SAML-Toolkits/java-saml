@@ -4,11 +4,16 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.onelogin.saml2.authn.AuthnRequest;
@@ -427,6 +432,32 @@ public class AuthnRequestTest {
 	}
 
 	/**
+	 * Tests the getId method of AuthnRequest
+	 *
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.authn.AuthnRequest.getId
+	 */
+	@Test
+	public void testGetIssueInstant() throws Exception
+	{
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+
+		final long start = System.currentTimeMillis();
+		AuthnRequest authnRequest = new AuthnRequest(settings);
+		final long end = System.currentTimeMillis();
+		final String authnRequestStr = Util.base64decodedInflated(authnRequest.getEncodedAuthnRequest());
+
+		final Calendar issueInstant = authnRequest.getIssueInstant();
+		assertNotNull(issueInstant);
+		final long millis = issueInstant.getTimeInMillis();
+		assertTrue(millis >= start && millis <= end);
+		
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, containsString("IssueInstant=\"" + Util.formatDateTime(millis) + "\""));
+	}
+
+	/**
 	 * Tests the AuthnRequest Constructor
 	 * The creation of a deflated SAML Request with and without Destination
 	 *
@@ -478,5 +509,26 @@ public class AuthnRequestTest {
 		authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);
 		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
 		assertThat(authnRequestStr, not(containsString("Destination=\"http://idp.example.com/simplesaml/saml2/idp/SSOService.php?a=1&amp;b=2\"")));
+  }
+	
+	/**
+	 * Tests the postProcessXml method of AuthnRequest
+	 *
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.authn.AuthnRequest#postProcessXml
+	 */
+	@Test
+	public void testPostProcessXml() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		AuthnRequest authnRequest = new AuthnRequest(settings) {
+			@Override
+			protected String postProcessXml(String authRequestXml, Saml2Settings sett) {
+				assertEquals(authRequestXml, super.postProcessXml(authRequestXml, sett));
+				assertSame(settings, sett);
+				return "changed";
+			}
+		};
+		assertEquals("changed", authnRequest.getAuthnRequestXml());
 	}
 }

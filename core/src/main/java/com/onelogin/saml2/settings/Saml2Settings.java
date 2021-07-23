@@ -82,6 +82,10 @@ public class Saml2Settings {
 	// Compress
 	private boolean compressRequest = true;
 	private boolean compressResponse = true;
+	
+	// Parsing
+	private boolean trimNameIds = false;
+	private boolean trimAttributeValues = false;
 
 	// Misc
 	private List<Contact> contacts = new LinkedList<>();
@@ -844,6 +848,60 @@ public class Saml2Settings {
 		return compressResponse;
 	}
 
+	/**
+	 * Sets whether Name IDs in parsed SAML messages should be trimmed.
+	 * <p>
+	 * Default is <code>false</code>, that is Name IDs are kept intact, as the SAML
+	 * specification prescribes.
+	 * 
+	 * @param trimNameIds
+	 *              set to <code>true</code> to trim parsed Name IDs, set to
+	 *              <code>false</code> to keep them intact
+	 */
+	public void setTrimNameIds(boolean trimNameIds) {
+		this.trimNameIds = trimNameIds;
+	}
+	
+	/**
+	 * Determines whether Name IDs should trimmed when extracting them from parsed
+	 * SAML messages.
+	 * <p>
+	 * Default is <code>false</code>, that is Name IDs are kept intact, as the SAML
+	 * specification prescribes.
+	 * 
+	 * @return <code>true</code> if Name IDs should be trimmed, <code>false</code>
+	 *         otherwise
+	 */
+	public boolean isTrimNameIds() {
+		return trimNameIds;
+	}
+	
+	/**
+	 * Sets whether attribute values in parsed SAML messages should be trimmed.
+	 * <p>
+	 * Default is <code>false</code>.
+	 * 
+	 * @param trimAttributeValues
+	 *              set to <code>true</code> to trim parsed attribute values, set to
+	 *              <code>false</code> to keep them intact
+	 */
+	public void setTrimAttributeValues(boolean trimAttributeValues) {
+		this.trimAttributeValues = trimAttributeValues;
+	}
+	
+	/**
+	 * Determines whether attribute values should be trimmed when extracting them
+	 * from parsed SAML messages.
+	 * <p>
+	 * Default is <code>false</code>.
+	 * 
+	 * @return <code>true</code> if attribute values should be trimmed,
+	 *         <code>false</code> otherwise
+	 */
+	public boolean isTrimAttributeValues() {
+		return trimAttributeValues;
+	}
+	
 	/**
 	 * Set contacts info that will be listed on the Service Provider metadata
 	 * 

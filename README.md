@@ -72,6 +72,13 @@ In production, the **onelogin.saml2.strict** setting parameter MUST be set as **
 
 In production also we highly recommend to register on the settings the IdP certificate instead of using the fingerprint method. The fingerprint, is a hash, so at the end is open to a collision attack that can end on a signature validation bypass. Other SAML toolkits deprecated that mechanism, we maintain it for compatibility and also to be used on test environment.
 
+The IdPMetadataParser class does not validate in any way the URL that is introduced in order to be parsed. 
+
+Usually the same administrator that handles the Service Provider also sets the URL to the IdP, which should be a trusted resource.
+
+But there are other scenarios, like a SAAS app where the administrator of the app delegates this functionality to other users. In this case, extra precaution should be taken in order to validate such URL inputs and avoid attacks like SSRF.
+
+
 ## Installation
 ### Hosting
 #### Github
@@ -355,6 +362,15 @@ onelogin.saml2.security.digest_algorithm = http://www.w3.org/2001/04/xmlenc#sha2
 # Reject Signatures with deprecated algorithms (sha1)
 onelogin.saml2.security.reject_deprecated_alg = true
 
+# Enable trimming of parsed Name IDs and attribute values
+# SAML specification states that no trimming for string elements should be performed, so no trimming will be
+# performed by default on extracted Name IDs and attribute values. However, some SAML implementations may add
+# undesirable surrounding whitespace when outputting XML (possibly due to formatting/pretty-printing).
+# These two options allow to optionally enable value trimming on extracted Name IDs (including issuers) and 
+# attribute values.
+onelogin.saml2.parsing.trim_name_ids = false
+onelogin.saml2.parsing.trim_attribute_values = false
+
 # Organization
 onelogin.saml2.organization.name = SP Java 
 onelogin.saml2.organization.displayname = SP Java Example
@@ -433,10 +449,10 @@ The AuthNRequest will be sent signed or unsigned based on the security settings 
 
 The IdP will then return the SAML Response to the user's client. The client is then forwarded to the Attribute Consumer Service of the SP with this information.
 
-We can set a 'returnTo' url parameter to the login function and that will be converted as a 'RelayState' parameter:
+We can set a 'RelayState' parameter containing a return url to the login function:
 ```
-String targetUrl = 'https://example.com';
-auth.login(returnTo=targetUrl)
+String returnUrl = 'https://example.com';
+auth.login(relayState=returnUrl)
 ```
 The login method can receive 6 more optional parameters:
 - *forceAuthn* When true the AuthNRequest will have the 'ForceAuthn' attribute set to 'true'
@@ -605,10 +621,10 @@ The Logout Request will be sent signed or unsigned based on the security setting
 
 The IdP will return the Logout Response through the user's client to the Single Logout Service of the SP.
 
-We can set a 'returnTo' url parameter to the logout function and that will be converted as a 'RelayState' parameter:
+We can set a 'RelayState' parameter containing a return url to the login function:
 ```
-String targetUrl = 'https://example.com';
-auth.logout(returnTo=targetUrl)
+String returnUrl = 'https://example.com';
+auth.logout(relayState=returnUrl)
 ```
 
 Also there are 7 optional parameters that can be set:

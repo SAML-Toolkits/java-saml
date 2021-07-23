@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -12,6 +14,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
 import com.onelogin.saml2.model.hsm.HSM;
+
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Instant;
 import org.slf4j.Logger;
@@ -467,7 +471,10 @@ public class SamlResponse {
 
 			if (nameIdElem != null) {
 				String value = nameIdElem.getTextContent();
-				if (settings.isStrict() && value.isEmpty()) {
+				if(value != null && settings.isTrimNameIds()) {
+					value = value.trim();
+				}
+				if (settings.isStrict() && StringUtils.isEmpty(value)) {
 					throw new ValidationError("An empty NameID value found", ValidationError.EMPTY_NAMEID);
 				}
 
@@ -572,7 +579,7 @@ public class SamlResponse {
      *
      */
 	public HashMap<String, List<String>> getAttributes() throws XPathExpressionException, ValidationError {
-		HashMap<String, List<String>> attributes = new HashMap<String, List<String>>();
+		HashMap<String, List<String>> attributes = new LinkedHashMap<String, List<String>>();
 
 		NodeList nodes = this.queryAssertion("/saml:AttributeStatement/saml:Attribute");
 
@@ -594,7 +601,11 @@ public class SamlResponse {
 				}
 				for (int j = 0; j < childrens.getLength(); j++) {
 					if ("AttributeValue".equals(childrens.item(j).getLocalName())) {
-						attrValues.add(childrens.item(j).getTextContent());
+						String attrValue = childrens.item(j).getTextContent();
+						if(attrValue != null && settings.isTrimAttributeValues()) {
+							attrValue = attrValue.trim();
+						}
+						attrValues.add(attrValue);
 					}
 				}
 
@@ -697,8 +708,11 @@ public class SamlResponse {
 		for (int i = 0; i < entries.getLength(); i++) {
 			if (entries.item(i) != null) {
 				String value = entries.item(i).getTextContent();
-				if (value != null && !value.trim().isEmpty()) {
-					audiences.add(value.trim());
+				if(value != null) {
+					value = value.trim();
+				}
+				if(!StringUtils.isEmpty(value)) {
+					audiences.add(value);
 				}
 			}
 		}
@@ -706,38 +720,97 @@ public class SamlResponse {
 	}
 
 	/**
-	 * Gets the Issuers (from Response and Assertion).
+	 * Gets the Response Issuer.
+	 *
+	 * @return the Response Issuer, or <code>null</code> if not specified
+	 *
+	 * @throws XPathExpressionException
+	 * @throws ValidationError
+	 *               if multiple Response issuers were found
+	 * @see #getAssertionIssuer()
+	 * @see #getIssuers()
+	 */
+	public String getResponseIssuer() throws XPathExpressionException, ValidationError {
+		NodeList responseIssuer = Util.query(samlResponseDocument, "/samlp:Response/saml:Issuer");
+		if (responseIssuer.getLength() > 0) {
+			if (responseIssuer.getLength() == 1) {
+				String value = responseIssuer.item(0).getTextContent();
+				if(value != null && settings.isTrimNameIds()) {
+					value = value.trim();
+				}
+				return value;
+			} else {
+				throw new ValidationError("Issuer of the Response is multiple.", ValidationError.ISSUER_MULTIPLE_IN_RESPONSE);
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Gets the Assertion Issuer.
+	 *
+	 * @return the Assertion Issuer
+	 *
+	 * @throws XPathExpressionException
+	 * @throws ValidationError
+	 *               if no Assertion Issuer could be found, or if multiple Assertion
+	 *               issuers were found
+	 * @see #getResponseIssuer()
+	 * @see #getIssuers()
+	 */
+	public String getAssertionIssuer() throws XPathExpressionException, ValidationError {
+		NodeList assertionIssuer = this.queryAssertion("/saml:Issuer");
+		if (assertionIssuer.getLength() == 1) {
+			String value = assertionIssuer.item(0).getTextContent();
+			if(value != null && settings.isTrimNameIds()) {
+				value = value.trim();
+			}
+			return value;
+		} else {
+			throw new ValidationError("Issuer of the Assertion not found or multiple.", ValidationError.ISSUER_NOT_FOUND_IN_ASSERTION);
+		}
+	}
+	
+	/**
+	 * Gets the Issuers (from Response and Assertion). If the same issuer appears
+	 * both in the Response and in the Assertion (as it should), the returned list
+	 * will contain it just once. Hence, the returned list should always return one
+	 * element and in particular:
+	 * <ul>
+	 * <li>it will never contain zero elements (it means an Assertion Issuer could
+	 * not be found, hence a {@link ValidationError} will be thrown instead)
+	 * <li>if it contains more than one element, it means that the response is
+	 * invalid and one of the returned issuers won't pass the check performed by
+	 * {@link #isValid(String)} (which requires both issuers to be equal to the
+	 * Identity Provider entity id)
+	 * </ul>
+	 * <p>
+	 * Warning: as a consequence of the above, if this response status code is not a
+	 * successful one, this method will throw a {@link ValidationError} because it
+	 * won't find any Assertion Issuer. In this case, if you need to retrieve the
+	 * Response Issuer any way, you must use {@link #getResponseIssuer()} instead.
 	 *
 	 * @return the issuers of the assertion/response
 	 *
 	 * @throws XPathExpressionException
 	 * @throws ValidationError
+	 *               if multiple Response Issuers or multiple Assertion Issuers were
+	 *               found, or if no Assertion Issuer could be found
+	 * @see #getResponseIssuer()
+	 * @see #getAssertionIssuer()
+	 * @deprecated use {@link #getResponseIssuer()} and/or
+	 *             {@link #getAssertionIssuer()}; the contract of this method is
+	 *             quite controversial
 	 */
+	@Deprecated
 	public List<String> getIssuers() throws XPathExpressionException, ValidationError {
 		List<String> issuers = new ArrayList<String>();
-		String value;
-		NodeList responseIssuer = Util.query(samlResponseDocument, "/samlp:Response/saml:Issuer");
-		if (responseIssuer.getLength() > 1) {
-			if (responseIssuer.getLength() == 1) {
-				value = responseIssuer.item(0).getTextContent();
-				if (!issuers.contains(value)) {
-					issuers.add(value);
-				}
-			} else {
-				throw new ValidationError("Issuer of the Response is multiple.", ValidationError.ISSUER_MULTIPLE_IN_RESPONSE);
-			}
-		}
-
-		NodeList assertionIssuer = this.queryAssertion("/saml:Issuer");
-		if (assertionIssuer.getLength() == 1) {
-			value = assertionIssuer.item(0).getTextContent();
-			if (!issuers.contains(value)) {
-				issuers.add(value);
-			}
-		} else {
-			throw new ValidationError("Issuer of the Assertion not found or multiple.", ValidationError.ISSUER_NOT_FOUND_IN_ASSERTION);
-		}
-
+		String responseIssuer = getResponseIssuer();
+		if(responseIssuer != null)
+			issuers.add(responseIssuer);
+		String assertionIssuer = getAssertionIssuer();
+		if(!issuers.contains(assertionIssuer))
+			issuers.add(assertionIssuer);
 		return issuers;
 	}
 
@@ -1022,6 +1095,17 @@ public class SamlResponse {
 	public Exception getValidationException() {
 		return validationException;
 	}
+	
+	/**
+	 * Sets the validation exception that this {@link SamlResponse} should return
+	 * when a validation error occurs.
+	 * 
+	 * @param validationException
+	 *              the validation exception to set
+	 */
+	protected void setValidationException(Exception validationException) {
+		this.validationException = validationException;
+	}
 
 	/**
 	 * Extracts a node from the DOMDocument (Assertion).
@@ -1033,7 +1117,7 @@ public class SamlResponse {
 	 * @throws XPathExpressionException
 	 *
 	 */
-	private NodeList queryAssertion(String assertionXpath) throws XPathExpressionException {
+	protected NodeList queryAssertion(String assertionXpath) throws XPathExpressionException {
         final String assertionExpr = "/saml:Assertion";
         final String signatureExpr = "ds:Signature/ds:SignedInfo/ds:Reference";
 
@@ -1084,16 +1168,9 @@ public class SamlResponse {
      *
      * @return DOMNodeList The queried nodes
      */
-	private NodeList query(String nameQuery, Node context) throws XPathExpressionException {
-		Document doc;
-		if (encrypted) {
-			doc = decryptedDocument;
-		} else {
-        	doc = samlResponseDocument;
-		}
-
+	protected NodeList query(String nameQuery, Node context) throws XPathExpressionException {
 		// LOGGER.debug("Executing query " + nameQuery);
-		return Util.query(doc, nameQuery, context);
+		return Util.query(getSAMLResponseDocument(), nameQuery, context);
 	}
 
 	/**
@@ -1238,5 +1315,31 @@ public class SamlResponse {
 		if (settings.isStrict() && !spNameQualifier.equals(settings.getSpEntityId())) {
 			throw new ValidationError("The SPNameQualifier value mismatch the SP entityID value.", ValidationError.SP_NAME_QUALIFIER_NAME_MISMATCH);
 		}
+	}
+
+	/**
+	 * Returns the issue instant of this message.
+	 *
+	 * @return a new {@link Calendar} instance carrying the issue instant of this message
+	 * @throws ValidationError
+	 *             if the found IssueInstant attribute is not in the expected
+	 *             UTC form of ISO-8601 format
+	 */
+	public Calendar getResponseIssueInstant() throws ValidationError {
+		final Element rootElement = getSAMLResponseDocument()
+				.getDocumentElement();
+		final String issueInstantString = rootElement.hasAttribute(
+				"IssueInstant")? rootElement.getAttribute("IssueInstant"): null;
+		if(issueInstantString == null)
+			return null;
+		final Calendar result = Calendar.getInstance();
+		try {
+			result.setTimeInMillis(Util.parseDateTime(issueInstantString).getMillis());
+		} catch (final IllegalArgumentException e) {
+			throw new ValidationError(
+					"The Response IssueInstant attribute is not in the expected UTC form of ISO-8601 format",
+					ValidationError.INVALID_ISSUE_INSTANT_FORMAT);
+		}
+		return result;
 	}
 }

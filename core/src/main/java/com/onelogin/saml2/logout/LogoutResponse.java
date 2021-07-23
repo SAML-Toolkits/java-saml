@@ -299,12 +299,15 @@ public class LogoutResponse {
 	 * @throws XPathExpressionException
 	 */
     public String getIssuer() throws XPathExpressionException {
-    	String issuer = null;
-		NodeList issuers = this.query("/samlp:LogoutResponse/saml:Issuer");
-		if (issuers.getLength() == 1) {
-			issuer = issuers.item(0).getTextContent();
-		}
-        return issuer;
+	    String issuer = null;
+	    NodeList issuers = this.query("/samlp:LogoutResponse/saml:Issuer");
+	    if (issuers.getLength() == 1) {
+		    issuer = issuers.item(0).getTextContent();
+	    }
+	    if (issuer != null && settings.isTrimNameIds()) {
+		    issuer = issuer.trim();
+	    }
+	    return issuer;
     }
 
     /**
@@ -338,14 +341,15 @@ public class LogoutResponse {
     }
 
 	/**
-     * Extracts nodes that match the query from the DOMDocument (Logout Response Menssage)
-     *
-     * @param query
-     *				Xpath Expression
-     *
-     * @return DOMNodeList The queried nodes
-     */
-	private NodeList query (String query) throws XPathExpressionException {
+       * Extracts nodes that match the query from the DOMDocument (Logout Response Menssage)
+       *
+       * @param query
+       *				Xpath Expression
+       *
+       * @return DOMNodeList The queried nodes
+	 * @throws XPathExpressionException 
+       */
+	protected NodeList query (String query) throws XPathExpressionException {
 		return Util.query(this.logoutResponseDocument, query, null);
 	}
 
@@ -363,7 +367,7 @@ public class LogoutResponse {
 		this.inResponseTo = inResponseTo;
 
 		StrSubstitutor substitutor = generateSubstitutor(settings, statusCode);
-		this.logoutResponseString = substitutor.replace(getLogoutResponseTemplate());
+		this.logoutResponseString = postProcessXml(substitutor.replace(getLogoutResponseTemplate()), settings);
 	}
 
     /**
@@ -384,6 +388,26 @@ public class LogoutResponse {
 		build(null);
 	}	
 
+	/**
+	 * Allows for an extension class to post-process the LogoutResponse XML
+	 * generated for this response, in order to customize the result.
+	 * <p>
+	 * This method is invoked by {@link #build(String, String)} (and all of its
+	 * overloadings) and hence only in the logout response sending scenario. Its
+	 * default implementation simply returns the input XML as-is, with no change.
+	 * 
+	 * @param logoutResponseXml
+	 *              the XML produced for this LogoutResponse by the standard
+	 *              implementation provided by {@link LogoutResponse}
+	 * @param settings
+	 *              the settings
+	 * @return the post-processed XML for this LogoutResponse, which will then be
+	 *         returned by any call to {@link #getLogoutResponseXml()}
+	 */
+	protected String postProcessXml(final String logoutResponseXml, final Saml2Settings settings) {
+		return logoutResponseXml;
+	}
+	
 	/**
 	 * Substitutes LogoutResponse variables within a string by values.
 	 *
@@ -474,5 +498,45 @@ public class LogoutResponse {
 	 */
 	public Exception getValidationException() {
 		return validationException;
+	}
+	
+	/**
+ 	 * Sets the validation exception that this {@link LogoutResponse} should return
+	 * when a validation error occurs.
+	 * 
+	 * @param validationException
+	 *              the validation exception to set
+	 */
+	protected void setValidationException(Exception validationException) {
+		this.validationException = validationException;
+	}
+	
+	/**
+	 * Returns the issue instant of this message.
+	 *
+	 * @return a new {@link Calendar} instance carrying the issue instant of this message
+	 * @throws ValidationError
+	 *             if this logout response was received and parsed and the found IssueInstant 
+	 *             attribute is not in the expected UTC form of ISO-8601 format
+	 */
+	public Calendar getIssueInstant() throws ValidationError {
+		if(logoutResponseDocument != null) {
+			final Element rootElement = logoutResponseDocument
+					.getDocumentElement();
+			final String issueInstantString = rootElement.hasAttribute(
+					"IssueInstant")? rootElement.getAttribute("IssueInstant"): null;
+			if(issueInstantString == null)
+				return null;
+			final Calendar result = Calendar.getInstance();
+			try {
+				result.setTimeInMillis(Util.parseDateTime(issueInstantString).getMillis());
+			} catch (final IllegalArgumentException e) {
+				throw new ValidationError(
+						"The Response IssueInstant attribute is not in the expected UTC form of ISO-8601 format",
+						ValidationError.INVALID_ISSUE_INSTANT_FORMAT);
+			}
+			return result;
+		} else
+			return issueInstant == null? null: (Calendar) issueInstant.clone();
 	}
 }

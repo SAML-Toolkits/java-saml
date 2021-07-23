@@ -107,6 +107,10 @@ public class SettingsBuilder {
 	public final static String COMPRESS_REQUEST = "onelogin.saml2.compress.request";
 	public final static String COMPRESS_RESPONSE = "onelogin.saml2.compress.response";
 
+	// Parsing
+	public final static String PARSING_TRIM_NAME_IDS = "onelogin.saml2.parsing.trim_name_ids";
+	public final static String PARSING_TRIM_ATTRIBUTE_VALUES = "onelogin.saml2.parsing.trim_attribute_values";
+	
 	// Misc
 	public final static String CONTACT_TECHNICAL_GIVEN_NAME = "onelogin.saml2.contacts.technical.given_name";
 	public final static String CONTACT_TECHNICAL_EMAIL_ADDRESS = "onelogin.saml2.contacts.technical.email_address";
@@ -253,6 +257,7 @@ public class SettingsBuilder {
 		this.loadIdpSetting();
 		this.loadSecuritySetting();
 		this.loadCompressSetting();
+		this.loadParsingSetting();
 
 		List<Contact> contacts = this.loadContacts();
 		if (!contacts.isEmpty()) {
@@ -421,6 +426,21 @@ public class SettingsBuilder {
 		Boolean compressResponse = loadBooleanProperty(COMPRESS_RESPONSE);
 		if (compressResponse != null) {
 			saml2Setting.setCompressResponse(compressResponse);
+		}
+	}
+
+	/**
+	 * Loads the parsing settings from the properties file
+	 */
+	private void loadParsingSetting() {
+		Boolean trimNameIds = loadBooleanProperty(PARSING_TRIM_NAME_IDS);
+		if (trimNameIds != null) {
+			saml2Setting.setTrimNameIds(trimNameIds);
+		}
+
+		Boolean trimAttributeValues = loadBooleanProperty(PARSING_TRIM_ATTRIBUTE_VALUES);
+		if (trimAttributeValues != null) {
+			saml2Setting.setTrimAttributeValues(trimAttributeValues);
 		}
 	}
 

@@ -5,12 +5,17 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
@@ -24,6 +29,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import com.onelogin.saml2.logout.LogoutRequest;
+import com.onelogin.saml2.logout.LogoutResponse;
 import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.exception.Error;
@@ -385,6 +391,56 @@ public class LogoutRequestTest {
 	}
 
 	/**
+	 * Tests the getIssueInstant method of LogoutRequest
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.logout.LogoutRequest#getIssueInstant(String)
+	 */
+	@Test
+	public void testGetIssueInstant() throws Exception {
+		String samlRequest = Util.getFileAsString("data/logout_requests/logout_request.xml");
+		Calendar issueInstant = LogoutRequest.getIssueInstant(samlRequest);
+		String expectedIssueInstant = "2013-12-10T04:39:31Z";
+		assertEquals(expectedIssueInstant, Util.formatDateTime(issueInstant.getTimeInMillis()));
+
+		Document samlRequestDoc = Util.loadXML(samlRequest);
+		issueInstant = LogoutRequest.getIssueInstant(samlRequestDoc);
+		assertEquals(expectedIssueInstant, Util.formatDateTime(issueInstant.getTimeInMillis()));
+
+		assertNull(LogoutRequest.getIssueInstant(""));
+		
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request.xml.base64");
+		final String requestURL = "http://stuff.com/endpoints/endpoints/sls.php";
+		HttpRequest httpRequest = newHttpRequest(requestURL, samlRequestEncoded);
+
+		issueInstant = new LogoutRequest(settings, httpRequest).getIssueInstant();
+		assertEquals(expectedIssueInstant, Util.formatDateTime(issueInstant.getTimeInMillis()));
+	}
+
+	/**
+	 * Tests the getIssueInstant method of LogoutRequest
+	 * <p>
+	 * Case: LogoutRequest message built by the caller
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.logout.LogoutRequest#getIssueInstant(String)
+	 */
+	@Test
+	public void testGetIssueInstantBuiltMessage() throws Exception  {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		long start = System.currentTimeMillis();
+		LogoutRequest logoutRequest = new LogoutRequest(settings, null);
+		long end = System.currentTimeMillis();
+		Calendar issueInstant = logoutRequest.getIssueInstant();
+		assertNotNull(issueInstant);
+		long millis = issueInstant.getTimeInMillis();
+		assertTrue(millis >= start && millis <= end);
+	}
+
+	/**
 	 * Tests the getNameIdData method of LogoutRequest
 	 * Case: Not able to get the NameIdData due no private key to decrypt
 	 *
@@ -435,6 +491,22 @@ public class LogoutRequestTest {
 		expectedEx.expect(ValidationError.class);
 		expectedEx.expectMessage("No name id found in Logout Request.");
 		LogoutRequest.getNameIdData(logoutRequestStr, null).toString();
+	}
+
+	/**
+	 * Tests the getNameIdData method of LogoutRequest.
+	 * <p>
+	 * Case: with or without trimming
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testGetNameIdDataTrimming() throws Exception {
+		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_with_whitespace.xml");
+		Map<String, String> nameIdData = LogoutRequest.getNameIdData(logoutRequestStr, null, true);
+		assertEquals("ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c", nameIdData.get("Value"));
+		nameIdData = LogoutRequest.getNameIdData(logoutRequestStr, null, false);
+		assertEquals("\n\t\tONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c\n\t", nameIdData.get("Value"));
 	}
 
 	/**
@@ -530,6 +602,22 @@ public class LogoutRequestTest {
 	}
 
 	/**
+	 * Tests the getNameId method of LogoutRequest.
+	 * <p>
+	 * Case: with or without trimming
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testGetNameIdTrimming() throws Exception {
+		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_with_whitespace.xml");
+		String nameId = LogoutRequest.getNameId(logoutRequestStr, null, true);
+		assertEquals("ONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c", nameId);
+		nameId = LogoutRequest.getNameId(logoutRequestStr, null, false);
+		assertEquals("\n\t\tONELOGIN_1e442c129e1f822c8096086a1103c5ee2c7cae1c\n\t", nameId);
+	}
+
+	/**
 	 * Tests the getIssuer method of LogoutRequest
 	 *
 	 * @throws IOException
@@ -548,6 +636,26 @@ public class LogoutRequestTest {
 		logoutRequestStr = logoutRequestStr.replace("<saml:Issuer>http://idp.example.com/</saml:Issuer>", "");
 		issuer = LogoutRequest.getIssuer(logoutRequestStr);
 		assertNull(issuer);
+	}
+
+	/**
+	 * Tests the getIssuer method of LogoutRequest
+	 * <p>
+	 * Case: with or without trimming
+	 *
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 * @throws XPathExpressionException
+	 *
+	 * @see com.onelogin.saml2.logout.LogoutRequest#getIssuer
+	 */
+	@Test
+	public void testGetIssuerTrimming() throws URISyntaxException, IOException, XPathExpressionException {
+		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_with_whitespace.xml");
+		String issuer = LogoutRequest.getIssuer(logoutRequestStr, true);
+		assertEquals("http://idp.example.com/", issuer);
+		issuer = LogoutRequest.getIssuer(logoutRequestStr, false);
+		assertEquals("\n    \thttp://idp.example.com/\n    ", issuer);
 	}
 
 	/**
@@ -576,6 +684,28 @@ public class LogoutRequestTest {
 		logoutRequestStr = Util.base64decodedInflated(logoutRequestStringBase64);
 		indexes = LogoutRequest.getSessionIndexes(logoutRequestStr);
 		assertEquals(expectedIndexes, indexes);
+	}
+
+	/**
+	 * Tests the getSessionIndexes method of LogoutRequest
+	 * <p>
+	 * Case: with or without trimming
+	 *
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 * @throws XPathExpressionException
+	 * @throws XMLEntityException
+	 * @throws Error
+	 *
+	 * @see com.onelogin.saml2.logout.LogoutRequest#getSessionIndexes
+	 */
+	@Test
+	public void testGetSessionIndexesTrimming() throws IOException, XPathExpressionException  {
+		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_with_whitespace.xml");
+		List <String> indexes = LogoutRequest.getSessionIndexes(logoutRequestStr, true);
+		assertEquals(Arrays.asList("_ac72a76526cb6ca19f8438e73879a0e6c8ae5131"), indexes);
+		indexes = LogoutRequest.getSessionIndexes(logoutRequestStr, false);
+		assertEquals(Arrays.asList("\n\t\t_ac72a76526cb6ca19f8438e73879a0e6c8ae5131\n\t"), indexes);
 	}
 
 	/**
@@ -953,5 +1083,26 @@ public class LogoutRequestTest {
 
 	private static HttpRequest newHttpRequest(String requestURL, String samlRequestEncoded) {
 		return new HttpRequest(requestURL, (String)null).addParameter("SAMLRequest", samlRequestEncoded);
+	}
+
+	/**
+	 * Tests the postProcessXml method of LogoutRequest
+	 *
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.logout.LogoutRequest#postProcessXml
+	 */
+	@Test
+	public void testPostProcessXml() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		LogoutRequest logoutRequest = new LogoutRequest(settings) {
+			@Override
+			protected String postProcessXml(String authRequestXml, Saml2Settings sett) {
+				assertEquals(authRequestXml, super.postProcessXml(authRequestXml, sett));
+				assertSame(settings, sett);
+				return "changed";
+			}
+		};
+		assertEquals("changed", logoutRequest.getLogoutRequestXml());
 	}
 }

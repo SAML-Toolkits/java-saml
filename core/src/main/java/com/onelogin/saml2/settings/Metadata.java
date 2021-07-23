@@ -79,7 +79,7 @@ public class Metadata {
 		this.cacheDuration = cacheDuration;
 
 		StrSubstitutor substitutor = generateSubstitutor(settings);
-		String unsignedMetadataString = substitutor.replace(getMetadataTemplate());
+		String unsignedMetadataString = postProcessXml(substitutor.replace(getMetadataTemplate()), settings);
 
 		LOGGER.debug("metadata --> " + unsignedMetadataString);
 		metadataString = unsignedMetadataString;
@@ -111,10 +111,30 @@ public class Metadata {
 		this.cacheDuration = SECONDS_CACHED;
 
 		StrSubstitutor substitutor = generateSubstitutor(settings);
-		String unsignedMetadataString = substitutor.replace(getMetadataTemplate());
+		String unsignedMetadataString = postProcessXml(substitutor.replace(getMetadataTemplate()), settings);
 
 		LOGGER.debug("metadata --> " + unsignedMetadataString);
 		metadataString = unsignedMetadataString;
+	}
+	
+	/**
+	 * Allows for an extension class to post-process the SAML metadata XML generated
+	 * for this metadata instance, in order to customize the result.
+	 * <p>
+	 * This method is invoked at construction time, after all the other fields of
+	 * this class have already been initialised. Its default implementation simply
+	 * returns the input XML as-is, with no change.
+	 * 
+	 * @param metadataXml
+	 *              the XML produced for this metadata instance by the standard
+	 *              implementation provided by {@link Metadata}
+	 * @param settings
+	 *              the settings
+	 * @return the post-processed XML for this metadata instance, which will then be
+	 *         returned by any call to {@link #getMetadataString()}
+	 */
+	protected String postProcessXml(final String metadataXml, final Saml2Settings settings) {
+		return metadataXml;
 	}
 
 	/**

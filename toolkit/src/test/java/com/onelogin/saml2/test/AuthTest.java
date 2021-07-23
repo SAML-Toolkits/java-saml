@@ -31,6 +31,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -524,7 +525,7 @@ public class AuthTest {
 		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
 		Auth auth2 = new Auth(settings, request, response);
 
-		HashMap<String, List<String>> expectedAttributes = new HashMap<String, List<String>>();
+		HashMap<String, List<String>> expectedAttributes = new LinkedHashMap<String, List<String>>();
 		List<String> attrValues = new ArrayList<String>();
 		attrValues.add("smartin");
 		List<String> attrValues2 = new ArrayList<String>();
@@ -538,9 +539,9 @@ public class AuthTest {
 		attrValues5.add("Martin2");
 		expectedAttributes.put("uid", attrValues);
 		expectedAttributes.put("mail", attrValues2);
-		expectedAttributes.put("eduPersonAffiliation", attrValues3);
 		expectedAttributes.put("cn", attrValues4);
 		expectedAttributes.put("sn", attrValues5);
+		expectedAttributes.put("eduPersonAffiliation", attrValues3);
 		List<String> keys = new ArrayList<String>(expectedAttributes.keySet());
 
 		assertFalse(auth2.isAuthenticated());
@@ -2088,6 +2089,9 @@ public class AuthTest {
 		String targetSSOURL = auth.login(null, false, false, false, true);
 		String authNRequestXML = auth.getLastRequestXML();
 		assertThat(targetSSOURL, containsString(Util.urlEncoder(Util.deflatedBase64encoded(authNRequestXML))));
+		
+		assertThat(authNRequestXML, containsString("ID=\"" + auth.getLastRequestId() + "\""));
+		assertThat(authNRequestXML, containsString("IssueInstant=\"" + Util.formatDateTime(auth.getLastRequestIssueInstant().getTimeInMillis()) + "\""));
 	}
 
 	/**
@@ -2111,6 +2115,9 @@ public class AuthTest {
 		String targetSLOURL = auth.logout(null, null, null, true);
 		String logoutRequestXML = auth.getLastRequestXML();
 		assertThat(targetSLOURL, containsString(Util.urlEncoder(Util.deflatedBase64encoded(logoutRequestXML))));
+
+		assertThat(logoutRequestXML, containsString("ID=\"" + auth.getLastRequestId() + "\""));
+		assertThat(logoutRequestXML, containsString("IssueInstant=\"" + Util.formatDateTime(auth.getLastRequestIssueInstant().getTimeInMillis()) + "\""));
 	}
 
 	/**

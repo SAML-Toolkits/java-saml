@@ -3,7 +3,7 @@
 
 	<groupId>com.onelogin</groupId>
 	<artifactId>java-saml-toolkit</artifactId>
-	<version>2.6.1-SNAPSHOT</version>
+	<version>2.7.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>OneLogin java-saml Toolkit Project</name>
@@ -12,6 +12,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+                <project.build.resourceEncoding>UTF-8</project.build.resourceEncoding>
 		<slf4jVersion>1.7.30</slf4jVersion>
 		<junitVersion>4.13.1</junitVersion>
 		<logbackVersion>1.2.3</logbackVersion>
@@ -96,12 +97,13 @@
 			<plugin>
 				<groupId>org.owasp</groupId>
 				<artifactId>dependency-check-maven</artifactId>
-				<version>6.0.3</version>
+				<version>6.1.6</version>
 				<configuration>
 					<failBuildOnCVSS>7</failBuildOnCVSS>
 					<suppressionFiles>
 						<suppressionFile>.nvd-suppressions.xml</suppressionFile>
 					</suppressionFiles>
+					<assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
 				</configuration>
 				<executions>
 					<execution>

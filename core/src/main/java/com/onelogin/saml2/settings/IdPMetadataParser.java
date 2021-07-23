@@ -24,6 +24,8 @@ import com.onelogin.saml2.util.Util;
  *
  * A class that implements the settings parser from IdP Metadata
  *
+ * This class does not validate in any way the URL that is introduced,
+ * make sure to validate it properly before use it in a get_metadata method.
  */
 public class IdPMetadataParser {
 
