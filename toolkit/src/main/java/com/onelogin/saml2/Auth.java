@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.onelogin.saml2.authn.AuthnRequest;
+import com.onelogin.saml2.authn.AuthnRequestParams;
 import com.onelogin.saml2.authn.SamlResponse;
 import com.onelogin.saml2.exception.SettingsException;
 import com.onelogin.saml2.exception.Error;
@@ -347,12 +348,16 @@ public class Auth {
 	 *
 	 * @throws IOException
 	 * @throws SettingsException
+	 * @deprecated use {@link #login(String, AuthnRequestParams, Boolean)} with
+	 *             {@link AuthnRequestParams#AuthnRequestParams(boolean, boolean, boolean, String)}
+	 *             instead
 	 */
+	@Deprecated
 	public String login(String relayState, Boolean forceAuthn, Boolean isPassive, Boolean setNameIdPolicy, Boolean stay,
 			String nameIdValueReq) throws IOException, SettingsException {
 		Map<String, String> parameters = new HashMap<String, String>();
-		return login(relayState, forceAuthn, isPassive, setNameIdPolicy, stay,
-				nameIdValueReq, parameters);
+		return login(relayState, new AuthnRequestParams(forceAuthn, isPassive, setNameIdPolicy, nameIdValueReq), stay,
+		            parameters);
 	}
 
 	/**
@@ -386,44 +391,15 @@ public class Auth {
 	 *
 	 * @throws IOException
 	 * @throws SettingsException
+	 * @deprecated use {@link #login(String, AuthnRequestParams, Boolean, Map)} with
+	 *             {@link AuthnRequestParams#AuthnRequestParams(boolean, boolean, boolean, String)}
+	 *             instead
 	 */
+	@Deprecated
 	public String login(String relayState, Boolean forceAuthn, Boolean isPassive, Boolean setNameIdPolicy, Boolean stay,
 			String nameIdValueReq, Map<String, String> parameters) throws IOException, SettingsException {
-		AuthnRequest authnRequest = new AuthnRequest(settings, forceAuthn, isPassive, setNameIdPolicy, nameIdValueReq);
-
-		if (parameters == null) {
-			parameters = new HashMap<String, String>();
-		}
-
-		String samlRequest = authnRequest.getEncodedAuthnRequest();
-
-		parameters.put("SAMLRequest", samlRequest);
-
-		if (relayState == null) {
-			relayState = ServletUtils.getSelfRoutedURLNoQuery(request);
-		}
-
-		if (!relayState.isEmpty()) {
-			parameters.put("RelayState", relayState);
-		}
-
-		if (settings.getAuthnRequestsSigned()) {
-			String sigAlg = settings.getSignatureAlgorithm();
-			String signature = this.buildRequestSignature(samlRequest, relayState, sigAlg);
-
-			parameters.put("SigAlg", sigAlg);
-			parameters.put("Signature", signature);
-		}
-
-		String ssoUrl = getSSOurl();
-		lastRequestId = authnRequest.getId();
-		lastRequestIssueInstant = authnRequest.getIssueInstant();
-		lastRequest = authnRequest.getAuthnRequestXml();
-
-		if (!stay) {
-			LOGGER.debug("AuthNRequest sent to " + ssoUrl + " --> " + samlRequest);
-		}
-		return ServletUtils.sendRedirect(response, ssoUrl, parameters, stay);
+		return login(relayState, new AuthnRequestParams(forceAuthn, isPassive, setNameIdPolicy, nameIdValueReq), stay,
+		            parameters);
 	}
 
 	/**
@@ -454,10 +430,14 @@ public class Auth {
 	 *
 	 * @throws IOException
 	 * @throws SettingsException
+	 * @deprecated use {@link #login(String, AuthnRequestParams, Boolean)} with
+	 *             {@link AuthnRequestParams#AuthnRequestParams(boolean, boolean, boolean)}
+	 *             instead
 	 */
+	@Deprecated
 	public String login(String relayState, Boolean forceAuthn, Boolean isPassive, Boolean setNameIdPolicy, Boolean stay)
 			throws IOException, SettingsException {
-		return login(relayState, forceAuthn, isPassive, setNameIdPolicy, stay, null);
+		return login(relayState, new AuthnRequestParams(forceAuthn, isPassive, setNameIdPolicy), stay, null);
 	}
 
 	/**
@@ -484,10 +464,14 @@ public class Auth {
 	 *
 	 * @throws IOException
 	 * @throws SettingsException
+	 * @deprecated use {@link #login(String, AuthnRequestParams)} with
+	 *             {@link AuthnRequestParams#AuthnRequestParams(boolean, boolean, boolean)}
+	 *             instead
 	 */
+	@Deprecated
 	public void login(String relayState, Boolean forceAuthn, Boolean isPassive, Boolean setNameIdPolicy)
 			throws IOException, SettingsException {
-		login(relayState, forceAuthn, isPassive, setNameIdPolicy, false);
+		login(relayState, new AuthnRequestParams(forceAuthn, isPassive, setNameIdPolicy), false);
 	}
 
 	/**
@@ -497,7 +481,20 @@ public class Auth {
 	 * @throws SettingsException
 	 */
 	public void login() throws IOException, SettingsException {
-		login(null, false, false, true);
+		login(null, new AuthnRequestParams(false, false, true));
+	}
+
+	/**
+	 * Initiates the SSO process.
+	 *
+	 * @param authnRequestParams
+	 *              the authentication request input parameters
+	 *
+	 * @throws IOException
+	 * @throws SettingsException
+	 */
+	public void login(AuthnRequestParams authnRequestParams) throws IOException, SettingsException {
+		login(null, authnRequestParams);
 	}
 
 	/**
@@ -521,7 +518,128 @@ public class Auth {
 	 * @throws SettingsException
 	 */
 	public void login(String relayState) throws IOException, SettingsException {
-		login(relayState, false, false, true);
+		login(relayState, new AuthnRequestParams(false, false, true));
+	}
+
+	/**
+	 * Initiates the SSO process.
+	 *
+	 * @param relayState
+	 *              a state information to pass forth and back between the Service
+	 *              Provider and the Identity Provider; in the most simple case, it
+	 *              may be a URL to which the authenticated user should be
+	 *              redirected after the authentication response has been received
+	 *              back from the Identity Provider and validated correctly with
+	 *              {@link #processResponse()}; please note that SAML 2.0
+	 *              specification imposes a limit of max 80 characters for this
+	 *              relayState data and that protection strategies against tampering
+	 *              should better be implemented; it will be a self-routed URL when
+	 *              <code>null</code>, otherwise no relayState at all will be
+	 *              appended if an empty string is provided
+	 * @param authnRequestParams
+	 *              the authentication request input parameters
+	 *
+	 * @throws IOException
+	 * @throws SettingsException
+	 */
+	public void login(String relayState, AuthnRequestParams authnRequestParams) throws IOException, SettingsException {
+		login(relayState, authnRequestParams, false);
+	}
+
+	/**
+	 * Initiates the SSO process.
+	 *
+	 * @param relayState
+	 *              a state information to pass forth and back between the Service
+	 *              Provider and the Identity Provider; in the most simple case, it
+	 *              may be a URL to which the authenticated user should be
+	 *              redirected after the authentication response has been received
+	 *              back from the Identity Provider and validated correctly with
+	 *              {@link #processResponse()}; please note that SAML 2.0
+	 *              specification imposes a limit of max 80 characters for this
+	 *              relayState data and that protection strategies against tampering
+	 *              should better be implemented; it will be a self-routed URL when
+	 *              <code>null</code>, otherwise no relayState at all will be
+	 *              appended if an empty string is provided
+	 * @param authnRequestParams
+	 *              the authentication request input parameters
+	 * @param stay
+	 *              True if we want to stay (returns the url string) False to
+	 *              execute redirection
+	 *
+	 * @return the SSO URL with the AuthNRequest if stay = True
+	 *
+	 * @throws IOException
+	 * @throws SettingsException
+	 */
+	public String login(String relayState, AuthnRequestParams authnRequestParams, Boolean stay) throws IOException, SettingsException {
+		return login(relayState, authnRequestParams, stay, new HashMap<>());
+	}
+
+	/**
+	 * Initiates the SSO process.
+	 *
+	 * @param relayState
+	 *              a state information to pass forth and back between the Service
+	 *              Provider and the Identity Provider; in the most simple case, it
+	 *              may be a URL to which the authenticated user should be
+	 *              redirected after the authentication response has been received
+	 *              back from the Identity Provider and validated correctly with
+	 *              {@link #processResponse()}; please note that SAML 2.0
+	 *              specification imposes a limit of max 80 characters for this
+	 *              relayState data and that protection strategies against tampering
+	 *              should better be implemented; it will be a self-routed URL when
+	 *              <code>null</code>, otherwise no relayState at all will be
+	 *              appended if an empty string is provided
+	 * @param authnRequestParams
+	 *              the authentication request input parameters
+	 * @param stay
+	 *              True if we want to stay (returns the url string) False to
+	 *              execute redirection
+	 * @param parameters
+	 *              Use it to send extra parameters in addition to the AuthNRequest
+	 *
+	 * @return the SSO URL with the AuthNRequest if stay = True
+	 *
+	 * @throws IOException
+	 * @throws SettingsException
+	 */
+	public String login(String relayState, AuthnRequestParams authnRequestParams, Boolean stay, Map<String, String> parameters) throws IOException, SettingsException {
+		AuthnRequest authnRequest = new AuthnRequest(settings, authnRequestParams);
+		
+		if (parameters == null) {
+			parameters = new HashMap<String, String>();
+		}
+		
+		String samlRequest = authnRequest.getEncodedAuthnRequest();
+
+		parameters.put("SAMLRequest", samlRequest);
+
+		if (relayState == null) {
+			relayState = ServletUtils.getSelfRoutedURLNoQuery(request);
+		}
+		
+		if (!relayState.isEmpty()) {
+			parameters.put("RelayState", relayState);
+		}
+
+		if (settings.getAuthnRequestsSigned()) {
+			String sigAlg = settings.getSignatureAlgorithm();
+			String signature = this.buildRequestSignature(samlRequest, relayState, sigAlg);
+
+			parameters.put("SigAlg", sigAlg);
+			parameters.put("Signature", signature);
+		}
+
+		String ssoUrl = getSSOurl();
+		lastRequestId = authnRequest.getId();
+		lastRequestIssueInstant = authnRequest.getIssueInstant();
+		lastRequest = authnRequest.getAuthnRequestXml();
+
+		if (!stay) {
+			LOGGER.debug("AuthNRequest sent to " + ssoUrl + " --> " + samlRequest);
+		}
+		return ServletUtils.sendRedirect(response, ssoUrl, parameters, stay);
 	}
 
 	/**

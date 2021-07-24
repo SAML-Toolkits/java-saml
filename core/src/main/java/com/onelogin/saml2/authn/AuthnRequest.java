@@ -43,26 +43,6 @@ public class AuthnRequest {
 	private final Saml2Settings settings;
 
 	/**
-	 * When true the AuthNRequest will set the ForceAuthn='true'
-	 */
-	private final boolean forceAuthn;
-
-	/**
-	 * When true the AuthNRequest will set the IsPassive='true'
-	 */
-	private final boolean isPassive;
-
-	/**
-	 * When true the AuthNReuqest will set a nameIdPolicy
-	 */
-	private final boolean setNameIdPolicy;
-
-	/**
-	 * Indicates to the IdP the subject that should be authenticated
-	 */
-	private final String nameIdValueReq;
-	
-	/**
 	 * Time stamp that indicates when the AuthNRequest was created
 	 */
 	private final Calendar issueInstant;
@@ -72,56 +52,74 @@ public class AuthnRequest {
 	 *
 	 * @param settings
 	 *            OneLogin_Saml2_Settings
+	 * @see #AuthnRequest(Saml2Settings, AuthnRequestParams)
 	 */
 	public AuthnRequest(Saml2Settings settings) {
-		this(settings, false, false, true);
+		this(settings, new AuthnRequestParams(false, false, true));
 	}
 
 	/**
 	 * Constructs the AuthnRequest object.
 	 *
 	 * @param settings
-	 *            OneLogin_Saml2_Settings
+	 *              OneLogin_Saml2_Settings
 	 * @param forceAuthn
-	 *            When true the AuthNReuqest will set the ForceAuthn='true'
+	 *              When true the AuthNReuqest will set the ForceAuthn='true'
 	 * @param isPassive
-	 *            When true the AuthNReuqest will set the IsPassive='true'
+	 *              When true the AuthNReuqest will set the IsPassive='true'
 	 * @param setNameIdPolicy
-	 *            When true the AuthNReuqest will set a nameIdPolicy
+	 *              When true the AuthNReuqest will set a nameIdPolicy
 	 * @param nameIdValueReq
-	 *            Indicates to the IdP the subject that should be authenticated
+	 *              Indicates to the IdP the subject that should be authenticated
+	 * @deprecated use {@link #AuthnRequest(Saml2Settings, AuthnRequestParams)} with
+	 *             {@link AuthnRequestParams#AuthnRequestParams(boolean, boolean, boolean, String)}
+	 *             instead
 	 */
+	@Deprecated
 	public AuthnRequest(Saml2Settings settings, boolean forceAuthn, boolean isPassive, boolean setNameIdPolicy, String nameIdValueReq) {
-		this.id = Util.generateUniqueID(settings.getUniqueIDPrefix());
-		issueInstant = Calendar.getInstance();
-		this.isPassive = isPassive;
-		this.settings = settings;
-		this.forceAuthn = forceAuthn;
-		this.setNameIdPolicy = setNameIdPolicy;
-		this.nameIdValueReq = nameIdValueReq;
-
-		StrSubstitutor substitutor = generateSubstitutor(settings);
-		authnRequestString = postProcessXml(substitutor.replace(getAuthnRequestTemplate()), settings);
-		LOGGER.debug("AuthNRequest --> " + authnRequestString);
+		this(settings, new AuthnRequestParams(forceAuthn, isPassive, setNameIdPolicy, nameIdValueReq));
 	}
-
+	
 	/**
 	 * Constructs the AuthnRequest object.
 	 *
 	 * @param settings
-	 *            OneLogin_Saml2_Settings
+	 *              OneLogin_Saml2_Settings
 	 * @param forceAuthn
-	 *            When true the AuthNReuqest will set the ForceAuthn='true'
+	 *              When true the AuthNReuqest will set the ForceAuthn='true'
 	 * @param isPassive
-	 *            When true the AuthNReuqest will set the IsPassive='true'
+	 *              When true the AuthNReuqest will set the IsPassive='true'
 	 * @param setNameIdPolicy
-	 *            When true the AuthNReuqest will set a nameIdPolicy
+	 *              When true the AuthNReuqest will set a nameIdPolicy
+	 * @deprecated use {@link #AuthnRequest(Saml2Settings, AuthnRequestParams)} with
+	 *             {@link AuthnRequestParams#AuthnRequestParams(boolean, boolean, boolean)}
+	 *             instead
 	 */
+	@Deprecated
 	public AuthnRequest(Saml2Settings settings, boolean forceAuthn, boolean isPassive, boolean setNameIdPolicy) {
 		this(settings, forceAuthn, isPassive, setNameIdPolicy, null);
 	}
 
 	/**
+	 * Constructs the AuthnRequest object.
+	 *
+	 * @param settings
+	 *              OneLogin_Saml2_Settings
+	 * @param params
+	 *              a set of authentication request input parameters that shape the
+	 *              request to create
+	 */
+	public AuthnRequest(Saml2Settings settings, AuthnRequestParams params) {
+		this.id = Util.generateUniqueID(settings.getUniqueIDPrefix());
+		issueInstant = Calendar.getInstance();
+		this.settings = settings;
+
+		StrSubstitutor substitutor = generateSubstitutor(params, settings);
+		authnRequestString = postProcessXml(substitutor.replace(getAuthnRequestTemplate()), params, settings);
+		LOGGER.debug("AuthNRequest --> " + authnRequestString);
+	}
+
+	/*
 	 * Allows for an extension class to post-process the AuthnRequest XML generated
 	 * for this request, in order to customize the result.
 	 * <p>
@@ -132,15 +130,17 @@ public class AuthnRequest {
 	 * @param authnRequestXml
 	 *              the XML produced for this AuthnRequest by the standard
 	 *              implementation provided by {@link AuthnRequest}
+	 * @param params
+	 *              the authentication request input parameters
 	 * @param settings
 	 *              the settings
 	 * @return the post-processed XML for this AuthnRequest, which will then be
 	 *         returned by any call to {@link #getAuthnRequestXml()}
 	 */
-	protected String postProcessXml(final String authnRequestXml, final Saml2Settings settings) {
+	protected String postProcessXml(final String authnRequestXml, final AuthnRequestParams params, final Saml2Settings settings) {
 		return authnRequestXml;
 	}
-	
+
 	/**
 	 * @return the base64 encoded unsigned AuthnRequest (deflated or not)
 	 *
@@ -181,22 +181,24 @@ public class AuthnRequest {
 	/**
 	 * Substitutes AuthnRequest variables within a string by values.
 	 *
+	 * @param params
+	 *              the authentication request input parameters
 	 * @param settings
 	 * 				Saml2Settings object. Setting data
 	 * 
 	 * @return the StrSubstitutor object of the AuthnRequest 
 	 */ 
-	private StrSubstitutor generateSubstitutor(Saml2Settings settings) {
+	private StrSubstitutor generateSubstitutor(AuthnRequestParams params, Saml2Settings settings) {
 
 		Map<String, String> valueMap = new HashMap<String, String>();
 
 		String forceAuthnStr = "";
-		if (forceAuthn) {
+		if (params.isForceAuthn()) {
 			forceAuthnStr = " ForceAuthn=\"true\"";
 		}
 
 		String isPassiveStr = "";
-		if (isPassive) {
+		if (params.isPassive()) {
 			isPassiveStr = " IsPassive=\"true\"";
 		}
 
@@ -211,6 +213,7 @@ public class AuthnRequest {
 		valueMap.put("destinationStr", destinationStr);
 
 		String subjectStr = "";
+		String nameIdValueReq = params.getNameIdValueReq();
 		if (nameIdValueReq != null && !nameIdValueReq.isEmpty()) {
 			String nameIDFormat = settings.getSpNameIDFormat();
 			subjectStr = "<saml:Subject>";
@@ -221,7 +224,7 @@ public class AuthnRequest {
         valueMap.put("subjectStr", subjectStr);
 
 		String nameIDPolicyStr = "";
-		if (setNameIdPolicy) {
+		if (params.isSetNameIdPolicy()) {
 			String nameIDPolicyFormat = settings.getSpNameIDFormat();
 			if (settings.getWantNameIdEncrypted()) {
 				nameIDPolicyFormat = Constants.NAMEID_ENCRYPTED;

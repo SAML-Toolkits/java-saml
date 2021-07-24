@@ -1,7 +1,5 @@
 package com.onelogin.saml2.settings;
 
-import static com.onelogin.saml2.util.Util.toXml;
-
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Calendar;
