@@ -80,17 +80,19 @@ public class LogoutRequest {
 	 * @param settings
 	 *              OneLogin_Saml2_Settings
 	 * @param request
-     *              the HttpRequest object to be processed (Contains GET and POST parameters, request URL, ...).
+	 *              the HttpRequest object to be processed (Contains GET and POST
+	 *              parameters, request URL, ...).
 	 * @param nameId
 	 *              The NameID that will be set in the LogoutRequest.
 	 * @param sessionIndex
-	 *              The SessionIndex (taken from the SAML Response in the SSO process).
+	 *              The SessionIndex (taken from the SAML Response in the SSO
+	 *              process).
 	 * @param nameIdFormat
 	 *              The nameIdFormat that will be set in the LogoutRequest.
 	 * @param nameIdNameQualifier
-	 *				The NameID NameQualifier that will be set in the LogoutRequest.
+	 *              The NameID NameQualifier that will be set in the LogoutRequest.
 	 * @param nameIdSPNameQualifier
-	 *				The SP Name Qualifier that will be set in the LogoutRequest.
+	 *              The SP Name Qualifier that will be set in the LogoutRequest.
 	 *
 	 * @deprecated use {@link #LogoutRequest(Saml2Settings, HttpRequest)} to build a
 	 *             received request from the HTTP request, or
@@ -131,15 +133,17 @@ public class LogoutRequest {
 	 * @param settings
 	 *              OneLogin_Saml2_Settings
 	 * @param request
-     *              the HttpRequest object to be processed (Contains GET and POST parameters, request URL, ...).
+	 *              the HttpRequest object to be processed (Contains GET and POST
+	 *              parameters, request URL, ...).
 	 * @param nameId
 	 *              The NameID that will be set in the LogoutRequest.
 	 * @param sessionIndex
-	 *              The SessionIndex (taken from the SAML Response in the SSO process).
+	 *              The SessionIndex (taken from the SAML Response in the SSO
+	 *              process).
 	 * @param nameIdFormat
 	 *              The nameIdFormat that will be set in the LogoutRequest.
 	 * @param nameIdNameQualifier
-	 *				The NameID NameQualifier will be set in the LogoutRequest.
+	 *              The NameID NameQualifier will be set in the LogoutRequest.
 	 *
 	 * @deprecated use {@link #LogoutRequest(Saml2Settings, HttpRequest)} to build a
 	 *             received request from the HTTP request, or
@@ -158,11 +162,13 @@ public class LogoutRequest {
 	 * @param settings
 	 *              OneLogin_Saml2_Settings
 	 * @param request
-     *              the HttpRequest object to be processed (Contains GET and POST parameters, request URL, ...).
+	 *              the HttpRequest object to be processed (Contains GET and POST
+	 *              parameters, request URL, ...).
 	 * @param nameId
 	 *              The NameID that will be set in the LogoutRequest.
 	 * @param sessionIndex
-	 *              The SessionIndex (taken from the SAML Response in the SSO process).
+	 *              The SessionIndex (taken from the SAML Response in the SSO
+	 *              process).
 	 * @param nameIdFormat
 	 *              The nameIdFormat that will be set in the LogoutRequest.
 	 *
@@ -183,11 +189,13 @@ public class LogoutRequest {
 	 * @param settings
 	 *              OneLogin_Saml2_Settings
 	 * @param request
-     *              the HttpRequest object to be processed (Contains GET and POST parameters, request URL, ...).
+	 *              the HttpRequest object to be processed (Contains GET and POST
+	 *              parameters, request URL, ...).
 	 * @param nameId
 	 *              The NameID that will be set in the LogoutRequest.
 	 * @param sessionIndex
-	 *              The SessionIndex (taken from the SAML Response in the SSO process).
+	 *              The SessionIndex (taken from the SAML Response in the SSO
+	 *              process).
 	 *
 	 * @deprecated use {@link #LogoutRequest(Saml2Settings, HttpRequest)} to build a
 	 *             received request from the HTTP request, or
@@ -201,11 +209,11 @@ public class LogoutRequest {
 	}
 
 	/**
-	 * Constructs a LogoutRequest object when a new request should be generated
-	 * and sent.
+	 * Constructs a LogoutRequest object when a new request should be generated and
+	 * sent.
 	 *
 	 * @param settings
-	 *            OneLogin_Saml2_Settings
+	 *              OneLogin_Saml2_Settings
 	 *
 	 * @see #LogoutRequest(Saml2Settings, LogoutRequestParams)
 	 */
@@ -214,13 +222,14 @@ public class LogoutRequest {
 	}
 
 	/**
-	 * Constructs the LogoutRequest object when a received request should be extracted
-	 * from the HTTP request and parsed.
+	 * Constructs the LogoutRequest object when a received request should be
+	 * extracted from the HTTP request and parsed.
 	 *
 	 * @param settings
-	 *            OneLogin_Saml2_Settings
+	 *              OneLogin_Saml2_Settings
 	 * @param request
-       *              the HttpRequest object to be processed (Contains GET and POST parameters, request URL, ...).
+	 *              the HttpRequest object to be processed (Contains GET and POST
+	 *              parameters, request URL, ...).
 	 */
 	public LogoutRequest(Saml2Settings settings, HttpRequest request) {
 		this(settings, request, null, null);

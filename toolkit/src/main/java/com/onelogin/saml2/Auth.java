@@ -322,28 +322,29 @@ public class Auth {
 	/**
 	 * Initiates the SSO process.
 	 *
-	 * @param relayState      a state information to pass forth and back between
-	 * 				  the Service Provider and the Identity Provider; 
-	 * 				  in the most simple case, it may be a URL to which
-	 * 				  the authenticated user should be redirected after the
-	 * 				  authentication response has been received back from the 
-	 * 				  Identity Provider and validated correctly with
-	 * 				  {@link #processResponse()}; please note that SAML 2.0 
-	 * 				  specification imposes a limit of max 80 characters for 
-	 * 				  this relayState data and that protection strategies 
-	 * 				  against tampering should better be implemented;
-	 * 				  it will be a self-routed URL when <code>null</code>, 
-	 * 				  otherwise no relayState at all will be appended if an empty 
-	 * 				  string is provided
-	 * @param forceAuthn      When true the AuthNRequest will set the
-	 *                        ForceAuthn='true'
-	 * @param isPassive       When true the AuthNRequest will set the
-	 *                        IsPassive='true'
-	 * @param setNameIdPolicy When true the AuthNRequest will set a nameIdPolicy
-	 * @param stay            True if we want to stay (returns the url string) False
-	 *                        to execute redirection
-	 * @param nameIdValueReq  Indicates to the IdP the subject that should be
-	 *                        authenticated
+	 * @param relayState
+	 *              a state information to pass forth and back between the Service
+	 *              Provider and the Identity Provider; in the most simple case, it
+	 *              may be a URL to which the authenticated user should be
+	 *              redirected after the authentication response has been received
+	 *              back from the Identity Provider and validated correctly with
+	 *              {@link #processResponse()}; please note that SAML 2.0
+	 *              specification imposes a limit of max 80 characters for this
+	 *              relayState data and that protection strategies against tampering
+	 *              should better be implemented; it will be a self-routed URL when
+	 *              <code>null</code>, otherwise no relayState at all will be
+	 *              appended if an empty string is provided
+	 * @param forceAuthn
+	 *              When true the AuthNRequest will set the ForceAuthn='true'
+	 * @param isPassive
+	 *              When true the AuthNRequest will set the IsPassive='true'
+	 * @param setNameIdPolicy
+	 *              When true the AuthNRequest will set a nameIdPolicy
+	 * @param stay
+	 *              True if we want to stay (returns the url string) False to
+	 *              execute redirection
+	 * @param nameIdValueReq
+	 *              Indicates to the IdP the subject that should be authenticated
 	 *
 	 * @return the SSO URL with the AuthNRequest if stay = True
 	 *
@@ -364,29 +365,31 @@ public class Auth {
 	/**
 	 * Initiates the SSO process.
 	 *
-	 * @param relayState      a state information to pass forth and back between
-	 * 				  the Service Provider and the Identity Provider; 
-	 * 				  in the most simple case, it may be a URL to which
-	 * 				  the authenticated user should be redirected after the
-	 * 				  authentication response has been received back from the 
-	 * 				  Identity Provider and validated correctly with
-	 * 				  {@link #processResponse()}; please note that SAML 2.0 
-	 * 				  specification imposes a limit of max 80 characters for 
-	 * 				  this relayState data and that protection strategies 
-	 * 				  against tampering should better be implemented;
-	 * 				  it will be a self-routed URL when <code>null</code>, 
-	 * 				  otherwise no relayState at all will be appended if an empty 
-	 * 				  string is provided
-	 * @param forceAuthn      When true the AuthNRequest will set the
-	 *                        ForceAuthn='true'
-	 * @param isPassive       When true the AuthNRequest will set the
-	 *                        IsPassive='true'
-	 * @param setNameIdPolicy When true the AuthNRequest will set a nameIdPolicy
-	 * @param stay            True if we want to stay (returns the url string) False
-	 *                        to execute redirection
-	 * @param nameIdValueReq  Indicates to the IdP the subject that should be
-	 *                        authenticated
-	 * @param parameters      Use it to send extra parameters in addition to the AuthNRequest
+	 * @param relayState
+	 *              a state information to pass forth and back between the Service
+	 *              Provider and the Identity Provider; in the most simple case, it
+	 *              may be a URL to which the authenticated user should be
+	 *              redirected after the authentication response has been received
+	 *              back from the Identity Provider and validated correctly with
+	 *              {@link #processResponse()}; please note that SAML 2.0
+	 *              specification imposes a limit of max 80 characters for this
+	 *              relayState data and that protection strategies against tampering
+	 *              should better be implemented; it will be a self-routed URL when
+	 *              <code>null</code>, otherwise no relayState at all will be
+	 *              appended if an empty string is provided
+	 * @param forceAuthn
+	 *              When true the AuthNRequest will set the ForceAuthn='true'
+	 * @param isPassive
+	 *              When true the AuthNRequest will set the IsPassive='true'
+	 * @param setNameIdPolicy
+	 *              When true the AuthNRequest will set a nameIdPolicy
+	 * @param stay
+	 *              True if we want to stay (returns the url string) False to
+	 *              execute redirection
+	 * @param nameIdValueReq
+	 *              Indicates to the IdP the subject that should be authenticated
+	 * @param parameters
+	 *              Use it to send extra parameters in addition to the AuthNRequest
 	 *
 	 * @return the SSO URL with the AuthNRequest if stay = True
 	 *
@@ -406,26 +409,27 @@ public class Auth {
 	/**
 	 * Initiates the SSO process.
 	 *
-	 * @param relayState      a state information to pass forth and back between
-	 * 				  the Service Provider and the Identity Provider; 
-	 * 				  in the most simple case, it may be a URL to which
-	 * 				  the authenticated user should be redirected after the
-	 * 				  authentication response has been received back from the 
-	 * 				  Identity Provider and validated correctly with
-	 * 				  {@link #processResponse()}; please note that SAML 2.0 
-	 * 				  specification imposes a limit of max 80 characters for 
-	 * 				  this relayState data and that protection strategies 
-	 * 				  against tampering should better be implemented;
-	 * 				  it will be a self-routed URL when <code>null</code>, 
-	 * 				  otherwise no relayState at all will be appended if an empty 
-	 * 				  string is provided
-	 * @param forceAuthn      When true the AuthNRequest will set the
-	 *                        ForceAuthn='true'
-	 * @param isPassive       When true the AuthNRequest will set the
-	 *                        IsPassive='true'
-	 * @param setNameIdPolicy When true the AuthNRequest will set a nameIdPolicy
-	 * @param stay            True if we want to stay (returns the url string) False
-	 *                        to execute redirection
+	 * @param relayState
+	 *              a state information to pass forth and back between the Service
+	 *              Provider and the Identity Provider; in the most simple case, it
+	 *              may be a URL to which the authenticated user should be
+	 *              redirected after the authentication response has been received
+	 *              back from the Identity Provider and validated correctly with
+	 *              {@link #processResponse()}; please note that SAML 2.0
+	 *              specification imposes a limit of max 80 characters for this
+	 *              relayState data and that protection strategies against tampering
+	 *              should better be implemented; it will be a self-routed URL when
+	 *              <code>null</code>, otherwise no relayState at all will be
+	 *              appended if an empty string is provided
+	 * @param forceAuthn
+	 *              When true the AuthNRequest will set the ForceAuthn='true'
+	 * @param isPassive
+	 *              When true the AuthNRequest will set the IsPassive='true'
+	 * @param setNameIdPolicy
+	 *              When true the AuthNRequest will set a nameIdPolicy
+	 * @param stay
+	 *              True if we want to stay (returns the url string) False to
+	 *              execute redirection
 	 *
 	 * @return the SSO URL with the AuthNRequest if stay = True
 	 *
@@ -444,24 +448,24 @@ public class Auth {
 	/**
 	 * Initiates the SSO process.
 	 *
-	 * @param relayState      a state information to pass forth and back between
-	 * 				  the Service Provider and the Identity Provider; 
-	 * 				  in the most simple case, it may be a URL to which
-	 * 				  the authenticated user should be redirected after the
-	 * 				  authentication response has been received back from the 
-	 * 				  Identity Provider and validated correctly with
-	 * 				  {@link #processResponse()}; please note that SAML 2.0 
-	 * 				  specification imposes a limit of max 80 characters for 
-	 * 				  this relayState data and that protection strategies 
-	 * 				  against tampering should better be implemented;
-	 * 				  it will be a self-routed URL when <code>null</code>, 
-	 * 				  otherwise no relayState at all will be appended if an empty 
-	 * 				  string is provided
-	 * @param forceAuthn      When true the AuthNRequest will set the
-	 *                        ForceAuthn='true'
-	 * @param isPassive       When true the AuthNRequest will set the
-	 *                        IsPassive='true'
-	 * @param setNameIdPolicy When true the AuthNRequest will set a nameIdPolicy
+	 * @param relayState
+	 *              a state information to pass forth and back between the Service
+	 *              Provider and the Identity Provider; in the most simple case, it
+	 *              may be a URL to which the authenticated user should be
+	 *              redirected after the authentication response has been received
+	 *              back from the Identity Provider and validated correctly with
+	 *              {@link #processResponse()}; please note that SAML 2.0
+	 *              specification imposes a limit of max 80 characters for this
+	 *              relayState data and that protection strategies against tampering
+	 *              should better be implemented; it will be a self-routed URL when
+	 *              <code>null</code>, otherwise no relayState at all will be
+	 *              appended if an empty string is provided
+	 * @param forceAuthn
+	 *              When true the AuthNRequest will set the ForceAuthn='true'
+	 * @param isPassive
+	 *              When true the AuthNRequest will set the IsPassive='true'
+	 * @param setNameIdPolicy
+	 *              When true the AuthNRequest will set a nameIdPolicy
 	 *
 	 * @throws IOException
 	 * @throws SettingsException
@@ -501,19 +505,18 @@ public class Auth {
 	/**
 	 * Initiates the SSO process.
 	 *
-	 * @param relayState a state information to pass forth and back between
-	 * 			   the Service Provider and the Identity Provider; 
-	 * 			   in the most simple case, it may be a URL to which
-	 * 			   the authenticated user should be redirected after the
-	 * 			   authentication response has been received back from the 
-	 * 			   Identity Provider and validated correctly with
-	 * 			   {@link #processResponse()}; please note that SAML 2.0 
-	 * 			   specification imposes a limit of max 80 characters for 
-	 * 			   this relayState data and that protection strategies 
-	 * 			   against tampering should better be implemented;
-	 * 			   it will be a self-routed URL when <code>null</code>, 
-	 * 			   otherwise no relayState at all will be appended if an empty 
-	 * 			   string is provided
+	 * @param relayState
+	 *              a state information to pass forth and back between the Service
+	 *              Provider and the Identity Provider; in the most simple case, it
+	 *              may be a URL to which the authenticated user should be
+	 *              redirected after the authentication response has been received
+	 *              back from the Identity Provider and validated correctly with
+	 *              {@link #processResponse()}; please note that SAML 2.0
+	 *              specification imposes a limit of max 80 characters for this
+	 *              relayState data and that protection strategies against tampering
+	 *              should better be implemented; it will be a self-routed URL when
+	 *              <code>null</code>, otherwise no relayState at all will be
+	 *              appended if an empty string is provided
 	 *
 	 * @throws IOException
 	 * @throws SettingsException
@@ -704,31 +707,33 @@ public class Auth {
 	/**
 	 * Initiates the SLO process.
 	 *
-	 * @param relayState      	  a state information to pass forth and back between
-	 * 				  	  the Service Provider and the Identity Provider; 
-	 * 				  	  in the most simple case, it may be a URL to which
-	 * 				  	  the logged out user should be redirected after the
-	 * 				  	  logout response has been received back from the 
-	 * 				  	  Identity Provider and validated correctly with
-	 * 				  	  {@link #processSLO()}; please note that SAML 2.0 
-	 * 				  	  specification imposes a limit of max 80 characters for 
-	 * 				  	  this relayState data and that protection strategies 
-	 * 				  	  against tampering should better be implemented;
-	 * 				  	  it will be a self-routed URL when <code>null</code>, 
-	 * 				  	  otherwise no relayState at all will be appended if an empty 
-	 * 				  	  string is provided
-	 * @param nameId                The NameID that will be set in the
-	 *                              LogoutRequest.
-	 * @param sessionIndex          The SessionIndex (taken from the SAML Response
-	 *                              in the SSO process).
-	 * @param stay                  True if we want to stay (returns the url string)
-	 *                              False to execute redirection
-	 * @param nameidFormat          The NameID Format that will be set in the
-	 *                              LogoutRequest.
-	 * @param nameIdNameQualifier   The NameID NameQualifier that will be set in the
-	 *                              LogoutRequest.
-	 * @param nameIdSPNameQualifier The NameID SP Name Qualifier that will be set in
-	 *                              the LogoutRequest.
+	 * @param relayState
+	 *              a state information to pass forth and back between the Service
+	 *              Provider and the Identity Provider; in the most simple case, it
+	 *              may be a URL to which the logged out user should be redirected
+	 *              after the logout response has been received back from the
+	 *              Identity Provider and validated correctly with
+	 *              {@link #processSLO()}; please note that SAML 2.0 specification
+	 *              imposes a limit of max 80 characters for this relayState data
+	 *              and that protection strategies against tampering should better
+	 *              be implemented; it will be a self-routed URL when
+	 *              <code>null</code>, otherwise no relayState at all will be
+	 *              appended if an empty string is provided
+	 * @param nameId
+	 *              The NameID that will be set in the LogoutRequest.
+	 * @param sessionIndex
+	 *              The SessionIndex (taken from the SAML Response in the SSO
+	 *              process).
+	 * @param stay
+	 *              True if we want to stay (returns the url string) False to
+	 *              execute redirection
+	 * @param nameidFormat
+	 *              The NameID Format that will be set in the LogoutRequest.
+	 * @param nameIdNameQualifier
+	 *              The NameID NameQualifier that will be set in the LogoutRequest.
+	 * @param nameIdSPNameQualifier
+	 *              The NameID SP Name Qualifier that will be set in the
+	 *              LogoutRequest.
 	 *
 	 * @return the SLO URL with the LogoutRequest if stay = True
 	 *
@@ -814,38 +819,42 @@ public class Auth {
 	/**
 	 * Initiates the SLO process.
 	 *
-	 * @param relayState      	a state information to pass forth and back between
-	 * 				  	the Service Provider and the Identity Provider; 
-	 * 				  	in the most simple case, it may be a URL to which
-	 * 				  	the logged out user should be redirected after the
-	 * 				  	logout response has been received back from the 
-	 * 				  	Identity Provider and validated correctly with
-	 * 				  	{@link #processSLO()}; please note that SAML 2.0 
-	 * 				  	specification imposes a limit of max 80 characters for 
-	 * 				  	this relayState data and that protection strategies 
-	 * 				  	against tampering should better be implemented;
-	 * 				  	it will be a self-routed URL when <code>null</code>, 
-	 * 				  	otherwise no relayState at all will be appended if an empty 
-	 * 				  	string is provided
-	 * @param nameId                The NameID that will be set in the
-	 *                              LogoutRequest.
-	 * @param sessionIndex          The SessionIndex (taken from the SAML Response
-	 *                              in the SSO process).
-	 * @param stay                  True if we want to stay (returns the url string)
-	 *                              False to execute redirection
-	 * @param nameidFormat          The NameID Format that will be set in the
-	 *                              LogoutRequest.
-	 * @param nameIdNameQualifier   The NameID NameQualifier that will be set in the
-	 *                              LogoutRequest.
-	 * @param nameIdSPNameQualifier The NameID SP Name Qualifier that will be set in
-	 *                              the LogoutRequest.
-	 * @param parameters      		Use it to send extra parameters in addition to the LogoutRequest
+	 * @param relayState
+	 *              a state information to pass forth and back between the Service
+	 *              Provider and the Identity Provider; in the most simple case, it
+	 *              may be a URL to which the logged out user should be redirected
+	 *              after the logout response has been received back from the
+	 *              Identity Provider and validated correctly with
+	 *              {@link #processSLO()}; please note that SAML 2.0 specification
+	 *              imposes a limit of max 80 characters for this relayState data
+	 *              and that protection strategies against tampering should better
+	 *              be implemented; it will be a self-routed URL when
+	 *              <code>null</code>, otherwise no relayState at all will be
+	 *              appended if an empty string is provided
+	 * @param nameId
+	 *              The NameID that will be set in the LogoutRequest.
+	 * @param sessionIndex
+	 *              The SessionIndex (taken from the SAML Response in the SSO
+	 *              process).
+	 * @param stay
+	 *              True if we want to stay (returns the url string) False to
+	 *              execute redirection
+	 * @param nameidFormat
+	 *              The NameID Format that will be set in the LogoutRequest.
+	 * @param nameIdNameQualifier
+	 *              The NameID NameQualifier that will be set in the LogoutRequest.
+	 * @param nameIdSPNameQualifier
+	 *              The NameID SP Name Qualifier that will be set in the
+	 *              LogoutRequest.
+	 * @param parameters
+	 *              Use it to send extra parameters in addition to the LogoutRequest
 	 *
 	 * @return the SLO URL with the LogoutRequest if stay = True
 	 *
 	 * @throws IOException
 	 * @throws SettingsException
-	 * @deprecated use {@link #logout(String, LogoutRequestParams, Boolean, Map)} with
+	 * @deprecated use {@link #logout(String, LogoutRequestParams, Boolean, Map)}
+	 *             with
 	 *             {@link LogoutRequestParams#LogoutRequestParams(String, String, String, String, String)}
 	 *             instead
 	 */
@@ -859,28 +868,30 @@ public class Auth {
 	/**
 	 * Initiates the SLO process.
 	 *
-	 * @param relayState      	a state information to pass forth and back between
-	 * 				  	the Service Provider and the Identity Provider; 
-	 * 				  	in the most simple case, it may be a URL to which
-	 * 				  	the logged out user should be redirected after the
-	 * 				  	logout response has been received back from the 
-	 * 				  	Identity Provider and validated correctly with
-	 * 				  	{@link #processSLO()}; please note that SAML 2.0 
-	 * 				  	specification imposes a limit of max 80 characters for 
-	 * 				  	this relayState data and that protection strategies 
-	 * 				  	against tampering should better be implemented;
-	 * 				  	it will be a self-routed URL when <code>null</code>, 
-	 * 				  	otherwise no relayState at all will be appended if an empty 
-	 * 				  	string is provided
-	 * @param nameId              The NameID that will be set in the LogoutRequest.
-	 * @param sessionIndex        The SessionIndex (taken from the SAML Response in
-	 *                            the SSO process).
-	 * @param stay                True if we want to stay (returns the url string)
-	 *                            False to execute redirection
-	 * @param nameidFormat        The NameID Format will be set in the
-	 *                            LogoutRequest.
-	 * @param nameIdNameQualifier The NameID NameQualifier will be set in the
-	 *                            LogoutRequest.
+	 * @param relayState
+	 *              a state information to pass forth and back between the Service
+	 *              Provider and the Identity Provider; in the most simple case, it
+	 *              may be a URL to which the logged out user should be redirected
+	 *              after the logout response has been received back from the
+	 *              Identity Provider and validated correctly with
+	 *              {@link #processSLO()}; please note that SAML 2.0 specification
+	 *              imposes a limit of max 80 characters for this relayState data
+	 *              and that protection strategies against tampering should better
+	 *              be implemented; it will be a self-routed URL when
+	 *              <code>null</code>, otherwise no relayState at all will be
+	 *              appended if an empty string is provided
+	 * @param nameId
+	 *              The NameID that will be set in the LogoutRequest.
+	 * @param sessionIndex
+	 *              The SessionIndex (taken from the SAML Response in the SSO
+	 *              process).
+	 * @param stay
+	 *              True if we want to stay (returns the url string) False to
+	 *              execute redirection
+	 * @param nameidFormat
+	 *              The NameID Format will be set in the LogoutRequest.
+	 * @param nameIdNameQualifier
+	 *              The NameID NameQualifier will be set in the LogoutRequest.
 	 *
 	 * @return the SLO URL with the LogoutRequest if stay = True
 	 *
@@ -899,25 +910,28 @@ public class Auth {
 	/**
 	 * Initiates the SLO process.
 	 *
-	 * @param relayState   a state information to pass forth and back between
-	 * 			     the Service Provider and the Identity Provider; 
-	 * 			     in the most simple case, it may be a URL to which
-	 * 			     the logged out user should be redirected after the
-	 * 			     logout response has been received back from the 
-	 * 			     Identity Provider and validated correctly with
-	 * 			     {@link #processSLO()}; please note that SAML 2.0 
-	 * 			     specification imposes a limit of max 80 characters for 
-	 * 			     this relayState data and that protection strategies 
-	 * 			     against tampering should better be implemented;
-	 * 			     it will be a self-routed URL when <code>null</code>, 
-	 * 			     otherwise no relayState at all will be appended if an empty 
-	 * 			     string is provided
-	 * @param nameId       The NameID that will be set in the LogoutRequest.
-	 * @param sessionIndex The SessionIndex (taken from the SAML Response in the SSO
-	 *                     process).
-	 * @param stay         True if we want to stay (returns the url string) False to
-	 *                     execute redirection
-	 * @param nameidFormat The NameID Format will be set in the LogoutRequest.
+	 * @param relayState
+	 *              a state information to pass forth and back between the Service
+	 *              Provider and the Identity Provider; in the most simple case, it
+	 *              may be a URL to which the logged out user should be redirected
+	 *              after the logout response has been received back from the
+	 *              Identity Provider and validated correctly with
+	 *              {@link #processSLO()}; please note that SAML 2.0 specification
+	 *              imposes a limit of max 80 characters for this relayState data
+	 *              and that protection strategies against tampering should better
+	 *              be implemented; it will be a self-routed URL when
+	 *              <code>null</code>, otherwise no relayState at all will be
+	 *              appended if an empty string is provided
+	 * @param nameId
+	 *              The NameID that will be set in the LogoutRequest.
+	 * @param sessionIndex
+	 *              The SessionIndex (taken from the SAML Response in the SSO
+	 *              process).
+	 * @param stay
+	 *              True if we want to stay (returns the url string) False to
+	 *              execute redirection
+	 * @param nameidFormat
+	 *              The NameID Format will be set in the LogoutRequest.
 	 *
 	 * @return the SLO URL with the LogoutRequest if stay = True
 	 *
@@ -936,24 +950,26 @@ public class Auth {
 	/**
 	 * Initiates the SLO process.
 	 *
-	 * @param relayState   a state information to pass forth and back between
-	 * 			     the Service Provider and the Identity Provider; 
-	 * 			     in the most simple case, it may be a URL to which
-	 * 			     the logged out user should be redirected after the
-	 * 			     logout response has been received back from the 
-	 * 			     Identity Provider and validated correctly with
-	 * 			     {@link #processSLO()}; please note that SAML 2.0 
-	 * 			     specification imposes a limit of max 80 characters for 
-	 * 			     this relayState data and that protection strategies 
-	 * 			     against tampering should better be implemented;
-	 * 			     it will be a self-routed URL when <code>null</code>, 
-	 * 			     otherwise no relayState at all will be appended if an empty 
-	 * 			     string is provided
-	 * @param nameId       The NameID that will be set in the LogoutRequest.
-	 * @param sessionIndex The SessionIndex (taken from the SAML Response in the SSO
-	 *                     process).
-	 * @param stay         True if we want to stay (returns the url string) False to
-	 *                     execute redirection
+	 * @param relayState
+	 *              a state information to pass forth and back between the Service
+	 *              Provider and the Identity Provider; in the most simple case, it
+	 *              may be a URL to which the logged out user should be redirected
+	 *              after the logout response has been received back from the
+	 *              Identity Provider and validated correctly with
+	 *              {@link #processSLO()}; please note that SAML 2.0 specification
+	 *              imposes a limit of max 80 characters for this relayState data
+	 *              and that protection strategies against tampering should better
+	 *              be implemented; it will be a self-routed URL when
+	 *              <code>null</code>, otherwise no relayState at all will be
+	 *              appended if an empty string is provided
+	 * @param nameId
+	 *              The NameID that will be set in the LogoutRequest.
+	 * @param sessionIndex
+	 *              The SessionIndex (taken from the SAML Response in the SSO
+	 *              process).
+	 * @param stay
+	 *              True if we want to stay (returns the url string) False to
+	 *              execute redirection
 	 *
 	 * @return the SLO URL with the LogoutRequest if stay = True
 	 *
@@ -972,29 +988,30 @@ public class Auth {
 	/**
 	 * Initiates the SLO process.
 	 *
-	 * @param relayState   		  a state information to pass forth and back between
-	 * 			     		  the Service Provider and the Identity Provider; 
-	 * 			     		  in the most simple case, it may be a URL to which
-	 * 			     		  the logged out user should be redirected after the
-	 * 			     		  logout response has been received back from the 
-	 * 			     		  Identity Provider and validated correctly with
-	 * 			     		  {@link #processSLO()}; please note that SAML 2.0 
-	 * 			     		  specification imposes a limit of max 80 characters for 
-	 * 			     		  this relayState data and that protection strategies 
-	 * 			     		  against tampering should better be implemented;
-	 * 			     		  it will be a self-routed URL when <code>null</code>, 
-	 * 			     		  otherwise no relayState at all will be appended if an empty 
-	 * 			     		  string is provided
-	 * @param nameId                The NameID that will be set in the
-	 *                              LogoutRequest.
-	 * @param sessionIndex          The SessionIndex (taken from the SAML Response
-	 *                              in the SSO process).
-	 * @param nameidFormat          The NameID Format will be set in the
-	 *                              LogoutRequest.
-	 * @param nameIdNameQualifier   The NameID NameQualifier that will be set in the
-	 *                              LogoutRequest.
-	 * @param nameIdSPNameQualifier The NameID SP Name Qualifier that will be set in
-	 *                              the LogoutRequest.
+	 * @param relayState
+	 *              a state information to pass forth and back between the Service
+	 *              Provider and the Identity Provider; in the most simple case, it
+	 *              may be a URL to which the logged out user should be redirected
+	 *              after the logout response has been received back from the
+	 *              Identity Provider and validated correctly with
+	 *              {@link #processSLO()}; please note that SAML 2.0 specification
+	 *              imposes a limit of max 80 characters for this relayState data
+	 *              and that protection strategies against tampering should better
+	 *              be implemented; it will be a self-routed URL when
+	 *              <code>null</code>, otherwise no relayState at all will be
+	 *              appended if an empty string is provided
+	 * @param nameId
+	 *              The NameID that will be set in the LogoutRequest.
+	 * @param sessionIndex
+	 *              The SessionIndex (taken from the SAML Response in the SSO
+	 *              process).
+	 * @param nameidFormat
+	 *              The NameID Format will be set in the LogoutRequest.
+	 * @param nameIdNameQualifier
+	 *              The NameID NameQualifier that will be set in the LogoutRequest.
+	 * @param nameIdSPNameQualifier
+	 *              The NameID SP Name Qualifier that will be set in the
+	 *              LogoutRequest.
 	 * @throws IOException
 	 * @throws SettingsException
 	 * @deprecated use {@link #logout(String, LogoutRequestParams)} with
@@ -1011,26 +1028,27 @@ public class Auth {
 	/**
 	 * Initiates the SLO process.
 	 *
-	 * @param relayState   		a state information to pass forth and back between
-	 * 			     		the Service Provider and the Identity Provider; 
-	 * 			     		in the most simple case, it may be a URL to which
-	 * 			     		the logged out user should be redirected after the
-	 * 			     		logout response has been received back from the 
-	 * 			     		Identity Provider and validated correctly with
-	 * 			     		{@link #processSLO()}; please note that SAML 2.0 
-	 * 			     		specification imposes a limit of max 80 characters for 
-	 * 			     		this relayState data and that protection strategies 
-	 * 			     		against tampering should better be implemented;
-	 * 			     		it will be a self-routed URL when <code>null</code>, 
-	 * 			     		otherwise no relayState at all will be appended if an empty 
-	 * 			     		string is provided
-	 * @param nameId              The NameID that will be set in the LogoutRequest.
-	 * @param sessionIndex        The SessionIndex (taken from the SAML Response in
-	 *                            the SSO process).
-	 * @param nameidFormat        The NameID Format will be set in the
-	 *                            LogoutRequest.
-	 * @param nameIdNameQualifier The NameID NameQualifier will be set in the
-	 *                            LogoutRequest.
+	 * @param relayState
+	 *              a state information to pass forth and back between the Service
+	 *              Provider and the Identity Provider; in the most simple case, it
+	 *              may be a URL to which the logged out user should be redirected
+	 *              after the logout response has been received back from the
+	 *              Identity Provider and validated correctly with
+	 *              {@link #processSLO()}; please note that SAML 2.0 specification
+	 *              imposes a limit of max 80 characters for this relayState data
+	 *              and that protection strategies against tampering should better
+	 *              be implemented; it will be a self-routed URL when
+	 *              <code>null</code>, otherwise no relayState at all will be
+	 *              appended if an empty string is provided
+	 * @param nameId
+	 *              The NameID that will be set in the LogoutRequest.
+	 * @param sessionIndex
+	 *              The SessionIndex (taken from the SAML Response in the SSO
+	 *              process).
+	 * @param nameidFormat
+	 *              The NameID Format will be set in the LogoutRequest.
+	 * @param nameIdNameQualifier
+	 *              The NameID NameQualifier will be set in the LogoutRequest.
 	 *
 	 * @throws IOException
 	 * @throws SettingsException
@@ -1047,23 +1065,25 @@ public class Auth {
 	/**
 	 * Initiates the SLO process.
 	 *
-	 * @param relayState a state information to pass forth and back between
-	 * 			   the Service Provider and the Identity Provider; 
-	 * 			   in the most simple case, it may be a URL to which
-	 * 			   the logged out user should be redirected after the
-	 * 			   logout response has been received back from the 
-	 * 			   Identity Provider and validated correctly with
-	 * 			   {@link #processSLO()}; please note that SAML 2.0 
-	 * 			   specification imposes a limit of max 80 characters for 
-	 * 			   this relayState data and that protection strategies 
-	 * 			   against tampering should better be implemented;
-	 * 			   it will be a self-routed URL when <code>null</code>, 
-	 * 			   otherwise no relayState at all will be appended if an empty 
-	 * 			   string is provided
-	 * @param nameId       The NameID that will be set in the LogoutRequest.
-	 * @param sessionIndex The SessionIndex (taken from the SAML Response in the SSO
-	 *                     process).
-	 * @param nameidFormat The NameID Format will be set in the LogoutRequest.
+	 * @param relayState
+	 *              a state information to pass forth and back between the Service
+	 *              Provider and the Identity Provider; in the most simple case, it
+	 *              may be a URL to which the logged out user should be redirected
+	 *              after the logout response has been received back from the
+	 *              Identity Provider and validated correctly with
+	 *              {@link #processSLO()}; please note that SAML 2.0 specification
+	 *              imposes a limit of max 80 characters for this relayState data
+	 *              and that protection strategies against tampering should better
+	 *              be implemented; it will be a self-routed URL when
+	 *              <code>null</code>, otherwise no relayState at all will be
+	 *              appended if an empty string is provided
+	 * @param nameId
+	 *              The NameID that will be set in the LogoutRequest.
+	 * @param sessionIndex
+	 *              The SessionIndex (taken from the SAML Response in the SSO
+	 *              process).
+	 * @param nameidFormat
+	 *              The NameID Format will be set in the LogoutRequest.
 	 * @throws IOException
 	 * @throws SettingsException
 	 * @deprecated use {@link #logout(String, LogoutRequestParams)} with
@@ -1079,22 +1099,23 @@ public class Auth {
 	/**
 	 * Initiates the SLO process.
 	 *
-	 * @param relayState   a state information to pass forth and back between
-	 * 			     the Service Provider and the Identity Provider; 
-	 * 			     in the most simple case, it may be a URL to which
-	 * 			     the logged out user should be redirected after the
-	 * 			     logout response has been received back from the 
-	 * 			     Identity Provider and validated correctly with
-	 * 			     {@link #processSLO()}; please note that SAML 2.0 
-	 * 			     specification imposes a limit of max 80 characters for 
-	 * 			     this relayState data and that protection strategies 
-	 * 			     against tampering should better be implemented;
-	 * 			     it will be a self-routed URL when <code>null</code>, 
-	 * 			     otherwise no relayState at all will be appended if an empty 
-	 * 			     string is provided
-	 * @param nameId       The NameID that will be set in the LogoutRequest.
-	 * @param sessionIndex The SessionIndex (taken from the SAML Response in the SSO
-	 *                     process).
+	 * @param relayState
+	 *              a state information to pass forth and back between the Service
+	 *              Provider and the Identity Provider; in the most simple case, it
+	 *              may be a URL to which the logged out user should be redirected
+	 *              after the logout response has been received back from the
+	 *              Identity Provider and validated correctly with
+	 *              {@link #processSLO()}; please note that SAML 2.0 specification
+	 *              imposes a limit of max 80 characters for this relayState data
+	 *              and that protection strategies against tampering should better
+	 *              be implemented; it will be a self-routed URL when
+	 *              <code>null</code>, otherwise no relayState at all will be
+	 *              appended if an empty string is provided
+	 * @param nameId
+	 *              The NameID that will be set in the LogoutRequest.
+	 * @param sessionIndex
+	 *              The SessionIndex (taken from the SAML Response in the SSO
+	 *              process).
 	 *
 	 * @throws IOException
 	 * @throws SettingsException
@@ -1121,19 +1142,18 @@ public class Auth {
 	/**
 	 * Initiates the SLO process.
 	 *
-	 * @param relayState a state information to pass forth and back between
-	 * 			   the Service Provider and the Identity Provider; 
-	 * 			   in the most simple case, it may be a URL to which
-	 * 			   the logged out user should be redirected after the
-	 * 			   logout response has been received back from the 
-	 * 			   Identity Provider and validated correctly with
-	 * 			   {@link #processSLO()}; please note that SAML 2.0 
-	 * 			   specification imposes a limit of max 80 characters for 
-	 * 			   this relayState data and that protection strategies 
-	 * 			   against tampering should better be implemented;
-	 * 			   it will be a self-routed URL when <code>null</code>, 
-	 * 			   otherwise no relayState at all will be appended if an empty 
-	 * 			   string is provided
+	 * @param relayState
+	 *              a state information to pass forth and back between the Service
+	 *              Provider and the Identity Provider; in the most simple case, it
+	 *              may be a URL to which the logged out user should be redirected
+	 *              after the logout response has been received back from the
+	 *              Identity Provider and validated correctly with
+	 *              {@link #processSLO()}; please note that SAML 2.0 specification
+	 *              imposes a limit of max 80 characters for this relayState data
+	 *              and that protection strategies against tampering should better
+	 *              be implemented; it will be a self-routed URL when
+	 *              <code>null</code>, otherwise no relayState at all will be
+	 *              appended if an empty string is provided
 	 *
 	 * @throws IOException
 	 * @throws SettingsException
