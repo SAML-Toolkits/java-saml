@@ -758,8 +758,8 @@ public class LogoutResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		LogoutResponse logoutResponse = new LogoutResponse(settings, null) {
 			@Override
-			protected String postProcessXml(String authRequestXml, Saml2Settings sett) {
-				assertEquals(authRequestXml, super.postProcessXml(authRequestXml, sett));
+			protected String postProcessXml(String logoutResponseXml, Saml2Settings sett) {
+				assertEquals(logoutResponseXml, super.postProcessXml(logoutResponseXml, sett));
 				assertSame(settings, sett);
 				return "changed";
 			}
