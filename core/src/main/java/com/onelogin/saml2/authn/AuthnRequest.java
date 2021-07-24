@@ -119,7 +119,7 @@ public class AuthnRequest {
 		LOGGER.debug("AuthNRequest --> " + authnRequestString);
 	}
 
-	/*
+	/**
 	 * Allows for an extension class to post-process the AuthnRequest XML generated
 	 * for this request, in order to customize the result.
 	 * <p>

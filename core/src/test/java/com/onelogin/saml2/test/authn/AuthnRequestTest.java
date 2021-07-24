@@ -524,8 +524,8 @@ public class AuthnRequestTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		AuthnRequest authnRequest = new AuthnRequest(settings) {
 			@Override
-			protected String postProcessXml(String authRequestXml, AuthnRequestParams params, Saml2Settings sett) {
-				assertEquals(authRequestXml, super.postProcessXml(authRequestXml, params, sett));
+			protected String postProcessXml(String authnRequestXml, AuthnRequestParams params, Saml2Settings sett) {
+				assertEquals(authnRequestXml, super.postProcessXml(authnRequestXml, params, sett));
 				assertSame(settings, sett);
 				return "changed";
 			}
