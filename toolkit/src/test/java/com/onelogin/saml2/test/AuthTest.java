@@ -43,20 +43,21 @@ import org.joda.time.Instant;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentCaptor;
+import org.w3c.dom.Document;
 
 import com.onelogin.saml2.Auth;
+import com.onelogin.saml2.authn.AuthnRequestParams;
 import com.onelogin.saml2.exception.Error;
-import com.onelogin.saml2.exception.ValidationError;
 import com.onelogin.saml2.exception.SettingsException;
+import com.onelogin.saml2.exception.ValidationError;
 import com.onelogin.saml2.exception.XMLEntityException;
+import com.onelogin.saml2.logout.LogoutRequestParams;
 import com.onelogin.saml2.model.KeyStoreSettings;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
 import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.Util;
-
-import org.mockito.ArgumentCaptor;
-import org.w3c.dom.Document;
 
 public class AuthTest {
 
@@ -1381,7 +1382,7 @@ public class AuthTest {
 		Auth auth = new Auth(settings, request, response);
 		Map<String, String> extraParameters = new HashMap<String, String>();
 		extraParameters.put("parameter1", "xxx");
-		String target = auth.login("", false, false, false, true, null, extraParameters);
+		String target = auth.login("", new AuthnRequestParams(false, false, false), true, extraParameters);
 		assertThat(target, startsWith("https://pitbulk.no-ip.org/simplesaml/saml2/idp/SSOService.php?SAMLRequest="));
 		assertThat(target, containsString("&parameter1=xxx"));
 	}
@@ -1410,12 +1411,12 @@ public class AuthTest {
 		settings.setAuthnRequestsSigned(false);
 
 		Auth auth = new Auth(settings, request, response);
-		String target = auth.login("", false, false, false, true);
+		String target = auth.login("", new AuthnRequestParams(false, false, false), true);
 		assertThat(target, startsWith("https://pitbulk.no-ip.org/simplesaml/saml2/idp/SSOService.php?SAMLRequest="));
 		assertThat(target, not(containsString("&RelayState=")));
 
 		String relayState = "http://localhost:8080/expected.jsp";
-		target = auth.login(relayState, false, false, false, true);
+		target = auth.login(relayState, new AuthnRequestParams(false, false, false), true);
 		assertThat(target, startsWith("https://pitbulk.no-ip.org/simplesaml/saml2/idp/SSOService.php?SAMLRequest="));
 		assertThat(target, containsString("&RelayState=http%3A%2F%2Flocalhost%3A8080%2Fexpected.jsp"));		
 	}
@@ -1443,13 +1444,13 @@ public class AuthTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
 		Auth auth = new Auth(settings, request, response);
-		String target = auth.login("", false, false, false, true);
+		String target = auth.login("", new AuthnRequestParams(false, false, false), true);
 		assertThat(target, startsWith("http://idp.example.com/simplesaml/saml2/idp/SSOService.php?SAMLRequest="));
 		String authNRequestStr = getSAMLRequestFromURL(target);
 		assertThat(authNRequestStr, containsString("<samlp:AuthnRequest"));
 		assertThat(authNRequestStr, not(containsString("<saml:Subject")));
 
-		target = auth.login("", false, false, false, true, "testuser@example.com");
+		target = auth.login("", new AuthnRequestParams(false, false, false, "testuser@example.com"), true);
 		assertThat(target, startsWith("http://idp.example.com/simplesaml/saml2/idp/SSOService.php?SAMLRequest="));
 		authNRequestStr = getSAMLRequestFromURL(target);
 		assertThat(authNRequestStr, containsString("<samlp:AuthnRequest"));
@@ -1459,7 +1460,7 @@ public class AuthTest {
 
 		settings = new SettingsBuilder().fromFile("config/config.emailaddressformat.properties").build();
 		auth = new Auth(settings, request, response);
-		target = auth.login("", false, false, false, true, "testuser@example.com");
+		target = auth.login("", new AuthnRequestParams(false, false, false, "testuser@example.com"), true);
 		assertThat(target, startsWith("http://idp.example.com/simplesaml/saml2/idp/SSOService.php?SAMLRequest="));
 		authNRequestStr = getSAMLRequestFromURL(target);
 		assertThat(authNRequestStr, containsString("<samlp:AuthnRequest"));
@@ -1586,7 +1587,7 @@ public class AuthTest {
 		Auth auth = new Auth(settings, request, response);
 		Map<String, String> extraParameters = new HashMap<String, String>();
 		extraParameters.put("parameter1", "xxx");
-		String target = auth.logout("", null, null, true, null, null, null, extraParameters);
+		String target = auth.logout("", new LogoutRequestParams(), true, extraParameters);
 		assertThat(target, startsWith("https://pitbulk.no-ip.org/simplesaml/saml2/idp/SingleLogoutService.php?SAMLRequest="));
 		assertThat(target, containsString("&parameter1=xxx"));
 	}
@@ -1677,12 +1678,12 @@ public class AuthTest {
 		settings.setLogoutRequestSigned(false);
 
 		Auth auth = new Auth(settings, request, response);
-		String target = auth.logout("", null, null, true);
+		String target = auth.logout("", new LogoutRequestParams(), true);
 		assertThat(target, startsWith("https://pitbulk.no-ip.org/simplesaml/saml2/idp/SingleLogoutService.php?SAMLRequest="));
 		assertThat(target, not(containsString("&RelayState=")));
 		
 		String relayState = "http://localhost:8080/expected.jsp";
-		target = auth.logout(relayState, null, null, true);
+		target = auth.logout(relayState, new LogoutRequestParams(), true);
 		assertThat(target, startsWith("https://pitbulk.no-ip.org/simplesaml/saml2/idp/SingleLogoutService.php?SAMLRequest="));
 		assertThat(target, containsString("&RelayState=http%3A%2F%2Flocalhost%3A8080%2Fexpected.jsp"));
 	}
@@ -2086,7 +2087,7 @@ public class AuthTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
 		Auth auth = new Auth(settings, request, response);
-		String targetSSOURL = auth.login(null, false, false, false, true);
+		String targetSSOURL = auth.login(null, new AuthnRequestParams(false, false, false), true);
 		String authNRequestXML = auth.getLastRequestXML();
 		assertThat(targetSSOURL, containsString(Util.urlEncoder(Util.deflatedBase64encoded(authNRequestXML))));
 		
@@ -2112,7 +2113,7 @@ public class AuthTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
 		Auth auth = new Auth(settings, request, response);
-		String targetSLOURL = auth.logout(null, null, null, true);
+		String targetSLOURL = auth.logout(null, new LogoutRequestParams(), true);
 		String logoutRequestXML = auth.getLastRequestXML();
 		assertThat(targetSLOURL, containsString(Util.urlEncoder(Util.deflatedBase64encoded(logoutRequestXML))));
 
