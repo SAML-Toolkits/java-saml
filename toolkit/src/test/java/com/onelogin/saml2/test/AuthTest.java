@@ -2257,7 +2257,7 @@ public class AuthTest {
 		}
 		
 		Auth auth = new Auth(settings, request, response);
-		auth.setAuthnRequestFactory(AuthnRequestEx::new);
+		auth.setAuthnRequestFactory((sett, param) -> new AuthnRequestEx(sett, param));
 		auth.login(params);
 	}
 
@@ -2289,7 +2289,7 @@ public class AuthTest {
 		}
 		
 		Auth auth = new Auth(settings, request, response);
-		auth.setSamlResponseFactory(SamlResponseEx::new);
+		auth.setSamlResponseFactory((sett, req) -> new SamlResponseEx(sett, req));
 		auth.processResponse();
 	}
 
@@ -2320,7 +2320,7 @@ public class AuthTest {
 		}
 		
 		Auth auth = new Auth(settings, request, response);
-		auth.setOutgoingLogoutRequestFactory(LogoutRequestEx::new);
+		auth.setOutgoingLogoutRequestFactory((sett, param) -> new LogoutRequestEx(sett, param));
 		auth.logout(null, params);
 	}
 	
@@ -2355,7 +2355,7 @@ public class AuthTest {
 		}
 		
 		Auth auth = new Auth(settings, request, response);
-		auth.setReceivedLogoutRequestFactory(LogoutRequestEx::new);
+		auth.setReceivedLogoutRequestFactory((sett, req) -> new LogoutRequestEx(sett, req));
 		auth.processSLO();
 	}
 
@@ -2425,7 +2425,7 @@ public class AuthTest {
 		}
 		
 		Auth auth = new Auth(settings, request, response);
-		auth.setReceivedLogoutResponseFactory(LogoutResponseEx::new);
+		auth.setReceivedLogoutResponseFactory((sett, req) -> new LogoutResponseEx(sett, req));
 		auth.processSLO();
 	}
 }
