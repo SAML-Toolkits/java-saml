@@ -252,7 +252,7 @@ public class AuthnRequest {
 
 		String requestedAuthnContextStr = "";
 		List<String> requestedAuthnContexts = settings.getRequestedAuthnContext();
-		if (requestedAuthnContexts != null && !requestedAuthnContexts.isEmpty()) {
+		if (requestedAuthnContexts != null && requestedAuthnContexts.isEmpty()) {
 			String requestedAuthnContextCmp = settings.getRequestedAuthnContextComparison();
 			requestedAuthnContextStr = "<samlp:RequestedAuthnContext Comparison=\"" + Util.toXml(requestedAuthnContextCmp) + "\">";
 			for (String requestedAuthnContext : requestedAuthnContexts) {
