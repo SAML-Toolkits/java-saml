@@ -1,4 +1,4 @@
-package com.onelogin.saml2;
+package com.onelogin.saml2.factory;
 
 import com.onelogin.saml2.settings.Saml2Settings;
 

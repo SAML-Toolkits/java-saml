@@ -26,6 +26,8 @@ import com.onelogin.saml2.authn.AuthnRequest;
 import com.onelogin.saml2.authn.AuthnRequestParams;
 import com.onelogin.saml2.authn.SamlResponse;
 import com.onelogin.saml2.exception.SettingsException;
+import com.onelogin.saml2.factory.SamlOutgoingMessageFactory;
+import com.onelogin.saml2.factory.SamlReceivedMessageFactory;
 import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.logout.LogoutRequest;

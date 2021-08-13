@@ -2237,7 +2237,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception 
 	 *
-	 * @see com.onelogin.saml2.Auth#setAuthnRequestFactory(com.onelogin.saml2.SamlOutgoingMessageFactory)
+	 * @see com.onelogin.saml2.Auth#setAuthnRequestFactory(com.onelogin.saml2.factory.SamlOutgoingMessageFactory)
 	 */
 	@Test(expected = FactoryInvokedException.class)
 	public void testAuthnRequestFactory() throws Exception {
@@ -2266,7 +2266,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception 
 	 *
-	 * @see com.onelogin.saml2.Auth#setSamlResponseFactory(com.onelogin.saml2.SamlReceivedMessageFactory)
+	 * @see com.onelogin.saml2.Auth#setSamlResponseFactory(com.onelogin.saml2.factory.SamlReceivedMessageFactory)
 	 */
 	@Test(expected = FactoryInvokedException.class)
 	public void testSamlResponseFactory() throws Exception {
@@ -2298,7 +2298,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception 
 	 *
-	 * @see com.onelogin.saml2.Auth#setOutgoingLogoutRequestFactory(com.onelogin.saml2.SamlOutgoingMessageFactory)
+	 * @see com.onelogin.saml2.Auth#setOutgoingLogoutRequestFactory(com.onelogin.saml2.factory.SamlOutgoingMessageFactory)
 	 */
 	@Test(expected = FactoryInvokedException.class)
 	public void testOutgoingLogoutRequestFactory() throws Exception {
@@ -2329,7 +2329,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception 
 	 *
-	 * @see com.onelogin.saml2.Auth#setReceivedLogoutRequestFactory(com.onelogin.saml2.SamlReceivedMessageFactory)
+	 * @see com.onelogin.saml2.Auth#setReceivedLogoutRequestFactory(com.onelogin.saml2.factory.SamlReceivedMessageFactory)
 	 */
 	@Test(expected = FactoryInvokedException.class)
 	public void testReceivedLogoutRequestFactory() throws Exception {
@@ -2364,7 +2364,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception 
 	 *
-	 * @see com.onelogin.saml2.Auth#setOutgoingLogoutResponseFactory(com.onelogin.saml2.SamlOutgoingMessageFactory)
+	 * @see com.onelogin.saml2.Auth#setOutgoingLogoutResponseFactory(com.onelogin.saml2.factory.SamlOutgoingMessageFactory)
 	 */
 	@Test(expected = FactoryInvokedException.class)
 	public void testOutgoingLogoutResponseFactory() throws Exception {
@@ -2399,7 +2399,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception 
 	 *
-	 * @see com.onelogin.saml2.Auth#setReceivedLogoutResponseFactory(com.onelogin.saml2.SamlReceivedMessageFactory)
+	 * @see com.onelogin.saml2.Auth#setReceivedLogoutResponseFactory(com.onelogin.saml2.factory.SamlReceivedMessageFactory)
 	 */
 	@Test(expected = FactoryInvokedException.class)
 	public void testReceivedLogoutResponseFactory() throws Exception {
