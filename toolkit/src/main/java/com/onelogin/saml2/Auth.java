@@ -33,6 +33,7 @@ import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.logout.LogoutRequest;
 import com.onelogin.saml2.logout.LogoutRequestParams;
 import com.onelogin.saml2.logout.LogoutResponse;
+import com.onelogin.saml2.logout.LogoutResponseParams;
 import com.onelogin.saml2.model.SamlResponseStatus;
 import com.onelogin.saml2.model.KeyStoreSettings;
 import com.onelogin.saml2.servlet.ServletUtils;
@@ -174,14 +175,14 @@ public class Auth {
 	private static final SamlReceivedMessageFactory<SamlResponse> DEFAULT_SAML_RESPONSE_FACTORY = SamlResponse::new;
 	private static final SamlOutgoingMessageFactory<LogoutRequestParams, LogoutRequest> DEFAULT_OUTGOING_LOGOUT_REQUEST_FACTORY = LogoutRequest::new;
 	private static final SamlReceivedMessageFactory<LogoutRequest> DEFAULT_RECEIVED_LOGOUT_REQUEST_FACTORY = LogoutRequest::new;
-	private static final SamlOutgoingMessageFactory<Void, LogoutResponse> DEFAULT_OUTGOING_LOGOUT_RESPONSE_FACTORY = (settings, nothing) -> new LogoutResponse(settings, null);
+	private static final SamlOutgoingMessageFactory<LogoutResponseParams, LogoutResponse> DEFAULT_OUTGOING_LOGOUT_RESPONSE_FACTORY = LogoutResponse::new;
 	private static final SamlReceivedMessageFactory<LogoutResponse> DEFAULT_RECEIVED_LOGOUT_RESPONSE_FACTORY = LogoutResponse::new;
 	
 	private SamlOutgoingMessageFactory<AuthnRequestParams, AuthnRequest> authnRequestFactory = DEFAULT_AUTHN_REQUEST_FACTORY;
 	private SamlReceivedMessageFactory<SamlResponse> samlResponseFactory = DEFAULT_SAML_RESPONSE_FACTORY;
 	private SamlOutgoingMessageFactory<LogoutRequestParams, LogoutRequest> outgoingLogoutRequestFactory = DEFAULT_OUTGOING_LOGOUT_REQUEST_FACTORY;
 	private SamlReceivedMessageFactory<LogoutRequest> receivedLogoutRequestFactory = DEFAULT_RECEIVED_LOGOUT_REQUEST_FACTORY;
-	private SamlOutgoingMessageFactory<Void, LogoutResponse> outgoingLogoutResponseFactory = DEFAULT_OUTGOING_LOGOUT_RESPONSE_FACTORY;
+	private SamlOutgoingMessageFactory<LogoutResponseParams, LogoutResponse> outgoingLogoutResponseFactory = DEFAULT_OUTGOING_LOGOUT_RESPONSE_FACTORY;
 	private SamlReceivedMessageFactory<LogoutResponse> receivedLogoutResponseFactory = DEFAULT_RECEIVED_LOGOUT_RESPONSE_FACTORY;
 
 	/**
@@ -1333,8 +1334,8 @@ public class Auth {
 				}
 
 				String inResponseTo = logoutRequest.id;
-				LogoutResponse logoutResponseBuilder = outgoingLogoutResponseFactory.create(settings, null);
-				logoutResponseBuilder.build(inResponseTo, Constants.STATUS_SUCCESS);
+				LogoutResponse logoutResponseBuilder = outgoingLogoutResponseFactory.create(settings, 
+						new LogoutResponseParams(inResponseTo, Constants.STATUS_SUCCESS));
 				lastResponse = logoutResponseBuilder.getLogoutResponseXml();
 
 				String samlLogoutResponse = logoutResponseBuilder.getEncodedLogoutResponse();
@@ -1744,7 +1745,7 @@ public class Auth {
 	 *              which creates plain {@link LogoutResponse} instances
 	 */
 	public void setOutgoingLogoutResponseFactory(final
-	            SamlOutgoingMessageFactory<Void, LogoutResponse> outgoingLogoutResponseFactory) {
+	            SamlOutgoingMessageFactory<LogoutResponseParams, LogoutResponse> outgoingLogoutResponseFactory) {
 		this.outgoingLogoutResponseFactory = outgoingLogoutResponseFactory != null? outgoingLogoutResponseFactory: DEFAULT_OUTGOING_LOGOUT_RESPONSE_FACTORY;
 	}
 

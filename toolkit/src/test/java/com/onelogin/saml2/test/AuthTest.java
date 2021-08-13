@@ -59,7 +59,9 @@ import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.logout.LogoutRequest;
 import com.onelogin.saml2.logout.LogoutRequestParams;
 import com.onelogin.saml2.logout.LogoutResponse;
+import com.onelogin.saml2.logout.LogoutResponseParams;
 import com.onelogin.saml2.model.KeyStoreSettings;
+import com.onelogin.saml2.model.SamlResponseStatus;
 import com.onelogin.saml2.servlet.ServletUtils;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
@@ -2380,17 +2382,21 @@ public class AuthTest {
 		
 		class LogoutResponseEx extends LogoutResponse {
 
-			public LogoutResponseEx(Saml2Settings sett, HttpRequest req) {
-				super(sett, req);
+			public LogoutResponseEx(Saml2Settings sett, LogoutResponseParams par) {
+				super(sett, par);
 				assertSame(settings, sett);
-				assertNull(req);
+				assertEquals("ONELOGIN_21584ccdfaca36a145ae990442dcd96bfe60151e", par.getInResponseTo());
+				SamlResponseStatus responseStatus = par.getResponseStatus();
+				assertEquals(Constants.STATUS_SUCCESS, responseStatus.getStatusCode());
+				assertNull(responseStatus.getSubStatusCode());
+				assertNull(responseStatus.getStatusMessage());
 				throw new FactoryInvokedException();
 			}
 			
 		}
 		
 		Auth auth = new Auth(settings, request, response);
-		auth.setOutgoingLogoutResponseFactory((sett, nothing) -> new LogoutResponseEx(settings, null));
+		auth.setOutgoingLogoutResponseFactory((sett, param) -> new LogoutResponseEx(settings, param));
 		auth.processSLO(false, null);
 	}
 
