@@ -160,7 +160,7 @@ public class AuthnRequestParams {
 	/**
 	 * @return the subject that should be authenticated
 	 */
-	protected String getNameIdValueReq() {
+	public String getNameIdValueReq() {
 		return nameIdValueReq;
 	}
 }
