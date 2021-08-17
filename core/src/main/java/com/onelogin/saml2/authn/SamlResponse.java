@@ -191,9 +191,9 @@ public class SamlResponse {
 			Element rootElement = samlResponseDocument.getDocumentElement();
 			rootElement.normalize();
 
-			// Check SAML version
+			// Check SAML version on the response
 			if (!"2.0".equals(rootElement.getAttribute("Version"))) {
-				throw new ValidationError("Unsupported SAML Version.", ValidationError.UNSUPPORTED_SAML_VERSION);
+				throw new ValidationError("Unsupported SAML Version on Response.", ValidationError.UNSUPPORTED_SAML_VERSION);
 			}
 
 			// Check ID in the response
@@ -239,6 +239,15 @@ public class SamlResponse {
 				if (requestId != null && !Objects.equals(responseInResponseTo, requestId)) {
 						throw new ValidationError("The InResponseTo of the Response: " + responseInResponseTo
 								+ ", does not match the ID of the AuthNRequest sent by the SP: " + requestId, ValidationError.WRONG_INRESPONSETO);
+				}
+
+				// Check SAML version on the response
+				NodeList assertions = queryAssertion("");
+				for(int i = 0; i < assertions.getLength(); i++) {
+					Node versionAttribute = assertions.item(i).getAttributes().getNamedItem("Version");
+					if (versionAttribute == null || !"2.0".equals(versionAttribute.getNodeValue())) {
+						throw new ValidationError("Unsupported SAML Version on Assertion.", ValidationError.UNSUPPORTED_SAML_VERSION);
+					}
 				}
 
 				if (!this.encrypted && settings.getWantAssertionsEncrypted()) {
