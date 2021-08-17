@@ -553,7 +553,13 @@ public class SettingsBuilder {
 			// multiple indexed services specified
 			return acsProps.entrySet().stream()
 					// ignore non-indexed service
-					.filter(entry -> entry.getKey() != -1)
+					.filter(entry -> {
+						final boolean indexed = entry.getKey() != -1;
+						if(!indexed) {
+							LOGGER.warn("non indexed Attribute Consuming Service found along with other indexed Services; the non-indexed one will be ignored");
+						}
+						return indexed;
+					})
 			            .map(entry -> loadAttributeConsumingService(entry.getValue(), entry.getKey()))
 			            .collect(Collectors.toList());
 	}
