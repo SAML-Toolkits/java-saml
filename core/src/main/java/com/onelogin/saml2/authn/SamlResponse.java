@@ -241,7 +241,7 @@ public class SamlResponse {
 								+ ", does not match the ID of the AuthNRequest sent by the SP: " + requestId, ValidationError.WRONG_INRESPONSETO);
 				}
 
-				// Check SAML version on the response
+				// Check SAML version on the assertion
 				NodeList assertions = queryAssertion("");
 				for(int i = 0; i < assertions.getLength(); i++) {
 					Node versionAttribute = assertions.item(i).getAttributes().getNamedItem("Version");
