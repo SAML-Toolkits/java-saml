@@ -16,3 +16,7 @@ matrix:
 install: true
 after_success:
   - mvn clean verify org.jacoco:jacoco-maven-plugin:report org.eluder.coveralls:coveralls-maven-plugin:report
+
+cache:
+  directories:
+  - $HOME/.m2
