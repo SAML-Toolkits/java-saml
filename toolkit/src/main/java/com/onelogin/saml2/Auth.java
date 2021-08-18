@@ -26,8 +26,7 @@ import com.onelogin.saml2.authn.AuthnRequest;
 import com.onelogin.saml2.authn.AuthnRequestParams;
 import com.onelogin.saml2.authn.SamlResponse;
 import com.onelogin.saml2.exception.SettingsException;
-import com.onelogin.saml2.factory.SamlOutgoingMessageFactory;
-import com.onelogin.saml2.factory.SamlReceivedMessageFactory;
+import com.onelogin.saml2.factory.SamlMessageFactory;
 import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.logout.LogoutRequest;
@@ -171,19 +170,9 @@ public class Auth {
 	 */
 	private String lastResponse;
 	
-	private static final SamlOutgoingMessageFactory<AuthnRequestParams, AuthnRequest> DEFAULT_AUTHN_REQUEST_FACTORY = AuthnRequest::new;
-	private static final SamlReceivedMessageFactory<SamlResponse> DEFAULT_SAML_RESPONSE_FACTORY = SamlResponse::new;
-	private static final SamlOutgoingMessageFactory<LogoutRequestParams, LogoutRequest> DEFAULT_OUTGOING_LOGOUT_REQUEST_FACTORY = LogoutRequest::new;
-	private static final SamlReceivedMessageFactory<LogoutRequest> DEFAULT_RECEIVED_LOGOUT_REQUEST_FACTORY = LogoutRequest::new;
-	private static final SamlOutgoingMessageFactory<LogoutResponseParams, LogoutResponse> DEFAULT_OUTGOING_LOGOUT_RESPONSE_FACTORY = LogoutResponse::new;
-	private static final SamlReceivedMessageFactory<LogoutResponse> DEFAULT_RECEIVED_LOGOUT_RESPONSE_FACTORY = LogoutResponse::new;
+	private static final SamlMessageFactory DEFAULT_SAML_MESSAGE_FACTORY = new SamlMessageFactory() {};
 	
-	private SamlOutgoingMessageFactory<AuthnRequestParams, AuthnRequest> authnRequestFactory = DEFAULT_AUTHN_REQUEST_FACTORY;
-	private SamlReceivedMessageFactory<SamlResponse> samlResponseFactory = DEFAULT_SAML_RESPONSE_FACTORY;
-	private SamlOutgoingMessageFactory<LogoutRequestParams, LogoutRequest> outgoingLogoutRequestFactory = DEFAULT_OUTGOING_LOGOUT_REQUEST_FACTORY;
-	private SamlReceivedMessageFactory<LogoutRequest> receivedLogoutRequestFactory = DEFAULT_RECEIVED_LOGOUT_REQUEST_FACTORY;
-	private SamlOutgoingMessageFactory<LogoutResponseParams, LogoutResponse> outgoingLogoutResponseFactory = DEFAULT_OUTGOING_LOGOUT_RESPONSE_FACTORY;
-	private SamlReceivedMessageFactory<LogoutResponse> receivedLogoutResponseFactory = DEFAULT_RECEIVED_LOGOUT_RESPONSE_FACTORY;
+	private SamlMessageFactory samlMessageFactory = DEFAULT_SAML_MESSAGE_FACTORY;
 
 	/**
 	 * Initializes the SP SAML instance.
@@ -626,7 +615,7 @@ public class Auth {
 	 * @throws SettingsException
 	 */
 	public String login(String relayState, AuthnRequestParams authnRequestParams, Boolean stay, Map<String, String> parameters) throws IOException, SettingsException {
-		AuthnRequest authnRequest = authnRequestFactory.create(settings, authnRequestParams);
+		AuthnRequest authnRequest = samlMessageFactory.createAuthnRequest(settings, authnRequestParams);
 		
 		if (parameters == null) {
 			parameters = new HashMap<String, String>();
@@ -802,7 +791,7 @@ public class Auth {
 			parameters = new HashMap<String, String>();
 		}
 
-		LogoutRequest logoutRequest = outgoingLogoutRequestFactory.create(settings, logoutRequestParams);
+		LogoutRequest logoutRequest = samlMessageFactory.createOutgoingLogoutRequest(settings, logoutRequestParams);
 		String samlLogoutRequest = logoutRequest.getEncodedLogoutRequest();
 		parameters.put("SAMLRequest", samlLogoutRequest);
 
@@ -1213,7 +1202,7 @@ public class Auth {
 		final String samlResponseParameter = httpRequest.getParameter("SAMLResponse");
 
 		if (samlResponseParameter != null) {
-			SamlResponse samlResponse = samlResponseFactory.create(settings, httpRequest);
+			SamlResponse samlResponse = samlMessageFactory.createSamlResponse(settings, httpRequest);
 			lastResponse = samlResponse.getSAMLResponseXml();
 
 			if (samlResponse.isValid(requestId)) {
@@ -1286,7 +1275,7 @@ public class Auth {
 		final String samlResponseParameter = httpRequest.getParameter("SAMLResponse");
 
 		if (samlResponseParameter != null) {
-			LogoutResponse logoutResponse = receivedLogoutResponseFactory.create(settings, httpRequest);
+			LogoutResponse logoutResponse = samlMessageFactory.createIncomingLogoutResponse(settings, httpRequest);
 			lastResponse = logoutResponse.getLogoutResponseXml();
 			if (!logoutResponse.isValid(requestId)) {
 				errors.add("invalid_logout_response");
@@ -1316,7 +1305,7 @@ public class Auth {
 			}
 			return null;
 		} else if (samlRequestParameter != null) {
-			LogoutRequest logoutRequest = receivedLogoutRequestFactory.create(settings, httpRequest);
+			LogoutRequest logoutRequest = samlMessageFactory.createIncomingLogoutRequest(settings, httpRequest);
 			lastRequest = logoutRequest.getLogoutRequestXml();
 			if (!logoutRequest.isValid()) {
 				errors.add("invalid_logout_request");
@@ -1334,7 +1323,7 @@ public class Auth {
 				}
 
 				String inResponseTo = logoutRequest.id;
-				LogoutResponse logoutResponseBuilder = outgoingLogoutResponseFactory.create(settings, 
+				LogoutResponse logoutResponseBuilder = samlMessageFactory.createOutgoingLogoutResponse(settings, 
 						new LogoutResponseParams(inResponseTo, Constants.STATUS_SUCCESS));
 				lastResponse = logoutResponseBuilder.getLogoutResponseXml();
 
@@ -1663,107 +1652,19 @@ public class Auth {
 	}
 
 	/**
-	 * Sets the factory this {@link Auth} will use to create {@link AuthnRequest}
-	 * objects.
+	 * Sets the factory this {@link Auth} will use to create SAML messages.
 	 * <p>
-	 * This allows consumers to provide their own extension of {@link AuthnRequest}
-	 * possibly implementing custom features and/or XML post-processing.
+	 * This allows consumers to provide their own extension classes for SAML message
+	 * XML generation and/or processing.
 	 * 
-	 * @param authnRequestFactory
-	 *              the factory to use to create {@link AuthnRequest} objects; if
+	 * @param samlMessageFactory
+	 *              the factory to use to create SAML message objects; if
 	 *              <code>null</code>, a default provider will be used which creates
-	 *              plain {@link AuthnRequest} instances
+	 *              the standard message implementation provided by this library
+	 *              (i.e.: {@link AuthnRequest}, {@link SamlResponse},
+	 *              {@link LogoutRequest} and {@link LogoutResponse})
 	 */
-	public void setAuthnRequestFactory(
-	            final SamlOutgoingMessageFactory<AuthnRequestParams, AuthnRequest> authnRequestFactory) {
-		this.authnRequestFactory = authnRequestFactory != null ? authnRequestFactory
-		            : DEFAULT_AUTHN_REQUEST_FACTORY;
-	}
-
-	/**
-	 * Sets the factory this {@link Auth} will use to create {@link SamlResponse}
-	 * objects.
-	 * <p>
-	 * This allows consumers to provide their own extension of {@link SamlResponse}
-	 * possibly implementing custom features and/or XML validation.
-	 * 
-	 * @param samlResponseFactory
-	 *              the factory to use to create {@link SamlResponse} objects; if
-	 *              <code>null</code>, a default factory will be used which creates
-	 *              plain {@link SamlResponse} instances
-	 */
-	public void setSamlResponseFactory(final SamlReceivedMessageFactory<SamlResponse> samlResponseFactory) {
-		this.samlResponseFactory = samlResponseFactory != null? samlResponseFactory: DEFAULT_SAML_RESPONSE_FACTORY;
-	}
-
-	/**
-	 * Sets the factory this {@link Auth} will use to create outgoing
-	 * {@link LogoutRequest} objects.
-	 * <p>
-	 * This allows consumers to provide their own extension of {@link LogoutRequest}
-	 * possibly implementing custom features and/or XML post-processing.
-	 * 
-	 * @param outgoingLogoutRequestFactory
-	 *              the factory to use to create outgoing {@link LogoutRequest}
-	 *              objects; if <code>null</code>, a default provider will be used
-	 *              which creates plain {@link LogoutRequest} instances
-	 */
-	public void setOutgoingLogoutRequestFactory(final
-	            SamlOutgoingMessageFactory<LogoutRequestParams, LogoutRequest> outgoingLogoutRequestFactory) {
-		this.outgoingLogoutRequestFactory = outgoingLogoutRequestFactory != null? outgoingLogoutRequestFactory: DEFAULT_OUTGOING_LOGOUT_REQUEST_FACTORY;
-	}
-
-	/**
-	 * Sets the factory this {@link Auth} will use to create received
-	 * {@link LogoutRequest} objects.
-	 * <p>
-	 * This allows consumers to provide their own extension of {@link LogoutRequest}
-	 * possibly implementing custom features and/or XML validation.
-	 * 
-	 * @param receivedLogoutRequestFactory
-	 *              the factory to use to create received {@link LogoutRequest}
-	 *              objects; if <code>null</code>, a default provider will be used
-	 *              which creates plain {@link LogoutRequest} instances
-	 */
-	public void setReceivedLogoutRequestFactory(
-	            final SamlReceivedMessageFactory<LogoutRequest> receivedLogoutRequestFactory) {
-		this.receivedLogoutRequestFactory = receivedLogoutRequestFactory != null ? receivedLogoutRequestFactory
-		            : DEFAULT_RECEIVED_LOGOUT_REQUEST_FACTORY;
-	}
-
-	/**
-	 * Sets the factory this {@link Auth} will use to create outgoing
-	 * {@link LogoutResponse} objects.
-	 * <p>
-	 * This allows consumers to provide their own extension of
-	 * {@link LogoutResponse} possibly implementing custom features and/or XML
-	 * post-processing.
-	 * 
-	 * @param outgoingLogoutResponseFactory
-	 *              the factory to use to create outgoing {@link LogoutResponse}
-	 *              objects; if <code>null</code>, a default provider will be used
-	 *              which creates plain {@link LogoutResponse} instances
-	 */
-	public void setOutgoingLogoutResponseFactory(final
-	            SamlOutgoingMessageFactory<LogoutResponseParams, LogoutResponse> outgoingLogoutResponseFactory) {
-		this.outgoingLogoutResponseFactory = outgoingLogoutResponseFactory != null? outgoingLogoutResponseFactory: DEFAULT_OUTGOING_LOGOUT_RESPONSE_FACTORY;
-	}
-
-	/**
-	 * Sets the factory this {@link Auth} will use to create received
-	 * {@link LogoutResponse} objects.
-	 * <p>
-	 * This allows consumers to provide their own extension of
-	 * {@link LogoutResponse} possibly implementing custom features and/or XML
-	 * validation.
-	 * 
-	 * @param receivedLogoutResponseFactory
-	 *              the factory to use to create received {@link LogoutResponse}
-	 *              objects; if <code>null</code>, a default provider will be used
-	 *              which creates plain {@link LogoutResponse} instances
-	 */
-	public void setReceivedLogoutResponseFactory(final
-	            SamlReceivedMessageFactory<LogoutResponse> receivedLogoutResponseFactory) {
-		this.receivedLogoutResponseFactory = receivedLogoutResponseFactory != null? receivedLogoutResponseFactory: DEFAULT_RECEIVED_LOGOUT_RESPONSE_FACTORY;
+	public void setSamlMessageFactory(final SamlMessageFactory samlMessageFactory) {
+		this.samlMessageFactory = samlMessageFactory != null ? samlMessageFactory : DEFAULT_SAML_MESSAGE_FACTORY;
 	}
 }

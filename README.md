@@ -653,19 +653,25 @@ All the provided SAML message classes (`AuthnRequest`, `SamlResponse`, `LogoutRe
 
 In particular, the classes used to produce outgoing messages (`AuthnRequest`, `LogoutRequest`, and `LogoutResponse`) also provide a `postProcessXml` method that can be overridden to customise the generation of the corresponding SAML message XML, along with the ability to pass in proper extensions of the input parameter classes (`AuthnRequestParams`, `LogoutRequestParams`, and `LogoutResponseParams` respectively).
 
-Once you have prepared your extension classes, in order to make the `Auth` class use them, appropriate factories can then be
-specified:
+Once you have prepared your extension classes, in order to make the `Auth` class use them, an appropriate `SamlMessageFactory` implementation can be specified. As an example, assuming you've created two extension classes `AuthnRequestEx` and `SamlResponseEx` to customise the creation of AuthnRequest SAML messages and the validation of SAML responses respectively, as well as an extended `AuthnRequestParamsEx` input parameter class to drive the AuthnRequest generation post-processing, you can do the following:
 
 ```java
-// let AuthnRequestEx, SamlResponseEx, LogoutRequestEx, LogoutResponseEx be your extension classes
 Auth auth = new Auth(request, response);
-auth.setAuthnRequestFactory(AuthnRequestEx::new); // to make it build custom AuthnRequests
-auth.setSamlResponseFactory(SamlResponseEx::new); // to make it build custom SamlResponses
-auth.setOutgoingLogoutRequestFactory(LogoutRequestEx::new); // to make it build custom outgoing LogoutRequests
-auth.setReceivedLogoutRequestFactory(LogoutRequestEx::new); // to make it build custom incoming LogoutRequests
-auth.setOutgoingLogoutResponseFactory(LogoutResponseEx::new); // to make it build custom outgoing LogoutResponses
-auth.setReceivedLogoutResponseFactory(LogoutResponseEx::new); // to make it build custom incoming LogoutResponses
-// then proceed with login/processResponse/logout/processSLO...
+auth.setSamlMessageFactory(new SamlMessageFactory() {
+	@Override
+	public AuthnRequest createAuthnRequest(Saml2Settings settings, AuthnRequestParams params) {
+		return new AuthnRequestEx(settings, (AuthnRequestParamsEx) params);
+	}
+
+	@Override
+	public SamlResponse createSamlResponse(Saml2Settings settings, HttpRequest request) throws Exception {
+		return new SamlResponseEx(settings, request);
+	}
+}); 
+// then proceed with login...
+auth.login(relayState, new AuthnRequestParamsEx()); // the custom generation of AuthnReqeustEx will be executed
+// ... or process the response as usual
+auth.processResponse(); // the custom validation of SamlResponseEx will be executed
 ```
 
 ### Working behind load balancer
