@@ -1637,7 +1637,7 @@ public class AuthnResponseTest {
 	
 	/**
 	 * Tests the isValid method of SamlResponse
-	 * Case: invalid version
+	 * Case: invalid version (the response is not SAML 2.0)
 	 *
 	 * @throws IOException
 	 * @throws Error
@@ -1655,7 +1655,53 @@ public class AuthnResponseTest {
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_saml2.xml.base64");
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
-		assertEquals("Unsupported SAML Version.", samlResponse.getError());
+		assertTrue(samlResponse.getError().startsWith("Unsupported SAML Version"));
+	}
+
+	/**
+	 * Tests the isValid method of SamlResponse
+	 * Case: invalid response version (although the response may otherwise be valid SAML 2.0)
+	 *
+	 * @throws IOException
+	 * @throws Error
+	 * @throws ValidationError
+	 * @throws SettingsException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws XPathExpressionException
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#isValid
+	 */
+	@Test
+	public void testValidateResponseVersion() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/invalid_response_version.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("Unsupported SAML Version on Response.", samlResponse.getError());
+	}
+
+	/**
+	 * Tests the isValid method of SamlResponse
+	 * Case: invalid assertion version (although the response may otherwise be valid SAML 2.0)
+	 *
+	 * @throws IOException
+	 * @throws Error
+	 * @throws ValidationError
+	 * @throws SettingsException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws XPathExpressionException
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#isValid
+	 */
+	@Test
+	public void testValidateAssertionVersion() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/invalid_assertion_version.xml.base64");
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
+		assertFalse(samlResponse.isValid());
+		assertEquals("Unsupported SAML Version on Assertion.", samlResponse.getError());
 	}
 
 	/**
