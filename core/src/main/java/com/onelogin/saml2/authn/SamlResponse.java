@@ -243,11 +243,9 @@ public class SamlResponse {
 
 				// Check SAML version on the assertion
 				NodeList assertions = queryAssertion("");
-				for(int i = 0; i < assertions.getLength(); i++) {
-					Node versionAttribute = assertions.item(i).getAttributes().getNamedItem("Version");
-					if (versionAttribute == null || !"2.0".equals(versionAttribute.getNodeValue())) {
-						throw new ValidationError("Unsupported SAML Version on Assertion.", ValidationError.UNSUPPORTED_SAML_VERSION);
-					}
+				Node versionAttribute = assertions.item(0).getAttributes().getNamedItem("Version");
+				if (versionAttribute == null || !"2.0".equals(versionAttribute.getNodeValue())) {
+					throw new ValidationError("Unsupported SAML Version on Assertion.", ValidationError.UNSUPPORTED_SAML_VERSION);
 				}
 
 				if (!this.encrypted && settings.getWantAssertionsEncrypted()) {
