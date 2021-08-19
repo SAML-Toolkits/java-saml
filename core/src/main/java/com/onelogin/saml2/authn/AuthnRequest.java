@@ -229,7 +229,11 @@ public class AuthnRequest {
 			if (settings.getWantNameIdEncrypted()) {
 				nameIDPolicyFormat = Constants.NAMEID_ENCRYPTED;
 			}
-			nameIDPolicyStr = "<samlp:NameIDPolicy Format=\"" + Util.toXml(nameIDPolicyFormat) + "\" AllowCreate=\"true\" />";
+			String allowCreateStr = "";
+			if (params.isAllowCreate()) {
+				allowCreateStr = " AllowCreate=\"true\"";
+			}
+			nameIDPolicyStr = "<samlp:NameIDPolicy Format=\"" + Util.toXml(nameIDPolicyFormat) + "\"" + allowCreateStr + " />";
 		}
 		valueMap.put("nameIDPolicyStr", nameIDPolicyStr);
 
