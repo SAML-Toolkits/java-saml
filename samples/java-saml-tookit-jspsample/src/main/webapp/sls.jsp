@@ -2,8 +2,10 @@
 <%@page import="java.util.Collection"%>
 <%@page import="java.util.HashMap"%>
 <%@page import="java.util.List"%>
-<%@page import="java.util.Map"%> 
-<%@ page language="java" contentType="text/html; charset=UTF-8"
+<%@page import="java.util.Map"%>
+<%@page import="java.io.StringWriter"%>
+<%@page import="java.io.PrintWriter"%>
+<%@page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
@@ -26,9 +28,24 @@
     	<h1>A Java SAML Toolkit by OneLogin demo</h1>
     	<b>Logout</b>   	
 	<%
-		Auth auth = new Auth(request, response);
-		auth.processSLO();
-		
+	    Auth auth;
+        try
+        {
+            auth = new Auth(request, response);
+            auth.processSLO();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            String stackTrace = sw.toString().replace("\n", "<br/>");
+            out.println("<div class=\"alert alert-danger\" role=\"alert\">" + stackTrace + "</div>");
+            return;
+        }
+
 		List<String> errors = auth.getErrors();
 		
 		if (errors.isEmpty()) {

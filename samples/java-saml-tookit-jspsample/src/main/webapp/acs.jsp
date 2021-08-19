@@ -4,7 +4,9 @@
 <%@page import="java.util.List"%>
 <%@page import="java.util.Map"%> 
 <%@page import="org.apache.commons.lang3.StringUtils" %>
-<%@ page language="java" contentType="text/html; charset=UTF-8"
+<%@page import="java.io.StringWriter"%>
+<%@page import="java.io.PrintWriter"%>
+<%@page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
@@ -29,8 +31,23 @@
     	<!--  TODO Session support  --> 
 
 	<%
-		Auth auth = new Auth(request, response);
-		auth.processResponse();
+	    Auth auth;
+        try
+        {
+            auth = new Auth(request, response);
+            auth.processResponse();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            String stackTrace = sw.toString().replace("\n", "<br/>");
+            out.println("<div class=\"alert alert-danger\" role=\"alert\">" + stackTrace + "</div>");
+            return;
+        }
 
 		if (!auth.isAuthenticated()) {
 			out.println("<div class=\"alert alert-danger\" role=\"alert\">Not authenticated</div>");
