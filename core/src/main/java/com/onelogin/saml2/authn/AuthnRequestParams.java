@@ -14,9 +14,14 @@ public class AuthnRequestParams {
 	 */
 	private final boolean isPassive;
 	/**
-	 * When true the AuthNReuqest will set a nameIdPolicy
+	 * When true the AuthNRequest will set a nameIdPolicy
 	 */
 	private final boolean setNameIdPolicy;
+	/**
+	 * When true and {@link #setNameIdPolicy} is also <code>true</code>, then the
+	 * AllowCreate='true' will be set on the NameIDPolicy element
+	 */
+	private final boolean allowCreate;
 	/**
 	 * Indicates to the IdP the subject that should be authenticated
 	 */
@@ -29,13 +34,13 @@ public class AuthnRequestParams {
 	 *              whether the <code>ForceAuthn</code> attribute should be set to
 	 *              <code>true</code>
 	 * @param isPassive
-	 *              whether the <code>isPassive</code> attribute should be set to
+	 *              whether the <code>IsPassive</code> attribute should be set to
 	 *              <code>true</code>
 	 * @param setNameIdPolicy
 	 *              whether a <code>NameIDPolicy</code> should be set
 	 */
 	public AuthnRequestParams(boolean forceAuthn, boolean isPassive, boolean setNameIdPolicy) {
-		this(forceAuthn, isPassive, setNameIdPolicy, null);
+		this(forceAuthn, isPassive, setNameIdPolicy, true);
 	}
 
 	/**
@@ -45,7 +50,28 @@ public class AuthnRequestParams {
 	 *              whether the <code>ForceAuthn</code> attribute should be set to
 	 *              <code>true</code>
 	 * @param isPassive
-	 *              whether the <code>isPassive</code> attribute should be set to
+	 *              whether the <code>IsPassive</code> attribute should be set to
+	 *              <code>true</code>
+	 * @param setNameIdPolicy
+	 *              whether a <code>NameIDPolicy</code> should be set
+	 * @param allowCreate
+	 *              whether the <code>AllowCreate</code> attribute should be set to
+	 *              <code>true</code> on the <code>NameIDPolicy</code> element; only
+	 *              meaningful if <code>setNameIdPolicy</code> is also
+	 *              <code>true</code>
+	 */
+	public AuthnRequestParams(boolean forceAuthn, boolean isPassive, boolean setNameIdPolicy, boolean allowCreate) {
+		this(forceAuthn, isPassive, setNameIdPolicy, allowCreate, null);
+	}
+
+	/**
+	 * Create a set of authentication request input parameters.
+	 *
+	 * @param forceAuthn
+	 *              whether the <code>ForceAuthn</code> attribute should be set to
+	 *              <code>true</code>
+	 * @param isPassive
+	 *              whether the <code>IsPassive</code> attribute should be set to
 	 *              <code>true</code>
 	 * @param setNameIdPolicy
 	 *              whether a <code>NameIDPolicy</code> should be set
@@ -53,9 +79,34 @@ public class AuthnRequestParams {
 	 *              the subject that should be authenticated
 	 */
 	public AuthnRequestParams(boolean forceAuthn, boolean isPassive, boolean setNameIdPolicy, String nameIdValueReq) {
+		this(forceAuthn, isPassive, setNameIdPolicy, true, nameIdValueReq);
+	}
+
+	/**
+	 * Create a set of authentication request input parameters.
+	 *
+	 * @param forceAuthn
+	 *              whether the <code>ForceAuthn</code> attribute should be set to
+	 *              <code>true</code>
+	 * @param isPassive
+	 *              whether the <code>IsPassive</code> attribute should be set to
+	 *              <code>true</code>
+	 * @param setNameIdPolicy
+	 *              whether a <code>NameIDPolicy</code> should be set
+	 * @param allowCreate
+	 *              the value to set for the <code>allowCreate</code> attribute of
+	 *              <code>NameIDPolicy</code> element; <code>null</code> means it's
+	 *              not set at all; only meaningful when
+	 *              <code>setNameIdPolicy</code> is <code>true</code>
+	 * @param nameIdValueReq
+	 *              the subject that should be authenticated
+	 */
+	public AuthnRequestParams(boolean forceAuthn, boolean isPassive, boolean setNameIdPolicy, boolean allowCreate,
+	            String nameIdValueReq) {
 		this.forceAuthn = forceAuthn;
 		this.isPassive = isPassive;
 		this.setNameIdPolicy = setNameIdPolicy;
+		this.allowCreate = allowCreate;
 		this.nameIdValueReq = nameIdValueReq;
 	}
 
@@ -70,6 +121,7 @@ public class AuthnRequestParams {
 		this.forceAuthn = source.isForceAuthn();
 		this.isPassive = source.isPassive();
 		this.setNameIdPolicy = source.isSetNameIdPolicy();
+		this.allowCreate = source.isAllowCreate();
 		this.nameIdValueReq = source.getNameIdValueReq();
 	}
 
@@ -77,23 +129,32 @@ public class AuthnRequestParams {
 	 * @return whether the <code>ForceAuthn</code> attribute should be set to
 	 *         <code>true</code>
 	 */
-	protected boolean isForceAuthn() {
+	public boolean isForceAuthn() {
 		return forceAuthn;
 	}
 
 	/**
-	 * @return whether the <code>isPassive</code> attribute should be set to
+	 * @return whether the <code>IsPassive</code> attribute should be set to
 	 *         <code>true</code>
 	 */
-	protected boolean isPassive() {
+	public boolean isPassive() {
 		return isPassive;
 	}
 
 	/**
 	 * @return whether a <code>NameIDPolicy</code> should be set
 	 */
-	protected boolean isSetNameIdPolicy() {
+	public boolean isSetNameIdPolicy() {
 		return setNameIdPolicy;
+	}
+
+	/**
+	 * @return whether the <code>AllowCreate</code> attribute should be set to
+	 *         <code>true</code> on the <code>NameIDPolicy</code> element (only
+	 *         meaningful if {@link #isSetNameIdPolicy()} is also <code>true</code>)
+	 */
+	public boolean isAllowCreate() {
+		return allowCreate;
 	}
 
 	/**
