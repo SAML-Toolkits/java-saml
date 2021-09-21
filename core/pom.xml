@@ -72,13 +72,13 @@
 		<dependency>
 			<groupId>com.azure</groupId>
 			<artifactId>azure-security-keyvault-keys</artifactId>
-			<version>4.3.0</version>
+			<version>4.3.3</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>com.azure</groupId>
 			<artifactId>azure-identity</artifactId>
-			<version>1.3.3</version>
+			<version>1.3.6</version>
 			<optional>true</optional>
 		</dependency>
 	</dependencies>
@@ -88,7 +88,7 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.6</version>
+				<version>0.8.7</version>
 				<configuration>
 					<propertyName>jacoco.agent.argLine</propertyName>
 				</configuration>

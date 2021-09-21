@@ -1,6 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
 	<groupId>com.onelogin</groupId>
 	<artifactId>java-saml-toolkit</artifactId>
 	<version>2.7.1-SNAPSHOT</version>
@@ -13,10 +12,10 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
                 <project.build.resourceEncoding>UTF-8</project.build.resourceEncoding>
-		<slf4jVersion>1.7.30</slf4jVersion>
-		<junitVersion>4.13.1</junitVersion>
-		<logbackVersion>1.2.3</logbackVersion>
-		<apacheCommonsLangVersion>3.11</apacheCommonsLangVersion>
+		<slf4jVersion>1.7.32</slf4jVersion>
+		<junitVersion>4.13.2</junitVersion>
+		<logbackVersion>1.2.6</logbackVersion>
+		<apacheCommonsLangVersion>3.12.0</apacheCommonsLangVersion>
 	</properties>
 
 	<modules>
@@ -72,7 +71,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>1.4.1</version>
+				<version>3.0.0</version>
 				<executions>
 					<execution>
 						<id>enforce-versions</id>
@@ -97,7 +96,7 @@
 			<plugin>
 				<groupId>org.owasp</groupId>
 				<artifactId>dependency-check-maven</artifactId>
-				<version>6.1.6</version>
+				<version>6.3.1</version>
 				<configuration>
 					<failBuildOnCVSS>7</failBuildOnCVSS>
 					<suppressionFiles>
@@ -198,7 +197,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>3.2.0</version>
+						<version>3.3.1</version>
 						<executions>
 							<execution>
 								<id>attach-javadocs</id>
@@ -214,7 +213,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
-						<version>1.6</version>
+						<version>3.0.1</version>
 						<executions>
 							<execution>
 								<id>sign-artifacts</id>
