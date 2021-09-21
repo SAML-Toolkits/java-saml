@@ -5,10 +5,13 @@
 Add SAML support to your Java applications using this library.
 Forget those complicated libraries and use that open source library provided and supported by OneLogin Inc.
 
-Version >= 2.5.0 compatible with java8 / java9. Not compatible with java7
-2.5.0 sets the 'strict' setting parameter to true.
-2.5.0 uses xmlsec 2.1.4 which fixes [CVE-2019-12400](https://snyk.io/vuln/SNYK-JAVA-ORGAPACHESANTUARIO-460281)
+2.8.0 uses xmlsec 2.2.3 which fixes [CVE-2021-40690](https://snyk.io/vuln/SNYK-JAVA-ORGAPACHESANTUARIO-1655558)
 
+Version >= 2.5.0 compatible with java8 / java9. Not compatible with java7
+
+2.5.0 sets the 'strict' setting parameter to true.
+
+2.5.0 uses xmlsec 2.1.4 which fixes [CVE-2019-12400](https://snyk.io/vuln/SNYK-JAVA-ORGAPACHESANTUARIO-460281)
 
 Version 2.0.0 - 2.4.0, compatible with java7 / java8.
 
