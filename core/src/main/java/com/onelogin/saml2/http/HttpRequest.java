@@ -24,11 +24,12 @@ import com.onelogin.saml2.util.Util;
  */
 public final class HttpRequest {
 
-    public static final Map<String, List<String>> EMPTY_PARAMETERS = Collections.<String, List<String>>emptyMap();
+    public static final Map<String, List<String>> EMPTY_PARAMETERS = Collections.emptyMap();
 
     private final String requestURL;
     private final Map<String, List<String>> parameters;
     private final String queryString;
+    private final String method;
 
     /**
      * Creates a new HttpRequest.
@@ -38,8 +39,8 @@ public final class HttpRequest {
      * @deprecated Not providing a queryString can cause HTTP Redirect binding to fail.
      */
     @Deprecated
-    public HttpRequest(String requestURL) {
-        this(requestURL, EMPTY_PARAMETERS);
+    public HttpRequest(String method, String requestURL) {
+        this(method, requestURL, EMPTY_PARAMETERS);
     }
 
     /**
@@ -48,8 +49,8 @@ public final class HttpRequest {
      * @param requestURL  the request URL (up to but not including query parameters)
      * @param queryString string that is contained in the request URL after the path
      */
-    public HttpRequest(String requestURL, String queryString) {
-        this(requestURL, EMPTY_PARAMETERS, queryString);
+    public HttpRequest(String method, String requestURL, String queryString) {
+        this(method, requestURL, EMPTY_PARAMETERS, queryString);
     }
 
     /**
@@ -61,8 +62,8 @@ public final class HttpRequest {
      * @deprecated Not providing a queryString can cause HTTP Redirect binding to fail.
      */
     @Deprecated
-    public HttpRequest(String requestURL, Map<String, List<String>> parameters) {
-        this(requestURL, parameters, null);
+    public HttpRequest(String method, String requestURL, Map<String, List<String>> parameters) {
+        this(method, requestURL, parameters, null);
     }
 
     /**
@@ -73,10 +74,11 @@ public final class HttpRequest {
      * @param queryString string that is contained in the request URL after the path
      * @throws NullPointerException if any of the parameters is null
      */
-    public HttpRequest(String requestURL, Map<String, List<String>> parameters, String queryString) {
+    public HttpRequest(String method, String requestURL, Map<String, List<String>> parameters, String queryString) {
         this.requestURL = checkNotNull(requestURL, "requestURL");
         this.parameters = unmodifiableCopyOf(checkNotNull(parameters, "queryParams"));
         this.queryString = StringUtils.trimToEmpty(queryString);
+        this.method = method == null ? null : method.toUpperCase();
     }
 
     /**
@@ -89,13 +91,13 @@ public final class HttpRequest {
         checkNotNull(name, "name");
         checkNotNull(value, "value");
 
-        final List<String> oldValues = parameters.containsKey(name) ? parameters.get(name) : new ArrayList<String>();
+        final List<String> oldValues = parameters.containsKey(name) ? parameters.get(name) : new ArrayList<>();
         final List<String> newValues = new ArrayList<>(oldValues);
         newValues.add(value);
         final Map<String, List<String>> params = new HashMap<>(parameters);
         params.put(name, newValues);
 
-        return new HttpRequest(requestURL, params, queryString);
+        return new HttpRequest(method, requestURL, params, queryString);
     }
 
     /**
@@ -109,7 +111,7 @@ public final class HttpRequest {
         final Map<String, List<String>> params = new HashMap<>(parameters);
         params.remove(name);
 
-        return new HttpRequest(requestURL, params, queryString);
+        return new HttpRequest(method, requestURL, params, queryString);
     }
     
     /**
@@ -137,7 +139,7 @@ public final class HttpRequest {
      */
     public List<String> getParameters(String name) {
         List<String> values = parameters.get(name);
-        return values != null ? values : Collections.<String>emptyList();
+        return values != null ? values : Collections.emptyList();
     }
 
     /**
@@ -178,6 +180,10 @@ public final class HttpRequest {
             return (value != null ? value : Util.urlEncoder(defaultValue));
     }
 
+    public boolean isGet() {
+        return Objects.equals(method, "GET");
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -189,7 +195,8 @@ public final class HttpRequest {
         }
 
         HttpRequest that = (HttpRequest) o;
-        return Objects.equals(requestURL, that.requestURL) &&
+        return Objects.equals(method, that.method) &&
+                Objects.equals(requestURL, that.requestURL) &&
                 Objects.equals(parameters, that.parameters) &&
                 Objects.equals(queryString, that.queryString);
     }

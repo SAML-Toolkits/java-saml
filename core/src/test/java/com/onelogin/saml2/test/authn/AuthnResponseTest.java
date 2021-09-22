@@ -5,13 +5,11 @@ import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.exception.SettingsException;
 import com.onelogin.saml2.exception.ValidationError;
 import com.onelogin.saml2.http.HttpRequest;
-import com.onelogin.saml2.logout.LogoutRequest;
 import com.onelogin.saml2.model.SamlResponseStatus;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
 import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.Util;
-
 import org.hamcrest.Matchers;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
@@ -27,6 +25,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,9 +38,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPathExpressionException;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
@@ -3330,7 +3327,7 @@ public class AuthnResponseTest {
 	}
 
 	private static HttpRequest newHttpRequest(String requestURL, String samlResponseEncoded) {
-		return new HttpRequest(requestURL, (String)null).addParameter("SAMLResponse", samlResponseEncoded);
+		return new HttpRequest("GET", requestURL, (String)null).addParameter("SAMLResponse", samlResponseEncoded);
 	}
 	
 	private void setDateTime(String ISOTimeStamp) {

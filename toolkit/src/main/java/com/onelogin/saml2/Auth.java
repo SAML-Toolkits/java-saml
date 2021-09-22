@@ -1265,8 +1265,19 @@ public class Auth {
 	public String processSLO(Boolean keepLocalSession, String requestId, Boolean stay) throws Exception {
 		final HttpRequest httpRequest = ServletUtils.makeHttpRequest(this.request);
 
-		final String samlRequestParameter = httpRequest.getParameter("SAMLRequest");
-		final String samlResponseParameter = httpRequest.getParameter("SAMLResponse");
+		final String samlRequestParameter;
+		final String samlResponseParameter;
+
+		if (httpRequest.isGet()) {
+			samlRequestParameter = httpRequest.getParameter("SAMLRequest");
+			samlResponseParameter = httpRequest.getParameter("SAMLResponse");
+		} else {
+			// NOTE: even if the request method is POST, it's possible that parameters were sent in the
+			// URL; however the Redirect binding requires a GET, so we basically use this as a mechanism
+			// to fail the processing on non-GET requests all together. See #299.
+			samlRequestParameter = null;
+			samlResponseParameter = null;
+		}
 
 		if (samlResponseParameter != null) {
 			LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
