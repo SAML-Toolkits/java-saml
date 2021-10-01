@@ -70,11 +70,6 @@ public class LogoutResponse {
 	private String currentUrl;
 
 	/**
-	 * The inResponseTo attribute of the Logout Request
-	 */
-	private String inResponseTo;
-
-	/**
 	 * Time when the Logout Request was created
 	 */
 	private Calendar issueInstant;
@@ -85,18 +80,16 @@ public class LogoutResponse {
 	private Exception validationException;
 
 	/**
-	 * The respone status code and messages
-	 */
-	private SamlResponseStatus responseStatus;
-
-	/**
-	 * Constructs the LogoutResponse object.
+	 * Constructs the LogoutResponse object when a received response should be
+	 * extracted from the HTTP request and parsed.
 	 *
 	 * @param settings
 	 *              OneLogin_Saml2_Settings
 	 * @param request
-     *              the HttpRequest object to be processed (Contains GET and POST parameters, request URL, ...).
-     *
+	 *              the HttpRequest object to be processed (Contains GET and POST
+	 *              parameters, request URL, ...); may be <code>null</code> when
+	 *              building an outgoing logout response
+	 *
 	 */
 	public LogoutResponse(Saml2Settings settings, HttpRequest request) {
 		this.settings = settings;
@@ -112,6 +105,25 @@ public class LogoutResponse {
 			logoutResponseString = Util.base64decodedInflated(samlLogoutResponse);
 			logoutResponseDocument = Util.loadXML(logoutResponseString);
 		}
+	}
+	
+	/**
+	 * Constructs the LogoutResponse object when a new response should be generated
+	 * and sent.
+	 *
+	 * @param settings
+	 *              OneLogin_Saml2_Settings
+	 * @param params
+	 *              a set of logout response input parameters that shape the
+	 *              request to create
+	 */
+	public LogoutResponse(Saml2Settings settings, LogoutResponseParams params) {
+		this.settings = settings;
+		this.request = null;
+		id = Util.generateUniqueID(settings.getUniqueIDPrefix());
+		issueInstant = Calendar.getInstance();
+		StrSubstitutor substitutor = generateSubstitutor(params, settings);
+		this.logoutResponseString = postProcessXml(substitutor.replace(getLogoutResponseTemplate()), params, settings);
 	}
 
 	/**
@@ -353,21 +365,33 @@ public class LogoutResponse {
 		return Util.query(this.logoutResponseDocument, query, null);
 	}
 
-      /**
-       * Generates a Logout Response XML string.
-       *
-       * @param inResponseTo
-       *				InResponseTo attribute value to bet set at the Logout Response. 
+	/**
+	 * Generates a Logout Response XML string.
+	 *
+	 * @param inResponseTo
+	 *              InResponseTo attribute value to bet set at the Logout Response.
 	 * @param responseStatus
-	 * 				SamlResponseStatus response status to be set on the LogoutResponse
-       */
+	 *              SamlResponseStatus response status to be set on the
+	 *              LogoutResponse
+	 * @deprecated use {@link #LogoutResponse(Saml2Settings, LogoutResponseParams)}
+	 *             instead, in which case this method becomes completely useless;
+	 *             indeed, invoking this method in an outgoing logout response
+	 *             scenario will cause the response parameters specified at
+	 *             construction time (<code>inResponseTo</code> and
+	 *             <code>responseStatus</code>) to be overwritten, as well as its
+	 *             generated id and issue instant; on the other hand invoking this
+	 *             method in a received logout response scenario does not make sense
+	 *             at all (and in that case
+	 *             {@link #LogoutResponse(Saml2Settings, HttpRequest)} should be
+	 *             used instead)
+	 */
+	@Deprecated
 	public void build(String inResponseTo, SamlResponseStatus responseStatus) {
 		id = Util.generateUniqueID(settings.getUniqueIDPrefix());
 		issueInstant = Calendar.getInstance();
-		this.inResponseTo = inResponseTo;
-
-		StrSubstitutor substitutor = generateSubstitutor(settings, responseStatus);
-		this.logoutResponseString = postProcessXml(substitutor.replace(getLogoutResponseTemplate()), settings);
+		final LogoutResponseParams params = new LogoutResponseParams(inResponseTo, responseStatus);
+		StrSubstitutor substitutor = generateSubstitutor(params, settings);
+		this.logoutResponseString = postProcessXml(substitutor.replace(getLogoutResponseTemplate()), params, settings);
 	}
 
       /**
@@ -377,24 +401,61 @@ public class LogoutResponse {
        *				InResponseTo attribute value to bet set at the Logout Response. 
 	 * @param statusCode
 	 * 				String StatusCode to be set on the LogoutResponse
+	 * @deprecated use {@link #LogoutResponse(Saml2Settings, LogoutResponseParams)}
+	 *             instead, in which case this method becomes completely useless;
+	 *             indeed, invoking this method in an outgoing logout response
+	 *             scenario will cause the response parameters specified at
+	 *             construction time (<code>inResponseTo</code> and
+	 *             <code>responseStatus</code>) to be overwritten, as well as its
+	 *             generated id and issue instant; on the other hand invoking this
+	 *             method in a received logout response scenario does not make sense
+	 *             at all (and in that case
+	 *             {@link #LogoutResponse(Saml2Settings, HttpRequest)} should be
+	 *             used instead)
        */
+	@Deprecated
 	public void build(String inResponseTo, String statusCode) {
 		build(inResponseTo, new SamlResponseStatus(statusCode));
 	}
 
-      /**
-       * Generates a Logout Response XML string.
-       *
-       * @param inResponseTo
-       *				InResponseTo attribute value to bet set at the Logout Response. 
-       */
+	/**
+	 * Generates a Logout Response XML string.
+	 *
+	 * @param inResponseTo
+	 *              InResponseTo attribute value to bet set at the Logout Response.
+	 * @deprecated use {@link #LogoutResponse(Saml2Settings, LogoutResponseParams)}
+	 *             instead, in which case this method becomes completely useless;
+	 *             indeed, invoking this method in an outgoing logout response
+	 *             scenario will cause the response parameters specified at
+	 *             construction time (<code>inResponseTo</code> and
+	 *             <code>responseStatus</code>) to be overwritten, as well as its
+	 *             generated id and issue instant; on the other hand invoking this
+	 *             method in a received logout response scenario does not make sense
+	 *             at all (and in that case
+	 *             {@link #LogoutResponse(Saml2Settings, HttpRequest)} should be
+	 *             used instead)
+	 */
+	@Deprecated
 	public void build(String inResponseTo) {
 		build(inResponseTo, Constants.STATUS_SUCCESS);
 	}
 	
-      /**
-       * Generates a Logout Response XML string.
-       */
+	/**
+	 * Generates a Logout Response XML string.
+	 * 
+	 * @deprecated use {@link #LogoutResponse(Saml2Settings, LogoutResponseParams)}
+	 *             instead, in which case this method becomes completely useless;
+	 *             indeed, invoking this method in an outgoing logout response
+	 *             scenario will cause the response parameters specified at
+	 *             construction time (<code>inResponseTo</code> and
+	 *             <code>responseStatus</code>) to be overwritten, as well as its
+	 *             generated id and issue instant; on the other hand invoking this
+	 *             method in a received logout response scenario does not make sense
+	 *             at all (and in that case
+	 *             {@link #LogoutResponse(Saml2Settings, HttpRequest)} should be
+	 *             used instead)
+	 */
+	@Deprecated
 	public void build() {
 		build(null);
 	}	
@@ -410,26 +471,29 @@ public class LogoutResponse {
 	 * @param logoutResponseXml
 	 *              the XML produced for this LogoutResponse by the standard
 	 *              implementation provided by {@link LogoutResponse}
+	 * @param params
+	 *              the logout request input parameters
 	 * @param settings
 	 *              the settings
 	 * @return the post-processed XML for this LogoutResponse, which will then be
 	 *         returned by any call to {@link #getLogoutResponseXml()}
 	 */
-	protected String postProcessXml(final String logoutResponseXml, final Saml2Settings settings) {
+	protected String postProcessXml(final String logoutResponseXml, final LogoutResponseParams params,
+	            final Saml2Settings settings) {
 		return logoutResponseXml;
 	}
 	
 	/**
 	 * Substitutes LogoutResponse variables within a string by values.
 	 *
+	 * @param params
+	 *              the logout response input parameters
 	 * @param settings
-	 * 				Saml2Settings object. Setting data
-	 * @param responseStatus
-	 * 				SamlResponseStatus response status to be set on the LogoutResponse
+	 *              Saml2Settings object. Setting data
 	 *
 	 * @return the StrSubstitutor object of the LogoutResponse
 	 */
-	private StrSubstitutor generateSubstitutor(Saml2Settings settings, SamlResponseStatus responseStatus) {
+	private StrSubstitutor generateSubstitutor(LogoutResponseParams params, Saml2Settings settings) {
 		Map<String, String> valueMap = new HashMap<String, String>();
 
 		valueMap.put("id", Util.toXml(id));
@@ -445,12 +509,14 @@ public class LogoutResponse {
 		valueMap.put("destinationStr", destinationStr);
 
 		String inResponseStr = "";
+		final String inResponseTo = params.getInResponseTo();
 		if (inResponseTo != null) {
 			inResponseStr = " InResponseTo=\"" + Util.toXml(inResponseTo) + "\"";
 		}
 		valueMap.put("inResponseStr", inResponseStr);		
 
 		StringBuilder statusStr = new StringBuilder("<samlp:StatusCode ");
+		final SamlResponseStatus responseStatus = params.getResponseStatus();
 		if (responseStatus != null) {
 			String statusCode = responseStatus.getStatusCode();
 			if (statusCode != null) {

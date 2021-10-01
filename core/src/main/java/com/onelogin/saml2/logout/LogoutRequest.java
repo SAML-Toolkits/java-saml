@@ -242,7 +242,7 @@ public class LogoutRequest {
 	 * @param settings
 	 *              OneLogin_Saml2_Settings
 	 * @param params
-	 *              a set of authentication request input parameters that shape the
+	 *              a set of logout request input parameters that shape the
 	 *              request to create
 	 */
 	public LogoutRequest(Saml2Settings settings, LogoutRequestParams params) {

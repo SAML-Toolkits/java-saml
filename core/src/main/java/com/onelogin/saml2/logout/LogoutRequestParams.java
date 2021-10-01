@@ -9,30 +9,31 @@ public class LogoutRequestParams {
 	 * SessionIndex. When the user is logged, this stored it from the AuthnStatement
 	 * of the SAML Response
 	 */
-	private String sessionIndex;
+	private final String sessionIndex;
 
 	/**
 	 * NameID.
 	 */
-	private String nameId;
+	private final String nameId;
 
 	/**
 	 * NameID Format.
 	 */
-	private String nameIdFormat;
+	private final String nameIdFormat;
 
 	/**
 	 * nameId NameQualifier
 	 */
-	private String nameIdNameQualifier;
+	private final String nameIdNameQualifier;
 
 	/**
 	 * nameId SP NameQualifier
 	 */
-	private String nameIdSPNameQualifier;
+	private final String nameIdSPNameQualifier;
 
 	/** Create an empty set of logout request input parameters. */
 	public LogoutRequestParams() {
+		this(null, null);
 	}
 
 	/**
@@ -118,45 +119,35 @@ public class LogoutRequestParams {
 	/**
 	 * @return the name ID
 	 */
-	protected String getNameId() {
+	public String getNameId() {
 		return nameId;
-	}
-
-	/**
-	 * Sets the name ID
-	 * 
-	 * @param nameId
-	 *              the name ID to set
-	 */
-	protected void setNameId(String nameId) {
-		this.nameId = nameId;
 	}
 
 	/**
 	 * @return the name ID format
 	 */
-	protected String getNameIdFormat() {
+	public String getNameIdFormat() {
 		return nameIdFormat;
 	}
 
 	/**
 	 * @return the name ID name qualifier
 	 */
-	protected String getNameIdNameQualifier() {
+	public String getNameIdNameQualifier() {
 		return nameIdNameQualifier;
 	}
 
 	/**
 	 * @return the name ID SP name qualifier
 	 */
-	protected String getNameIdSPNameQualifier() {
+	public String getNameIdSPNameQualifier() {
 		return nameIdSPNameQualifier;
 	}
 
 	/**
 	 * @return the session index
 	 */
-	protected String getSessionIndex() {
+	public String getSessionIndex() {
 		return sessionIndex;
 	}
 }

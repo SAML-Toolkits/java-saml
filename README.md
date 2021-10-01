@@ -93,7 +93,7 @@ The toolkit is hosted on github. You can download it from:
 The toolkit is hosted at [Sonatype OSSRH (OSS Repository Hosting)](http://central.sonatype.org/pages/ossrh-guide.html) that is synced to the Central Repository.
 
 Install it as a maven dependency:
-```
+```xml
   <dependency>
       <groupId>com.onelogin</groupId>
       <artifactId>java-saml</artifactId>
@@ -444,7 +444,7 @@ If you want to use anything different than javax.servlet.http, you will need to 
 
 #### Initiate SSO
 In order to send an AuthNRequest to the IdP:
-```
+```java
 Auth auth = new Auth(request, response);
 auth.login();
 ```
@@ -453,16 +453,18 @@ The AuthNRequest will be sent signed or unsigned based on the security settings 
 The IdP will then return the SAML Response to the user's client. The client is then forwarded to the Attribute Consumer Service of the SP with this information.
 
 We can set a 'RelayState' parameter containing a return url to the login function:
-```
+```java
 String returnUrl = 'https://example.com';
 auth.login(relayState=returnUrl)
 ```
-The login method can receive 6 more optional parameters:
-- *forceAuthn* When true the AuthNRequest will have the 'ForceAuthn' attribute set to 'true'
-- *isPassive* When true the AuthNRequest will have the 'Ispassive' attribute set to 'true'
-- *setNameIdPolicy* When true the AuthNRequest will set a nameIdPolicy element.
+The login method can receive 3 more optional parameters:
+- *authnRequestParams* which in turn allows to shape the AuthNRequest with the following properties:
+  - *forceAuthn* When true the AuthNRequest will have the `ForceAuthn` attribute set to `true`
+  - *isPassive* When true the AuthNRequest will have the `IsPassive` attribute set to `true`
+  - *setNameIdPolicy* When true the AuthNRequest will set a `NameIdPolicy` element
+  - *allowCreate* When true, and *setNameIdPolicy* is also true, the AuthNRequest will have the `AllowCreate` attribute set to `true` on the `NameIdPolicy` element
+  - *nameIdValueReq* Indicates to the IdP the subject that should be authenticated
 - *stay* Set to true to stay (returns the url string), otherwise set to false to execute a redirection to that url (IdP SSO URL)
-- *nameIdValueReq* Indicates to the IdP the subject that should be authenticated
 - *parameters* Use it to send extra parameters in addition to the AuthNRequest
 
 By default, the login method initiates a redirect to the SAML Identity Provider. You can use the *stay* parameter, to prevent that, and execute the redirection manually. We need to use that if a match on the future SAMLResponse ID and the AuthNRequest ID to be sent is required.  That AuthNRequest ID must be extracted and stored for future validation, so we can't execute the redirection on the login.  Instead, set *stay* to true, then get that ID by
@@ -477,7 +479,7 @@ Related to the SP there are 3 important endpoints: The metadata view, the ACS vi
 
 ##### SP Metadata
 This code will provide the XML metadata file of our SP, based on the info that we provided in the settings files.
-```
+```java
 Auth auth = new Auth();
 Saml2Settings settings = auth.getSettings();
 String metadata = settings.getSPMetadata();
@@ -497,7 +499,7 @@ Before the XML metadata is exposed, a check takes place to ensure that the info 
 
 ##### Attribute Consumer Service(ACS)
 This code handles the SAML response that the IdP forwards to the SP through the user's client.
-```
+```java
 Auth auth = new Auth(request, response);
 auth.processResponse();
 if (!auth.isAuthenticated()) {
@@ -575,7 +577,7 @@ Before trying to get an attribute, check that the user is authenticated. If the 
 
 ##### Single Logout Service (SLS)
 This code handles the Logout Request and the Logout Responses.
-```
+```java
 Auth auth = new Auth(request, response);
 auth.processSLO();
 List<String> errors = auth.getErrors();
@@ -595,7 +597,7 @@ If we don't want that processSLO to destroy the session, pass the keepLocalSessi
 
 #### Initiate SLO
 In order to send a Logout Request to the IdP:
-```
+```java
 Auth auth = new Auth(request, response);
 
 String nameId = null;
@@ -618,36 +620,62 @@ String sessionIndex = null;
 if (session.getAttribute("sessionIndex") != null) {
     sessionIndex = session.getAttribute("sessionIndex").toString();
 }
-auth.logout(null, nameId, sessionIndex, nameIdFormat);
-```
+auth.logout(null, new LogoutRequestParams(sessionIndex, nameId, nameIdFormat));
+```java
 The Logout Request will be sent signed or unsigned based on the security settings 'onelogin.saml2.security.logoutrequest_signed'
 
 The IdP will return the Logout Response through the user's client to the Single Logout Service of the SP.
 
 We can set a 'RelayState' parameter containing a return url to the login function:
-```
+```java
 String returnUrl = 'https://example.com';
 auth.logout(relayState=returnUrl)
 ```
 
-Also there are 7 optional parameters that can be set:
-- nameId. That will be used to build the LogoutRequest. If not name_id parameter is set and the auth object processed a SAML Response with a NameId, then this NameId will be used.
-- sessionIndex. Identifies the session of the user.
-If a match on the LogoutResponse ID and the LogoutRequest ID to be sent is required, that LogoutRequest ID must to be extracted and stored for future validation, we can get that ID by
-- stay. True if we want to stay (returns the url string) False to execute a redirection to that url (IdP SLS URL)
-- nameidFormat. The NameID Format that will be set in the LogoutRequest
-- nameIdNameQualifier. The NameID NameQualifier that will be set in the LogoutRequest
-- nameIdSPNameQualifier. The NameID SP Name Qualifier that will be set in the LogoutRequest
-- parameters. Use it to send extra parameters in addition to the LogoutRequest
+Also there are other 3 optional parameters that can be set:
+- *logoutRequestParams* which in turn allows to shape the LogoutRequest with the following properties:
+  - *sessionIndex* Identifies the session of the user
+  - *nameId* That will be used to build the LogoutRequest. If no *nameId* parameter is set and the auth object processed a SAML Response with a `NameID`, then this `NameID` will be used
+  - *nameidFormat* The `NameID` `Format` that will be set on the LogoutRequest
+  - *nameIdNameQualifier* The `NameID` `NameQualifier` that will be set on the LogoutRequest
+  - *nameIdSPNameQualifier* The `NameID` `SPNameQualifier` that will be set on the LogoutRequest
+- *stay* True if we want to stay (returns the url string) False to execute a redirection to that url (IdP SLS URL)
+- *parameters* Use it to send extra parameters in addition to the LogoutRequest
 
-By default the logout method initiates a redirect to the SAML Identity Provider. You can use the stay parameter, to prevent that, and execute the redirection manually. We need to use that
+By default the logout method initiates a redirect to the SAML Identity Provider. You can use the *stay* parameter, to prevent that, and execute the redirection manually. We need to use that
 if a match on the future LogoutResponse ID and the LogoutRequest ID to be sent is required, that LogoutRequest ID must be extracted and stored for future validation so we can't execute the redirection on the logout, instead set stay to true, then get that ID by
 
-```
+```java
 auth.getLastRequestId()
 ```
 and later executing the redirection manually.
 
+### Extending the provided implementation
+
+All the provided SAML message classes (`AuthnRequest`, `SamlResponse`, `LogoutRequest`, `LogoutResponse`) can be extended to add or change the processing behavior. 
+
+In particular, the classes used to produce outgoing messages (`AuthnRequest`, `LogoutRequest`, and `LogoutResponse`) also provide a `postProcessXml` method that can be overridden to customise the generation of the corresponding SAML message XML, along with the ability to pass in proper extensions of the input parameter classes (`AuthnRequestParams`, `LogoutRequestParams`, and `LogoutResponseParams` respectively).
+
+Once you have prepared your extension classes, in order to make the `Auth` class use them, an appropriate `SamlMessageFactory` implementation can be specified. As an example, assuming you've created two extension classes `AuthnRequestEx` and `SamlResponseEx` to customise the creation of AuthnRequest SAML messages and the validation of SAML responses respectively, as well as an extended `AuthnRequestParamsEx` input parameter class to drive the AuthnRequest generation post-processing, you can do the following:
+
+```java
+Auth auth = new Auth(request, response);
+auth.setSamlMessageFactory(new SamlMessageFactory() {
+	@Override
+	public AuthnRequest createAuthnRequest(Saml2Settings settings, AuthnRequestParams params) {
+		return new AuthnRequestEx(settings, (AuthnRequestParamsEx) params);
+	}
+
+	@Override
+	public SamlResponse createSamlResponse(Saml2Settings settings, HttpRequest request) throws Exception {
+		return new SamlResponseEx(settings, request);
+	}
+}); 
+// then proceed with login...
+auth.login(relayState, new AuthnRequestParamsEx()); // the custom generation of AuthnReqeustEx will be executed
+// ... or process the response as usual
+auth.processResponse(); // the custom validation of SamlResponseEx will be executed
+```
 
 ### Working behind load balancer
 

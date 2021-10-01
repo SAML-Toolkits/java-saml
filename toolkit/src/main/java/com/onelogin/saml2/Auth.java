@@ -26,11 +26,13 @@ import com.onelogin.saml2.authn.AuthnRequest;
 import com.onelogin.saml2.authn.AuthnRequestParams;
 import com.onelogin.saml2.authn.SamlResponse;
 import com.onelogin.saml2.exception.SettingsException;
+import com.onelogin.saml2.factory.SamlMessageFactory;
 import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.logout.LogoutRequest;
 import com.onelogin.saml2.logout.LogoutRequestParams;
 import com.onelogin.saml2.logout.LogoutResponse;
+import com.onelogin.saml2.logout.LogoutResponseParams;
 import com.onelogin.saml2.model.SamlResponseStatus;
 import com.onelogin.saml2.model.KeyStoreSettings;
 import com.onelogin.saml2.servlet.ServletUtils;
@@ -167,6 +169,10 @@ public class Auth {
 	 * encrypted, by default tries to return the decrypted XML
 	 */
 	private String lastResponse;
+	
+	private static final SamlMessageFactory DEFAULT_SAML_MESSAGE_FACTORY = new SamlMessageFactory() {};
+	
+	private SamlMessageFactory samlMessageFactory = DEFAULT_SAML_MESSAGE_FACTORY;
 
 	/**
 	 * Initializes the SP SAML instance.
@@ -609,7 +615,7 @@ public class Auth {
 	 * @throws SettingsException
 	 */
 	public String login(String relayState, AuthnRequestParams authnRequestParams, Boolean stay, Map<String, String> parameters) throws IOException, SettingsException {
-		AuthnRequest authnRequest = new AuthnRequest(settings, authnRequestParams);
+		AuthnRequest authnRequest = samlMessageFactory.createAuthnRequest(settings, authnRequestParams);
 		
 		if (parameters == null) {
 			parameters = new HashMap<String, String>();
@@ -785,7 +791,7 @@ public class Auth {
 			parameters = new HashMap<String, String>();
 		}
 
-		LogoutRequest logoutRequest = new LogoutRequest(settings, logoutRequestParams);
+		LogoutRequest logoutRequest = samlMessageFactory.createOutgoingLogoutRequest(settings, logoutRequestParams);
 		String samlLogoutRequest = logoutRequest.getEncodedLogoutRequest();
 		parameters.put("SAMLRequest", samlLogoutRequest);
 
@@ -1196,7 +1202,7 @@ public class Auth {
 		final String samlResponseParameter = httpRequest.getParameter("SAMLResponse");
 
 		if (samlResponseParameter != null) {
-			SamlResponse samlResponse = new SamlResponse(settings, httpRequest);
+			SamlResponse samlResponse = samlMessageFactory.createSamlResponse(settings, httpRequest);
 			lastResponse = samlResponse.getSAMLResponseXml();
 
 			if (samlResponse.isValid(requestId)) {
@@ -1229,7 +1235,7 @@ public class Auth {
 					errors.add("invalid_response");
 					LOGGER.error("processResponse error. invalid_response");
 					LOGGER.debug(" --> " + samlResponseParameter);
-        }
+				}
 			}
 		} else {
 			errors.add("invalid_binding");
@@ -1269,7 +1275,7 @@ public class Auth {
 		final String samlResponseParameter = httpRequest.getParameter("SAMLResponse");
 
 		if (samlResponseParameter != null) {
-			LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
+			LogoutResponse logoutResponse = samlMessageFactory.createIncomingLogoutResponse(settings, httpRequest);
 			lastResponse = logoutResponse.getLogoutResponseXml();
 			if (!logoutResponse.isValid(requestId)) {
 				errors.add("invalid_logout_response");
@@ -1299,7 +1305,7 @@ public class Auth {
 			}
 			return null;
 		} else if (samlRequestParameter != null) {
-			LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
+			LogoutRequest logoutRequest = samlMessageFactory.createIncomingLogoutRequest(settings, httpRequest);
 			lastRequest = logoutRequest.getLogoutRequestXml();
 			if (!logoutRequest.isValid()) {
 				errors.add("invalid_logout_request");
@@ -1317,8 +1323,8 @@ public class Auth {
 				}
 
 				String inResponseTo = logoutRequest.id;
-				LogoutResponse logoutResponseBuilder = new LogoutResponse(settings, httpRequest);
-				logoutResponseBuilder.build(inResponseTo, Constants.STATUS_SUCCESS);
+				LogoutResponse logoutResponseBuilder = samlMessageFactory.createOutgoingLogoutResponse(settings, 
+						new LogoutResponseParams(inResponseTo, Constants.STATUS_SUCCESS));
 				lastResponse = logoutResponseBuilder.getLogoutResponseXml();
 
 				String samlLogoutResponse = logoutResponseBuilder.getEncodedLogoutResponse();
@@ -1643,5 +1649,22 @@ public class Auth {
 	 */
 	public String getLastResponseXML() {
 		return lastResponse;
+	}
+
+	/**
+	 * Sets the factory this {@link Auth} will use to create SAML messages.
+	 * <p>
+	 * This allows consumers to provide their own extension classes for SAML message
+	 * XML generation and/or processing.
+	 * 
+	 * @param samlMessageFactory
+	 *              the factory to use to create SAML message objects; if
+	 *              <code>null</code>, a default provider will be used which creates
+	 *              the standard message implementation provided by this library
+	 *              (i.e.: {@link AuthnRequest}, {@link SamlResponse},
+	 *              {@link LogoutRequest} and {@link LogoutResponse})
+	 */
+	public void setSamlMessageFactory(final SamlMessageFactory samlMessageFactory) {
+		this.samlMessageFactory = samlMessageFactory != null ? samlMessageFactory : DEFAULT_SAML_MESSAGE_FACTORY;
 	}
 }
