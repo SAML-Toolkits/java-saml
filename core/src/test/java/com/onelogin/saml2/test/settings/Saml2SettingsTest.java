@@ -114,6 +114,7 @@ public class Saml2SettingsTest {
 		assertThat(settingsErrors, hasItem("sp_entityId_not_found"));
 		assertThat(settingsErrors, hasItem("sp_acs_not_found"));
 		assertThat(settingsErrors, hasItem("sp_cert_not_found_and_required"));
+		assertThat(settingsErrors, hasItem("contact_type_invalid"));
 		assertThat(settingsErrors, hasItem("contact_not_enough_data"));
 		assertThat(settingsErrors, hasItem("organization_not_enough_data"));
 	}
@@ -151,6 +152,7 @@ public class Saml2SettingsTest {
 		assertThat(settingsErrors, hasItem("sp_entityId_not_found"));
 		assertThat(settingsErrors, hasItem("sp_acs_not_found"));
 		assertThat(settingsErrors, hasItem("sp_cert_not_found_and_required"));
+		assertThat(settingsErrors, hasItem("contact_type_invalid"));
 		assertThat(settingsErrors, hasItem("contact_not_enough_data"));
 		assertThat(settingsErrors, hasItem("organization_not_enough_data"));
 		assertThat(settingsErrors, hasItem("idp_entityId_not_found"));
