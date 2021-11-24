@@ -394,6 +394,8 @@ public final class Util {
 		} catch (Throwable e) {}
 
 		DocumentBuilder builder = docfactory.newDocumentBuilder();
+		XMLErrorAccumulatorHandler errorAcumulator = new XMLErrorAccumulatorHandler();
+        	builder.setErrorHandler(errorAcumulator);
 		Document doc = builder.parse(inputSource);
 
 		// Loop through the doc and tag every element with an ID attribute
