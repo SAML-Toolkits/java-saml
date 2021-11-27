@@ -236,9 +236,12 @@ public class IdPMetadataParserTest {
 		assertEquals("http://localhost:8080/java-saml-jspsample/metadata.jsp", setting.getSpEntityId());
 		assertEquals(Constants.RSA_SHA512, setting.getSignatureAlgorithm());
 		assertEquals(Constants.SHA512, setting.getDigestAlgorithm());
-		assertEquals(2, setting.getContacts().size());
-		assertEquals("technical@example.com", setting.getContacts().get(0).getEmailAddress());
-		assertEquals("support@example.com", setting.getContacts().get(1).getEmailAddress());
+		assertEquals(4, setting.getContacts().size());
+		assertEquals("administrative@example.com", setting.getContacts().get(0).getEmailAddresses().get(0));
+		assertEquals("administrative2@example.com", setting.getContacts().get(0).getEmailAddresses().get(1));
+		assertEquals("info@example.com", setting.getContacts().get(1).getEmailAddresses().get(0));
+		assertEquals("technical@example.com", setting.getContacts().get(2).getEmailAddresses().get(0));
+		assertEquals("support@example.com", setting.getContacts().get(3).getEmailAddresses().get(0));
 		assertEquals("SP Java", setting.getOrganization().getOrgName());
 		assertEquals("EXAMPLE", setting.getUniqueIDPrefix());
 
@@ -257,9 +260,12 @@ public class IdPMetadataParserTest {
 		assertEquals("http://localhost:8080/java-saml-jspsample/metadata.jsp", setting.getSpEntityId());
 		assertEquals(Constants.RSA_SHA512, setting.getSignatureAlgorithm());
 		assertEquals(Constants.SHA512, setting.getDigestAlgorithm());
-		assertEquals(2, setting.getContacts().size());
-		assertEquals("technical@example.com", setting.getContacts().get(0).getEmailAddress());
-		assertEquals("support@example.com", setting.getContacts().get(1).getEmailAddress());
+		assertEquals(4, setting.getContacts().size());
+		assertEquals("administrative@example.com", setting.getContacts().get(0).getEmailAddresses().get(0));
+		assertEquals("administrative2@example.com", setting.getContacts().get(0).getEmailAddresses().get(1));
+		assertEquals("info@example.com", setting.getContacts().get(1).getEmailAddresses().get(0));
+		assertEquals("technical@example.com", setting.getContacts().get(2).getEmailAddresses().get(0));
+		assertEquals("support@example.com", setting.getContacts().get(3).getEmailAddresses().get(0));
 		assertEquals("SP Java", setting.getOrganization().getOrgName());
 		assertEquals("EXAMPLE", setting.getUniqueIDPrefix());
 

@@ -5,10 +5,14 @@ import java.security.PrivateKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import com.onelogin.saml2.model.hsm.HSM;
+
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -1015,24 +1019,25 @@ public class Saml2Settings {
 
 		List<Contact> contacts = this.getContacts();
 		if (!contacts.isEmpty()) {
-/*			
-			List<String> validTypes = new ArrayList<String>();
-			validTypes.add("technical");
-			validTypes.add("support");
-			validTypes.add("administrative");
-			validTypes.add("billing");
-			validTypes.add("other");
-*/
+			Set<String> validTypes = new HashSet<>();
+			validTypes.add(Constants.CONTACT_TYPE_TECHNICAL);
+			validTypes.add(Constants.CONTACT_TYPE_SUPPORT);
+			validTypes.add(Constants.CONTACT_TYPE_ADMINISTRATIVE);
+			validTypes.add(Constants.CONTACT_TYPE_BILLING);
+			validTypes.add(Constants.CONTACT_TYPE_OTHER);
 			for (Contact contact : contacts) {
-/*
 				if (!validTypes.contains(contact.getContactType())) {
 					errorMsg = "contact_type_invalid";
 					errors.add(errorMsg);
 					LOGGER.error(errorMsg);
 				}
-*/
-
-				if (contact.getEmailAddress().isEmpty() || contact.getGivenName().isEmpty()) {
+				if ((contact.getEmailAddresses().isEmpty()
+				            || contact.getEmailAddresses().stream().allMatch(StringUtils::isEmpty))
+				            && (contact.getTelephoneNumbers().isEmpty() || contact.getTelephoneNumbers()
+				                        .stream().allMatch(StringUtils::isEmpty))
+				            && StringUtils.isEmpty(contact.getCompany())
+				            && StringUtils.isEmpty(contact.getGivenName())
+				            && StringUtils.isEmpty(contact.getSurName())) {
 					errorMsg = "contact_not_enough_data";
 					errors.add(errorMsg);
 					LOGGER.error(errorMsg);

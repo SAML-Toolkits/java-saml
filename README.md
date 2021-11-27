@@ -250,6 +250,31 @@ onelogin.saml2.sp.x509certNew =
 # If you have     PKCS#1   BEGIN RSA PRIVATE KEY  convert it by   openssl pkcs8 -topk8 -inform pem -nocrypt -in sp.rsa_key -outform pem -out sp.pem
 onelogin.saml2.sp.privatekey =
 
+# Organization
+onelogin.saml2.organization.name = SP Java 
+onelogin.saml2.organization.displayname = SP Java Example
+onelogin.saml2.organization.url = http://sp.example.com
+onelogin.saml2.organization.lang = en
+
+# Contacts (use indexes to specify multiple contacts, multiple e-mail addresses per contact, multiple phone numbers per contact)
+onelogin.saml2.sp.contact[0].contactType=administrative
+onelogin.saml2.sp.contact[0].company=ACME
+onelogin.saml2.sp.contact[0].given_name=Guy
+onelogin.saml2.sp.contact[0].sur_name=Administrative
+onelogin.saml2.sp.contact[0].email_address[0]=administrative@example.com
+onelogin.saml2.sp.contact[0].email_address[1]=administrative2@example.com
+onelogin.saml2.sp.contact[0].telephone_number[0]=+1-123456789
+onelogin.saml2.sp.contact[0].telephone_number[1]=+1-987654321
+onelogin.saml2.sp.contact[1].contactType=other
+onelogin.saml2.sp.contact[1].company=Big Corp
+onelogin.saml2.sp.contact[1].email_address=info@example.com
+
+# Legacy contacts (legacy way to specify just a technical and a support contact with minimal info) 
+onelogin.saml2.contacts.technical.given_name = Technical Guy
+onelogin.saml2.contacts.technical.email_address = technical@example.com
+onelogin.saml2.contacts.support.given_name = Support Guy
+onelogin.saml2.contacts.support.email_address = support@example.com
+
 ## Identity Provider Data that we want connect with our SP ##
 
 # Identifier of the IdP entity  (must be a URI)
@@ -373,18 +398,6 @@ onelogin.saml2.security.reject_deprecated_alg = true
 # attribute values.
 onelogin.saml2.parsing.trim_name_ids = false
 onelogin.saml2.parsing.trim_attribute_values = false
-
-# Organization
-onelogin.saml2.organization.name = SP Java 
-onelogin.saml2.organization.displayname = SP Java Example
-onelogin.saml2.organization.url = http://sp.example.com
-onelogin.saml2.organization.lang = en
-
-# Contacts
-onelogin.saml2.contacts.technical.given_name = Technical Guy
-onelogin.saml2.contacts.technical.email_address = technical@example.com
-onelogin.saml2.contacts.support.given_name = Support Guy
-onelogin.saml2.contacts.support.email_address = support@example.com
 
 # Prefix used in generated Unique IDs.
 # Optional, defaults to ONELOGIN_ or full ID is like ONELOGIN_ebb0badd-4f60-4b38-b20a-a8e01f0592b1.
