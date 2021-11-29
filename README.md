@@ -371,6 +371,10 @@ onelogin.saml2.security.allow_duplicated_attribute_name = false
 # (In order to validate the xml, 'strict' and 'wantXMLValidation' must be true).
 onelogin.saml2.security.want_xml_validation = true
 
+# Indicates if the SP will validate 'Destination' attribute in SAML response
+# Both 'strict' and 'wantDestinationUrlValidation' must be true
+onelogin.saml2.security.want_destination_url_validation = true
+
 # Algorithm that the toolkit will use on signing process. Options:
 #  'http://www.w3.org/2000/09/xmldsig#rsa-sha1'
 #  'http://www.w3.org/2000/09/xmldsig#dsa-sha1'
