@@ -1281,7 +1281,7 @@ public class SamlResponse {
 	 * @throws ValidationError
 	 */
 	protected void validateDestination(final Element element) throws ValidationError {
-		if (element.hasAttribute("Destination")) {
+		if (settings.getWantDestinationUrlValidation() && element.hasAttribute("Destination")) {
 			final String destinationUrl = element.getAttribute("Destination");
 			if (destinationUrl != null) {
 				if (destinationUrl.isEmpty()) {

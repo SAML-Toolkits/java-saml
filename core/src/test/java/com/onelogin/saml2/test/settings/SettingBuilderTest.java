@@ -843,6 +843,7 @@ public class SettingBuilderTest {
 		assertTrue(setting.getWantAssertionsSigned());
 		assertTrue(setting.getWantAssertionsEncrypted());
 		assertTrue(setting.getWantNameIdEncrypted());
+		assertTrue(setting.getWantDestinationUrlValidation());
 
 		List<String> reqAuthContext = new ArrayList<>();
 		reqAuthContext.add("urn:oasis:names:tc:SAML:2.0:ac:classes:urn:oasis:names:tc:SAML:2.0:ac:classes:Password");
@@ -925,6 +926,10 @@ public class SettingBuilderTest {
 		assertFalse(previousCert.equals(newCert));
 		assertFalse(previousKey.equals(newKey));
 
+		samlData.put(SECURITY_WANT_DESTINATION_URL_VALIDATION, false);
+
+		setting = new SettingsBuilder().fromValues(samlData).build();
+		assertFalse(setting.getWantDestinationUrlValidation());
 	}
 
 	/**
@@ -1045,6 +1050,7 @@ public class SettingBuilderTest {
 		assertTrue(setting.getWantAssertionsSigned());
 		assertTrue(setting.getWantAssertionsEncrypted());
 		assertTrue(setting.getWantNameIdEncrypted());
+		assertTrue(setting.getWantDestinationUrlValidation());
 
 		List<String> reqAuthContext = new ArrayList<>();
 		reqAuthContext.add("urn:oasis:names:tc:SAML:2.0:ac:classes:urn:oasis:names:tc:SAML:2.0:ac:classes:Password");

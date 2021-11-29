@@ -491,4 +491,16 @@ public class Saml2SettingsTest {
 		assertFalse(errors.isEmpty());
 		assertTrue(errors.contains("expired_xml"));
 	}
+
+	/**
+	 * Tests the wantDestinationUrlValidation method of Saml2Settings
+	 */
+	@Test
+	public void testIsWantDestinationUrlValidation() {
+		Saml2Settings settings = new Saml2Settings();
+
+		assertTrue(settings.getWantDestinationUrlValidation());
+		settings.setDestinationUrlValidation(false);
+		assertFalse(settings.getWantDestinationUrlValidation());
+	}
 }
