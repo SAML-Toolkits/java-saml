@@ -791,7 +791,7 @@ public class Saml2Settings {
 	 * 			the wantDestinationUrlValidation value to be set.
 	 * 			Based on it the SP will validate Destination attribute in SAML response XML.
 	 */
-	public void setDestinationUrlValidation(boolean wantDestinationUrlValidation) {
+	public void setWantDestinationUrlValidation(boolean wantDestinationUrlValidation) {
 		this.wantDestinationUrlValidation = wantDestinationUrlValidation;
 	}
 

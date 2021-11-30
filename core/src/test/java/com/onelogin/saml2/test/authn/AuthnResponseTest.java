@@ -5,7 +5,6 @@ import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.exception.SettingsException;
 import com.onelogin.saml2.exception.ValidationError;
 import com.onelogin.saml2.http.HttpRequest;
-import com.onelogin.saml2.logout.LogoutRequest;
 import com.onelogin.saml2.model.SamlResponseStatus;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
@@ -1947,7 +1946,7 @@ public class AuthnResponseTest {
 		samlResponse.isValid();
 		assertThat(samlResponse.getError(), not(containsString("The response was received at")));
 
-		settings.setDestinationUrlValidation(false);
+		settings.setWantDestinationUrlValidation(false);
 		samlResponse = new SamlResponse(settings, newHttpRequest(requestURL, samlResponseEncoded));
 		samlResponse.isValid();
 		assertThat(samlResponse.getError(), not(containsString("The response was received at")));

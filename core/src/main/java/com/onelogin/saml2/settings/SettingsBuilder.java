@@ -402,7 +402,7 @@ public class SettingsBuilder {
 
 		Boolean wantDestinationUrlvalidation = loadBooleanProperty(SECURITY_WANT_DESTINATION_URL_VALIDATION);
 		if (wantDestinationUrlvalidation != null)
-			saml2Setting.setDestinationUrlValidation(wantDestinationUrlvalidation);
+			saml2Setting.setWantDestinationUrlValidation(wantDestinationUrlvalidation);
 
 		Boolean signMetadata = loadBooleanProperty(SECURITY_SIGN_METADATA);
 		if (signMetadata != null)

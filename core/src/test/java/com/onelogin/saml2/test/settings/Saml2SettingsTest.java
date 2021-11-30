@@ -500,7 +500,7 @@ public class Saml2SettingsTest {
 		Saml2Settings settings = new Saml2Settings();
 
 		assertTrue(settings.getWantDestinationUrlValidation());
-		settings.setDestinationUrlValidation(false);
+		settings.setWantDestinationUrlValidation(false);
 		assertFalse(settings.getWantDestinationUrlValidation());
 	}
 }
