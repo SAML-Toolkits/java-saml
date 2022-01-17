@@ -44,13 +44,6 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- date and time library for Java -->
-		<dependency>
-			<groupId>joda-time</groupId>
-			<artifactId>joda-time</artifactId>
-			<version>2.10.6</version>
-		</dependency>
-
 		<!-- commons -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>

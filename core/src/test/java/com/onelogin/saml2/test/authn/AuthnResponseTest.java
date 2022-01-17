@@ -10,13 +10,10 @@ import com.onelogin.saml2.model.SamlResponseStatus;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
 import com.onelogin.saml2.util.Constants;
+import com.onelogin.saml2.util.DateTimeTestUtils;
 import com.onelogin.saml2.util.Util;
 
 import org.hamcrest.Matchers;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeUtils;
-import org.joda.time.Instant;
-import org.joda.time.format.ISODateTimeFormat;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,6 +25,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -61,13 +59,13 @@ public class AuthnResponseTest {
 
 	@Before
 	public void setDateTime() {
-		//All calls to Joda time check will use this timestamp as "now" value : 
-		setDateTime("2020-06-01T00:00:00Z");
+		//All calls to time check will use this timestamp as "now" value : 
+		DateTimeTestUtils.setFixedDateTime("2020-06-01T00:00:00Z");
 	}
 	
 	@After
 	public void goBackToNormal() {
-		DateTimeUtils.setCurrentMillisSystem();
+		DateTimeTestUtils.setCurrentMillisSystem();
 	}
 
 	/**
@@ -1157,7 +1155,7 @@ public class AuthnResponseTest {
 		final List<Instant> notOnOrAfters = samlResponse.getAssertionNotOnOrAfter();
 
 		assertEquals("pfxa46574df-b3b0-a06a-23c8-636413198772", samlResponse.getAssertionId());
-		assertThat(notOnOrAfters, contains(new Instant("2010-11-18T22:02:37Z")));
+		assertThat(notOnOrAfters, contains(Instant.parse("2010-11-18T22:02:37Z")));
 
 	}
 
@@ -1170,7 +1168,7 @@ public class AuthnResponseTest {
 		final List<Instant> notOnOrAfters = samlResponse.getAssertionNotOnOrAfter();
 
 		assertEquals("_519c2712648ee09a06d1f9a08e9e835715fea60267", samlResponse.getAssertionId());
-		assertThat(notOnOrAfters, contains(new Instant("2055-06-07T20:17:08Z")));
+		assertThat(notOnOrAfters, contains(Instant.parse("2055-06-07T20:17:08Z")));
 
 	}
 
@@ -1187,7 +1185,7 @@ public class AuthnResponseTest {
 		final List<Instant> notOnOrAfters = samlResponse.getAssertionNotOnOrAfter();
 
 		assertEquals("pfx7841991c-c73f-4035-e2ee-c170c0e1d3e4", samlResponse.getAssertionId());
-		assertThat(notOnOrAfters, contains(new Instant("2120-06-17T14:53:44Z"), new Instant("2010-06-17T14:53:44Z")));
+		assertThat(notOnOrAfters, contains(Instant.parse("2120-06-17T14:53:44Z"), Instant.parse("2010-06-17T14:53:44Z")));
 	}
 
 	/**
@@ -1449,7 +1447,7 @@ public class AuthnResponseTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
 		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
-		assertEquals(1290203857000L, samlResponse.getSessionNotOnOrAfter().getMillis());
+		assertEquals(1290203857000L, samlResponse.getSessionNotOnOrAfter().toEpochMilli());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/response2.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
@@ -1457,7 +1455,7 @@ public class AuthnResponseTest {
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
-		assertEquals(2696012228000L, samlResponse.getSessionNotOnOrAfter().getMillis());
+		assertEquals(2696012228000L, samlResponse.getSessionNotOnOrAfter().toEpochMilli());
 	}
 
 	/**
@@ -2310,17 +2308,17 @@ public class AuthnResponseTest {
 		assertEquals("No Signature found. SAML Response rejected", samlResponse.getError());
 
 		settings.setStrict(true);
-		setDateTime("2020-07-16T07:57:00Z");
+		DateTimeTestUtils.setFixedDateTime("2020-07-16T07:57:00Z");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("A valid SubjectConfirmation was not found on this Response: SubjectConfirmationData doesn't match a valid Recipient", samlResponse.getError());
 
-		setDateTime("2020-07-01T00:00:00Z");
+		DateTimeTestUtils.setFixedDateTime("2020-07-01T00:00:00Z");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("Could not validate timestamp: not yet valid. Check system clock.", samlResponse.getError());
 
-		setDateTime("2020-08-01T00:00:00Z");
+		DateTimeTestUtils.setFixedDateTime("2020-08-01T00:00:00Z");
 		samlResponse = new SamlResponse(settings, newHttpRequest(samlResponseEncoded));
 		assertFalse(samlResponse.isValid());
 		assertEquals("Could not validate timestamp: expired. Check system clock.", samlResponse.getError());	
@@ -3333,9 +3331,5 @@ public class AuthnResponseTest {
 		return new HttpRequest(requestURL, (String)null).addParameter("SAMLResponse", samlResponseEncoded);
 	}
 	
-	private void setDateTime(String ISOTimeStamp) {
-		DateTime dateTime = ISODateTimeFormat.dateTimeNoMillis().withZoneUTC().parseDateTime(ISOTimeStamp);
-		DateTimeUtils.setCurrentMillisFixed(dateTime.toDate().getTime());
-	}
 }
 
