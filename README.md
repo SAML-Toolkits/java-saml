@@ -1,4 +1,4 @@
-# OneLogin's SAML Java Toolkit
+# OneLogin's SAML Java Toolkit <!-- omit in toc -->
 
 [![Build Status](https://travis-ci.org/onelogin/java-saml.svg?branch=master)](https://travis-ci.org/onelogin/java-saml) [![Coverage Status](https://coveralls.io/repos/github/onelogin/java-saml/badge.svg?branch=master)](https://coveralls.io/github/onelogin/java-saml?branch=master)
 
@@ -20,6 +20,45 @@ We [introduced some incompatibilities](https://github.com/onelogin/java-saml/iss
 Version 1.1.2 is considered to be deprecated. If you have used it, we strongly recommend that you migrate to the new version.
 We rebuilt the toolkit on 2.0.0, so code/settings that you had been using in the previous version will no longer be compatible.
 
+- [Why add SAML support to my software?](#why-add-saml-support-to-my-software)
+- [General description](#general-description)
+- [Security warning](#security-warning)
+- [Installation](#installation)
+  - [Hosting](#hosting)
+    - [Github](#github)
+    - [Maven](#maven)
+  - [Dependencies](#dependencies)
+- [Working with the github repository code and Eclipse.](#working-with-the-github-repository-code-and-eclipse)
+  - [Get the toolkit.](#get-the-toolkit)
+  - [Adding java-saml toolkit components as a project](#adding-java-saml-toolkit-components-as-a-project)
+  - [Adding the java-saml-tookit-jspsample as a project](#adding-the-java-saml-tookit-jspsample-as-a-project)
+  - [Deploy the java-saml-tookit-jspsample](#deploy-the-java-saml-tookit-jspsample)
+- [Getting started](#getting-started)
+  - [Learning the toolkit](#learning-the-toolkit)
+    - [core (com.onelogin:java-saml-core)](#core-comoneloginjava-saml-core)
+    - [toolkit (com.onelogin:java-saml)](#toolkit-comoneloginjava-saml)
+    - [samples (com.onelogin:java-saml-tookit-samples)](#samples-comoneloginjava-saml-tookit-samples)
+  - [How it works](#how-it-works)
+    - [Javadocs](#javadocs)
+    - [Settings](#settings)
+      - [Properties File](#properties-file)
+      - [KeyStores](#keystores)
+      - [Dynamic Settings](#dynamic-settings)
+    - [The HttpRequest](#the-httprequest)
+    - [Initiate SSO](#initiate-sso)
+    - [The SP Endpoints](#the-sp-endpoints)
+      - [SP Metadata](#sp-metadata)
+      - [Attribute Consumer Service(ACS)](#attribute-consumer-serviceacs)
+      - [Single Logout Service (SLS)](#single-logout-service-sls)
+    - [Initiate SLO](#initiate-slo)
+  - [Extending the provided implementation](#extending-the-provided-implementation)
+  - [Working behind load balancer](#working-behind-load-balancer)
+  - [IdP with multiple certificates](#idp-with-multiple-certificates)
+  - [Replay attacks](#replay-attacks)
+- [Demo included in the toolkit](#demo-included-in-the-toolkit)
+    - [SP setup](#sp-setup)
+    - [IdP setup](#idp-setup)
+    - [How it works](#how-it-works-1)
 
 ## Why add SAML support to my software?
 
