@@ -17,17 +17,17 @@ Version 2.0.0 - 2.4.0, compatible with java7 / java8.
 
 We [introduced some incompatibilities](https://github.com/onelogin/java-saml/issues/90), that could be fixed and make it compatible with java6.
 
-Version 1.1.2 is considered to be deprecated. If you have used it, we strongly recommend that you migrate to the new version. 
+Version 1.1.2 is considered to be deprecated. If you have used it, we strongly recommend that you migrate to the new version.
 We rebuilt the toolkit on 2.0.0, so code/settings that you had been using in the previous version will no longer be compatible.
 
 
 ## Why add SAML support to my software?
 
 SAML is an XML-based standard for web browser single sign-on and is defined by
-the OASIS Security Services Technical Committee. The standard has been around 
+the OASIS Security Services Technical Committee. The standard has been around
 since 2002, but lately it has become popular due to its advantages as follows:
 
- * **Usability** - One-click access from portals or intranets, deep linking, 
+ * **Usability** - One-click access from portals or intranets, deep linking,
    password elimination and automatically renewing sessions make life
    easier for the user.
  * **Security** - Based on strong digital signatures for authentication and
@@ -40,7 +40,7 @@ since 2002, but lately it has become popular due to its advantages as follows:
  * **IT Friendly** - SAML simplifies life for IT because it centralizes
    authentication, provides greater visibility and makes directory
    integration easier.
- * **Opportunity** - B2B cloud vendor should support SAML to facilitate the 
+ * **Opportunity** - B2B cloud vendor should support SAML to facilitate the
    integration of their product.
 
 
@@ -75,7 +75,7 @@ In production, the **onelogin.saml2.strict** setting parameter MUST be set as **
 
 In production also we highly recommend to register on the settings the IdP certificate instead of using the fingerprint method. The fingerprint, is a hash, so at the end is open to a collision attack that can end on a signature validation bypass. Other SAML toolkits deprecated that mechanism, we maintain it for compatibility and also to be used on test environment.
 
-The IdPMetadataParser class does not validate in any way the URL that is introduced in order to be parsed. 
+The IdPMetadataParser class does not validate in any way the URL that is introduced in order to be parsed.
 
 Usually the same administrator that handles the Service Provider also sets the URL to the IdP, which should be a trusted resource.
 
@@ -97,7 +97,7 @@ Install it as a maven dependency:
   <dependency>
       <groupId>com.onelogin</groupId>
       <artifactId>java-saml</artifactId>
-      <version>2.6.0</version>
+      <version>2.8.0</version>
   </dependency>
 ```
 
@@ -246,12 +246,12 @@ onelogin.saml2.sp.x509cert =
 # Future SP certificate, to be used during SP Key roll over
 onelogin.saml2.sp.x509certNew =
 
-# Requires Format PKCS#8   BEGIN PRIVATE KEY       
+# Requires Format PKCS#8   BEGIN PRIVATE KEY
 # If you have     PKCS#1   BEGIN RSA PRIVATE KEY  convert it by   openssl pkcs8 -topk8 -inform pem -nocrypt -in sp.rsa_key -outform pem -out sp.pem
 onelogin.saml2.sp.privatekey =
 
 # Organization
-onelogin.saml2.organization.name = SP Java 
+onelogin.saml2.organization.name = SP Java
 onelogin.saml2.organization.displayname = SP Java Example
 onelogin.saml2.organization.url = http://sp.example.com
 onelogin.saml2.organization.lang = en
@@ -269,7 +269,7 @@ onelogin.saml2.sp.contact[1].contactType=other
 onelogin.saml2.sp.contact[1].company=Big Corp
 onelogin.saml2.sp.contact[1].email_address=info@example.com
 
-# Legacy contacts (legacy way to specify just a technical and a support contact with minimal info) 
+# Legacy contacts (legacy way to specify just a technical and a support contact with minimal info)
 onelogin.saml2.contacts.technical.given_name = Technical Guy
 onelogin.saml2.contacts.technical.email_address = technical@example.com
 onelogin.saml2.contacts.support.given_name = Support Guy
@@ -284,7 +284,7 @@ onelogin.saml2.idp.entityid =
 # URL Target of the IdP where the SP will send the Authentication Request Message
 onelogin.saml2.idp.single_sign_on_service.url =
 
-# SAML protocol binding to be used to deliver the <AuthnRequest> message 
+# SAML protocol binding to be used to deliver the <AuthnRequest> message
 # to the IdP.  Onelogin Toolkit supports for this endpoint the
 # HTTP-Redirect binding only
 onelogin.saml2.idp.single_sign_on_service.binding = urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect
@@ -316,7 +316,7 @@ onelogin.saml2.idp.x509cert =
 # If a fingerprint is provided, then the certFingerprintAlgorithm is required in order to
 # let the toolkit know which Algorithm was used. Possible values: sha1, sha256, sha384 or sha512
 # 'sha1' is the default value.
-# onelogin.saml2.idp.certfingerprint = 
+# onelogin.saml2.idp.certfingerprint =
 # onelogin.saml2.idp.certfingerprint_algorithm = sha256
 
 # Security settings
@@ -346,7 +346,7 @@ onelogin.saml2.security.want_messages_signed = false
 onelogin.saml2.security.want_assertions_signed = false
 
 # Indicates a requirement for the Metadata of this SP to be signed.
-# Right now supported null (in order to not sign) or true (sign using SP private key) 
+# Right now supported null (in order to not sign) or true (sign using SP private key)
 onelogin.saml2.security.sign_metadata =
 
 # Indicates a requirement for the Assertions received by this SP to be encrypted
@@ -394,7 +394,7 @@ onelogin.saml2.security.reject_deprecated_alg = true
 # SAML specification states that no trimming for string elements should be performed, so no trimming will be
 # performed by default on extracted Name IDs and attribute values. However, some SAML implementations may add
 # undesirable surrounding whitespace when outputting XML (possibly due to formatting/pretty-printing).
-# These two options allow to optionally enable value trimming on extracted Name IDs (including issuers) and 
+# These two options allow to optionally enable value trimming on extracted Name IDs (including issuers) and
 # attribute values.
 onelogin.saml2.parsing.trim_name_ids = false
 onelogin.saml2.parsing.trim_attribute_values = false
@@ -665,7 +665,7 @@ and later executing the redirection manually.
 
 ### Extending the provided implementation
 
-All the provided SAML message classes (`AuthnRequest`, `SamlResponse`, `LogoutRequest`, `LogoutResponse`) can be extended to add or change the processing behavior. 
+All the provided SAML message classes (`AuthnRequest`, `SamlResponse`, `LogoutRequest`, `LogoutResponse`) can be extended to add or change the processing behavior.
 
 In particular, the classes used to produce outgoing messages (`AuthnRequest`, `LogoutRequest`, and `LogoutResponse`) also provide a `postProcessXml` method that can be overridden to customise the generation of the corresponding SAML message XML, along with the ability to pass in proper extensions of the input parameter classes (`AuthnRequestParams`, `LogoutRequestParams`, and `LogoutResponseParams` respectively).
 
@@ -683,7 +683,7 @@ auth.setSamlMessageFactory(new SamlMessageFactory() {
 	public SamlResponse createSamlResponse(Saml2Settings settings, HttpRequest request) throws Exception {
 		return new SamlResponseEx(settings, request);
 	}
-}); 
+});
 // then proceed with login...
 auth.login(relayState, new AuthnRequestParamsEx()); // the custom generation of AuthnReqeustEx will be executed
 // ... or process the response as usual
@@ -700,12 +700,12 @@ For Apache Tomcat this is done by setting the proxyName, proxyPort, scheme and s
 
 
 ### IdP with multiple certificates
- 
+
  In some scenarios the IdP uses different certificates for
  signing/encryption, or is under key rollover phase and more than one certificate is published on IdP metadata.
- 
+
  In order to handle that the toolkit offers the `onelogin.saml2.idp.x509certMulti` parameters where you can set additional certificates that will be used to validate IdP signature. However just the certificate set in `onelogin.saml2.idp.x509cert` parameter will be used for encrypting.
- 
+
 
 ### Replay attacks
 
