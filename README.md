@@ -136,7 +136,7 @@ Install it as a maven dependency:
   <dependency>
       <groupId>com.onelogin</groupId>
       <artifactId>java-saml</artifactId>
-      <version>2.8.0</version>
+      <version>2.9.0</version>
   </dependency>
 ```
 
