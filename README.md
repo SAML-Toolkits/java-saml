@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/onelogin/java-saml.svg?branch=master)](https://travis-ci.org/onelogin/java-saml) [![Coverage Status](https://coveralls.io/repos/github/onelogin/java-saml/badge.svg?branch=master)](https://coveralls.io/github/onelogin/java-saml?branch=master)
 
+## **Notice:** This project is currently not under active development, please see [#388](https://github.com/onelogin/java-saml/issues/388) for more information.
+
 Add SAML support to your Java applications using this library.
 Forget those complicated libraries and use that open source library provided and supported by OneLogin Inc.
 
