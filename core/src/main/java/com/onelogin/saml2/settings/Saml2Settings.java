@@ -17,6 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import com.onelogin.saml2.model.AttributeConsumingService;
 import com.onelogin.saml2.model.Contact;
 import com.onelogin.saml2.model.Organization;
 import com.onelogin.saml2.util.Constants;
@@ -49,6 +51,7 @@ public class Saml2Settings {
 	private X509Certificate spX509certNew = null;
 	private PrivateKey spPrivateKey = null;
 	private HSM hsm = null;
+	private List<AttributeConsumingService> spAttributeConsumingServices = new ArrayList<>();
 
 	// IdP
 	private String idpEntityId = "";
@@ -125,6 +128,13 @@ public class Saml2Settings {
 		return spAssertionConsumerServiceBinding;
 	}
 
+	/**
+	 * @return the SP Attribute Consuming Services 
+	 */
+	public final List<AttributeConsumingService> getSpAttributeConsumingServices() {
+		  return spAttributeConsumingServices;
+	}
+	
 	/**
 	 * @return the spSingleLogoutServiceUrl setting value
 	 */
@@ -905,6 +915,17 @@ public class Saml2Settings {
 	public boolean isTrimAttributeValues() {
 		return trimAttributeValues;
 	}
+
+	/**
+	 * Set the Attribute Consuming Services to be declared in the Service Provider
+	 * metadata
+	 * 
+	 * @param spAttributeConsumingServices
+	 *              the Attribute Consuming Services to set
+	 */
+	protected final void setSpAttributeConsumingServices(List<AttributeConsumingService> spAttributeConsumingServices) {
+		this.spAttributeConsumingServices = spAttributeConsumingServices;
+	}
 	
 	/**
 	 * Set contacts info that will be listed on the Service Provider metadata
@@ -988,6 +1009,44 @@ public class Saml2Settings {
 
 		return this.getIdpx509certMulti() != null && !this.getIdpx509certMulti().isEmpty();
 	}
+	
+	/*
+	 * Auxiliary method to check Attribute Consuming Services are properly
+	 * configured.
+	 * 
+	 * @param errors the list to add to when an error is encountered
+	 */
+	private void checkAttributeConsumingServices(List<String> errors) {
+		List<AttributeConsumingService> attributeConsumingServices = getSpAttributeConsumingServices();
+		if(!attributeConsumingServices.isEmpty()) {
+			String errorMsg;
+			// all Attribute Consuming Services must have a service name
+			if(attributeConsumingServices.stream().anyMatch(service -> StringUtils.isEmpty(service.getServiceName()))) {
+				errorMsg = "sp_attribute_consuming_service_not_enough_data";
+				errors.add(errorMsg);
+				LOGGER.error(errorMsg);
+			}
+			// all Attribute Consuming Services must have at least one requested attribute
+			if(attributeConsumingServices.stream().anyMatch(service -> service.getRequestedAttributes().isEmpty())) {
+				errorMsg = "sp_attribute_consuming_service_no_requested_attribute";
+				errors.add(errorMsg);
+				LOGGER.error(errorMsg);
+			}
+			// there must be at most one with default = true
+			if(attributeConsumingServices.stream().filter(service -> Boolean.TRUE.equals(service.isDefault())).count() > 1) {
+				errorMsg = "sp_attribute_consuming_service_multiple_defaults";
+				errors.add(errorMsg);
+				LOGGER.error(errorMsg);
+			}
+			// all requested attributes must have a name
+			if(attributeConsumingServices.stream().flatMap(service -> service.getRequestedAttributes().stream())
+					.anyMatch(attribute -> StringUtils.isEmpty(attribute.getName()))) {
+				errorMsg = "sp_attribute_consuming_service_not_enough_requested_attribute_data";
+				errors.add(errorMsg);
+				LOGGER.error(errorMsg);
+			}
+		}
+	}
 
 	/**
 	 * Checks the SP settings .
@@ -1009,6 +1068,8 @@ public class Saml2Settings {
 			errors.add(errorMsg);
 			LOGGER.error(errorMsg);
 		}
+		
+		checkAttributeConsumingServices(errors);
 
 		if (this.getHsm() == null && (this.getAuthnRequestsSigned() || this.getLogoutRequestSigned()
 			|| this.getLogoutResponseSigned() || this.getWantAssertionsEncrypted() || this.getWantNameIdEncrypted()) && !this.checkSPCerts()) {

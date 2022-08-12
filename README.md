@@ -316,6 +316,9 @@ onelogin.saml2.contacts.technical.email_address = technical@example.com
 onelogin.saml2.contacts.support.given_name = Support Guy
 onelogin.saml2.contacts.support.email_address = support@example.com
 
+# Attribute Consuming Services
+# SEE BELOW
+
 ## Identity Provider Data that we want connect with our SP ##
 
 # Identifier of the IdP entity  (must be a URI)
@@ -551,8 +554,90 @@ The getSPMetadata will return the metadata signed or not based on the security p
 
 Before the XML metadata is exposed, a check takes place to ensure that the info to be provided is valid.
 
-##### Attribute Consumer Service(ACS)
-This code handles the SAML response that the IdP forwards to the SP through the user's client.
+##### Attribute Consuming Services
+The SP may optionally specify one or more Attribute Consuming Services in its metadata. These can be configured in the settings.
+
+If just one Attribute Consuming Service is required:
+
+```properties
+# Attribute Consuming Service name when just one such service should be declared by the SP.
+# Comment out or set to empty if no Attribute Consuming Service should be declared, or if multiple ones should (see below). 
+# The service name is mandatory.
+onelogin.saml2.sp.attribute_consuming_service.name = My service
+
+# Attribute Consuming Service description when just one such service should be declared by the SP.
+# Ignored if the previous property is commented or empty. 
+# The service description is optional.
+onelogin.saml2.sp.attribute_consuming_service.description = My service description
+
+# Language used for Attribute Consuming Service name and description when just one such service should be declared by the SP.
+# Ignored if the name property is commented or empty. 
+# The language is optional and defaults to "en" (English).
+onelogin.saml2.sp.attribute_consuming_service.lang = en
+
+# Requested attributes to be included in the Attribute Consuming Service when just one such service should be declared by the SP.
+# At least one requested attribute must be specified, otherwise schema validation will fail.
+# Attribute properties are indexed properties, starting from 0. The index is used only to enumerate and sort attributes, but it's required.
+# The following properties allow to define each requested attribute:
+# - name: mandatory
+# - name_format: optional; if omitted, defaults to urn:oasis:names:tc:SAML:2.0:attrname-format:unspecified
+# - friendly_name: optional; if omitted, it won't appear in SP metadata
+# - required: optional; if omitted or empty, defaults to false
+# - value[x]: an attribute value; the [x] index is used only to enumerate and sort values, but it's required
+# Please note that only simple values are currently supported and treated internally as strings. Hence no structured values
+# and no ability to specify an xsi:type attribute. 
+# Attribute values are optional and most often they are simply omitted.
+onelogin.saml2.sp.attribute_consuming_service.attribute[0].name = Email
+onelogin.saml2.sp.attribute_consuming_service.attribute[0].name_format = urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress
+onelogin.saml2.sp.attribute_consuming_service.attribute[0].friendly_name = E-mail address
+onelogin.saml2.sp.attribute_consuming_service.attribute[0].required = true
+onelogin.saml2.sp.attribute_consuming_service.attribute[0].value[0] = foo@example.org
+onelogin.saml2.sp.attribute_consuming_service.attribute[0].value[1] = bar@example.org
+```
+
+If multiple Attribute Consuming Services are required, they can be specified in a similar way, but using indexes: these indexes 
+are used to enumerate and identify attribute consuming services within the SP metadata and can be subsequently used in the auth 
+process to specify which attribute set should be requested to the IdP. The "default" property can also be set to designate the 
+default Attribute Consuming Service. Here is an example:
+
+```properties
+onelogin.saml2.sp.attribute_consuming_service[0].name = Just e-mail
+onelogin.saml2.sp.attribute_consuming_service[0].attribute[0].name = Email
+onelogin.saml2.sp.attribute_consuming_service[0].attribute[0].name_format = urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress
+onelogin.saml2.sp.attribute_consuming_service[0].attribute[0].friendly_name = E-mail address
+onelogin.saml2.sp.attribute_consuming_service[0].attribute[0].required = true
+onelogin.saml2.sp.attribute_consuming_service[0].attribute[0].value[0] = foo@example.org
+onelogin.saml2.sp.attribute_consuming_service[0].attribute[0].value[1] = bar@example.org
+onelogin.saml2.sp.attribute_consuming_service[1].name = Anagrafica
+onelogin.saml2.sp.attribute_consuming_service[1].description = Set completo
+onelogin.saml2.sp.attribute_consuming_service[1].lang = it
+onelogin.saml2.sp.attribute_consuming_service[1].default = true
+onelogin.saml2.sp.attribute_consuming_service[1].attribute[0].name = FirstName
+onelogin.saml2.sp.attribute_consuming_service[1].attribute[1].name = LastName
+onelogin.saml2.sp.attribute_consuming_service[1].attribute[1].required = true
+```
+
+Please note that if you specify (multiple) indexed Attribute Consuming Services, the non-indexed properties will be ignored.
+
+As said, to request a specific attribute set when initiating SSO, a selection mechanism is available:
+
+```java
+import static com.onelogin.saml2.authn.AttributeConsumingServiceSelector.*;
+Auth auth = new Auth(request, response);
+// select by index 1
+auth.login(new AuthnRequestParams(false, false, true, byIndex(1));
+// or select by service name
+auth.login(new AuthnRequestParams(false, false, true, byServiceName(auth.getSettings(), "Anagrafica"));
+// or see AttributeConsumingServiceSelector interface implementations for more options
+```
+
+If no selector is specified, `AttributeConsumingServiceSelector.useDefault()` will be used, which will simply omit any
+`AttributeConsumingServiceIndex` from the request, hence leaving the IdP choose the default attribute set agreed upon.
+
+
+##### Assertion Consumer Service (ACS)
+This code handles the SAML response that the IdP forwards to the SP through the user's client:
+
 ```java
 Auth auth = new Auth(request, response);
 auth.processResponse();
