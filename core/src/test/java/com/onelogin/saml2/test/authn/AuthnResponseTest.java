@@ -2016,6 +2016,31 @@ public class AuthnResponseTest {
 	 * @see com.onelogin.saml2.authn.SamlResponse#isValid
 	 */
 	@Test
+	public void testIsInValidConditionsWithoutConditionsValidation() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.mywithoutconditions.properties").build();
+		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_conditions.xml.base64");
+		setDateTime("2014-02-19T09:35:01Z");
+
+		SamlResponse samlResponse = new SamlResponse(settings, newHttpRequest("https://example.com/newonelogin/demo1/index.php?acs", samlResponseEncoded));
+		assertTrue(samlResponse.isValid());
+		assertNull(samlResponse.getError());
+	}
+
+	/**
+	 * Tests the isValid method of SamlResponse
+	 * Case: invalid Conditions
+	 *
+	 * @throws ValidationError
+	 * @throws SettingsException
+	 * @throws IOException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws XPathExpressionException
+	 * @throws Error
+	 *
+	 * @see com.onelogin.saml2.authn.SamlResponse#isValid
+	 */
+	@Test
 	public void testIsInValidAuthStatement() throws IOException, Error, XPathExpressionException, ParserConfigurationException, SAXException, SettingsException, ValidationError {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		String samlResponseEncoded = Util.getFileAsString("data/responses/invalids/no_authnstatement.xml.base64");
