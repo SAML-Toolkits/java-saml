@@ -72,13 +72,19 @@
 		<dependency>
 			<groupId>com.azure</groupId>
 			<artifactId>azure-security-keyvault-keys</artifactId>
-			<version>4.3.4</version>
+			<version>4.4.6</version>
 			<optional>true</optional>
+			<exclusions>
+				<exclusion>
+					<groupId>io.netty</groupId>
+					<artifactId>netty-tcnative-boringssl-static</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.azure</groupId>
 			<artifactId>azure-identity</artifactId>
-			<version>1.3.7</version>
+			<version>1.5.4</version>
 			<optional>true</optional>
 		</dependency>
 	</dependencies>
@@ -118,7 +124,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.22.2</version>
 				<configuration>
-                    <encoding>${project.build.sourceEncoding}</encoding>
+					<encoding>${project.build.sourceEncoding}</encoding>
 					<inputEncoding>${project.build.sourceEncoding}</inputEncoding>
 					<outputEncoding>${project.build.sourceEncoding}</outputEncoding>
 					<argLine>${jacoco.agent.argLine} -Dfile.encoding=${project.build.sourceEncoding} -Dline.separator=\n</argLine>
@@ -139,14 +145,14 @@
 							</rules>
 						</configuration>
 						<goals>
-						    <goal>enforce</goal>
+							<goal>enforce</goal>
 						</goals>
 					</execution>
 				</executions>
 			</plugin>
 		</plugins>
 	</build>
-<!--
+	<!--
 	<properties>
 		<jacoco.agent.argLine />
 	</properties>
