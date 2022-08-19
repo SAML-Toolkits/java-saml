@@ -57,14 +57,6 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- httprequest and httpresponse -->
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>4.0.1</version>
-			<scope>provided</scope>
-		</dependency>
-
 		<!-- date and time library for Java -->
 		<dependency>
 			<groupId>joda-time</groupId>
@@ -91,6 +83,8 @@
 	</dependencies>
 
 	<build>
+		<sourceDirectory>${src.dir}</sourceDirectory>
+		<testSourceDirectory>${src.test.dir}</testSourceDirectory>
 		<plugins>
 			<plugin>
 				<groupId>org.jacoco</groupId>
@@ -121,6 +115,90 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>javax</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+
+			<properties>
+				<src.dir>${basedir}/src/main/java</src.dir>
+				<src.test.dir>${basedir}/src/test/java</src.test.dir>
+			</properties>
+
+			<dependencies>
+				<!-- httprequest and httpresponse with profile javax -->
+				<dependency>
+					<groupId>javax.servlet</groupId>
+					<artifactId>javax.servlet-api</artifactId>
+					<version>4.0.1</version>
+					<scope>provided</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<id>jakarta</id>
+
+			<properties>
+				<src.dir>${project.build.directory}/generated-sources/jakarta</src.dir>
+				<src.test.dir>${project.build.directory}/generated-test-sources/jakarta</src.test.dir>
+			</properties>
+
+			<dependencies>
+
+				<!-- httprequest and httpresponse with profile jakarta -->
+				<dependency>
+					<groupId>jakarta.servlet</groupId>
+					<artifactId>jakarta.servlet-api</artifactId>
+					<version>5.0.0</version>
+					<scope>provided</scope>
+				</dependency>
+			</dependencies>
+
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>jakarta-converter</id>
+								<phase>generate-sources</phase>
+								<configuration>
+									<tasks>
+										<mkdir dir="${project.build.directory}/generated-sources/jakarta"/>
+										<mkdir dir="${project.build.directory}/generated-test-sources/jakarta"/>
+
+										<copy todir="${project.build.directory}/generated-sources/jakarta">
+											<fileset dir="${basedir}/src/main/java"/>
+										</copy>
+										<copy todir="${project.build.directory}/generated-test-sources/jakarta">
+											<fileset dir="${basedir}/src/test/java"/>
+										</copy>
+
+										<replace dir="${project.build.directory}/generated-sources/jakarta" token="javax.servlet" value="jakarta.servlet"/>
+										<replace dir="${project.build.directory}/generated-test-sources/jakarta" token="javax.servlet" value="jakarta.servlet"/>
+									</tasks>
+								</configuration>
+								<goals>
+									<goal>run</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+
+					<plugin>
+						<artifactId>maven-jar-plugin</artifactId>
+						<configuration>
+							<classifier>jakarta</classifier>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 <!--
 	<properties>
 		<jacoco.agent.argLine />

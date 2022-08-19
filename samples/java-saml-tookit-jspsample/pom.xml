@@ -10,18 +10,55 @@
 	<packaging>war</packaging>
 	<name>OneLogin java-saml Toolkit Sample Webapp</name>
 
-	<dependencies>
-		<dependency>
-			<groupId>com.onelogin</groupId>
-			<artifactId>java-saml</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>4.0.1</version>
-			<scope>provided</scope>
-		</dependency>
-	</dependencies>
+	<profiles>
+		<profile>
+			<id>javax</id>
+			<activation>
+				<activeByDefault>true</activeByDefault></activation>
+			<dependencies>
+				<dependency>
+					<groupId>com.onelogin</groupId>
+					<artifactId>java-saml</artifactId>
+					<version>${project.version}</version>
+				</dependency>
 
+				<!-- httprequest and httpresponse with profile javax -->
+				<dependency>
+					<groupId>javax.servlet</groupId>
+					<artifactId>javax.servlet-api</artifactId>
+					<version>4.0.1</version>
+					<scope>provided</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<id>jakarta</id>
+			<dependencies>
+				<dependency>
+					<groupId>com.onelogin</groupId>
+					<artifactId>java-saml</artifactId>
+					<version>${project.version}</version>
+					<classifier>jakarta</classifier>
+				</dependency>
+
+				<!-- httprequest and httpresponse with profile jakarta -->
+				<dependency>
+					<groupId>jakarta.servlet</groupId>
+					<artifactId>jakarta.servlet-api</artifactId>
+					<version>5.0.0</version>
+					<scope>provided</scope>
+				</dependency>
+			</dependencies>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-war-plugin</artifactId>
+						<configuration>
+							<classifier>jakarta</classifier>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
