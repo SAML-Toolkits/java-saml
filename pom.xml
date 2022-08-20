@@ -100,7 +100,7 @@
 				<configuration>
 					<failBuildOnCVSS>7</failBuildOnCVSS>
 					<suppressionFiles>
-						<suppressionFile>.nvd-suppressions.xml</suppressionFile>
+						<suppressionFile>https://cdn.jsdelivr.net/gh/onelogin/java-saml/.nvd-suppressions.xml</suppressionFile>
 					</suppressionFiles>
 					<assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
 				</configuration>
