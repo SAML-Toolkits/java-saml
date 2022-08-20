@@ -74,12 +74,6 @@
 			<artifactId>azure-security-keyvault-keys</artifactId>
 			<version>4.4.6</version>
 			<optional>true</optional>
-			<exclusions>
-				<exclusion>
-					<groupId>io.netty</groupId>
-					<artifactId>netty-tcnative-boringssl-static</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.azure</groupId>
