@@ -1844,7 +1844,7 @@ public final class Util {
 	 *
 	 * @return the new timestamp, after the duration is applied In Seconds.
 	 *
-	 * @throwsa DateTimeParseException 
+	 * @throws DateTimeParseException 
 	 */
 	public static long parseDuration(String durationString, long timestamp) throws DateTimeParseException {
 		boolean haveMinus = false;
