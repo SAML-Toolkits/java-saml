@@ -5,6 +5,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.SignatureException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -17,8 +18,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
-import org.joda.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,7 +99,7 @@ public class Auth {
 	/**
 	 * SessionNotOnOrAfter. When the user is logged, this stored it from the AuthnStatement of the SAML Response
 	 */
-	private DateTime sessionExpiration;
+	private Instant sessionExpiration;
 
 	/**
 	 * The ID of the last message processed
@@ -1453,7 +1452,7 @@ public class Auth {
 	/**
 	 * @return the SessionNotOnOrAfter of the assertion
 	 */
-	public final DateTime getSessionExpiration() {
+	public final Instant getSessionExpiration() {
 		return sessionExpiration;
 	}
 

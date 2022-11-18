@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -13,7 +14,6 @@ import java.util.Map;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.lang3.text.StrSubstitutor;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -446,8 +446,8 @@ public class LogoutRequest {
 				// Check NotOnOrAfter
 				if (rootElement.hasAttribute("NotOnOrAfter")) {
 					String notOnOrAfter = rootElement.getAttribute("NotOnOrAfter");
-					DateTime notOnOrAfterDate = Util.parseDateTime(notOnOrAfter);
-					if (notOnOrAfterDate.isEqualNow() || notOnOrAfterDate.isBeforeNow()) {
+					Instant notOnOrAfterDate = Util.parseDateTime(notOnOrAfter);
+					if (Util.isEqualNow(notOnOrAfterDate) || Util.isBeforeNow(notOnOrAfterDate)) {
 						throw new ValidationError("Could not validate timestamp: expired. Check system clock.", ValidationError.RESPONSE_EXPIRED);
 					}
 				}
@@ -571,7 +571,7 @@ public class LogoutRequest {
 			if(issueInstantString == null)
 				return null;
 			issueInstant = Calendar.getInstance();
-			issueInstant.setTimeInMillis(Util.parseDateTime(issueInstantString).getMillis());
+			issueInstant.setTimeInMillis(Util.parseDateTime(issueInstantString).toEpochMilli());
 		} catch (Exception e) {}
 		return issueInstant;
 	}

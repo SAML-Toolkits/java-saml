@@ -611,7 +611,7 @@ public class LogoutResponse {
 				return null;
 			final Calendar result = Calendar.getInstance();
 			try {
-				result.setTimeInMillis(Util.parseDateTime(issueInstantString).getMillis());
+				result.setTimeInMillis(Util.parseDateTime(issueInstantString).toEpochMilli());
 			} catch (final IllegalArgumentException e) {
 				throw new ValidationError(
 						"The Response IssueInstant attribute is not in the expected UTC form of ISO-8601 format",
