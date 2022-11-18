@@ -39,7 +39,7 @@ import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.Util;
 
 /**
- * SettingsBuilder class of OneLogin's Java Toolkit.
+ * SettingsBuilder class of Java Toolkit.
  *
  * A class that implements the settings builder
  */
@@ -81,7 +81,7 @@ public class SettingsBuilder {
 	public final static String SP_CONTACT_SUR_NAME_PROPERTY_KEY_SUFFIX = "sur_name";
 	public final static String SP_CONTACT_EMAIL_ADDRESS_PROPERTY_KEY_PREFIX = "email_address";
 	public final static String SP_CONTACT_TELEPHONE_NUMBER_PROPERTY_KEY_PREFIX = "telephone_number";
-	
+
 	// KeyStore
 	public final static String KEYSTORE_KEY = "onelogin.saml2.keystore.store";
 	public final static String KEYSTORE_ALIAS = "onelogin.saml2.keystore.alias";
@@ -127,7 +127,7 @@ public class SettingsBuilder {
 	// Parsing
 	public final static String PARSING_TRIM_NAME_IDS = "onelogin.saml2.parsing.trim_name_ids";
 	public final static String PARSING_TRIM_ATTRIBUTE_VALUES = "onelogin.saml2.parsing.trim_attribute_values";
-	
+
 	// Misc
 	@Deprecated
 	public final static String CONTACT_TECHNICAL_GIVEN_NAME = "onelogin.saml2.contacts.technical.given_name";
@@ -163,7 +163,7 @@ public class SettingsBuilder {
 	 *
 	 * @param propFileName OneLogin_Saml2_Settings
 	 * @param keyStoreSetting KeyStore which have the Private/Public keys
-	 * 
+	 *
 	 * @return the SettingsBuilder object with the settings loaded from the file
 	 *
 	 * @throws IOException
@@ -254,9 +254,9 @@ public class SettingsBuilder {
 	/**
 	 * Builds the Saml2Settings object. Read the Properties object and set all the
 	 * SAML settings
-	 * 
+	 *
 	 * @param saml2Setting an existing Saml2Settings
-	 * 
+	 *
 	 * @return the Saml2Settings object with all the SAML settings loaded
 	 *
 	 */
@@ -485,14 +485,14 @@ public class SettingsBuilder {
 
 	/**
 	 * Loads the contacts settings from the properties file
-	 * 
+	 *
 	 * @return a list containing all the loaded contacts
 	 */
 	@SuppressWarnings("deprecation")
 	private List<Contact> loadContacts() {
 		// first split properties into a map of properties
 		// key = contact index; value = contact properties
-		final SortedMap<Integer, Map<String, Object>> contactProps = 
+		final SortedMap<Integer, Map<String, Object>> contactProps =
 				extractIndexedProperties(SP_CONTACT_PROPERTY_KEY_PREFIX, samlData);
 		// then build each contact
 		// multiple indexed services specified
@@ -521,7 +521,7 @@ public class SettingsBuilder {
 
 	/**
 	 * Loads a single contact from settings.
-	 * 
+	 *
 	 * @param contactProps
 	 *              a map containing the contact settings
 	 * @param index
@@ -552,39 +552,39 @@ public class SettingsBuilder {
 	 * <p>
 	 * For instance, if the prefix is <code>foo</code>, all the following properties
 	 * will be extracted:
-	 * 
+	 *
 	 * <pre>
 	 * foo[0].prop1=&lt;value1&gt;
 	 * foo[0].prop2=&lt;value2&gt;
 	 * foo[1].prop1=&lt;value3&gt;
 	 * </pre>
-	 * 
+	 *
 	 * and the returned map will be:
-	 * 
+	 *
 	 * <pre>
 	 * 0 => prop1=&lt;value1&gt;
 	 *      prop2=&lt;value2&gt;
 	 * 1 => prop1=&lt;value3&gt;
 	 * </pre>
-	 * 
+	 *
 	 * The index is optional: if missing, "-1" is returned. In other words, in the
 	 * above example:
-	 * 
+	 *
 	 * <pre>
 	 * foo.prop1=&lt;value1&gt;
 	 * foo.prop2=&lt;value2&gt;
 	 * </pre>
-	 * 
+	 *
 	 * will be mapped to:
-	 * 
+	 *
 	 * <pre>
 	 * -1 => prop1=&lt;value1&gt;
 	 *       prop2=&lt;value2&gt;
 	 * </pre>
-	 * 
+	 *
 	 * Indices can be made of maximum 9 digits, to prevent overflows. Leading zeroes
 	 * are discarded.
-	 * 
+	 *
 	 * @param prefix
 	 *              the prefix that identifies the indexed property to extract
 	 * @param data
@@ -592,7 +592,7 @@ public class SettingsBuilder {
 	 * @return a map with extracted data for each identified index
 	 */
 	private SortedMap<Integer, Map<String, Object>> extractIndexedProperties(String prefix, Map<String, Object> data) {
-		final Pattern p = Pattern.compile(Pattern.quote(prefix) + 
+		final Pattern p = Pattern.compile(Pattern.quote(prefix) +
 				"(?:\\[(\\d{1,9})\\])?\\.(.+)");
 		final SortedMap<Integer, Map<String, Object>> indexedProps = new TreeMap<>();
 		for(final Entry<String, Object> prop: data.entrySet()) {
@@ -611,46 +611,46 @@ public class SettingsBuilder {
 		}
 		return indexedProps;
 	}
-	
+
 	/**
 	 * Given a map containing settings data, extracts all the indexed values
 	 * identified by a given prefix. The returned map has indexes as keys and the
-	 * corresponding values as values. Keys are sorted by their natural order 
+	 * corresponding values as values. Keys are sorted by their natural order
 	 * (i.e. iterating over the map will return entries in index order).
 	 * <p>
 	 * For instance, if the prefix is <code>foo</code>, all the following values
 	 * will be extracted:
-	 * 
+	 *
 	 * <pre>
 	 * foo[0]=&lt;value1&gt;
 	 * foo[1]=&lt;value2&gt;
 	 * foo[2]=&lt;value3&gt;
 	 * </pre>
-	 * 
+	 *
 	 * and the returned map will be:
-	 * 
+	 *
 	 * <pre>
 	 * 0 => &lt;value1&gt;
 	 * 1 => &lt;value2&gt;
 	 * 3 => &lt;value3&gt;
 	 * </pre>
-	 * 
+	 *
 	 * The index is optional: if missing, "-1" is returned. In other words, in the
 	 * above example:
-	 * 
+	 *
 	 * <pre>
 	 * foo=&lt;value1&gt;
 	 * </pre>
-	 * 
+	 *
 	 * will be mapped to:
-	 * 
+	 *
 	 * <pre>
 	 * -1 => &lt;value1&gt;
 	 * </pre>
-	 * 
+	 *
 	 * Indices can be made of maximum 9 digits, to prevent overflows. Leading zeroes
 	 * are discarded.
-	 * 
+	 *
 	 * @param prefix
 	 *              the prefix that identifies the indexed property to extract
 	 * @param data
@@ -658,7 +658,7 @@ public class SettingsBuilder {
 	 * @return a map with extracted values for each identified index
 	 */
 	private SortedMap<Integer, Object> extractIndexedValues(String prefix, Map<String, Object> data) {
-		final Pattern p = Pattern.compile(Pattern.quote(prefix) + 
+		final Pattern p = Pattern.compile(Pattern.quote(prefix) +
 				"(?:\\[(\\d{1,9})\\])?");
 		final SortedMap<Integer, Object> indexedValues = new TreeMap<>();
 		for(final Entry<String, Object> prop: data.entrySet()) {
@@ -671,13 +671,13 @@ public class SettingsBuilder {
 		}
 		return indexedValues;
 	}
-	
+
 	/**
 	 * Given a map of indexed property values (possibly extracted with
 	 * {@link #extractIndexedValues(String, Map)}), returns a list containing all
 	 * the {@link String} values contained in the map, sorted by their iteration
 	 * order.
-	 * 
+	 *
 	 * @param indexedValues
 	 *              a map containing indexed values (key = index; value = actual
 	 *              value)
@@ -790,7 +790,7 @@ public class SettingsBuilder {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Loads a property of the type Boolean from the Properties object
 	 *
@@ -976,7 +976,7 @@ public class SettingsBuilder {
 			LOGGER.error("Error loading certificate from file.", e);
 			return null;
 		}
-		
+
 		try {
 			return Util.loadCert(certString);
 		} catch (CertificateException e) {

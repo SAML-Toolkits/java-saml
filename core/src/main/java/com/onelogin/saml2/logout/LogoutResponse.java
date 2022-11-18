@@ -29,7 +29,7 @@ import com.onelogin.saml2.util.SchemaFactory;
 import com.onelogin.saml2.util.Util;
 
 /**
- * LogoutResponse class of OneLogin's Java Toolkit.
+ * LogoutResponse class of Java Toolkit.
  *
  * A class that implements SAML 2 Logout Response builder/parser/validator
  */
@@ -101,12 +101,12 @@ public class LogoutResponse {
 			samlLogoutResponse = request.getParameter("SAMLResponse");
 		}
 
-		if (samlLogoutResponse != null && !samlLogoutResponse.isEmpty()) {	
+		if (samlLogoutResponse != null && !samlLogoutResponse.isEmpty()) {
 			logoutResponseString = Util.base64decodedInflated(samlLogoutResponse);
 			logoutResponseDocument = Util.loadXML(logoutResponseString);
 		}
 	}
-	
+
 	/**
 	 * Constructs the LogoutResponse object when a new response should be generated
 	 * and sent.
@@ -146,7 +146,7 @@ public class LogoutResponse {
 		}
 		return encodedLogoutResponse;
 	}
-	
+
 	/**
 	 * @return the base64 encoded, unsigned Logout Response (deflated or not)
 	 *
@@ -200,7 +200,7 @@ public class LogoutResponse {
 
 			if (settings.isStrict()) {
 				Element rootElement = logoutResponseDocument.getDocumentElement();
-				rootElement.normalize();				
+				rootElement.normalize();
 
 				if (settings.getWantXMLValidation()) {
 					if (!Util.validateXML(this.logoutResponseDocument, SchemaFactory.SAML_SCHEMA_PROTOCOL_2_0)) {
@@ -359,7 +359,7 @@ public class LogoutResponse {
        *				Xpath Expression
        *
        * @return DOMNodeList The queried nodes
-	 * @throws XPathExpressionException 
+	 * @throws XPathExpressionException
        */
 	protected NodeList query (String query) throws XPathExpressionException {
 		return Util.query(this.logoutResponseDocument, query, null);
@@ -398,7 +398,7 @@ public class LogoutResponse {
        * Generates a Logout Response XML string.
        *
        * @param inResponseTo
-       *				InResponseTo attribute value to bet set at the Logout Response. 
+       *				InResponseTo attribute value to bet set at the Logout Response.
 	 * @param statusCode
 	 * 				String StatusCode to be set on the LogoutResponse
 	 * @deprecated use {@link #LogoutResponse(Saml2Settings, LogoutResponseParams)}
@@ -439,10 +439,10 @@ public class LogoutResponse {
 	public void build(String inResponseTo) {
 		build(inResponseTo, Constants.STATUS_SUCCESS);
 	}
-	
+
 	/**
 	 * Generates a Logout Response XML string.
-	 * 
+	 *
 	 * @deprecated use {@link #LogoutResponse(Saml2Settings, LogoutResponseParams)}
 	 *             instead, in which case this method becomes completely useless;
 	 *             indeed, invoking this method in an outgoing logout response
@@ -458,7 +458,7 @@ public class LogoutResponse {
 	@Deprecated
 	public void build() {
 		build(null);
-	}	
+	}
 
 	/**
 	 * Allows for an extension class to post-process the LogoutResponse XML
@@ -467,7 +467,7 @@ public class LogoutResponse {
 	 * This method is invoked by {@link #build(String, String)} (and all of its
 	 * overloadings) and hence only in the logout response sending scenario. Its
 	 * default implementation simply returns the input XML as-is, with no change.
-	 * 
+	 *
 	 * @param logoutResponseXml
 	 *              the XML produced for this LogoutResponse by the standard
 	 *              implementation provided by {@link LogoutResponse}
@@ -482,7 +482,7 @@ public class LogoutResponse {
 	            final Saml2Settings settings) {
 		return logoutResponseXml;
 	}
-	
+
 	/**
 	 * Substitutes LogoutResponse variables within a string by values.
 	 *
@@ -513,7 +513,7 @@ public class LogoutResponse {
 		if (inResponseTo != null) {
 			inResponseStr = " InResponseTo=\"" + Util.toXml(inResponseTo) + "\"";
 		}
-		valueMap.put("inResponseStr", inResponseStr);		
+		valueMap.put("inResponseStr", inResponseStr);
 
 		StringBuilder statusStr = new StringBuilder("<samlp:StatusCode ");
 		final SamlResponseStatus responseStatus = params.getResponseStatus();
@@ -581,24 +581,24 @@ public class LogoutResponse {
 	public Exception getValidationException() {
 		return validationException;
 	}
-	
+
 	/**
  	 * Sets the validation exception that this {@link LogoutResponse} should return
 	 * when a validation error occurs.
-	 * 
+	 *
 	 * @param validationException
 	 *              the validation exception to set
 	 */
 	protected void setValidationException(Exception validationException) {
 		this.validationException = validationException;
 	}
-	
+
 	/**
 	 * Returns the issue instant of this message.
 	 *
 	 * @return a new {@link Calendar} instance carrying the issue instant of this message
 	 * @throws ValidationError
-	 *             if this logout response was received and parsed and the found IssueInstant 
+	 *             if this logout response was received and parsed and the found IssueInstant
 	 *             attribute is not in the expected UTC form of ISO-8601 format
 	 */
 	public Calendar getIssueInstant() throws ValidationError {

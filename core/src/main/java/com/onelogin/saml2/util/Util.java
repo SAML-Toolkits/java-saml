@@ -101,7 +101,7 @@ import com.onelogin.saml2.model.hsm.HSM;
 
 
 /**
- * Util class of OneLogin's Java Toolkit.
+ * Util class of Java Toolkit.
  *
  * A class that contains several auxiliary methods related to the SAML protocol
  */
@@ -1128,7 +1128,7 @@ public final class Util {
     	}
 		return false;
 	}
-    
+
 	/**
 	 * Validate signature of the Node.
 	 *
@@ -1960,11 +1960,11 @@ public final class Util {
 		TemporalAccessor parsedData = DATE_TIME_FORMAT.parse(dateTime);
 		return Instant.from(parsedData);
 	}
-	
+
 	/**
 	 * Escape a text so that it can be safely used within an XML element contents or attribute value.
-	 * 
-	 * @param text 
+	 *
+	 * @param text
 	 * 				the text to escape
 	 * @return the escaped text (<code>null</code> if the input is <code>null</code>)
 	 */

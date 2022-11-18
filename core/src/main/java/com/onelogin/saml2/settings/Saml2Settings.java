@@ -24,10 +24,10 @@ import com.onelogin.saml2.util.SchemaFactory;
 import com.onelogin.saml2.util.Util;
 
 /**
- * Saml2Settings class of OneLogin's Java Toolkit.
+ * Saml2Settings class of Java Toolkit.
  *
  * A class that implements the settings handler
- */ 
+ */
 public class Saml2Settings {
 	/**
      * Private property to construct a logger for this class.
@@ -37,7 +37,7 @@ public class Saml2Settings {
 	// Toolkit settings
 	private boolean strict = true;
 	private boolean debug = false;
-	
+
 	// SP
 	private String spEntityId = "";
 	private URL spAssertionConsumerServiceUrl = null;
@@ -86,7 +86,7 @@ public class Saml2Settings {
 	// Compress
 	private boolean compressRequest = true;
 	private boolean compressResponse = true;
-	
+
 	// Parsing
 	private boolean trimNameIds = false;
 	private boolean trimAttributeValues = false;
@@ -96,7 +96,7 @@ public class Saml2Settings {
 	private Organization organization = null;
 
 	private boolean spValidationOnly = false;
-	
+
 	/**
 	 * @return the strict setting value
 	 */
@@ -310,7 +310,7 @@ public class Saml2Settings {
 	public boolean getWantNameId() {
 		return wantNameId;
 	}
-	
+
 	/**
 	 * @return the wantNameIdEncrypted setting value
 	 */
@@ -394,10 +394,10 @@ public class Saml2Settings {
 	public boolean isDebugActive() {
 		return this.debug;
 	}
-	
+
 	/**
 	 * Set the strict setting value
-	 * 
+	 *
 	 * @param strict
 	 *            the strict to be set
 	 */
@@ -770,7 +770,7 @@ public class Saml2Settings {
 	 * Set the wantXMLValidation setting value
 	 *
 	 * @param wantXMLValidation
-	 *            the wantXMLValidation value to be set. Based on it the SP will validate SAML messages against the XML scheme 
+	 *            the wantXMLValidation value to be set. Based on it the SP will validate SAML messages against the XML scheme
 	 */
 	public void setWantXMLValidation(boolean wantXMLValidation) {
 		this.wantXMLValidation = wantXMLValidation;
@@ -857,7 +857,7 @@ public class Saml2Settings {
 	 * <p>
 	 * Default is <code>false</code>, that is Name IDs are kept intact, as the SAML
 	 * specification prescribes.
-	 * 
+	 *
 	 * @param trimNameIds
 	 *              set to <code>true</code> to trim parsed Name IDs, set to
 	 *              <code>false</code> to keep them intact
@@ -865,26 +865,26 @@ public class Saml2Settings {
 	public void setTrimNameIds(boolean trimNameIds) {
 		this.trimNameIds = trimNameIds;
 	}
-	
+
 	/**
 	 * Determines whether Name IDs should trimmed when extracting them from parsed
 	 * SAML messages.
 	 * <p>
 	 * Default is <code>false</code>, that is Name IDs are kept intact, as the SAML
 	 * specification prescribes.
-	 * 
+	 *
 	 * @return <code>true</code> if Name IDs should be trimmed, <code>false</code>
 	 *         otherwise
 	 */
 	public boolean isTrimNameIds() {
 		return trimNameIds;
 	}
-	
+
 	/**
 	 * Sets whether attribute values in parsed SAML messages should be trimmed.
 	 * <p>
 	 * Default is <code>false</code>.
-	 * 
+	 *
 	 * @param trimAttributeValues
 	 *              set to <code>true</code> to trim parsed attribute values, set to
 	 *              <code>false</code> to keep them intact
@@ -892,23 +892,23 @@ public class Saml2Settings {
 	public void setTrimAttributeValues(boolean trimAttributeValues) {
 		this.trimAttributeValues = trimAttributeValues;
 	}
-	
+
 	/**
 	 * Determines whether attribute values should be trimmed when extracting them
 	 * from parsed SAML messages.
 	 * <p>
 	 * Default is <code>false</code>.
-	 * 
+	 *
 	 * @return <code>true</code> if attribute values should be trimmed,
 	 *         <code>false</code> otherwise
 	 */
 	public boolean isTrimAttributeValues() {
 		return trimAttributeValues;
 	}
-	
+
 	/**
 	 * Set contacts info that will be listed on the Service Provider metadata
-	 * 
+	 *
 	 * @param contacts
 	 *            the contacts to set
 	 */
@@ -928,21 +928,21 @@ public class Saml2Settings {
 
 	/**
 	 * Checks the settings .
-	 * 
+	 *
 	 * @return errors found on the settings data
 	 */
 	public List<String> checkSettings() {
 		List<String> errors = new ArrayList<>(this.checkSPSettings());
-		if (!spValidationOnly) { 
+		if (!spValidationOnly) {
 			errors.addAll(this.checkIdPSettings());
 		}
 
 		return errors;
 	}
-	
+
 	/**
 	 * Checks the IdP settings .
-	 * 
+	 *
 	 * @return errors found on the IdP settings data
 	 */
 	public List<String> checkIdPSettings() {
@@ -964,7 +964,7 @@ public class Saml2Settings {
 		if (!checkIdpx509certRequired() && !checkRequired(this.getIdpCertFingerprint())) {
 			errorMsg = "idp_cert_or_fingerprint_not_found_and_required";
 			errors.add(errorMsg);
-			LOGGER.error(errorMsg);			
+			LOGGER.error(errorMsg);
 		}
 
 		if (!checkIdpx509certRequired() && this.getNameIdEncrypted()) {
@@ -978,7 +978,7 @@ public class Saml2Settings {
 
 	/**
 	 * Auxiliary method to check Idp certificate is configured.
-	 * 
+	 *
 	 * @return true if the Idp Certificate settings are valid
 	 */
 	private boolean checkIdpx509certRequired () {
@@ -1072,7 +1072,7 @@ public class Saml2Settings {
 
 		return (cert != null && key != null);
 	}
-	
+
 	/**
 	 * Auxiliary method to check required properties.
 	 *
@@ -1115,7 +1115,7 @@ public class Saml2Settings {
 	{
 		return this.spValidationOnly;
 	}
-	
+
 	/**
 	 * Gets the SP metadata. The XML representation.
 	 *
@@ -1139,22 +1139,22 @@ public class Saml2Settings {
 						this.getSignatureAlgorithm(),
 						this.getDigestAlgorithm()
 				);
-			} catch (Exception e) {				
+			} catch (Exception e) {
 				LOGGER.debug("Error executing signMetadata: " + e.getMessage(), e);
 			}
 		}
 
 		return metadataString;
 	}
-	
+
 	/**
 	 * Validates an XML SP Metadata.
 	 *
 	 * @param metadataString Metadata's XML that will be validate
-	 * 
+	 *
 	 * @return Array The list of found errors
 	 *
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	public static List<String> validateMetadata(String metadataString) throws Exception {
 
@@ -1194,7 +1194,7 @@ public class Saml2Settings {
 			}
 		}
 		// TODO Validate Sign if required with Util.validateMetadataSign
-		
+
 		return errors;
 	}
 }

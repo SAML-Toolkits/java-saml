@@ -5,9 +5,9 @@
 	<version>2.9.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-	<name>OneLogin java-saml Toolkit Project</name>
-	<description>A Java SAML toolkit by OneLogin</description>
-	<url>https://github.com/onelogin/java-saml</url>
+	<name>java-saml Toolkit Project</name>
+	<description>A Java SAML toolkit</description>
+	<url>https://github.com/saml-toolkit/java-saml</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -154,9 +154,9 @@
 	</distributionManagement>
 
 	<scm>
-		<connection>scm:git:git@github.com:onelogin/java-saml.git</connection>
-		<developerConnection>scm:git:git@github.com:onelogin/java-saml.git</developerConnection>
-		<url>https://github.com/onelogin/java-saml</url>
+		<connection>scm:git:git@github.com:saml-toolkit/java-saml.git</connection>
+		<developerConnection>scm:git:git@github.com:saml-toolkit/java-saml.git</developerConnection>
+		<url>https://github.com/saml-toolkit/java-saml</url>
 		<tag>HEAD</tag>
 	</scm>
 
@@ -172,7 +172,7 @@
 		<developer>
 			<name>Sixto Martín García</name>
 			<url>https://github.com/pitbulk</url>
-			<organization>OneLogin</organization>
+			<organization>SAML Toolkit</organization>
 		</developer>
 	</developers>
 

@@ -37,7 +37,7 @@ import com.onelogin.saml2.util.SchemaFactory;
 import com.onelogin.saml2.util.Util;
 
 /**
- * SamlResponse class of OneLogin's Java Toolkit.
+ * SamlResponse class of Java Toolkit.
  *
  * A class that implements SAML 2 Authentication Response parser/validator
  */
@@ -752,7 +752,7 @@ public class SamlResponse {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Gets the Assertion Issuer.
 	 *
@@ -777,7 +777,7 @@ public class SamlResponse {
 			throw new ValidationError("Issuer of the Assertion not found or multiple.", ValidationError.ISSUER_NOT_FOUND_IN_ASSERTION);
 		}
 	}
-	
+
 	/**
 	 * Gets the Issuers (from Response and Assertion). If the same issuer appears
 	 * both in the Response and in the Assertion (as it should), the returned list
@@ -1102,11 +1102,11 @@ public class SamlResponse {
 	public Exception getValidationException() {
 		return validationException;
 	}
-	
+
 	/**
 	 * Sets the validation exception that this {@link SamlResponse} should return
 	 * when a validation error occurs.
-	 * 
+	 *
 	 * @param validationException
 	 *              the validation exception to set
 	 */

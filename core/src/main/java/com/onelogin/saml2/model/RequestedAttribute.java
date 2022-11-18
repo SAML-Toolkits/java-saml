@@ -4,9 +4,9 @@ import java.util.List;
 
 
 /**
- * RequestedAttribute class of OneLogin's Java Toolkit.
+ * RequestedAttribute class of Java Toolkit.
  *
- * A class that stores RequestedAttribute of the AttributeConsumingService 
+ * A class that stores RequestedAttribute of the AttributeConsumingService
  */
 public class RequestedAttribute {
 	/**
@@ -23,7 +23,7 @@ public class RequestedAttribute {
      * If the attribute is or not required
      */
 	private final Boolean isRequired;
-	
+
 	/**
      * NameFormat of the attribute
      */
@@ -33,7 +33,7 @@ public class RequestedAttribute {
      * Values of the attribute
      */
 	private final List<String> attributeValues;
-	
+
 	/**
 	 * Constructor
 	 *
@@ -55,7 +55,7 @@ public class RequestedAttribute {
 		this.nameFormat = nameFormat;
 		this.attributeValues = attributeValues;
 	}
-	
+
 	/**
 	 * @return string the RequestedAttribute name
 	 */
@@ -76,14 +76,14 @@ public class RequestedAttribute {
 	public final Boolean isRequired() {
 		return isRequired;
 	}
-	
+
 	/**
 	 * @return string the RequestedAttribute nameformat
 	 */
 	public final String getNameFormat() {
 		return nameFormat;
 	}
-	
+
 	/**
 	 * @return string the RequestedAttribute nameformat
 	 */
