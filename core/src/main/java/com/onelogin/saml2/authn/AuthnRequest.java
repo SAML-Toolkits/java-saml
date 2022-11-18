@@ -17,7 +17,7 @@ import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.Util;
 
 /**
- * AuthNRequest class of OneLogin's Java Toolkit.
+ * AuthNRequest class of Java Toolkit.
  *
  * A class that implements SAML 2 Authentication Request
  */
@@ -79,7 +79,7 @@ public class AuthnRequest {
 	public AuthnRequest(Saml2Settings settings, boolean forceAuthn, boolean isPassive, boolean setNameIdPolicy, String nameIdValueReq) {
 		this(settings, new AuthnRequestParams(forceAuthn, isPassive, setNameIdPolicy, nameIdValueReq));
 	}
-	
+
 	/**
 	 * Constructs the AuthnRequest object.
 	 *
@@ -126,7 +126,7 @@ public class AuthnRequest {
 	 * This method is invoked at construction time, after all the other fields of
 	 * this class have already been initialised. Its default implementation simply
 	 * returns the input XML as-is, with no change.
-	 * 
+	 *
 	 * @param authnRequestXml
 	 *              the XML produced for this AuthnRequest by the standard
 	 *              implementation provided by {@link AuthnRequest}
@@ -144,10 +144,10 @@ public class AuthnRequest {
 	/**
 	 * @return the base64 encoded unsigned AuthnRequest (deflated or not)
 	 *
-	 * @param deflated 
+	 * @param deflated
      *				If deflated or not the encoded AuthnRequest
      *
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public String getEncodedAuthnRequest(Boolean deflated) throws IOException {
 		String encodedAuthnRequest;
@@ -161,18 +161,18 @@ public class AuthnRequest {
 		}
 		return encodedAuthnRequest;
 	}
-	
+
 	/**
 	 * @return base64 encoded, unsigned AuthnRequest (deflated or not)
-	 * 
-	 * @throws IOException 
+	 *
+	 * @throws IOException
 	 */
 	public String getEncodedAuthnRequest() throws IOException {
 		return getEncodedAuthnRequest(null);
 	}
 
 	/**
-	 * @return unsigned plain-text AuthnRequest. 
+	 * @return unsigned plain-text AuthnRequest.
 	 */
 	public String getAuthnRequestXml() {
 		return authnRequestString;
@@ -185,9 +185,9 @@ public class AuthnRequest {
 	 *              the authentication request input parameters
 	 * @param settings
 	 * 				Saml2Settings object. Setting data
-	 * 
-	 * @return the StrSubstitutor object of the AuthnRequest 
-	 */ 
+	 *
+	 * @return the StrSubstitutor object of the AuthnRequest
+	 */
 	private StrSubstitutor generateSubstitutor(AuthnRequestParams params, Saml2Settings settings) {
 
 		Map<String, String> valueMap = new HashMap<String, String>();
@@ -242,7 +242,7 @@ public class AuthnRequest {
 		if (organization != null) {
 			String displayName = organization.getOrgDisplayName();
 			if (!displayName.isEmpty()) {
-				providerStr = " ProviderName=\""+ Util.toXml(displayName) + "\""; 
+				providerStr = " ProviderName=\""+ Util.toXml(displayName) + "\"";
 			}
 		}
 		valueMap.put("providerStr", providerStr);
@@ -288,10 +288,10 @@ public class AuthnRequest {
 	{
 		return id;
 	}
-	
+
 	/**
 	 * Returns the issue instant of this message.
-	 * 
+	 *
 	 * @return a new {@link Calendar} instance carrying the issue instant of this message
 	 */
 	public Calendar getIssueInstant() {

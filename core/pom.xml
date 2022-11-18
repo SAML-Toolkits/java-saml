@@ -7,7 +7,7 @@
 	</parent>
 
 	<packaging>jar</packaging>
-	<name>OneLogin java-saml Toolkit Core</name>
+	<name>java-saml Toolkit Core</name>
 	<artifactId>java-saml-core</artifactId>
 
 	<dependencies>

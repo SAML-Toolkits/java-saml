@@ -5,9 +5,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Contact class of OneLogin's Java Toolkit.
+ * Contact class of Java Toolkit.
  *
- * A class that stores contact info 
+ * A class that stores contact info
  */
 public class Contact {
 	/**
@@ -19,12 +19,12 @@ public class Contact {
 	 * Contact company
 	 */
 	private final String company;
-	
+
 	/**
        * Contact given name
        */
 	private final String givenName;
-	
+
 	/**
 	 * Contact surname
 	 */
@@ -39,7 +39,7 @@ public class Contact {
 	 * Contact phone number
 	 */
 	private final List<String> telephoneNumbers;
-	
+
 	/**
 	 * Constructor to specify minimal contact data.
 	 * <p>
@@ -114,14 +114,14 @@ public class Contact {
 	public final String getGivenName() {
 		return givenName;
 	}
-	
+
 	/**
 	 * @return the contact surname
 	 */
 	public final String getSurName() {
 		return surName;
 	}
-	
+
 	/**
 	 * @return the contact company
 	 */

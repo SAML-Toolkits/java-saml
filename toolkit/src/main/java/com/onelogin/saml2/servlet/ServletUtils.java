@@ -15,7 +15,7 @@ import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.util.Util;
 
 /**
- * ServletUtils class of OneLogin's Java Toolkit.
+ * ServletUtils class of Java Toolkit.
  *
  * A class that contains several auxiliary methods related to HttpServletRequest and HttpServletResponse
  */
@@ -24,7 +24,7 @@ public class ServletUtils {
 	private ServletUtils() {
 	      //not called
 	}
-	
+
 	/**
      * Creates an HttpRequest from an HttpServletRequest.
      *
@@ -148,7 +148,7 @@ public class ServletUtils {
      * 				GET parameters to be added
 	 * @param stay
 	 *            True if we want to stay (returns the url string) False to execute redirection
-     * 
+     *
      * @return string the target URL
      * @throws IOException
      *
@@ -197,7 +197,7 @@ public class ServletUtils {
     public static void sendRedirect(HttpServletResponse response, String location, Map<String, String> parameters) throws IOException {
     	sendRedirect(response, location, parameters, false);
     }
-    	
+
     /**
      * Redirect to location url
      *

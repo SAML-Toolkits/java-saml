@@ -42,7 +42,7 @@ import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.Util;
 
 /**
- * Main class of OneLogin's Java Toolkit.
+ * Main class of Java Toolkit.
  *
  * This class implements the SP SAML instance.
  * Defines the methods that you can invoke in your application in
@@ -106,7 +106,7 @@ public class Auth {
 	 * The ID of the last message processed
 	 */
 	private String lastMessageId;
-	
+
 	/**
 	 * The issue instant of the last message processed
 	 */
@@ -169,9 +169,9 @@ public class Auth {
 	 * encrypted, by default tries to return the decrypted XML
 	 */
 	private String lastResponse;
-	
+
 	private static final SamlMessageFactory DEFAULT_SAML_MESSAGE_FACTORY = new SamlMessageFactory() {};
-	
+
 	private SamlMessageFactory samlMessageFactory = DEFAULT_SAML_MESSAGE_FACTORY;
 
 	/**
@@ -197,7 +197,7 @@ public class Auth {
 	public Auth(KeyStoreSettings keyStoreSetting) throws IOException, SettingsException, Error {
 		this("onelogin.saml.properties", keyStoreSetting);
 	}
-	
+
 	/**
 	 * Initializes the SP SAML instance.
 	 *
@@ -242,7 +242,7 @@ public class Auth {
 
 	/**
 	 * Initializes the SP SAML instance.
-	 * 
+	 *
 	 * @param keyStoreSetting KeyStoreSettings is a KeyStore which have the Private/Public keys
 	 * @param request  HttpServletRequest object to be processed
 	 * @param response HttpServletResponse object to be used
@@ -616,11 +616,11 @@ public class Auth {
 	 */
 	public String login(String relayState, AuthnRequestParams authnRequestParams, Boolean stay, Map<String, String> parameters) throws IOException, SettingsException {
 		AuthnRequest authnRequest = samlMessageFactory.createAuthnRequest(settings, authnRequestParams);
-		
+
 		if (parameters == null) {
 			parameters = new HashMap<String, String>();
 		}
-		
+
 		String samlRequest = authnRequest.getEncodedAuthnRequest();
 
 		parameters.put("SAMLRequest", samlRequest);
@@ -628,7 +628,7 @@ public class Auth {
 		if (relayState == null) {
 			relayState = ServletUtils.getSelfRoutedURLNoQuery(request);
 		}
-		
+
 		if (!relayState.isEmpty()) {
 			parameters.put("RelayState", relayState);
 		}
@@ -1137,7 +1137,7 @@ public class Auth {
 
 	/**
 	 * Initiates the SLO process.
-	 * 
+	 *
 	 * @throws IOException
 	 * @throws SettingsException
 	 */
@@ -1323,7 +1323,7 @@ public class Auth {
 				}
 
 				String inResponseTo = logoutRequest.id;
-				LogoutResponse logoutResponseBuilder = samlMessageFactory.createOutgoingLogoutResponse(settings, 
+				LogoutResponse logoutResponseBuilder = samlMessageFactory.createOutgoingLogoutResponse(settings,
 						new LogoutResponseParams(inResponseTo, Constants.STATUS_SUCCESS));
 				lastResponse = logoutResponseBuilder.getLogoutResponseXml();
 
@@ -1463,10 +1463,10 @@ public class Auth {
 	public String getLastMessageId() {
 		return lastMessageId;
 	}
-	
+
 	/**
 	 * Returns the issue instant of the last message processed.
-	 * 
+	 *
 	 * @return The issue instant of the last message processed
 	 */
 	public Calendar getLastMessageIssueInstant() {
@@ -1516,10 +1516,10 @@ public class Auth {
 	public String getLastRequestId() {
 		return lastRequestId;
 	}
-	
+
 	/**
 	 * Returns the issue instant of the last request generated (AuthnRequest or LogoutRequest).
-	 * 
+	 *
 	 * @return the issue instant of the last request generated (AuthnRequest or LogoutRequest),
 	 *         <code>null</code> if none
 	 */
@@ -1593,7 +1593,7 @@ public class Auth {
 	private String buildSignature(String samlMessage, String relayState, String signAlgorithm, String type) throws SettingsException, IllegalArgumentException
 	{
 		 String signature = "";
-		 
+
 		 if (!settings.checkSPCerts()) {
 			 String errorMsg = "Trying to sign the " + type + " but can't load the SP private key";
 			 LOGGER.error("buildSignature error. " + errorMsg);
@@ -1601,16 +1601,16 @@ public class Auth {
 		 }
 
 		 PrivateKey key = settings.getSPkey();
-		 
+
 		 String msg = type + "=" + Util.urlEncoder(samlMessage);
 		 if (StringUtils.isNotEmpty(relayState)) {
 			 msg += "&RelayState=" + Util.urlEncoder(relayState);
 		 }
-		 
+
 		 if (StringUtils.isEmpty(signAlgorithm)) {
 			 signAlgorithm = Constants.RSA_SHA1;
 		 }
-		 
+
 		 msg += "&SigAlg=" + Util.urlEncoder(signAlgorithm);
 
 		 try {
@@ -1656,7 +1656,7 @@ public class Auth {
 	 * <p>
 	 * This allows consumers to provide their own extension classes for SAML message
 	 * XML generation and/or processing.
-	 * 
+	 *
 	 * @param samlMessageFactory
 	 *              the factory to use to create SAML message objects; if
 	 *              <code>null</code>, a default provider will be used which creates
