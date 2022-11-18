@@ -2,7 +2,7 @@ package com.onelogin.saml2.model;
 
 
 /**
- * SamlResponseStatus class of OneLogin's Java Toolkit.
+ * SamlResponseStatus class of Java Toolkit.
  *
  * A class that stores the SAML response status info
  */
@@ -54,7 +54,7 @@ public class SamlResponseStatus {
 
 	/**
 	 * Set the status code
-	 * 
+	 *
 	 * @param statusCode
 	 *              String. Status code
 	 */
@@ -88,8 +88,8 @@ public class SamlResponseStatus {
 
 	/**
 	 * Set the status message
-	 * 
-	 * @param statusMessage 
+	 *
+	 * @param statusMessage
 	 *              String. Status message
 	 */
 	public void setStatusMessage(String statusMessage) {
@@ -98,11 +98,11 @@ public class SamlResponseStatus {
 
 	/**
 	 * Compare the status code
-	 * 
-	 * @param status 
+	 *
+	 * @param status
 	 *              String. Status code
 	 *
-	 * @return boolean checks the status code 
+	 * @return boolean checks the status code
 	 */
 	public boolean is(String status) {
 		return statusCode != null && !statusCode.isEmpty() && statusCode.equals(status);

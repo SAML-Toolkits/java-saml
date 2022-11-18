@@ -13,7 +13,7 @@
 	 <meta charset="utf-8">
 	 <meta http-equiv="X-UA-Compatible" content="IE=edge">
      <meta name="viewport" content="width=device-width, initial-scale=1">
-	 <title>A Java SAML Toolkit by OneLogin demo</title>
+	 <title>A Java SAML Toolkit</title>
 	 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
 
      <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -25,19 +25,19 @@
 </head>
 <body>
 	<div class="container">
-    	<h1>A Java SAML Toolkit by OneLogin demo</h1>
+    	<h1>A Java SAML Toolkit</h1>
 	<%
 		Boolean found = false;
 		@SuppressWarnings("unchecked")
-		Enumeration<String> elems = (Enumeration<String>) session.getAttributeNames();	
-	
+		Enumeration<String> elems = (Enumeration<String>) session.getAttributeNames();
+
 		while (elems.hasMoreElements() && !found) {
 			String value = (String) elems.nextElement();
 			if (value.equals("attributes") || value.equals("nameId")) {
 				found = true;
 			}
 		}
-	
+
 		if (found) {
 			String nameId = (String) session.getAttribute("nameId");
 			@SuppressWarnings("unchecked")
@@ -46,11 +46,11 @@
 			if (!nameId.isEmpty()) {
 				out.println("<div><b> NameId:</b> " + nameId + "</div>");
 			}
-			
+
 			if (attributes.isEmpty()) {
 			%>
 				<div class="alert alert-danger" role="alert">You don't have any attributes</div>
-			<%							
+			<%
 			}
 			else {
     		%>
@@ -63,7 +63,7 @@
         				</tr>
       				</thead>
       				<tbody>
-    		<%				
+    		<%
 				Collection<String> keys = attributes.keySet();
 				for(String name :keys){
 					out.println("<tr><td>" + name + "</td><td>");
@@ -71,7 +71,7 @@
 					for(String value :values) {
 						out.println("<li>" + value + "</li>");
 					}
-					
+
 					out.println("</td></tr>");
 				}
 			%>

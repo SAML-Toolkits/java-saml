@@ -5,9 +5,9 @@ import java.util.List;
 import com.onelogin.saml2.model.RequestedAttribute;
 
 /**
- * AttributeConsumingService class of OneLogin's Java Toolkit.
+ * AttributeConsumingService class of Java Toolkit.
  *
- * A class that stores AttributeConsumingService 
+ * A class that stores AttributeConsumingService
  */
 public class AttributeConsumingService {
 	/**
@@ -36,7 +36,7 @@ public class AttributeConsumingService {
 	public AttributeConsumingService(String serviceName, String serviceDescription) {
 		this.serviceName = serviceName != null? serviceName : "";
 		this.serviceDescription = serviceDescription != null? serviceDescription : "";
-		this.requestedAttributes = new ArrayList<RequestedAttribute>(); 
+		this.requestedAttributes = new ArrayList<RequestedAttribute>();
 	}
 
 	/**
@@ -46,7 +46,7 @@ public class AttributeConsumingService {
 	public final void addRequestedAttribute(RequestedAttribute attr) {
 		this.requestedAttributes.add(attr);
 	}
-	
+
 	/**
 	 * @return string the service name
 	 */

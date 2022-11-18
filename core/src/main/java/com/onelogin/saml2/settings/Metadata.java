@@ -28,7 +28,7 @@ import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.Util;
 
 /**
- * Metadata class of OneLogin's Java Toolkit.
+ * Metadata class of Java Toolkit.
  *
  * A class that contains methods related to the metadata of the SP
  */
@@ -114,7 +114,7 @@ public class Metadata {
 		LOGGER.debug("metadata --> " + unsignedMetadataString);
 		metadataString = unsignedMetadataString;
 	}
-	
+
 	/**
 	 * Allows for an extension class to post-process the SAML metadata XML generated
 	 * for this metadata instance, in order to customize the result.
@@ -122,7 +122,7 @@ public class Metadata {
 	 * This method is invoked at construction time, after all the other fields of
 	 * this class have already been initialised. Its default implementation simply
 	 * returns the input XML as-is, with no change.
-	 * 
+	 *
 	 * @param metadataXml
 	 *              the XML produced for this metadata instance by the standard
 	 *              implementation provided by {@link Metadata}

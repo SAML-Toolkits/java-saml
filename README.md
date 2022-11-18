@@ -1,11 +1,8 @@
-# OneLogin's SAML Java Toolkit <!-- omit in toc -->
+# SAML Java Toolkit <!-- omit in toc -->
 
 [![Build Status](https://travis-ci.org/onelogin/java-saml.svg?branch=master)](https://travis-ci.org/onelogin/java-saml) [![Coverage Status](https://coveralls.io/repos/github/onelogin/java-saml/badge.svg?branch=master)](https://coveralls.io/github/onelogin/java-saml?branch=master)
 
-## **Notice:** This project is currently not under active development, please see [#388](https://github.com/onelogin/java-saml/issues/388) for more information.
-
 Add SAML support to your Java applications using this library.
-Forget those complicated libraries and use that open source library provided and supported by OneLogin Inc.
 
 2.8.0 uses xmlsec 2.2.3 which fixes [CVE-2021-40690](https://snyk.io/vuln/SNYK-JAVA-ORGAPACHESANTUARIO-1655558)
 
@@ -87,7 +84,7 @@ since 2002, but lately it has become popular due to its advantages as follows:
 
 ## General description
 
-OneLogin's SAML Java toolkit lets you turn a Java application into a SP
+SAML Java toolkit lets you turn a Java application into a SP
 (Service Provider) that can be connected to an IdP (Identity Provider).
 
 Supports:
@@ -108,7 +105,6 @@ Key features:
  * **Easy to use** - Programmer will be allowed to code high-level and
    low-level programming; 2 easy-to-use APIs are available.
  * **Tested** - Thoroughly tested.
- * **Popular** - OneLogin's customers use it. Add easy support to your java web projects.
 
 ## Security warning
 
@@ -198,7 +194,7 @@ Select a [Tomcat Server](http://crunchify.com/step-by-step-guide-to-setup-and-in
 ## Getting started
 ### Learning the toolkit
 
-OneLogin's new SAML Java SAML Toolkit contains different folders (core, toolkit, samples) and some files.
+Java SAML Toolkit contains different folders (core, toolkit, samples) and some files.
 
 Let's start describing them:
 
@@ -261,7 +257,7 @@ onelogin.saml2.sp.entityid = http://localhost:8080/java-saml-tookit-jspsample/me
 onelogin.saml2.sp.assertion_consumer_service.url = http://localhost:8080/java-saml-tookit-jspsample/acs.jsp
 
 # SAML protocol binding to be used when returning the <Response>
-# message.  Onelogin Toolkit supports for this endpoint the
+# message.  SAMLToolkit supports for this endpoint the
 # HTTP-POST binding only
 onelogin.saml2.sp.assertion_consumer_service.binding = urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST
 
@@ -270,7 +266,7 @@ onelogin.saml2.sp.assertion_consumer_service.binding = urn:oasis:names:tc:SAML:2
 onelogin.saml2.sp.single_logout_service.url = http://localhost:8080/java-saml-tookit-jspsample/sls.jsp
 
 # SAML protocol binding to be used when returning the <LogoutResponse> or sending the <LogoutRequest>
-# message.  Onelogin Toolkit supports for this endpoint the
+# message.  SAMLToolkit supports for this endpoint the
 # HTTP-Redirect binding only
 onelogin.saml2.sp.single_logout_service.binding = urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect
 
@@ -326,7 +322,7 @@ onelogin.saml2.idp.entityid =
 onelogin.saml2.idp.single_sign_on_service.url =
 
 # SAML protocol binding to be used to deliver the <AuthnRequest> message
-# to the IdP.  Onelogin Toolkit supports for this endpoint the
+# to the IdP.  SAMLToolkit supports for this endpoint the
 # HTTP-Redirect binding only
 onelogin.saml2.idp.single_sign_on_service.binding = urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect
 
@@ -340,7 +336,7 @@ onelogin.saml2.idp.single_logout_service.url =
 onelogin.saml2.idp.single_logout_service.response.url =
 
 # SAML protocol binding to be used when returning the <Response>
-# message.  Onelogin Toolkit supports for this endpoint the
+# message.  SAMLToolkit supports for this endpoint the
 # HTTP-Redirect binding only
 onelogin.saml2.idp.single_logout_service.binding = urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect
 
@@ -755,7 +751,7 @@ In order to avoid replay attacks, you can store the ID of the SAML messages alre
 Get the ID of the last processed message with the getLastMessageId method of the Auth object.
 
 ## Demo included in the toolkit
-The Onelogin's Java Toolkit allows you to provide the settings in a unique file as described at the [Settings  section](https://github.com/onelogin/java-saml/#Settings).
+The Java Toolkit allows you to provide the settings in a unique file as described at the [Settings  section](https://github.com/onelogin/java-saml/#Settings).
 
 #### SP setup
 Configure the SP part and review the metadata of the IdP and complete the IdP info. Later configure how the toolkit will work enabling/disabling the security settings.

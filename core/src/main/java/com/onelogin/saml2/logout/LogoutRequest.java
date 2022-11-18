@@ -29,7 +29,7 @@ import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.SchemaFactory;
 
 /**
- * LogoutRequest class of OneLogin's Java Toolkit.
+ * LogoutRequest class of Java Toolkit.
  *
  * A class that implements SAML 2 Logout Request builder/parser/validator
  */
@@ -71,7 +71,7 @@ public class LogoutRequest {
 
 	/**
 	 * After validation, if it fails this property has the cause of the problem
-	 */ 
+	 */
 	private Exception validationException;
 
 	/**
@@ -104,19 +104,19 @@ public class LogoutRequest {
 	public LogoutRequest(Saml2Settings settings, HttpRequest request, String nameId, String sessionIndex, String nameIdFormat, String nameIdNameQualifier, String nameIdSPNameQualifier) {
 		this.settings = settings;
 		this.request = request;
-	
+
 		String samlLogoutRequest = null;
-	
+
 		if (request != null) {
 			samlLogoutRequest = request.getParameter("SAMLRequest");
 			currentUrl = request.getRequestURL();
 		}
-	
+
 		if (samlLogoutRequest == null) {
 			LogoutRequestParams params = new LogoutRequestParams(sessionIndex, nameId, nameIdFormat, nameIdNameQualifier, nameIdSPNameQualifier);
 			id = Util.generateUniqueID(settings.getUniqueIDPrefix());
 			issueInstant = Calendar.getInstance();
-	
+
 			StrSubstitutor substitutor = generateSubstitutor(params, settings);
 			logoutRequestString = postProcessXml(substitutor.replace(getLogoutRequestTemplate()), params, settings);
 		} else {
@@ -264,7 +264,7 @@ public class LogoutRequest {
 	 * scenario only), after all the other fields of this class have already been
 	 * initialised. Its default implementation simply returns the input XML as-is,
 	 * with no change.
-	 * 
+	 *
 	 * @param logoutRequestXml
 	 *              the XML produced for this LogoutRequest by the standard
 	 *              implementation provided by {@link LogoutRequest}
@@ -282,10 +282,10 @@ public class LogoutRequest {
 	/**
 	 * @return the base64 encoded unsigned Logout Request (deflated or not)
 	 *
-	 * @param deflated 
+	 * @param deflated
      *				If deflated or not the encoded Logout Request
      *
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public String getEncodedLogoutRequest(Boolean deflated) throws IOException {
 		String encodedLogoutRequest;
@@ -299,11 +299,11 @@ public class LogoutRequest {
 		}
 		return encodedLogoutRequest;
 	}
-	
+
 	/**
 	 * @return the base64 encoded unsigned Logout Request (deflated or not)
 	 *
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public String getEncodedLogoutRequest() throws IOException {
 		return getEncodedLogoutRequest(null);
@@ -323,13 +323,13 @@ public class LogoutRequest {
 	 *              the logout request input parameters
 	 * @param settings
 	 *              Saml2Settings object. Setting data
-	 * 
+	 *
 	 * @return the StrSubstitutor object of the LogoutRequest
 	 */
 	private StrSubstitutor generateSubstitutor(LogoutRequestParams params, Saml2Settings settings) {
 		Map<String, String> valueMap = new HashMap<String, String>();
 
-		valueMap.put("id", Util.toXml(id));		
+		valueMap.put("id", Util.toXml(id));
 
 		String issueInstantString = Util.formatDateTime(issueInstant.getTimeInMillis());
 		valueMap.put("issueInstant", issueInstantString);
@@ -356,11 +356,11 @@ public class LogoutRequest {
 			}
 		} else {
 			nameId = settings.getIdpEntityId();
-			nameIdFormat = Constants.NAMEID_ENTITY;			
+			nameIdFormat = Constants.NAMEID_ENTITY;
 		}
 
 		// From saml-core-2.0-os 8.3.6, when the entity Format is used: "The NameQualifier, SPNameQualifier, and
-        // SPProvidedID attributes MUST be omitted.		
+        // SPProvidedID attributes MUST be omitted.
 		if (nameIdFormat != null && nameIdFormat.equals(Constants.NAMEID_ENTITY)) {
 			nameQualifier = null;
 			spNameQualifier = null;
@@ -424,7 +424,7 @@ public class LogoutRequest {
 			if (this.request == null) {
 				throw new Exception("The HttpRequest of the current host was not established");
 			}
-			
+
 			if (this.currentUrl == null || this.currentUrl.isEmpty()) {
 				throw new Exception("The URL of the current host was not established");
 			}
@@ -435,7 +435,7 @@ public class LogoutRequest {
 
 			if (settings.isStrict()) {
 				Element rootElement = logoutRequestDocument.getDocumentElement();
-				rootElement.normalize();				
+				rootElement.normalize();
 
 				if (settings.getWantXMLValidation()) {
 					if (!Util.validateXML(logoutRequestDocument, SchemaFactory.SAML_SCHEMA_PROTOCOL_2_0)) {
@@ -479,10 +479,10 @@ public class LogoutRequest {
                     throw new ValidationError("The Message of the Logout Request is not signed and the SP requires it", ValidationError.NO_SIGNED_MESSAGE);
                 }
 			}
-                
+
 			if (signature != null && !signature.isEmpty()) {
 				X509Certificate cert = settings.getIdpx509cert();
-				
+
 				List<X509Certificate> certList = new ArrayList<X509Certificate>();
 				List<X509Certificate> multipleCertList = settings.getIdpx509certMulti();
 
@@ -524,9 +524,9 @@ public class LogoutRequest {
 					throw new ValidationError("Signature validation failed. Logout Request rejected", ValidationError.INVALID_SIGNATURE);
 				}
 			}
-			
+
 			LOGGER.debug("LogoutRequest validated --> " + logoutRequestString);
-		    return true;	
+		    return true;
 		} catch (Exception e) {
 			validationException = e;
 			LOGGER.debug("LogoutRequest invalid --> " + logoutRequestString);
@@ -589,7 +589,7 @@ public class LogoutRequest {
 		Document doc = Util.loadXML(samlLogoutRequestString);
 		return getId(doc);
 	}
-	
+
       /**
        * Returns the issue instant of the Logout Request Document.
        *
@@ -618,7 +618,7 @@ public class LogoutRequest {
 	public static Map<String, String> getNameIdData(Document samlLogoutRequestDocument, PrivateKey key) throws Exception {
 		return getNameIdData(samlLogoutRequestDocument, key, false);
 	}
-	
+
 	/**
 	 * Gets the NameID Data from the the Logout Request Document.
 	 *
@@ -637,7 +637,7 @@ public class LogoutRequest {
 		NodeList encryptedIDNodes = Util.query(samlLogoutRequestDocument, "/samlp:LogoutRequest/saml:EncryptedID");
 		NodeList nameIdNodes;
 		Element nameIdElem;
-		
+
 		if (encryptedIDNodes.getLength() == 1) {
 			if (key == null) {
 				throw new SettingsException("Key is required in order to decrypt the NameID", SettingsException.PRIVATE_KEY_NOT_FOUND);
@@ -650,7 +650,7 @@ public class LogoutRequest {
 			if (nameIdNodes == null || nameIdNodes.getLength() != 1) {
 				throw new Exception("Not able to decrypt the EncryptedID and get a NameID");
 			}
-		} 
+		}
 		else {
 			nameIdNodes = Util.query(samlLogoutRequestDocument, "/samlp:LogoutRequest/saml:NameID");
 		}
@@ -660,9 +660,9 @@ public class LogoutRequest {
 		} else {
 			throw new ValidationError("No name id found in Logout Request.", ValidationError.NO_NAMEID);
 		}
-		
+
 		Map<String, String> nameIdData = new HashMap<String, String>();
-		
+
 		if (nameIdElem != null) {
 			String value = nameIdElem.getTextContent();
 			if(value != null && trimValue) {
@@ -723,10 +723,10 @@ public class LogoutRequest {
 	 *
 	 * @param samlLogoutRequestDocument
 	 *              A DOMDocument object loaded from the SAML Logout Request.
-	 * 
+	 *
 	 * @param key
 	 *              The SP key to decrypt the NameID if encrypted
-	 * 
+	 *
 	 * @return the Name ID value
 	 *
 	 * @throws Exception
@@ -740,10 +740,10 @@ public class LogoutRequest {
 	 *
 	 * @param samlLogoutRequestDocument
 	 *              A DOMDocument object loaded from the SAML Logout Request.
-	 * 
+	 *
 	 * @param key
 	 *              The SP key to decrypt the NameID if encrypted
-	 * 
+	 *
 	 * @param trimValue
 	 *              whether the extracted Name ID value should be trimmed
 	 *
@@ -771,7 +771,7 @@ public class LogoutRequest {
 	public static String getNameId(Document samlLogoutRequestDocument) throws Exception {
 		return getNameId(samlLogoutRequestDocument, null);
 	}
-    
+
 	/**
 	 * Gets the NameID value provided from the SAML Logout Request String.
 	 *
@@ -821,10 +821,10 @@ public class LogoutRequest {
 	public static String getNameId(String samlLogoutRequestString) throws Exception {
 		return getNameId(samlLogoutRequestString, null);
 	}
-    
+
     /**
      * Gets the Issuer from Logout Request Document.
-     * 
+     *
      * @param samlLogoutRequestDocument
      *              A DOMDocument object loaded from the SAML Logout Request.
      *
@@ -838,7 +838,7 @@ public class LogoutRequest {
 
     /**
      * Gets the Issuer from Logout Request Document.
-     * 
+     *
      * @param samlLogoutRequestDocument
      *              A DOMDocument object loaded from the SAML Logout Request.
      * @param trim
@@ -864,12 +864,12 @@ public class LogoutRequest {
 
     /**
      * Gets the Issuer from Logout Request String.
-     * 
+     *
      * @param samlLogoutRequestString
      *              A Logout Request string.
      *
      * @return the issuer of the logout request
-     * 
+     *
      * @throws XPathExpressionException
      */
     public static String getIssuer(String samlLogoutRequestString) throws XPathExpressionException {
@@ -878,14 +878,14 @@ public class LogoutRequest {
 
     /**
      * Gets the Issuer from Logout Request String.
-     * 
+     *
      * @param samlLogoutRequestString
      *              A Logout Request string.
      * @param trim
      *              whether the extracted issuer value should be trimmed
      *
      * @return the issuer of the logout request
-     * 
+     *
      * @throws XPathExpressionException
      */
     public static String getIssuer(String samlLogoutRequestString, boolean trim) throws XPathExpressionException {
@@ -896,7 +896,7 @@ public class LogoutRequest {
 
     /**
      * Gets the SessionIndexes from the LogoutRequest.
-     * 
+     *
      * @param samlLogoutRequestDocument
      *              A DOMDocument object loaded from the SAML Logout Request.
      * @return the SessionIndexes
@@ -909,7 +909,7 @@ public class LogoutRequest {
 
     /**
      * Gets the SessionIndexes from the LogoutRequest.
-     * 
+     *
      * @param samlLogoutRequestDocument
      *              A DOMDocument object loaded from the SAML Logout Request.
      * @param trim
@@ -939,7 +939,7 @@ public class LogoutRequest {
 
     /**
      * Gets the SessionIndexes from the LogoutRequest.
-     * 
+     *
      * @param samlLogoutRequestString
      *              A Logout Request string.
      * @return the SessionIndexes
@@ -952,7 +952,7 @@ public class LogoutRequest {
 
     /**
      * Gets the SessionIndexes from the LogoutRequest.
-     * 
+     *
      * @param samlLogoutRequestString
      *              A Logout Request string.
      * @param trim
@@ -970,7 +970,7 @@ public class LogoutRequest {
 	/**
      * After execute a validation process, if fails this method returns the cause
      *
-     * @return the cause of the validation error 
+     * @return the cause of the validation error
      */
 	public String getError() {
 		if (validationException != null) {
@@ -991,7 +991,7 @@ public class LogoutRequest {
 	/**
 	 * Sets the validation exception that this {@link LogoutRequest} should return
 	 * when a validation error occurs.
-	 * 
+	 *
 	 * @param validationException
 	 *              the validation exception to set
 	 */
@@ -1009,7 +1009,7 @@ public class LogoutRequest {
 
 	/**
 	 * Returns the issue instant of this message.
-	 * 
+	 *
 	 * @return a new {@link Calendar} instance carrying the issue instant of this message
 	 */
 	public Calendar getIssueInstant() {

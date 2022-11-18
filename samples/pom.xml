@@ -7,7 +7,7 @@
 	</parent>
 
 	<artifactId>java-saml-tookit-samples</artifactId>
-	<name>OneLogin java-saml Toolkit Samples</name>
+	<name>java-saml Toolkit Samples</name>
 	<packaging>pom</packaging>
 
 	<modules>

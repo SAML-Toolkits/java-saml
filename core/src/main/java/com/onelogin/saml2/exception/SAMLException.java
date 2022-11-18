@@ -1,7 +1,7 @@
 package com.onelogin.saml2.exception;
 
 /**
- * Top-level exception class for the OneLogin SAML client.
+ * Top-level exception class for the SAML client.
  */
 public class SAMLException extends Exception {
 
@@ -10,7 +10,7 @@ public class SAMLException extends Exception {
     /**
      * Construct a SAMLException with the provided error message.
      *
-     * @param message 
+     * @param message
      *     The human-readable error message associated with this exception.
      */
     public SAMLException(String message) {
@@ -33,8 +33,8 @@ public class SAMLException extends Exception {
      *
      * @param message
      *     The human-readable error message associated with this exception.
-     * 
-     * @param cause 
+     *
+     * @param cause
      *     The upstream cause associated with this exception.
      */
     public SAMLException(String message, Throwable cause) {

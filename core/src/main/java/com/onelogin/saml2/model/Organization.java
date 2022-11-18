@@ -6,9 +6,9 @@ import org.apache.commons.lang3.StringUtils;
 
 
 /**
- * Organization class of OneLogin's Java Toolkit.
+ * Organization class of Java Toolkit.
  *
- * A class that stores organization info 
+ * A class that stores organization info
  */
 public class Organization {
 	/**
@@ -25,7 +25,7 @@ public class Organization {
      * Organization URL
      */
 	private final String orgUrl;
-	
+
 	/**
 	 * Organization lang attribute
 	 */
@@ -46,7 +46,7 @@ public class Organization {
 	public Organization(String orgName, String orgDisplayName, URL orgUrl, String orgLangAttribute) {
 		this(orgName, orgDisplayName, orgUrl != null ? orgUrl.toString() : "", orgLangAttribute);
 	}
-	
+
 	/**
 	 * Constructor<br>
 	 * Default the lang attribute to "en"
@@ -80,7 +80,7 @@ public class Organization {
 		this.orgUrl = orgUrl != null ? orgUrl : "";
 		this.orgLangAttribute = StringUtils.defaultIfBlank(orgLangAttribute, "en");
 	}
-	
+
 	/**
 	 * Constructor<br>
 	 * Default the lang attribute to "en"
@@ -116,13 +116,13 @@ public class Organization {
 	public final String getOrgUrl() {
 		return orgUrl;
 	}
-	
+
 	/**
 	 * @return string the lang attribute
 	 */
 	public final String getOrgLangAttribute() {
 		return orgLangAttribute;
-	}	
+	}
 
 	/**
 	 * Compare with another organization
@@ -133,5 +133,5 @@ public class Organization {
 	 */
 	public final Boolean equalsTo(Organization org) {
 		return orgName.equals(org.getOrgName()) && orgDisplayName.equals(org.getOrgDisplayName()) && orgUrl.equals(org.getOrgUrl()) && orgLangAttribute.equals(org.getOrgLangAttribute());
-	}	
+	}
 }

@@ -8,7 +8,7 @@
 
 	<artifactId>java-saml-tookit-jspsample</artifactId>
 	<packaging>war</packaging>
-	<name>OneLogin java-saml Toolkit Sample Webapp</name>
+	<name>java-saml Toolkit Sample Webapp</name>
 
 	<dependencies>
 		<dependency>

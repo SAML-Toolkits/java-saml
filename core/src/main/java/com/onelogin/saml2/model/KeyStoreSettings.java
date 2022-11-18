@@ -3,7 +3,7 @@ package com.onelogin.saml2.model;
 import java.security.KeyStore;
 
 /**
- * KeyStore class of OneLogin's Java Toolkit.
+ * KeyStore class of Java Toolkit.
  *
  * A class that stores KeyStore details for Certificates and Private Key
  */
@@ -28,7 +28,7 @@ public class KeyStoreSettings {
      *
      * @param keyStore
      *            stores certificates and key
-     * 
+     *
      * @param spAlias
      *            Alias for SP key entry
      *
