@@ -647,6 +647,7 @@ If we don't want that processSLO to destroy the session, pass the keepLocalSessi
 
 #### Initiate SLO
 In order to send a Logout Request to the IdP:
+
 ```java
 Auth auth = new Auth(request, response);
 
@@ -671,12 +672,14 @@ if (session.getAttribute("sessionIndex") != null) {
     sessionIndex = session.getAttribute("sessionIndex").toString();
 }
 auth.logout(null, new LogoutRequestParams(sessionIndex, nameId, nameIdFormat));
-```java
+```
+
 The Logout Request will be sent signed or unsigned based on the security settings 'onelogin.saml2.security.logoutrequest_signed'
 
 The IdP will return the Logout Response through the user's client to the Single Logout Service of the SP.
 
 We can set a 'RelayState' parameter containing a return url to the login function:
+
 ```java
 String returnUrl = 'https://example.com';
 auth.logout(relayState=returnUrl)
