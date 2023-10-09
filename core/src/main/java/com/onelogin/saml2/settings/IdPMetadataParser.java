@@ -20,7 +20,7 @@ import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.Util;
 
 /**
- * IdPMetadataParser class of OneLogin's Java Toolkit.
+ * IdPMetadataParser class of Java Toolkit.
  *
  * A class that implements the settings parser from IdP Metadata
  *
@@ -36,7 +36,7 @@ public class IdPMetadataParser {
 
 	/**
 	 * Get IdP Metadata Info from XML Document
-	 * 
+	 *
 	 * @param xmlDocument
 	 *            XML document hat contains IdP metadata
 	 * @param entityId
@@ -47,7 +47,7 @@ public class IdPMetadataParser {
 	 *            Parse specific binding SSO endpoint.
 	 * @param desiredSLOBinding
 	 *            Parse specific binding SLO endpoint.
-	 * 
+	 *
 	 * @return Mapped values with metadata info in Saml2Settings format
 	 * @throws XPathExpressionException
 	 */
@@ -149,12 +149,12 @@ public class IdPMetadataParser {
 
 	/**
 	 * Get IdP Metadata Info from XML Document
-	 * 
+	 *
 	 * @param xmlDocument
 	 *            XML document that contains IdP metadata
 	 * @param entityId
 	 *            Entity Id of the desired IdP, if no entity Id is provided and the XML metadata contains more than one IDPSSODescriptor, the first is returned
-	 * 
+	 *
 	 * @return Mapped values with metadata info in Saml2Settings format
 	 * @throws XPathException
 	 */
@@ -164,10 +164,10 @@ public class IdPMetadataParser {
 
 	/**
 	 * Get IdP Metadata Info from XML Document
-	 * 
+	 *
 	 * @param xmlDocument
 	 *            XML document that contains IdP metadata
-	 * 
+	 *
 	 * @return Mapped values with metadata info in Saml2Settings format
 	 * @throws XPathException
 	 */
@@ -177,7 +177,7 @@ public class IdPMetadataParser {
 
 	/**
 	 * Get IdP Metadata Info from XML file
-	 * 
+	 *
 	 * @param xmlFileName
 	 *            Filename of the XML filename that contains IdP metadata
 	 * @param entityId
@@ -188,7 +188,7 @@ public class IdPMetadataParser {
 	 *            Parse specific binding SSO endpoint.
 	 * @param desiredSLOBinding
 	 *            Parse specific binding SLO endpoint.
-	 * 
+	 *
 	 * @return Mapped values with metadata info in Saml2Settings format
 	 * @throws Exception
 	 */
@@ -210,12 +210,12 @@ public class IdPMetadataParser {
 
 	/**
 	 * Get IdP Metadata Info from XML file
-	 * 
+	 *
 	 * @param xmlFileName
 	 *            Filename of the XML filename that contains IdP metadata
 	 * @param entityId
 	 *            Entity Id of the desired IdP, if no entity Id is provided and the XML metadata contains more than one IDPSSODescriptor, the first is returned
-	 * 
+	 *
 	 * @return Mapped values with metadata info in Saml2Settings format
 	 * @throws Exception
 	 */
@@ -225,10 +225,10 @@ public class IdPMetadataParser {
 
 	/**
 	 * Get IdP Metadata Info from XML file
-	 * 
+	 *
 	 * @param xmlFileName
 	 *            Filename of the XML filename that contains IdP metadata
-	 * 
+	 *
 	 * @return Mapped values with metadata info in Saml2Settings format
 	 * @throws Exception
 	 */
@@ -238,7 +238,7 @@ public class IdPMetadataParser {
 
 	/**
 	 * Get IdP Metadata Info from XML file
-	 * 
+	 *
 	 * @param xmlURL
 	 *            URL to the XML document that contains IdP metadata
 	 * @param entityId
@@ -249,7 +249,7 @@ public class IdPMetadataParser {
 	 *            Parse specific binding SSO endpoint.
 	 * @param desiredSLOBinding
 	 *            Parse specific binding SLO endpoint.
-	 * 
+	 *
 	 * @return Mapped values with metadata info in Saml2Settings format
 	 * @throws Exception
 	 */
@@ -260,12 +260,12 @@ public class IdPMetadataParser {
 
 	/**
 	 * Get IdP Metadata Info from XML file
-	 * 
+	 *
 	 * @param xmlURL
 	 *            URL to the XML document that contains IdP metadata
 	 * @param entityId
 	 *            Entity Id of the desired IdP, if no entity Id is provided and the XML metadata contains more than one IDPSSODescriptor, the first is returned
-	 * 
+	 *
 	 * @return Mapped values with metadata info in Saml2Settings format
 	 * @throws Exception
 	 */
@@ -275,10 +275,10 @@ public class IdPMetadataParser {
 
 	/**
 	 * Get IdP Metadata Info from XML file
-	 * 
+	 *
 	 * @param xmlURL
 	 *            URL to the XML document that contains IdP metadata
-	 * 
+	 *
 	 * @return Mapped values with metadata info in Saml2Settings format
 	 * @throws Exception
 	 */
@@ -293,7 +293,7 @@ public class IdPMetadataParser {
 	 *            the Saml2Settings object
 	 * @param metadataInfo
 	 *            mapped values with metadata info in Saml2Settings format
-	 * 
+	 *
 	 * @return the Saml2Settings object with metadata info settings loaded
 	 */
 	public static Saml2Settings injectIntoSettings(Saml2Settings settings, Map<String, Object> metadataInfo) {

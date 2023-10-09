@@ -13,7 +13,7 @@
 	 <meta charset="utf-8">
 	 <meta http-equiv="X-UA-Compatible" content="IE=edge">
      <meta name="viewport" content="width=device-width, initial-scale=1">
-	 <title>A Java SAML Toolkit by OneLogin demo</title>
+	 <title>A Java SAML Toolkit</title>
 	 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
 
      <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -25,8 +25,8 @@
 </head>
 <body>
 	<div class="container">
-    	<h1>A Java SAML Toolkit by OneLogin demo</h1>
-    	<b>Logout</b>   	
+    	<h1>A Java SAML Toolkit</h1>
+    	<b>Logout</b>
 	<%
 	    Auth auth;
         try
@@ -47,7 +47,7 @@
         }
 
 		List<String> errors = auth.getErrors();
-		
+
 		if (errors.isEmpty()) {
 			out.println("<p>Sucessfully logged out</p>");
 			out.println("<a href=\"dologin.jsp\" class=\"btn btn-primary\">Login</a>");

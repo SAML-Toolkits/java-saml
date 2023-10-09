@@ -16,12 +16,12 @@ import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.SAXException;
 
 /**
- * SchemaFactory class of OneLogin's Java Toolkit.
+ * SchemaFactory class of Java Toolkit.
  *
- * A class that read SAML schemas that will be used to validate XMLs of the OneLogin's Java Toolkit 
- */ 
+ * A class that read SAML schemas that will be used to validate XMLs of the Java Toolkit
+ */
 public abstract class SchemaFactory {
-	
+
 	/**
 	 * Private property to construct a logger for this class.
 	 */
@@ -30,7 +30,7 @@ public abstract class SchemaFactory {
 	private SchemaFactory() {
 	      //not called
 	}
-	
+
 	public static final URL SAML_SCHEMA_METADATA_2_0 = SchemaFactory.class
 			.getResource("/schemas/saml-schema-metadata-2.0.xsd");
 	public static final URL SAML_SCHEMA_PROTOCOL_2_0 = SchemaFactory.class

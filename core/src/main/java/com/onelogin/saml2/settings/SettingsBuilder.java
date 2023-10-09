@@ -15,11 +15,19 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,10 +35,11 @@ import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.model.Contact;
 import com.onelogin.saml2.model.KeyStoreSettings;
 import com.onelogin.saml2.model.Organization;
+import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.Util;
 
 /**
- * SettingsBuilder class of OneLogin's Java Toolkit.
+ * SettingsBuilder class of Java Toolkit.
  *
  * A class that implements the settings builder
  */
@@ -64,6 +73,14 @@ public class SettingsBuilder {
 	public final static String SP_X509CERT_PROPERTY_KEY = "onelogin.saml2.sp.x509cert";
 	public final static String SP_PRIVATEKEY_PROPERTY_KEY = "onelogin.saml2.sp.privatekey";
 	public final static String SP_X509CERTNEW_PROPERTY_KEY = "onelogin.saml2.sp.x509certNew";
+
+	public final static String SP_CONTACT_PROPERTY_KEY_PREFIX = "onelogin.saml2.sp.contact";
+	public final static String SP_CONTACT_CONTACT_TYPE_PROPERTY_KEY_SUFFIX = "contactType";
+	public final static String SP_CONTACT_COMPANY_PROPERTY_KEY_SUFFIX = "company";
+	public final static String SP_CONTACT_GIVEN_NAME_PROPERTY_KEY_SUFFIX = "given_name";
+	public final static String SP_CONTACT_SUR_NAME_PROPERTY_KEY_SUFFIX = "sur_name";
+	public final static String SP_CONTACT_EMAIL_ADDRESS_PROPERTY_KEY_PREFIX = "email_address";
+	public final static String SP_CONTACT_TELEPHONE_NUMBER_PROPERTY_KEY_PREFIX = "telephone_number";
 
 	// KeyStore
 	public final static String KEYSTORE_KEY = "onelogin.saml2.keystore.store";
@@ -110,11 +127,15 @@ public class SettingsBuilder {
 	// Parsing
 	public final static String PARSING_TRIM_NAME_IDS = "onelogin.saml2.parsing.trim_name_ids";
 	public final static String PARSING_TRIM_ATTRIBUTE_VALUES = "onelogin.saml2.parsing.trim_attribute_values";
-	
+
 	// Misc
+	@Deprecated
 	public final static String CONTACT_TECHNICAL_GIVEN_NAME = "onelogin.saml2.contacts.technical.given_name";
+	@Deprecated
 	public final static String CONTACT_TECHNICAL_EMAIL_ADDRESS = "onelogin.saml2.contacts.technical.email_address";
+	@Deprecated
 	public final static String CONTACT_SUPPORT_GIVEN_NAME = "onelogin.saml2.contacts.support.given_name";
+	@Deprecated
 	public final static String CONTACT_SUPPORT_EMAIL_ADDRESS = "onelogin.saml2.contacts.support.email_address";
 
 	public final static String ORGANIZATION_NAME = "onelogin.saml2.organization.name";
@@ -142,7 +163,7 @@ public class SettingsBuilder {
 	 *
 	 * @param propFileName OneLogin_Saml2_Settings
 	 * @param keyStoreSetting KeyStore which have the Private/Public keys
-	 * 
+	 *
 	 * @return the SettingsBuilder object with the settings loaded from the file
 	 *
 	 * @throws IOException
@@ -233,9 +254,9 @@ public class SettingsBuilder {
 	/**
 	 * Builds the Saml2Settings object. Read the Properties object and set all the
 	 * SAML settings
-	 * 
+	 *
 	 * @param saml2Setting an existing Saml2Settings
-	 * 
+	 *
 	 * @return the Saml2Settings object with all the SAML settings loaded
 	 *
 	 */
@@ -261,7 +282,7 @@ public class SettingsBuilder {
 
 		List<Contact> contacts = this.loadContacts();
 		if (!contacts.isEmpty()) {
-			saml2Setting.setContacts(loadContacts());
+			saml2Setting.setContacts(contacts);
 		}
 
 		Organization org = this.loadOrganization();
@@ -464,15 +485,26 @@ public class SettingsBuilder {
 
 	/**
 	 * Loads the contacts settings from the properties file
+	 *
+	 * @return a list containing all the loaded contacts
 	 */
+	@SuppressWarnings("deprecation")
 	private List<Contact> loadContacts() {
-		List<Contact> contacts = new LinkedList<>();
-
+		// first split properties into a map of properties
+		// key = contact index; value = contact properties
+		final SortedMap<Integer, Map<String, Object>> contactProps =
+				extractIndexedProperties(SP_CONTACT_PROPERTY_KEY_PREFIX, samlData);
+		// then build each contact
+		// multiple indexed services specified
+		final List<Contact> contacts = contactProps.entrySet().stream()
+			            .map(entry -> loadContact(entry.getValue(), entry.getKey()))
+			            .collect(Collectors.toList());
+		// append legacy contacts if present
 		String technicalGn = loadStringProperty(CONTACT_TECHNICAL_GIVEN_NAME);
 		String technicalEmailAddress = loadStringProperty(CONTACT_TECHNICAL_EMAIL_ADDRESS);
 
 		if ((technicalGn != null && !technicalGn.isEmpty()) || (technicalEmailAddress != null && !technicalEmailAddress.isEmpty())) {
-			Contact technical = new Contact("technical", technicalGn, technicalEmailAddress);
+			Contact technical = new Contact(Constants.CONTACT_TYPE_TECHNICAL, technicalGn, technicalEmailAddress);
 			contacts.add(technical);
 		}
 
@@ -480,11 +512,183 @@ public class SettingsBuilder {
 		String supportEmailAddress = loadStringProperty(CONTACT_SUPPORT_EMAIL_ADDRESS);
 
 		if ((supportGn != null && !supportGn.isEmpty()) || (supportEmailAddress != null && !supportEmailAddress.isEmpty())) {
-			Contact support = new Contact("support", supportGn, supportEmailAddress);
+			Contact support = new Contact(Constants.CONTACT_TYPE_SUPPORT, supportGn, supportEmailAddress);
 			contacts.add(support);
 		}
 
 		return contacts;
+	}
+
+	/**
+	 * Loads a single contact from settings.
+	 *
+	 * @param contactProps
+	 *              a map containing the contact settings
+	 * @param index
+	 *              the contact index
+	 * @return the loaded contact
+	 */
+	private Contact loadContact(Map<String, Object> contactProps, int index) {
+		final String contactType =  loadStringProperty(SP_CONTACT_CONTACT_TYPE_PROPERTY_KEY_SUFFIX, contactProps);
+		final String company = loadStringProperty(SP_CONTACT_COMPANY_PROPERTY_KEY_SUFFIX, contactProps);
+		final String givenName = loadStringProperty(SP_CONTACT_GIVEN_NAME_PROPERTY_KEY_SUFFIX, contactProps);
+		final String surName = loadStringProperty(SP_CONTACT_SUR_NAME_PROPERTY_KEY_SUFFIX, contactProps);
+		// split properties into a map of properties
+		// key = e-mail address index; value = e-mail address
+		final SortedMap<Integer, Object> emailAddresses = extractIndexedValues(SP_CONTACT_EMAIL_ADDRESS_PROPERTY_KEY_PREFIX, contactProps);
+		final List<String> emails = toStringList(emailAddresses);
+		// split properties into a map of properties
+		// key = phone number index; value = phone numbers
+		final SortedMap<Integer, Object> phoneNumbers = extractIndexedValues(SP_CONTACT_TELEPHONE_NUMBER_PROPERTY_KEY_PREFIX, contactProps);
+		final List<String> numbers = toStringList(phoneNumbers);
+		return new Contact(contactType, company, givenName, surName, emails, numbers);
+	}
+
+	/**
+	 * Given a map containing settings data, extracts all the indexed properties
+	 * identified by a given prefix. The returned map has indexes as keys and a map
+	 * describing the extracted indexed data as values. Keys are sorted by their
+	 * natural order (i.e. iterating over the map will return entries in index order).
+	 * <p>
+	 * For instance, if the prefix is <code>foo</code>, all the following properties
+	 * will be extracted:
+	 *
+	 * <pre>
+	 * foo[0].prop1=&lt;value1&gt;
+	 * foo[0].prop2=&lt;value2&gt;
+	 * foo[1].prop1=&lt;value3&gt;
+	 * </pre>
+	 *
+	 * and the returned map will be:
+	 *
+	 * <pre>
+	 * 0 => prop1=&lt;value1&gt;
+	 *      prop2=&lt;value2&gt;
+	 * 1 => prop1=&lt;value3&gt;
+	 * </pre>
+	 *
+	 * The index is optional: if missing, "-1" is returned. In other words, in the
+	 * above example:
+	 *
+	 * <pre>
+	 * foo.prop1=&lt;value1&gt;
+	 * foo.prop2=&lt;value2&gt;
+	 * </pre>
+	 *
+	 * will be mapped to:
+	 *
+	 * <pre>
+	 * -1 => prop1=&lt;value1&gt;
+	 *       prop2=&lt;value2&gt;
+	 * </pre>
+	 *
+	 * Indices can be made of maximum 9 digits, to prevent overflows. Leading zeroes
+	 * are discarded.
+	 *
+	 * @param prefix
+	 *              the prefix that identifies the indexed property to extract
+	 * @param data
+	 *              the input data
+	 * @return a map with extracted data for each identified index
+	 */
+	private SortedMap<Integer, Map<String, Object>> extractIndexedProperties(String prefix, Map<String, Object> data) {
+		final Pattern p = Pattern.compile(Pattern.quote(prefix) +
+				"(?:\\[(\\d{1,9})\\])?\\.(.+)");
+		final SortedMap<Integer, Map<String, Object>> indexedProps = new TreeMap<>();
+		for(final Entry<String, Object> prop: data.entrySet()) {
+			final Matcher m = p.matcher(prop.getKey());
+			if(m.matches()) {
+				final String indexString = m.group(1);
+				final int index = indexString == null? -1: Integer.parseInt(indexString);
+				final String suffix = m.group(2);
+				Map<String, Object> props = indexedProps.get(index);
+				if(props == null) {
+					props = new HashMap<>();
+					indexedProps.put(index, props);
+				}
+				props.put(suffix, prop.getValue());
+			}
+		}
+		return indexedProps;
+	}
+
+	/**
+	 * Given a map containing settings data, extracts all the indexed values
+	 * identified by a given prefix. The returned map has indexes as keys and the
+	 * corresponding values as values. Keys are sorted by their natural order
+	 * (i.e. iterating over the map will return entries in index order).
+	 * <p>
+	 * For instance, if the prefix is <code>foo</code>, all the following values
+	 * will be extracted:
+	 *
+	 * <pre>
+	 * foo[0]=&lt;value1&gt;
+	 * foo[1]=&lt;value2&gt;
+	 * foo[2]=&lt;value3&gt;
+	 * </pre>
+	 *
+	 * and the returned map will be:
+	 *
+	 * <pre>
+	 * 0 => &lt;value1&gt;
+	 * 1 => &lt;value2&gt;
+	 * 3 => &lt;value3&gt;
+	 * </pre>
+	 *
+	 * The index is optional: if missing, "-1" is returned. In other words, in the
+	 * above example:
+	 *
+	 * <pre>
+	 * foo=&lt;value1&gt;
+	 * </pre>
+	 *
+	 * will be mapped to:
+	 *
+	 * <pre>
+	 * -1 => &lt;value1&gt;
+	 * </pre>
+	 *
+	 * Indices can be made of maximum 9 digits, to prevent overflows. Leading zeroes
+	 * are discarded.
+	 *
+	 * @param prefix
+	 *              the prefix that identifies the indexed property to extract
+	 * @param data
+	 *              the input data
+	 * @return a map with extracted values for each identified index
+	 */
+	private SortedMap<Integer, Object> extractIndexedValues(String prefix, Map<String, Object> data) {
+		final Pattern p = Pattern.compile(Pattern.quote(prefix) +
+				"(?:\\[(\\d{1,9})\\])?");
+		final SortedMap<Integer, Object> indexedValues = new TreeMap<>();
+		for(final Entry<String, Object> prop: data.entrySet()) {
+			final Matcher m = p.matcher(prop.getKey());
+			if(m.matches()) {
+				final String indexString = m.group(1);
+				final int index = indexString == null? -1: Integer.parseInt(indexString);
+				indexedValues.put(index, prop.getValue());
+			}
+		}
+		return indexedValues;
+	}
+
+	/**
+	 * Given a map of indexed property values (possibly extracted with
+	 * {@link #extractIndexedValues(String, Map)}), returns a list containing all
+	 * the {@link String} values contained in the map, sorted by their iteration
+	 * order.
+	 *
+	 * @param indexedValues
+	 *              a map containing indexed values (key = index; value = actual
+	 *              value)
+	 * @return a list containing all the string values in the input map, sorted by
+	 *         their iteration order; therefore, if the map is a {@link SortedMap},
+	 *         the returned list has values sorted by their index
+	 */
+	private List<String> toStringList(final Map<Integer, Object> indexedValues) {
+		return indexedValues.values().stream()
+		            .map(value -> isString(value) ? StringUtils.trimToNull((String) value) : null)
+		            .filter(Objects::nonNull).collect(Collectors.toList());
 	}
 
 	/**
@@ -568,7 +772,19 @@ public class SettingsBuilder {
 	 * @return the value
 	 */
 	private String loadStringProperty(String propertyKey) {
-		Object propValue = samlData.get(propertyKey);
+		return loadStringProperty(propertyKey, samlData);
+	}
+
+	/**
+	 * Loads a property of the type String from the specified data
+	 *
+	 * @param propertyKey the property name
+	 * @param data the input data
+	 *
+	 * @return the value
+	 */
+	private String loadStringProperty(String propertyKey, Map<String, Object> data) {
+		Object propValue = data.get(propertyKey);
 		if (isString(propValue)) {
 			return StringUtils.trimToNull((String) propValue);
 		}
@@ -760,7 +976,7 @@ public class SettingsBuilder {
 			LOGGER.error("Error loading certificate from file.", e);
 			return null;
 		}
-		
+
 		try {
 			return Util.loadCert(certString);
 		} catch (CertificateException e) {

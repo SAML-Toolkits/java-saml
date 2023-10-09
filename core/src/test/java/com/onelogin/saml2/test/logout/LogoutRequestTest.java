@@ -1095,11 +1095,13 @@ public class LogoutRequestTest {
 	@Test
 	public void testPostProcessXml() throws Exception {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		LogoutRequest logoutRequest = new LogoutRequest(settings) {
+		final LogoutRequestParams params = new LogoutRequestParams();
+		LogoutRequest logoutRequest = new LogoutRequest(settings, params) {
 			@Override
-			protected String postProcessXml(String logoutRequestXml, LogoutRequestParams params, Saml2Settings sett) {
-				assertEquals(logoutRequestXml, super.postProcessXml(logoutRequestXml, params, sett));
+			protected String postProcessXml(String logoutRequestXml, LogoutRequestParams par, Saml2Settings sett) {
+				assertEquals(logoutRequestXml, super.postProcessXml(logoutRequestXml, par, sett));
 				assertSame(settings, sett);
+				assertSame(params, par);
 				return "changed";
 			}
 		};

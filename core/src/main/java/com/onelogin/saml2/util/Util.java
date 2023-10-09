@@ -27,13 +27,22 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.Period;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalAmount;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
@@ -75,13 +84,6 @@ import org.apache.xml.security.keys.KeyInfo;
 import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.transforms.Transforms;
 import org.apache.xml.security.utils.XMLUtils;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.Period;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
-import org.joda.time.format.ISOPeriodFormat;
-import org.joda.time.format.PeriodFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
@@ -99,7 +101,7 @@ import com.onelogin.saml2.model.hsm.HSM;
 
 
 /**
- * Util class of OneLogin's Java Toolkit.
+ * Util class of Java Toolkit.
  *
  * A class that contains several auxiliary methods related to the SAML protocol
  */
@@ -110,8 +112,7 @@ public final class Util {
      */
 	private static final Logger LOGGER = LoggerFactory.getLogger(Util.class);
 
-    private static final DateTimeFormatter DATE_TIME_FORMAT = ISODateTimeFormat.dateTimeNoMillis().withZoneUTC();
-	private static final DateTimeFormatter DATE_TIME_FORMAT_MILLS = ISODateTimeFormat.dateTime().withZoneUTC();
+    private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ISO_DATE_TIME.withZone(ZoneOffset.UTC);
 	public static final String UNIQUE_ID_PREFIX = "ONELOGIN_";
 	public static final String RESPONSE_SIGNATURE_XPATH = "/samlp:Response/ds:Signature";
 	public static final String ASSERTION_SIGNATURE_XPATH = "/samlp:Response/saml:Assertion/ds:Signature";
@@ -394,6 +395,8 @@ public final class Util {
 		} catch (Throwable e) {}
 
 		DocumentBuilder builder = docfactory.newDocumentBuilder();
+		XMLErrorAccumulatorHandler errorAcumulator = new XMLErrorAccumulatorHandler();
+        	builder.setErrorHandler(errorAcumulator);
 		Document doc = builder.parse(inputSource);
 
 		// Loop through the doc and tag every element with an ID attribute
@@ -1125,7 +1128,7 @@ public final class Util {
     	}
 		return false;
 	}
-    
+
 	/**
 	 * Validate signature of the Node.
 	 *
@@ -1824,10 +1827,10 @@ public final class Util {
 	 *
 	 * @return int The new timestamp, after the duration is applied.
 	 *
-	 * @throws IllegalArgumentException
+	 * @throws DateTimeParseException 
 	 */
-	public static long parseDuration(String duration) throws IllegalArgumentException {
-		TimeZone timeZone = DateTimeZone.UTC.toTimeZone();
+	public static long parseDuration(String duration) throws DateTimeParseException {
+		TimeZone timeZone = TimeZone.getTimeZone(ZoneOffset.UTC);
 		return parseDuration(duration, Calendar.getInstance(timeZone).getTimeInMillis() / 1000);
 	}
 
@@ -1841,9 +1844,9 @@ public final class Util {
 	 *
 	 * @return the new timestamp, after the duration is applied In Seconds.
 	 *
-	 * @throws IllegalArgumentException
+	 * @throws DateTimeParseException 
 	 */
-	public static long parseDuration(String durationString, long timestamp) throws IllegalArgumentException {
+	public static long parseDuration(String durationString, long timestamp) throws DateTimeParseException {
 		boolean haveMinus = false;
 
 		if (durationString.startsWith("-")) {
@@ -1851,26 +1854,30 @@ public final class Util {
 			haveMinus = true;
 		}
 
-		PeriodFormatter periodFormatter = ISOPeriodFormat.standard().withLocale(new Locale("UTC"));
-		Period period = periodFormatter.parsePeriod(durationString);
-
-		DateTime dt = new DateTime(timestamp * 1000, DateTimeZone.UTC);
-
-		DateTime result = null;
-		if (haveMinus) {
-			result = dt.minus(period);
+		TemporalAmount amount;
+		if (durationString.startsWith("PT")) {
+			amount = Duration.parse(durationString);
 		} else {
-			result = dt.plus(period);
+			amount = Period.parse(durationString);
 		}
-		return result.getMillis() / 1000;
+
+		ZonedDateTime dt = Instant.ofEpochSecond(timestamp).atZone(ZoneOffset.UTC);
+
+		ZonedDateTime result;
+		if (haveMinus) {
+			result = dt.minus(amount);
+		} else {
+			result = dt.plus(amount);
+		}
+		return result.toEpochSecond();
 	}
 
 	/**
 	 * @return the unix timestamp that matches the current time.
 	 */
 	public static Long getCurrentTimeStamp() {
-		DateTime currentDate = new DateTime(DateTimeZone.UTC);
-		return currentDate.getMillis() / 1000;
+		ZonedDateTime currentDate = ZonedDateTime.now(clock);
+		return currentDate.toEpochSecond();
 	}
 
 	/**
@@ -1891,8 +1898,8 @@ public final class Util {
 			}
 
 			if (validUntil != null && !StringUtils.isEmpty(validUntil)) {
-				DateTime dt = Util.parseDateTime(validUntil);
-				long validUntilTimeInt = dt.getMillis() / 1000;
+				Instant dt = Util.parseDateTime(validUntil);
+				long validUntilTimeInt = dt.toEpochMilli() / 1000;
 				if (expireTime == 0 || expireTime > validUntilTimeInt) {
 					expireTime = validUntilTimeInt;
 				}
@@ -1938,25 +1945,7 @@ public final class Util {
 	 * @return string with format yyyy-MM-ddTHH:mm:ssZ
 	 */
 	public static String formatDateTime(long timeInMillis) {
-		return DATE_TIME_FORMAT.print(timeInMillis);
-	}
-
-	/**
-	 * Create string form time In Millis with format yyyy-MM-ddTHH:mm:ssZ
-	 *
-	 * @param time
-	 * 			The time
-	 * @param millis
-	 * 			Defines if the time is in Millis
-	 *
-	 * @return string with format yyyy-MM-ddTHH:mm:ssZ
-	 */
-	public static String formatDateTime(long time, boolean millis) {
-		if (millis) {
-			return DATE_TIME_FORMAT_MILLS.print(time);
-		} else {
-			return formatDateTime(time);
-		}
+		return DATE_TIME_FORMAT.format(Instant.ofEpochMilli(timeInMillis));
 	}
 
 	/**
@@ -1967,21 +1956,15 @@ public final class Util {
 	 *
 	 * @return datetime
 	 */
-	public static DateTime parseDateTime(String dateTime) {
-
-		DateTime parsedData = null;
-		try {
-			parsedData = DATE_TIME_FORMAT.parseDateTime(dateTime);
-		} catch(Exception e) {
-			return DATE_TIME_FORMAT_MILLS.parseDateTime(dateTime);
-		}
-		return parsedData;
+	public static Instant parseDateTime(String dateTime) {
+		TemporalAccessor parsedData = DATE_TIME_FORMAT.parse(dateTime);
+		return Instant.from(parsedData);
 	}
-	
+
 	/**
 	 * Escape a text so that it can be safely used within an XML element contents or attribute value.
-	 * 
-	 * @param text 
+	 *
+	 * @param text
 	 * 				the text to escape
 	 * @return the escaped text (<code>null</code> if the input is <code>null</code>)
 	 */
@@ -2005,5 +1988,53 @@ public final class Util {
 		}
 	}
 
+	private static Clock clock = Clock.systemUTC();
+
+	/**
+	 * Get current timestamp milliseconds.
+	 * 
+	 * @return current timestamp
+	 */
+	public static long getCurrentTimeMillis() {
+		return clock.millis();
+	}
+
+	static void setFixedClock(Clock fixClock) {
+		clock = fixClock;
+	}
+
+	static void setSystemClock() {
+		clock = Clock.systemUTC();
+	}
+
+	/**
+	 * Checks if specified instant is equal to now.
+	 * 
+	 * @param instant the instant to compare to
+	 * @return true if instant is equal to now
+	 */
+	public static boolean isEqualNow(Instant instant) {
+		return instant.equals(Instant.now(clock));
+	}
+
+	/**
+	 * Checks if specified instant is before now.
+	 * 
+	 * @param instant the instant to compare to
+	 * @return true if instant is before now
+	 */
+	public static boolean isBeforeNow(Instant instant) {
+		return instant.isBefore(Instant.now(clock));
+	}
+
+	/**
+	 * Checks if specified instant is after now.
+	 * 
+	 * @param instant the instant to compare to
+	 * @return true if instant is before now
+	 */
+	public static boolean isAfterNow(Instant instant) {
+		return instant.isAfter(Instant.now(clock));
+	}
 
 }

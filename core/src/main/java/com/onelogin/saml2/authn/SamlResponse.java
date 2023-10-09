@@ -3,6 +3,8 @@ package com.onelogin.saml2.authn;
 import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -16,8 +18,6 @@ import javax.xml.xpath.XPathExpressionException;
 import com.onelogin.saml2.model.hsm.HSM;
 
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
-import org.joda.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -37,7 +37,7 @@ import com.onelogin.saml2.util.SchemaFactory;
 import com.onelogin.saml2.util.Util;
 
 /**
- * SamlResponse class of OneLogin's Java Toolkit.
+ * SamlResponse class of Java Toolkit.
  *
  * A class that implements SAML 2 Authentication Response parser/validator
  */
@@ -297,10 +297,10 @@ public class SamlResponse {
 				}
 
 				// Check the session Expiration
-				DateTime sessionExpiration = this.getSessionNotOnOrAfter();
+				Instant sessionExpiration = this.getSessionNotOnOrAfter();
 				if (sessionExpiration != null) {
-					sessionExpiration = sessionExpiration.plus(Constants.ALOWED_CLOCK_DRIFT * 1000);
-					if (sessionExpiration.isEqualNow() || sessionExpiration.isBeforeNow()) {
+					sessionExpiration = ChronoUnit.SECONDS.addTo(sessionExpiration, Constants.ALOWED_CLOCK_DRIFT);
+					if (Util.isEqualNow(sessionExpiration) || Util.isBeforeNow(sessionExpiration)) {
 						throw new ValidationError("The attributes have expired, based on the SessionNotOnOrAfter of the AttributeStatement of this Response", ValidationError.SESSION_EXPIRED);
 					}
 				}
@@ -401,18 +401,18 @@ public class SamlResponse {
 						continue;
 					}
 
-					DateTime noa = Util.parseDateTime(notOnOrAfter.getNodeValue());
-					noa = noa.plus(Constants.ALOWED_CLOCK_DRIFT * 1000);
-					if (noa.isEqualNow() || noa.isBeforeNow()) {
+					Instant noa = Util.parseDateTime(notOnOrAfter.getNodeValue());
+					noa = ChronoUnit.SECONDS.addTo(noa, Constants.ALOWED_CLOCK_DRIFT);
+					if (Util.isEqualNow(noa) || Util.isBeforeNow(noa)) {
 						validationIssues.add(new SubjectConfirmationIssue(i, "SubjectConfirmationData is no longer valid"));
 						continue;
 					}
 
 					Node notBefore = subjectConfirmationDataNodes.item(c).getAttributes().getNamedItem("NotBefore");
 					if (notBefore != null) {
-						DateTime nb = Util.parseDateTime(notBefore.getNodeValue());
-						nb = nb.minus(Constants.ALOWED_CLOCK_DRIFT * 1000);
-						if (nb.isAfterNow()) {
+						Instant nb = Util.parseDateTime(notBefore.getNodeValue());
+						nb = ChronoUnit.SECONDS.addTo(nb, Constants.ALOWED_CLOCK_DRIFT * -1);
+						if (Util.isAfterNow(nb)) {
 							validationIssues.add(new SubjectConfirmationIssue(i, "SubjectConfirmationData is not yet valid"));
 							continue;
 						}
@@ -752,7 +752,7 @@ public class SamlResponse {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Gets the Assertion Issuer.
 	 *
@@ -777,7 +777,7 @@ public class SamlResponse {
 			throw new ValidationError("Issuer of the Assertion not found or multiple.", ValidationError.ISSUER_NOT_FOUND_IN_ASSERTION);
 		}
 	}
-	
+
 	/**
 	 * Gets the Issuers (from Response and Assertion). If the same issuer appears
 	 * both in the Response and in the Assertion (as it should), the returned list
@@ -829,7 +829,7 @@ public class SamlResponse {
 	 *
 	 * @throws XPathExpressionException
 	 */
-	public DateTime getSessionNotOnOrAfter() throws XPathExpressionException {
+	public Instant getSessionNotOnOrAfter() throws XPathExpressionException {
 		String notOnOrAfter = null;
 		NodeList entries = this.queryAssertion("/saml:AuthnStatement[@SessionNotOnOrAfter]");
 		if (entries.getLength() > 0) {
@@ -889,7 +889,7 @@ public class SamlResponse {
 		for (int i = 0; i < notOnOrAfterNodes.getLength(); i++) {
 			final Node notOnOrAfterAttribute = notOnOrAfterNodes.item(i).getAttributes().getNamedItem("NotOnOrAfter");
 			if (notOnOrAfterAttribute != null) {
-				notOnOrAfters.add(new Instant(notOnOrAfterAttribute.getNodeValue()));
+				notOnOrAfters.add(Instant.parse(notOnOrAfterAttribute.getNodeValue()));
 		}}
 		return notOnOrAfters;
 	}
@@ -1053,17 +1053,17 @@ public class SamlResponse {
 				Node naAttribute = attrName.getNamedItem("NotOnOrAfter");
 				// validate NotOnOrAfter
 				if (naAttribute != null) {
-					DateTime notOnOrAfterDate = Util.parseDateTime(naAttribute.getNodeValue());
-					notOnOrAfterDate = notOnOrAfterDate.plus(Constants.ALOWED_CLOCK_DRIFT * 1000);
-					if (notOnOrAfterDate.isEqualNow() || notOnOrAfterDate.isBeforeNow()) {
+					Instant notOnOrAfterDate = Util.parseDateTime(naAttribute.getNodeValue());
+					notOnOrAfterDate = ChronoUnit.SECONDS.addTo(notOnOrAfterDate, Constants.ALOWED_CLOCK_DRIFT);
+					if (Util.isEqualNow(notOnOrAfterDate) || Util.isBeforeNow(notOnOrAfterDate)) {
 						throw new ValidationError("Could not validate timestamp: expired. Check system clock.", ValidationError.ASSERTION_EXPIRED);
 					}
 				}
 				// validate NotBefore
 				if (nbAttribute != null) {
-					DateTime notBeforeDate = Util.parseDateTime(nbAttribute.getNodeValue());
-					notBeforeDate = notBeforeDate.minus(Constants.ALOWED_CLOCK_DRIFT * 1000);
-					if (notBeforeDate.isAfterNow()) {
+					Instant notBeforeDate = Util.parseDateTime(nbAttribute.getNodeValue());
+					notBeforeDate = ChronoUnit.SECONDS.addTo(notBeforeDate, Constants.ALOWED_CLOCK_DRIFT * -1);
+					if (Util.isAfterNow(notBeforeDate)) {
 						throw new ValidationError("Could not validate timestamp: not yet valid. Check system clock.", ValidationError.ASSERTION_TOO_EARLY);
 					}
 				}
@@ -1102,11 +1102,11 @@ public class SamlResponse {
 	public Exception getValidationException() {
 		return validationException;
 	}
-	
+
 	/**
 	 * Sets the validation exception that this {@link SamlResponse} should return
 	 * when a validation error occurs.
-	 * 
+	 *
 	 * @param validationException
 	 *              the validation exception to set
 	 */
@@ -1341,7 +1341,7 @@ public class SamlResponse {
 			return null;
 		final Calendar result = Calendar.getInstance();
 		try {
-			result.setTimeInMillis(Util.parseDateTime(issueInstantString).getMillis());
+			result.setTimeInMillis(Util.parseDateTime(issueInstantString).toEpochMilli());
 		} catch (final IllegalArgumentException e) {
 			throw new ValidationError(
 					"The Response IssueInstant attribute is not in the expected UTC form of ISO-8601 format",

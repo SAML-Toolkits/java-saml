@@ -244,6 +244,75 @@ public class AuthnRequestTest {
 
 	/**
 	 * Tests the AuthnRequest Constructor
+	 * The creation of a deflated SAML Request with NameIDPolicy with and without AllowCreate
+	 *
+	 * @throws Exception
+	 * 
+	 * @see com.onelogin.saml2.authn.AuthnRequest
+	 */
+	@Test
+	public void testAllowCreate() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+
+		// by default setNameIdPolicy=true, allowCreate=true
+		AuthnRequest authnRequest = new AuthnRequest(settings);
+		String authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		String authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, containsString("<samlp:NameIDPolicy"));
+		assertThat(authnRequestStr, containsString("AllowCreate=\"true\""));
+
+		// explicit setNameIdPolicy=true, by default allowCreate=true
+		authnRequest = new AuthnRequest(settings, new AuthnRequestParams(false, false, true));
+		authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);		
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, containsString("<samlp:NameIDPolicy"));
+		assertThat(authnRequestStr, containsString("AllowCreate=\"true\""));
+
+		// explicit setNameIdPolicy=true, explicit allowCreate=true
+		authnRequest = new AuthnRequest(settings, new AuthnRequestParams(false, false, true, true));
+		authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);	
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, containsString("<samlp:NameIDPolicy"));
+		assertThat(authnRequestStr, containsString("AllowCreate=\"true\""));
+		
+		// explicit setNameIdPolicy=true, explicit allowCreate=false
+		authnRequest = new AuthnRequest(settings, new AuthnRequestParams(false, false, true, false));
+		authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);		
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, containsString("<samlp:NameIDPolicy"));
+		assertThat(authnRequestStr, not(containsString("AllowCreate=\"true\"")));
+		
+		// if setNameIdPolicy=false, by default AllowCreate missing
+		authnRequest = new AuthnRequest(settings, new AuthnRequestParams(false, false, false));
+		authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);		
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, not(containsString("<samlp:NameIDPolicy")));
+		assertThat(authnRequestStr, not(containsString("AllowCreate=\"true\"")));
+		
+		// if setNameIdPolicy=false explicitly, AllowCreate missing even if explicit allowCreate=true
+		authnRequest = new AuthnRequest(settings, new AuthnRequestParams(false, false, false, true));
+		authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);		
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, not(containsString("<samlp:NameIDPolicy")));
+		assertThat(authnRequestStr, not(containsString("AllowCreate=\"true\"")));
+
+		// if both setNameIdPolicy=false and allowCreate=false explicitly, of course AllowCreate missing
+		authnRequest = new AuthnRequest(settings, new AuthnRequestParams(false, false, false, false));
+		authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);		
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, not(containsString("<samlp:NameIDPolicy")));
+		assertThat(authnRequestStr, not(containsString("AllowCreate=\"true\"")));
+	}
+
+	/**
+	 * Tests the AuthnRequest Constructor
 	 * The creation of a deflated SAML Request with NameIDPolicy Encrypted
 	 *
 	 * @throws Exception

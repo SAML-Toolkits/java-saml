@@ -3,11 +3,11 @@
 	<parent>
 		<groupId>com.onelogin</groupId>
 		<artifactId>java-saml-toolkit</artifactId>
-		<version>2.7.1-SNAPSHOT</version>
+		<version>2.9.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>java-saml-tookit-samples</artifactId>
-	<name>OneLogin java-saml Toolkit Samples</name>
+	<name>java-saml Toolkit Samples</name>
 	<packaging>pom</packaging>
 
 	<modules>

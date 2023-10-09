@@ -2,7 +2,7 @@
 <%@page import="com.onelogin.saml2.servlet.ServletUtils"%>
 <%@page import="java.util.Collection"%>
 <%@page import="java.util.List"%>
-<%@page import="java.util.Map"%> 
+<%@page import="java.util.Map"%>
 <%@page import="org.apache.commons.lang3.StringUtils" %>
 <%@page import="java.io.StringWriter"%>
 <%@page import="java.io.PrintWriter"%>
@@ -14,7 +14,7 @@
 	 <meta charset="utf-8">
 	 <meta http-equiv="X-UA-Compatible" content="IE=edge">
      <meta name="viewport" content="width=device-width, initial-scale=1">
-	 <title>A Java SAML Toolkit by OneLogin demo</title>
+	 <title>A Java SAML Toolkit</title>
 	 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
 
      <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -26,9 +26,9 @@
 </head>
 <body>
 	<div class="container">
-    	<h1>A Java SAML Toolkit by OneLogin demo</h1>
+    	<h1>A Java SAML Toolkit</h1>
 
-    	<!--  TODO Session support  --> 
+    	<!--  TODO Session support  -->
 
 	<%
 	    Auth auth;
@@ -78,7 +78,7 @@
 			session.setAttribute("sessionIndex", sessionIndex);
 			session.setAttribute("nameidNameQualifier", nameidNameQualifier);
 			session.setAttribute("nameidSPNameQualifier", nameidSPNameQualifier);
-			
+
 
 			String relayState = request.getParameter("RelayState");
 
@@ -86,12 +86,12 @@
 				!relayState.contains("/dologin.jsp")) { // We don't want to be redirected to login.jsp neither
 				response.sendRedirect(request.getParameter("RelayState"));
 			} else {
-				
+
 
 				if (attributes.isEmpty()) {
 		%>
 					<div class="alert alert-danger" role="alert">You don't have any attributes</div>
-		<%							
+		<%
 				}
 				else {
 	    %>
@@ -103,7 +103,7 @@
 	        				</tr>
 	      				</thead>
 	      				<tbody>
-	    <%				
+	    <%
 					Collection<String> keys = attributes.keySet();
 					for(String name :keys){
 						out.println("<tr><td>" + name + "</td><td>");
@@ -111,13 +111,13 @@
 						for(String value :values) {
 							out.println("<li>" + value + "</li>");
 						}
-	
+
 						out.println("</td></tr>");
 					}
 		%>
 						</tbody>
 					</table>
-		<%				
+		<%
 				}
 		%>
 				<a href="attrs.jsp" class="btn btn-primary">See user data stored at session</a>

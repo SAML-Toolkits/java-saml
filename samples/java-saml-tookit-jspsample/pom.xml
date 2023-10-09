@@ -3,12 +3,12 @@
 	<parent>
 		<groupId>com.onelogin</groupId>
 		<artifactId>java-saml-tookit-samples</artifactId>
-		<version>2.7.1-SNAPSHOT</version>
+		<version>2.9.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>java-saml-tookit-jspsample</artifactId>
 	<packaging>war</packaging>
-	<name>OneLogin java-saml Toolkit Sample Webapp</name>
+	<name>java-saml Toolkit Sample Webapp</name>
 
 	<dependencies>
 		<dependency>
