@@ -11,6 +11,8 @@ import org.apache.commons.lang3.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.onelogin.saml2.authn.AssertionConsumerServiceSelector.AssertionConsumerServiceSelection;
+import com.onelogin.saml2.model.AssertionConsumerService;
 import com.onelogin.saml2.model.Organization;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.util.Constants;
@@ -250,8 +252,6 @@ public class AuthnRequest {
 		String issueInstantString = Util.formatDateTime(issueInstant.getTimeInMillis());
 		valueMap.put("issueInstant", issueInstantString);
 		valueMap.put("id", Util.toXml(String.valueOf(id)));
-		valueMap.put("assertionConsumerServiceURL", Util.toXml(String.valueOf(settings.getSpAssertionConsumerServiceUrl())));
-		valueMap.put("protocolBinding", Util.toXml(settings.getSpAssertionConsumerServiceBinding()));
 		valueMap.put("spEntityid", Util.toXml(settings.getSpEntityId()));
 
 		String requestedAuthnContextStr = "";
@@ -266,6 +266,37 @@ public class AuthnRequest {
 		}
 
 		valueMap.put("requestedAuthnContextStr", requestedAuthnContextStr);
+		
+		String assertionConsumerServiceSelectionStr = "";
+		AssertionConsumerServiceSelection acsSelection = params.getAssertionConsumerServiceSelector()
+		            .getAssertionConsumerServiceSelection();
+		List<AssertionConsumerService> spAssertionConsumerServices = settings.getSpAssertionConsumerServices();
+		if (spAssertionConsumerServices.size() == 1) {
+			/*
+			 * For backward compatibility: if an implicit default ACS selection is
+			 * requested, just one single ACS is defined in the settings, it has index 1
+			 * (which was the default index used before introducing multi ACS support) and
+			 * no explicit default status (as it was before introducing multi ACS support),
+			 * then select that ACS by using its URL and protocol binding: indeed, the old
+			 * way to specify the ACS in the AuhtnRequest was just this. The selected ACS
+			 * should be the same anyway, we just ensure that, in this way, the produced
+			 * AuthnRequest is exactly the same as it was before introducing multi ACS
+			 * support.
+			 */
+			final AssertionConsumerService acs = spAssertionConsumerServices.get(0);
+			if (acsSelection == null && acs.getIndex() == 1 && acs.isDefault() == null)
+				acsSelection = AssertionConsumerServiceSelector.byUrlAndBinding(acs)
+				            .getAssertionConsumerServiceSelection();
+		}
+		if (acsSelection != null) {
+			if (acsSelection.index != null)
+				assertionConsumerServiceSelectionStr = " AssertionConsumerServiceIndex=\"" + acsSelection.index
+				            + "\"";
+			else
+				assertionConsumerServiceSelectionStr = " ProtocolBinding=\"" + Util.toXml(acsSelection.protocolBinding)
+				            + "\" AssertionConsumerServiceURL=\"" + Util.toXml(String.valueOf(acsSelection.url)) + "\"";
+		}
+		valueMap.put("assertionConsumerServiceSelection", assertionConsumerServiceSelectionStr);
 
 		return new StrSubstitutor(valueMap);
 	}
@@ -275,7 +306,7 @@ public class AuthnRequest {
 	 */
 	private static StringBuilder getAuthnRequestTemplate() {
 		StringBuilder template = new StringBuilder();
-		template.append("<samlp:AuthnRequest xmlns:samlp=\"urn:oasis:names:tc:SAML:2.0:protocol\" xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\" ID=\"${id}\" Version=\"2.0\" IssueInstant=\"${issueInstant}\"${providerStr}${forceAuthnStr}${isPassiveStr}${destinationStr} ProtocolBinding=\"${protocolBinding}\" AssertionConsumerServiceURL=\"${assertionConsumerServiceURL}\">");
+		template.append("<samlp:AuthnRequest xmlns:samlp=\"urn:oasis:names:tc:SAML:2.0:protocol\" xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\" ID=\"${id}\" Version=\"2.0\" IssueInstant=\"${issueInstant}\"${providerStr}${forceAuthnStr}${isPassiveStr}${destinationStr}${assertionConsumerServiceSelection}>");
 		template.append("<saml:Issuer>${spEntityid}</saml:Issuer>");
 		template.append("${subjectStr}${nameIDPolicyStr}${requestedAuthnContextStr}</samlp:AuthnRequest>");
 		return template;

@@ -9,12 +9,14 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
 import org.junit.Test;
 
+import com.onelogin.saml2.authn.AssertionConsumerServiceSelector;
 import com.onelogin.saml2.authn.AuthnRequest;
 import com.onelogin.saml2.authn.AuthnRequestParams;
 import com.onelogin.saml2.settings.Saml2Settings;
@@ -121,7 +123,7 @@ public class AuthnRequestTest {
 		String authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
 		String authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);
 		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
-		assertThat(authnRequestStr, not(containsString("ProviderName=\"S&amp;P Java Example\"")));
+		assertThat(authnRequestStr, not(containsString("ProviderName=\"S&amp;P Java &quot;Example&quot;\"")));
 		
 		settings = new SettingsBuilder().fromFile("config/config.all_specialchars.properties").build();
 		authnRequest = new AuthnRequest(settings);
@@ -450,6 +452,99 @@ public class AuthnRequestTest {
 		assertThat(authnRequestStr, containsString("<saml:Subject"));
 		assertThat(authnRequestStr, containsString("Format=\"urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress\">testuser@example.com</saml:NameID>"));
 		assertThat(authnRequestStr, containsString("<saml:SubjectConfirmation Method=\"urn:oasis:names:tc:SAML:2.0:cm:bearer\">"));
+	}
+
+	/**
+	 * Tests the AuthnRequest Constructor
+	 * The creation of a deflated SAML Request with the index of the desired Assertion Consumer Service
+	 *
+	 * @throws Exception
+	 *
+	 * @see com.onelogin.saml2.authn.AuthnRequest
+	 */
+	@Test
+	public void testAssertionConsumerServiceSelector() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+
+		// just one non-indexed ACS specified - backward compatible URL/binding ACS specification
+		AuthnRequest authnRequest = new AuthnRequest(settings);
+		String authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		String authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, containsString("ProtocolBinding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST\" AssertionConsumerServiceURL=\"http://localhost:8080/java-saml-jspsample/acs.jsp\""));
+
+		// multiple indexed ACS specified
+		Saml2Settings settings2 = new SettingsBuilder().fromFile("config/config.min_multi_assertion_consumer_services.properties").build();
+		
+		// use implicit default
+		authnRequest = new AuthnRequest(settings2, new AuthnRequestParams(false, false, false, 
+				AssertionConsumerServiceSelector.useImplicitDefault()));
+		authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);		
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, not(containsString("ProtocolBinding=\"")));		
+		assertThat(authnRequestStr, not(containsString("AssertionConsumerServiceURL=\"")));
+		assertThat(authnRequestStr, not(containsString("AssertionConsumerServiceIndex=\"")));
+		
+		// use explicit default by index
+		authnRequest = new AuthnRequest(settings2, new AuthnRequestParams(false, false, false, 
+				AssertionConsumerServiceSelector.useDefaultByIndex(settings2)));
+		authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);		
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, containsString("AssertionConsumerServiceIndex=\"1\""));
+		assertThat(authnRequestStr, not(containsString("ProtocolBinding=\"")));		
+		assertThat(authnRequestStr, not(containsString("AssertionConsumerServiceURL=\"")));
+
+		// use explicit default by URL and protocol binding
+		authnRequest = new AuthnRequest(settings2, new AuthnRequestParams(false, false, false, 
+				AssertionConsumerServiceSelector.useDefaultByUrlAndBinding(settings2)));
+		authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);		
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, containsString("ProtocolBinding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST\""));		
+		assertThat(authnRequestStr, containsString("AssertionConsumerServiceURL=\"http://localhost:8081/java-saml-jspsample/acs2.jsp\""));
+		assertThat(authnRequestStr, not(containsString("AssertionConsumerServiceIndex=\"")));
+
+		// by index - explicit
+		authnRequest = new AuthnRequest(settings2, new AuthnRequestParams(false, false, false, 
+				AssertionConsumerServiceSelector.byIndex(0)));
+		authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);		
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, containsString("AssertionConsumerServiceIndex=\"0\""));
+		assertThat(authnRequestStr, not(containsString("ProtocolBinding=\"")));		
+		assertThat(authnRequestStr, not(containsString("AssertionConsumerServiceURL=\"")));
+		
+		// by URL and protocol binding - explicit
+		authnRequest = new AuthnRequest(settings2, new AuthnRequestParams(false, false, false, 
+				AssertionConsumerServiceSelector.byUrlAndBinding(new URL("http://www.example.com"), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect")));
+		authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);		
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, containsString("ProtocolBinding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect\""));		
+		assertThat(authnRequestStr, containsString("AssertionConsumerServiceURL=\"http://www.example.com\""));
+		assertThat(authnRequestStr, not(containsString("AssertionConsumerServiceIndex=\"")));
+		
+		// by service index
+		authnRequest = new AuthnRequest(settings2, new AuthnRequestParams(false, false, false, 
+				AssertionConsumerServiceSelector.byIndex(settings2.getSpAssertionConsumerServices().get(0))));
+		authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);		
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, containsString("AssertionConsumerServiceIndex=\"0\""));
+		assertThat(authnRequestStr, not(containsString("ProtocolBinding=\"")));		
+		assertThat(authnRequestStr, not(containsString("AssertionConsumerServiceURL=\"")));
+		
+		// by service URL and protocol binding
+		authnRequest = new AuthnRequest(settings, new AuthnRequestParams(false, false, false, 
+				AssertionConsumerServiceSelector.byUrlAndBinding(settings2.getSpAssertionConsumerServices().get(0))));
+		authnRequestStringBase64 = authnRequest.getEncodedAuthnRequest();
+		authnRequestStr = Util.base64decodedInflated(authnRequestStringBase64);		
+		assertThat(authnRequestStr, containsString("<samlp:AuthnRequest"));
+		assertThat(authnRequestStr, containsString("ProtocolBinding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST\""));		
+		assertThat(authnRequestStr, containsString("AssertionConsumerServiceURL=\"http://localhost:8081/java-saml-jspsample/acs1.jsp\""));
+		assertThat(authnRequestStr, not(containsString("AssertionConsumerServiceIndex=\"")));
 	}
 
 	/**

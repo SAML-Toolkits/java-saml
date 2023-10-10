@@ -32,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.onelogin.saml2.exception.Error;
+import com.onelogin.saml2.model.AssertionConsumerService;
 import com.onelogin.saml2.model.Contact;
 import com.onelogin.saml2.model.KeyStoreSettings;
 import com.onelogin.saml2.model.Organization;
@@ -64,7 +65,32 @@ public class SettingsBuilder {
 
 	// SP
 	public final static String SP_ENTITYID_PROPERTY_KEY = "onelogin.saml2.sp.entityid";
+	public final static String SP_ASSERTION_CONSUMER_SERVICE_PROPERTY_KEY_PREFIX = "onelogin.saml2.sp.assertion_consumer_service";
+	public final static String SP_ASSERTION_CONSUMER_SERVICE_DEFAULT_PROPERTY_KEY_SUFFIX = "default";
+	public final static String SP_ASSERTION_CONSUMER_SERVICE_LOCATION_PROPERTY_KEY_SUFFIX = "url";
+	public final static String SP_ASSERTION_CONSUMER_SERVICE_BINDING_PROPERTY_KEY_SUFFIX = "binding";
+	
+	/**
+	 * @deprecated the use of this property key will still work to retrieve the
+	 *             location of the Assertion Consumer Service if just one is defined
+	 *             with no index; however,
+	 *             {@link #SP_ASSERTION_CONSUMER_SERVICE_PROPERTY_KEY_PREFIX} and
+	 *             {@link #SP_ASSERTION_CONSUMER_SERVICE_LOCATION_PROPERTY_KEY_SUFFIX}
+	 *             should be used to properly retrieve the location of any (indexed
+	 *             or non-indexed) defined Assertion Consumer Service
+	 */
+	@Deprecated
 	public final static String SP_ASSERTION_CONSUMER_SERVICE_URL_PROPERTY_KEY = "onelogin.saml2.sp.assertion_consumer_service.url";
+	/**
+	 * @deprecated the use of this property key will still work to retrieve the
+	 *             binding of the Assertion Consumer Service if just one is defined
+	 *             with no index; however,
+	 *             {@link #SP_ASSERTION_CONSUMER_SERVICE_PROPERTY_KEY_PREFIX} and
+	 *             {@link #SP_ASSERTION_CONSUMER_SERVICE_BINDING_PROPERTY_KEY_SUFFIX}
+	 *             should be used to properly retrieve the binding of any (indexed
+	 *             or non-indexed) defined Assertion Consumer Service
+	 */
+	@Deprecated
 	public final static String SP_ASSERTION_CONSUMER_SERVICE_BINDING_PROPERTY_KEY = "onelogin.saml2.sp.assertion_consumer_service.binding";
 	public final static String SP_SINGLE_LOGOUT_SERVICE_URL_PROPERTY_KEY = "onelogin.saml2.sp.single_logout_service.url";
 	public final static String SP_SINGLE_LOGOUT_SERVICE_BINDING_PROPERTY_KEY = "onelogin.saml2.sp.single_logout_service.binding";
@@ -545,6 +571,52 @@ public class SettingsBuilder {
 	}
 
 	/**
+	 * Loads the Assertion Consumer Services from settings.
+	 * 
+	 * @return a list containing the loaded Assertion Consumer Services
+	 */
+	private List<AssertionConsumerService> loadAssertionConsumerServices() {
+		// first split properties into a map of properties
+		// key = service index; value = service properties
+		final SortedMap<Integer, Map<String, Object>> acsProps = 
+				extractIndexedProperties(SP_ASSERTION_CONSUMER_SERVICE_PROPERTY_KEY_PREFIX, samlData);
+		// then build each Assertion Consumer Service
+		if(acsProps.containsKey(-1) && acsProps.size() == 1)
+			// single service specified; use index 1 for backward compatibility
+			return Arrays.asList(loadAssertionConsumerService(acsProps.get(-1), 1));
+		else
+			// multiple indexed services specified
+			return acsProps.entrySet().stream()
+					// ignore non-indexed service
+					.filter(entry -> {
+						final boolean indexed = entry.getKey() != -1;
+						if(!indexed) {
+							LOGGER.warn("non indexed Assertion Consumer Service found along with other indexed Services; the non-indexed one will be ignored");
+						}
+						return indexed;
+					})
+			            .map(entry -> loadAssertionConsumerService(entry.getValue(), entry.getKey()))
+			            .collect(Collectors.toList());
+	}
+	
+	/**
+	 * Loads a single Assertion Consumer Service from settings.
+	 * 
+	 * @param acsProps
+	 *              a map containing the Assertion Consumer Service settings
+	 * @param index
+	 *              the index to be set on the returned Assertion Consumer Service
+	 * @return the loaded Assertion Consumer Service
+	 */
+	private AssertionConsumerService loadAssertionConsumerService(Map<String, Object> acsProps, int index) {
+		final String binding =  loadStringProperty(SP_ASSERTION_CONSUMER_SERVICE_BINDING_PROPERTY_KEY_SUFFIX, acsProps);
+		final URL location = loadURLProperty(SP_ASSERTION_CONSUMER_SERVICE_LOCATION_PROPERTY_KEY_SUFFIX, acsProps);
+		final Boolean isDefault = loadBooleanProperty(SP_ASSERTION_CONSUMER_SERVICE_DEFAULT_PROPERTY_KEY_SUFFIX, acsProps);
+		final AssertionConsumerService acs = new AssertionConsumerService(index, isDefault, binding, location);
+		return acs;
+	}
+
+	/**
 	 * Given a map containing settings data, extracts all the indexed properties
 	 * identified by a given prefix. The returned map has indexes as keys and a map
 	 * describing the extracted indexed data as values. Keys are sorted by their
@@ -708,16 +780,8 @@ public class SettingsBuilder {
 			saml2Setting.setSpEntityId(spEntityID);
 		}
 
-		URL assertionConsumerServiceUrl = loadURLProperty(SP_ASSERTION_CONSUMER_SERVICE_URL_PROPERTY_KEY);
-		if (assertionConsumerServiceUrl != null) {
-			saml2Setting.setSpAssertionConsumerServiceUrl(assertionConsumerServiceUrl);
-		}
-
-		String spAssertionConsumerServiceBinding = loadStringProperty(SP_ASSERTION_CONSUMER_SERVICE_BINDING_PROPERTY_KEY);
-		if (spAssertionConsumerServiceBinding != null) {
-			saml2Setting.setSpAssertionConsumerServiceBinding(spAssertionConsumerServiceBinding);
-		}
-
+		saml2Setting.setSpAssertionConsumerServices(loadAssertionConsumerServices());
+		
 		URL spSingleLogoutServiceUrl = loadURLProperty(SP_SINGLE_LOGOUT_SERVICE_URL_PROPERTY_KEY);
 		if (spSingleLogoutServiceUrl != null) {
 			saml2Setting.setSpSingleLogoutServiceUrl(spSingleLogoutServiceUrl);
@@ -799,7 +863,19 @@ public class SettingsBuilder {
 	 * @return the value
 	 */
 	private Boolean loadBooleanProperty(String propertyKey) {
-		Object propValue = samlData.get(propertyKey);
+		return loadBooleanProperty(propertyKey, samlData);
+	}
+
+	/**
+	 * Loads a property of the type Boolean from the specified data
+	 *
+	 * @param propertyKey the property name
+	 * @param data the input data
+	 *
+	 * @return the value
+	 */
+	private Boolean loadBooleanProperty(String propertyKey, Map<String, Object> data) {
+		Object propValue = data.get(propertyKey);
 		if (isString(propValue)) {
 			return Boolean.parseBoolean(((String) propValue).trim());
 		}
@@ -841,8 +917,19 @@ public class SettingsBuilder {
 	 * @return the value
 	 */
 	private URL loadURLProperty(String propertyKey) {
+		return loadURLProperty(propertyKey, samlData);
+	}
 
-		Object propValue = samlData.get(propertyKey);
+	/**
+	 * Loads a property of the type URL from the specified data
+	 *
+	 * @param propertyKey the property name
+	 * @param data the input data
+	 *
+	 * @return the value
+	 */
+	private URL loadURLProperty(String propertyKey, Map<String, Object> data) {
+		Object propValue = data.get(propertyKey);
 
 		if (isString(propValue)) {
 			try {

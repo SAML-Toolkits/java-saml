@@ -33,6 +33,7 @@ import org.junit.rules.ExpectedException;
 
 import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.exception.SettingsException;
+import com.onelogin.saml2.model.AssertionConsumerService;
 import com.onelogin.saml2.model.Contact;
 import com.onelogin.saml2.model.KeyStoreSettings;
 import com.onelogin.saml2.model.Organization;
@@ -130,6 +131,7 @@ public class SettingBuilderTest {
 		assertTrue(setting.isStrict());
 
 		assertTrue(setting.getSpEntityId().isEmpty());
+		assertTrue(setting.getSpAssertionConsumerServices().isEmpty());
 		assertNull(setting.getSpAssertionConsumerServiceUrl());
 		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST", setting.getSpAssertionConsumerServiceBinding());
 		assertNull(setting.getSpSingleLogoutServiceUrl());
@@ -188,8 +190,15 @@ public class SettingBuilderTest {
 		assertTrue(setting.isStrict());
 
 		assertEquals("http://localhost:8080/java-saml-jspsample/metadata.jsp", setting.getSpEntityId());
+		final List<AssertionConsumerService> assertionConsumerServices = setting.getSpAssertionConsumerServices();
+		assertEquals(1, assertionConsumerServices.size());
+		final AssertionConsumerService acs = assertionConsumerServices.get(0);
+		assertEquals(1, acs.getIndex());
+		assertNull(acs.isDefault());
+		assertEquals("http://localhost:8080/java-saml-jspsample/acs.jsp", acs.getLocation().toString());
+		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST", acs.getBinding());
 		assertEquals("http://localhost:8080/java-saml-jspsample/acs.jsp", setting.getSpAssertionConsumerServiceUrl().toString());
-		assertEquals(setting.getSpAssertionConsumerServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
+		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST", setting.getSpAssertionConsumerServiceBinding());
 		assertEquals("http://localhost:8080/java-saml-jspsample/sls.jsp", setting.getSpSingleLogoutServiceUrl().toString());
 		assertEquals(setting.getSpSingleLogoutServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
 		assertEquals(setting.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
@@ -249,8 +258,15 @@ public class SettingBuilderTest {
 		assertTrue(setting.isStrict());
 
 		assertEquals("http://localhost:8080/java-saml-jspsample/metadata.jsp", setting.getSpEntityId());
+		final List<AssertionConsumerService> assertionConsumerServices = setting.getSpAssertionConsumerServices();
+		assertEquals(1, assertionConsumerServices.size());
+		final AssertionConsumerService acs = assertionConsumerServices.get(0);
+		assertEquals(1, acs.getIndex());
+		assertNull(acs.isDefault());
+		assertEquals("http://localhost:8080/java-saml-jspsample/acs.jsp", acs.getLocation().toString());
+		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST", acs.getBinding());
 		assertEquals("http://localhost:8080/java-saml-jspsample/acs.jsp", setting.getSpAssertionConsumerServiceUrl().toString());
-		assertEquals(setting.getSpAssertionConsumerServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
+		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST", setting.getSpAssertionConsumerServiceBinding());
 		assertEquals("http://localhost:8080/java-saml-jspsample/sls.jsp", setting.getSpSingleLogoutServiceUrl().toString());
 		assertEquals(setting.getSpSingleLogoutServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
 		assertEquals(setting.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
@@ -338,6 +354,44 @@ public class SettingBuilderTest {
 
 	/**
 	 * Tests SettingsBuilder fromFile method
+	 * <p>
+	 * Case: all settings config file with multiple Assertion Consumer Services
+	 *
+	 * @throws IOException
+	 * @throws CertificateException
+	 * @throws URISyntaxException
+	 * @throws SettingsException
+	 * @throws Error
+	 *
+	 * @see com.onelogin.saml2.settings.SettingsBuilder#fromFile
+	 */
+	@Test
+	public void testLoadFromFileAllPropMultiAssertionConsumerServices() throws IOException, CertificateException, URISyntaxException, SettingsException, Error {
+		Saml2Settings setting = new SettingsBuilder().fromFile("config/config.all_multi_assertion_consumer_services.properties").build();
+
+		// let's test only the Attribute Consuming Service part - no need to test again all the rest
+		final List<AssertionConsumerService> assertionConsumerService = setting.getSpAssertionConsumerServices();
+		assertEquals(2, assertionConsumerService.size());
+
+		{
+      		final AssertionConsumerService acs1 = assertionConsumerService.get(0);
+      		assertEquals(0, acs1.getIndex());
+      		assertNull(acs1.isDefault());
+      		assertEquals("http://localhost:8081/java-saml-jspsample/acs1.jsp", acs1.getLocation().toString());
+      		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect", acs1.getBinding());
+		}
+	
+		{
+      		final AssertionConsumerService acs2 = assertionConsumerService.get(1);
+      		assertEquals(1, acs2.getIndex());
+      		assertTrue(acs2.isDefault());
+      		assertEquals("http://localhost:8081/java-saml-jspsample/acs2.jsp", acs2.getLocation().toString());
+      		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST", acs2.getBinding());
+		}
+	}
+
+	/**
+	 * Tests SettingsBuilder fromFile method
 	 * Case: settings config file with certificate string
 	 *
 	 * @throws IOException
@@ -356,6 +410,13 @@ public class SettingBuilderTest {
 		assertFalse(setting.isStrict());
 
 		assertEquals("http://localhost:8080/java-saml-jspsample/metadata.jsp", setting.getSpEntityId());
+		final List<AssertionConsumerService> assertionConsumerServices = setting.getSpAssertionConsumerServices();
+		assertEquals(1, assertionConsumerServices.size());
+		final AssertionConsumerService acs = assertionConsumerServices.get(0);
+		assertEquals(1, acs.getIndex());
+		assertNull(acs.isDefault());
+		assertEquals("http://localhost:8080/java-saml-jspsample/acs.jsp", acs.getLocation().toString());
+		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST", acs.getBinding());
 		assertEquals("http://localhost:8080/java-saml-jspsample/acs.jsp", setting.getSpAssertionConsumerServiceUrl().toString());
 		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST", setting.getSpAssertionConsumerServiceBinding());
 		assertEquals("http://localhost:8080/java-saml-jspsample/sls.jsp", setting.getSpSingleLogoutServiceUrl().toString());
@@ -411,6 +472,13 @@ public class SettingBuilderTest {
 		assertFalse(setting.isStrict());
 
 		assertEquals("http://localhost:8080/java-saml-jspsample/metadata.jsp", setting.getSpEntityId());
+		final List<AssertionConsumerService> assertionConsumerServices = setting.getSpAssertionConsumerServices();
+		assertEquals(1, assertionConsumerServices.size());
+		final AssertionConsumerService acs = assertionConsumerServices.get(0);
+		assertEquals(1, acs.getIndex());
+		assertNull(acs.isDefault());
+		assertEquals("http://localhost:8080/java-saml-jspsample/acs.jsp", acs.getLocation().toString());
+		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST", acs.getBinding());
 		assertEquals("http://localhost:8080/java-saml-jspsample/acs.jsp", setting.getSpAssertionConsumerServiceUrl().toString());
 		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST", setting.getSpAssertionConsumerServiceBinding());
 		assertEquals("http://localhost:8080/java-saml-jspsample/sls.jsp", setting.getSpSingleLogoutServiceUrl().toString());
@@ -522,8 +590,15 @@ public class SettingBuilderTest {
 		assertTrue(setting.isStrict());
 
 		assertEquals("http://localhost:8080/java-saml-jspsample/metadata.jsp", setting.getSpEntityId());
+		final List<AssertionConsumerService> assertionConsumerServices = setting.getSpAssertionConsumerServices();
+		assertEquals(1, assertionConsumerServices.size());
+		final AssertionConsumerService acs = assertionConsumerServices.get(0);
+		assertEquals(1, acs.getIndex());
+		assertNull(acs.isDefault());
+		assertEquals("http://localhost:8080/java-saml-jspsample/acs.jsp", acs.getLocation().toString());
+		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST", acs.getBinding());
 		assertEquals("http://localhost:8080/java-saml-jspsample/acs.jsp", setting.getSpAssertionConsumerServiceUrl().toString());
-		assertEquals(setting.getSpAssertionConsumerServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
+		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST", setting.getSpAssertionConsumerServiceBinding());
 		assertEquals("http://localhost:8080/java-saml-jspsample/sls.jsp", setting.getSpSingleLogoutServiceUrl().toString());
 		assertEquals(setting.getSpSingleLogoutServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
 		assertEquals(setting.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
@@ -576,8 +651,15 @@ public class SettingBuilderTest {
 		assertTrue(setting.isStrict());
 
 		assertEquals("http://localhost:8080/java-saml-jspsample/metadata.jsp", setting.getSpEntityId());
+		final List<AssertionConsumerService> assertionConsumerServices = setting.getSpAssertionConsumerServices();
+		assertEquals(1, assertionConsumerServices.size());
+		final AssertionConsumerService acs = assertionConsumerServices.get(0);
+		assertEquals(1, acs.getIndex());
+		assertNull(acs.isDefault());
+		assertEquals("http://localhost:8080/java-saml-jspsample/acs.jsp", acs.getLocation().toString());
+		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST", acs.getBinding());
 		assertEquals("http://localhost:8080/java-saml-jspsample/acs.jsp", setting.getSpAssertionConsumerServiceUrl().toString());
-		assertEquals(setting.getSpAssertionConsumerServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
+		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST", setting.getSpAssertionConsumerServiceBinding());
 		assertEquals("http://localhost:8080/java-saml-jspsample/sls.jsp", setting.getSpSingleLogoutServiceUrl().toString());
 		assertEquals(setting.getSpSingleLogoutServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
 		assertEquals(setting.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
@@ -665,7 +747,7 @@ public class SettingBuilderTest {
 		prop.setProperty(SettingsBuilder.IDP_SINGLE_LOGOUT_SERVICE_URL_PROPERTY_KEY, setting.getIdpSingleLogoutServiceUrl().toString());
 		prop.setProperty(SettingsBuilder.IDP_X509CERT_PROPERTY_KEY , x509cert);
 		prop.setProperty(SettingsBuilder.SP_ENTITYID_PROPERTY_KEY, setting.getSpEntityId());
-		prop.setProperty(SettingsBuilder.SP_ASSERTION_CONSUMER_SERVICE_URL_PROPERTY_KEY, setting.getSpAssertionConsumerServiceUrl().toString());
+		prop.setProperty(SettingsBuilder.SP_ASSERTION_CONSUMER_SERVICE_PROPERTY_KEY_PREFIX + "." + SettingsBuilder.SP_ASSERTION_CONSUMER_SERVICE_LOCATION_PROPERTY_KEY_SUFFIX, setting.getSpAssertionConsumerServices().get(0).getLocation().toString());
 		prop.setProperty(SettingsBuilder.SP_SINGLE_LOGOUT_SERVICE_URL_PROPERTY_KEY, setting.getSpSingleLogoutServiceUrl().toString());
 
 		Saml2Settings setting2 = new SettingsBuilder().fromProperties(prop).build();
@@ -674,8 +756,15 @@ public class SettingBuilderTest {
 		assertTrue(setting2.isStrict());
 
 		assertEquals("http://localhost:8080/java-saml-jspsample/metadata.jsp", setting2.getSpEntityId());
+		final List<AssertionConsumerService> assertionConsumerServices = setting2.getSpAssertionConsumerServices();
+		assertEquals(1, assertionConsumerServices.size());
+		final AssertionConsumerService acs = assertionConsumerServices.get(0);
+		assertEquals(1, acs.getIndex());
+		assertNull(acs.isDefault());
+		assertEquals("http://localhost:8080/java-saml-jspsample/acs.jsp", acs.getLocation().toString());
+		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST", acs.getBinding());
 		assertEquals("http://localhost:8080/java-saml-jspsample/acs.jsp", setting2.getSpAssertionConsumerServiceUrl().toString());
-		assertEquals(setting2.getSpAssertionConsumerServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
+		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST", setting2.getSpAssertionConsumerServiceBinding());
 		assertEquals("http://localhost:8080/java-saml-jspsample/sls.jsp", setting2.getSpSingleLogoutServiceUrl().toString());
 		assertEquals(setting2.getSpSingleLogoutServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
 		assertEquals(setting2.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
@@ -731,8 +820,8 @@ public class SettingBuilderTest {
 
 		// Build SP
 		samlData.put(SP_ENTITYID_PROPERTY_KEY, "http://localhost:8080/java-saml-jspsample/metadata.jsp");
-		samlData.put(SP_ASSERTION_CONSUMER_SERVICE_URL_PROPERTY_KEY, "http://localhost:8080/java-saml-jspsample/acs.jsp");
-		samlData.put(SP_ASSERTION_CONSUMER_SERVICE_BINDING_PROPERTY_KEY, "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
+		samlData.put(SP_ASSERTION_CONSUMER_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ASSERTION_CONSUMER_SERVICE_LOCATION_PROPERTY_KEY_SUFFIX, "http://localhost:8080/java-saml-jspsample/acs.jsp");
+		samlData.put(SP_ASSERTION_CONSUMER_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ASSERTION_CONSUMER_SERVICE_BINDING_PROPERTY_KEY_SUFFIX, "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
 		samlData.put(SP_SINGLE_LOGOUT_SERVICE_URL_PROPERTY_KEY, "http://localhost:8080/java-saml-jspsample/sls.jsp");
 		samlData.put(SP_SINGLE_LOGOUT_SERVICE_BINDING_PROPERTY_KEY, "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
 		samlData.put(SP_NAMEIDFORMAT_PROPERTY_KEY, "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
@@ -810,8 +899,15 @@ public class SettingBuilderTest {
 		assertTrue(setting.isStrict());
 
 		assertEquals("http://localhost:8080/java-saml-jspsample/metadata.jsp", setting.getSpEntityId());
+		final List<AssertionConsumerService> assertionConsumerServices = setting.getSpAssertionConsumerServices();
+		assertEquals(1, assertionConsumerServices.size());
+		final AssertionConsumerService acs = assertionConsumerServices.get(0);
+		assertEquals(1, acs.getIndex());
+		assertNull(acs.isDefault());
+		assertEquals("http://localhost:8080/java-saml-jspsample/acs.jsp", acs.getLocation().toString());
+		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST", acs.getBinding());
 		assertEquals("http://localhost:8080/java-saml-jspsample/acs.jsp", setting.getSpAssertionConsumerServiceUrl().toString());
-		assertEquals(setting.getSpAssertionConsumerServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
+		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST", setting.getSpAssertionConsumerServiceBinding());
 		assertEquals("http://localhost:8080/java-saml-jspsample/sls.jsp", setting.getSpSingleLogoutServiceUrl().toString());
 		assertEquals(setting.getSpSingleLogoutServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
 		assertEquals(setting.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
@@ -943,8 +1039,8 @@ public class SettingBuilderTest {
 
 		// Build SP
 		samlData.put(SP_ENTITYID_PROPERTY_KEY, "http://localhost:8080/java-saml-jspsample/metadata.jsp");
-		samlData.put(SP_ASSERTION_CONSUMER_SERVICE_URL_PROPERTY_KEY, new URL("http://localhost:8080/java-saml-jspsample/acs.jsp"));
-		samlData.put(SP_ASSERTION_CONSUMER_SERVICE_BINDING_PROPERTY_KEY, "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
+		samlData.put(SP_ASSERTION_CONSUMER_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ASSERTION_CONSUMER_SERVICE_LOCATION_PROPERTY_KEY_SUFFIX, new URL("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		samlData.put(SP_ASSERTION_CONSUMER_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ASSERTION_CONSUMER_SERVICE_BINDING_PROPERTY_KEY_SUFFIX, "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
 		samlData.put(SP_SINGLE_LOGOUT_SERVICE_URL_PROPERTY_KEY, new URL("http://localhost:8080/java-saml-jspsample/sls.jsp"));
 		samlData.put(SP_SINGLE_LOGOUT_SERVICE_BINDING_PROPERTY_KEY, "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
 		samlData.put(SP_NAMEIDFORMAT_PROPERTY_KEY, "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
@@ -1018,8 +1114,15 @@ public class SettingBuilderTest {
 		assertTrue(setting.isStrict());
 
 		assertEquals("http://localhost:8080/java-saml-jspsample/metadata.jsp", setting.getSpEntityId());
+		final List<AssertionConsumerService> assertionConsumerServices = setting.getSpAssertionConsumerServices();
+		assertEquals(1, assertionConsumerServices.size());
+		final AssertionConsumerService acs = assertionConsumerServices.get(0);
+		assertEquals(1, acs.getIndex());
+		assertNull(acs.isDefault());
+		assertEquals("http://localhost:8080/java-saml-jspsample/acs.jsp", acs.getLocation().toString());
+		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST", acs.getBinding());
 		assertEquals("http://localhost:8080/java-saml-jspsample/acs.jsp", setting.getSpAssertionConsumerServiceUrl().toString());
-		assertEquals(setting.getSpAssertionConsumerServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
+		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST", setting.getSpAssertionConsumerServiceBinding());
 		assertEquals("http://localhost:8080/java-saml-jspsample/sls.jsp", setting.getSpSingleLogoutServiceUrl().toString());
 		assertEquals(setting.getSpSingleLogoutServiceBinding(), "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
 		assertEquals(setting.getSpNameIDFormat(), "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified");
@@ -1110,6 +1213,51 @@ public class SettingBuilderTest {
 		assertTrue(c4.getTelephoneNumbers().isEmpty());
 
 		assertEquals("ONELOGIN_", setting.getUniqueIDPrefix());
+	}
+
+	/**
+	 * Tests SettingsBuilder constructor
+	 * Case: settings from values when multiple Assertion Consumer Services are defined
+	 *
+	 * @throws IOException
+	 *
+	 * @see com.onelogin.saml2.settings.SettingsBuilder
+	 */
+	@Test
+	public void testLoadFromValuesMultiAssertionConsumerServices() throws Exception {
+		Map<String, Object> samlData = new LinkedHashMap<>();
+		
+		// just build Assertion Consumer Services
+		// the following must be ignored, because indexed properties are present
+		samlData.put(SP_ASSERTION_CONSUMER_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ASSERTION_CONSUMER_SERVICE_LOCATION_PROPERTY_KEY_SUFFIX, "http://localhost:8080/java-saml-jspsample/acs.jsp");
+		samlData.put(SP_ASSERTION_CONSUMER_SERVICE_PROPERTY_KEY_PREFIX + "." + SP_ASSERTION_CONSUMER_SERVICE_BINDING_PROPERTY_KEY_SUFFIX, "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
+		// the following, instead, must be processed
+		samlData.put(SP_ASSERTION_CONSUMER_SERVICE_PROPERTY_KEY_PREFIX + "[0]." + SP_ASSERTION_CONSUMER_SERVICE_LOCATION_PROPERTY_KEY_SUFFIX, "http://localhost:8081/java-saml-jspsample/acs1.jsp");
+		samlData.put(SP_ASSERTION_CONSUMER_SERVICE_PROPERTY_KEY_PREFIX + "[0]." + SP_ASSERTION_CONSUMER_SERVICE_BINDING_PROPERTY_KEY_SUFFIX, "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
+		samlData.put(SP_ASSERTION_CONSUMER_SERVICE_PROPERTY_KEY_PREFIX + "[1]." + SP_ASSERTION_CONSUMER_SERVICE_LOCATION_PROPERTY_KEY_SUFFIX, "http://localhost:8081/java-saml-jspsample/acs2.jsp");
+		samlData.put(SP_ASSERTION_CONSUMER_SERVICE_PROPERTY_KEY_PREFIX + "[1]." + SP_ASSERTION_CONSUMER_SERVICE_BINDING_PROPERTY_KEY_SUFFIX, "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
+		samlData.put(SP_ASSERTION_CONSUMER_SERVICE_PROPERTY_KEY_PREFIX + "[1]." + SP_ASSERTION_CONSUMER_SERVICE_DEFAULT_PROPERTY_KEY_SUFFIX, "true");
+
+		Saml2Settings setting = new SettingsBuilder().fromValues(samlData).build();
+
+		final List<AssertionConsumerService> assertionConsumerService = setting.getSpAssertionConsumerServices();
+		assertEquals(2, assertionConsumerService.size());
+
+		{
+      		final AssertionConsumerService acs1 = assertionConsumerService.get(0);
+      		assertEquals(0, acs1.getIndex());
+      		assertNull(acs1.isDefault());
+      		assertEquals("http://localhost:8081/java-saml-jspsample/acs1.jsp", acs1.getLocation().toString());
+      		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect", acs1.getBinding());
+		}
+	
+		{
+      		final AssertionConsumerService acs2 = assertionConsumerService.get(1);
+      		assertEquals(1, acs2.getIndex());
+      		assertTrue(acs2.isDefault());
+      		assertEquals("http://localhost:8081/java-saml-jspsample/acs2.jsp", acs2.getLocation().toString());
+      		assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST", acs2.getBinding());
+		}
 	}
 
 	/**

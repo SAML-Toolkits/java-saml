@@ -22,6 +22,7 @@ import org.w3c.dom.Document;
 
 import com.onelogin.saml2.model.Contact;
 import com.onelogin.saml2.model.Organization;
+import com.onelogin.saml2.model.AssertionConsumerService;
 import com.onelogin.saml2.model.AttributeConsumingService;
 import com.onelogin.saml2.model.RequestedAttribute;
 import com.onelogin.saml2.util.Constants;
@@ -165,8 +166,7 @@ public class Metadata {
 		valueMap.put("strAuthnsign", String.valueOf(settings.getAuthnRequestsSigned()));
 		valueMap.put("strWsign", String.valueOf(settings.getWantAssertionsSigned()));
 		valueMap.put("spNameIDFormat", Util.toXml(settings.getSpNameIDFormat()));
-		valueMap.put("spAssertionConsumerServiceBinding", Util.toXml(settings.getSpAssertionConsumerServiceBinding()));
-		valueMap.put("spAssertionConsumerServiceUrl", Util.toXml(settings.getSpAssertionConsumerServiceUrl().toString()));
+		valueMap.put("strAssertionConsumerServices", toAssertionConsumerServicesXml(settings.getSpAssertionConsumerServices()));
 		valueMap.put("sls", toSLSXml(settings.getSpSingleLogoutServiceUrl(), settings.getSpSingleLogoutServiceBinding()));
 
 		valueMap.put("strAttributeConsumingService", getAttributeConsumingServiceXml());
@@ -194,14 +194,49 @@ public class Metadata {
 		template.append("<md:SPSSODescriptor AuthnRequestsSigned=\"${strAuthnsign}\" WantAssertionsSigned=\"${strWsign}\" protocolSupportEnumeration=\"urn:oasis:names:tc:SAML:2.0:protocol\">");
 		template.append("${strKeyDescriptor}");
 		template.append("${sls}<md:NameIDFormat>${spNameIDFormat}</md:NameIDFormat>");
-		template.append("<md:AssertionConsumerService Binding=\"${spAssertionConsumerServiceBinding}\"");
-		template.append(" Location=\"${spAssertionConsumerServiceUrl}\"");
-		template.append(" index=\"1\"/>");
+		template.append("${strAssertionConsumerServices}");
 		template.append("${strAttributeConsumingService}");
 		template.append("</md:SPSSODescriptor>${strOrganization}${strContacts}");
 		template.append("</md:EntityDescriptor>");
 
 		return template;
+	}
+
+	/**
+	 * Generates the AssertionConsumerService sections of the metadata's template
+	 * 
+	 * @param assertionConsumerServices
+	 *              a list containing the Assertion Consumer Services to generate
+	 *              the metadata for
+	 * @return the AssertionConsumerService sections of the metadata's template
+	 */
+	private String toAssertionConsumerServicesXml(List<AssertionConsumerService> assertionConsumerServices) {
+		final StringBuilder acssXml = new StringBuilder();
+		assertionConsumerServices.forEach(service -> acssXml.append(toAssertionConsumerServiceXml(service)));
+		return acssXml.toString();
+	}
+
+	/**
+	 * Generates a single Attribute Consuming Service metadata fragment
+	 * 
+	 * @param service
+	 *              the Attribute Consuming Service for which the XML fragment
+	 *              should be generated
+	 * @return the generated XML fragment
+	 */
+	private String toAssertionConsumerServiceXml(AssertionConsumerService service) {
+		int index = service.getIndex();
+		Boolean isDefault = service.isDefault();
+		String binding = service.getBinding();
+		URL location = service.getLocation();
+		StringBuilder acsXml = new StringBuilder();
+		acsXml.append("<md:AssertionConsumerService Binding=\"").append(Util.toXml(binding))
+		            .append("\" Location=\"").append(Util.toXml(String.valueOf(location))).append("\" index=\"")
+		            .append(index).append("\"");
+		if (isDefault != null)
+			acsXml.append(" isDefault=\"").append(isDefault).append("\"");
+		acsXml.append("/>");
+		return acsXml.toString();
 	}
 
 	/**

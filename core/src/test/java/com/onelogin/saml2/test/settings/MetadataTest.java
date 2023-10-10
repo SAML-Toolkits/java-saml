@@ -104,6 +104,38 @@ public class MetadataTest {
 	}
 
 	/**
+	 * Tests the constructor method of Metadata
+	 *
+	 * @throws Exception
+	 * @see com.onelogin.saml2.settings.Metadata
+	 */
+	@Test
+	public void testMetadataMultiAssertionConsumerServices() throws Exception {
+		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min_multi_assertion_consumer_services.properties").build();
+
+		Metadata metadataObj = new Metadata(settings);
+		String metadataStr = metadataObj.getMetadataString();
+		Document metadataDoc = Util.loadXML(metadataStr);
+
+		assertTrue(metadataDoc instanceof Document);
+
+		assertEquals("md:EntityDescriptor", metadataDoc.getDocumentElement().getNodeName());
+		assertEquals("md:SPSSODescriptor", metadataDoc.getDocumentElement().getFirstChild().getNodeName());
+
+		assertTrue(Util.validateXML(metadataDoc, SchemaFactory.SAML_SCHEMA_METADATA_2_0));
+
+		assertThat(metadataStr, containsString("<md:SPSSODescriptor"));
+		assertThat(metadataStr, containsString("entityID=\"http://localhost:8080/java-saml-jspsample/metadata.jsp\""));
+		assertThat(metadataStr, containsString("AuthnRequestsSigned=\"false\""));
+		assertThat(metadataStr, containsString("WantAssertionsSigned=\"false\""));
+		assertThat(metadataStr, not(containsString("<md:KeyDescriptor use=\"signing\">")));
+		assertThat(metadataStr, containsString("<md:AssertionConsumerService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST\" Location=\"http://localhost:8081/java-saml-jspsample/acs1.jsp\" index=\"0\"/>"));
+		assertThat(metadataStr, containsString("<md:AssertionConsumerService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST\" Location=\"http://localhost:8081/java-saml-jspsample/acs2.jsp\" index=\"1\" isDefault=\"true\"/>"));
+		assertThat(metadataStr, containsString("<md:SingleLogoutService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect\" Location=\"http://localhost:8080/java-saml-jspsample/sls.jsp\"/>"));
+		assertThat(metadataStr, containsString("<md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</md:NameIDFormat>"));
+	}
+
+	/**
 	 * Tests the constructor method of Metadata (Expiration)
 	 *
 	 * @throws IOException
