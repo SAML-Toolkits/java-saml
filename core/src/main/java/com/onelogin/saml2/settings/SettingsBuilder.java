@@ -950,7 +950,10 @@ public class SettingsBuilder {
 			if (propValue == null)
 				break;
 
-			list.add(loadCertificateFromProp(propValue));
+			X509Certificate cert = loadCertificateFromProp(propValue);
+
+			if (cert != null)
+				list.add(cert);
 		}
 
 		return list;
