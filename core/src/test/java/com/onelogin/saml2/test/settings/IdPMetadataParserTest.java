@@ -5,14 +5,12 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
 
 import java.net.URL;
-import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
-import com.onelogin.saml2.model.Contact;
 import com.onelogin.saml2.settings.IdPMetadataParser;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;

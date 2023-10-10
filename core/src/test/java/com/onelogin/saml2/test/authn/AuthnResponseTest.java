@@ -5,7 +5,6 @@ import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.exception.SettingsException;
 import com.onelogin.saml2.exception.ValidationError;
 import com.onelogin.saml2.http.HttpRequest;
-import com.onelogin.saml2.logout.LogoutRequest;
 import com.onelogin.saml2.model.SamlResponseStatus;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;

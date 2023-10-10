@@ -858,25 +858,26 @@ public class LogoutRequestTest {
 		settings.setWantMessagesSigned(true);
 
 		final String requestURL = "https://pitbulk.no-ip.org/newonelogin/demo1/index.php?sls";
-		String samlRequestEncoded = "lVLBitswEP0Vo7tjeWzJtki8LIRCYLvbNksPewmyPc6K2pJqyXQ/v1LSQlroQi/DMJr33rwZbZ2cJysezNms/gt+X9H55G2etBOXlx1ZFy2MdMoJLWd0wvfieP/xQcCGCrsYb3ozkRvI+wjpHC5eGU2Sw35HTg3lA8hqZFwWFcMKsStpxbEsxoLXeQN9OdY1VAgk+YqLC8gdCUQB7tyKB+281D6UaF6mtEiBPudcABcMXkiyD26Ulv6CevXeOpFlVvlunb5ttEmV3ZjlnGn8YTRO5qx0NuBs8kzpAd829tXeucmR5NH4J/203I8el6gFRUqbFPJnyEV51Wq30by4TLW0/9ZyarYTxt4sBsjUYLMZvRykl1Fxm90SXVkfwx4P++T4KSafVzmpUcVJ/sfSrQZJPphllv79W8WKGtLx0ir8IrVTqD1pT2MH3QAMSs4KTvui71jeFFiwirOmprwPkYW063+5uRq4urHiiC4e8hCX3J5wqAEGaPpw9XB5JmkBdeDqSlkz6CmUXdl0Qae5kv2F/1384wu3PwE=";
+		String samlRequestEncoded = "lVLBitswEP0Vo7tjWbJkSyReFkIhsN1tm6WHvQTZHmdFbUmVZLqfXzlpIS10oZdhGM17b96MtkHNk5MP9myX+AW+LxBi9jZPJsjLyw4t3kirgg7SqBmCjL083n98kGSDpfM22t5O6AbyPkKFAD5qa1B22O/QSWA+EFWPjCtaM6gBugrXHCo6Ut6UgvTV2DSkBoKyr+BDQu5QIkrwEBY4mBCViamEyyrHNCf4ueSScMnIC8r2yY02Kl5QrzG6IIvC6dgt07eNsbl2G+vPhYEf1sBkz9oUA8y2LLQZ4G3jXt1dmALKHm18Mk/+fozgk5YQNMciJ+UzKWV11Wq3q3l5mcq3/9YKenYTrL3FGkihB1fMENWgoloVt8Ut0ZX1Me3xsM+On9bk86ImPep1kv+xdKuBsg/Wzyq+f6u1ood8vLTK6JUJGkxE7WnsSDcQRirOKMc97TtWCgqU1ZyJBvM+RZbSrv/l5mrg6sbJI4T1kId1ye0JhoaQgYg+XT1dnilMSZO4uko1jPSYVF0luqQjrmR/4X8X//jC7U8=";
 		String relayState = "_1037fbc88ec82ce8e770b2bed1119747bb812a07e6";
-		String sigAlg = Constants.SHA256;
+		String sigAlg = Constants.RSA_SHA256;
 
 		String queryString = "SAMLRequest=" + Util.urlEncoder(samlRequestEncoded);
 		queryString += "&RelayState=" + Util.urlEncoder(relayState);
 		queryString += "&SigAlg=" + Util.urlEncoder(sigAlg);
 
 		//This signature is based on the query string above
-		String signature = "cxDTcLRHhXJKGYcjZE2RRz5p7tVg/irNimq48KkJ0n10wiGwAmuzUByxEm4OHbetDrHGtxI5ygjrR0/HcrD8IkYyI5Ie4r5tJYkfdtpUrvOQ7khbBvP9GzEbZIrz7eH1ALdCDchORaRB/cs6v+OZbBj5uPTrN//wOhZl2k9H2xVW/SYy17jDoIKh/wvqtQ9FF+h2UxdUEhxeB/UUXOC6nVLMo+RGaamSviYkUE1Zu1tmalO+F6FivNQ31T/TkqzWz0KEjmnFs3eKbHakPVuUHpDQm7Gf2gBS1TXwVQsL7e2axtvv4RH5djlq1Z2WH2V+PwGOkIvLxf3igGUSR1A8bw==";
+		String signature = "27tdJT0kmletQ/fSUhB6Y8L0S6Y7pcZlGFvOCCVcqZZDyxlZBaCfmLlDXhB3/oJrWRn8injiY44h1BnCsughYQjTGBWZi175J9HA/dYhMZ+IFw9V/oUrRTY8/o9kFQSIefhQcJoegY2BvJVDSKeqYg2mCcQnItyceLhS1eiEQy0=";
 
-		HttpRequest httpRequest = new HttpRequest(requestURL, queryString)
+		HttpRequest httpRequest = new HttpRequest(requestURL)
 				.addParameter("SAMLRequest", samlRequestEncoded)
 				.addParameter("RelayState", relayState)
 				.addParameter("SigAlg", sigAlg)
 				.addParameter("Signature", signature);
 
 		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
-		assertTrue("Signature validation failed", logoutRequest.isValid());
+		assertFalse(logoutRequest.isValid());
+		assertEquals("Signature validation failed. Logout Request rejected", logoutRequest.getError());
 	}
 
 	@Test
@@ -886,16 +887,16 @@ public class LogoutRequestTest {
 		settings.setWantMessagesSigned(true);
 
 		final String requestURL = "https://pitbulk.no-ip.org/newonelogin/demo1/index.php?sls";
-		String samlRequestEncoded = "lVLBitswEP0Vo7tjeWzJtki8LIRCYLvbNksPewmyPc6K2pJqyXQ/v1LSQlroQi/DMJr33rwZbZ2cJysezNms/gt+X9H55G2etBOXlx1ZFy2MdMoJLWd0wvfieP/xQcCGCrsYb3ozkRvI+wjpHC5eGU2Sw35HTg3lA8hqZFwWFcMKsStpxbEsxoLXeQN9OdY1VAgk+YqLC8gdCUQB7tyKB+281D6UaF6mtEiBPudcABcMXkiyD26Ulv6CevXeOpFlVvlunb5ttEmV3ZjlnGn8YTRO5qx0NuBs8kzpAd829tXeucmR5NH4J/203I8el6gFRUqbFPJnyEV51Wq30by4TLW0/9ZyarYTxt4sBsjUYLMZvRykl1Fxm90SXVkfwx4P++T4KSafVzmpUcVJ/sfSrQZJPphllv79W8WKGtLx0ir8IrVTqD1pT2MH3QAMSs4KTvui71jeFFiwirOmprwPkYW063+5uRq4urHiiC4e8hCX3J5wqAEGaPpw9XB5JmkBdeDqSlkz6CmUXdl0Qae5kv2F/1384wu3PwE=";
+		String samlRequestEncoded = "lVLBitswEP0Vo7tjWbJkSyReFkIhsN1tm6WHvQTZHmdFbUmVZLqfXzlpIS10oZdhGM17b96MtkHNk5MP9myX+AW+LxBi9jZPJsjLyw4t3kirgg7SqBmCjL083n98kGSDpfM22t5O6AbyPkKFAD5qa1B22O/QSWA+EFWPjCtaM6gBugrXHCo6Ut6UgvTV2DSkBoKyr+BDQu5QIkrwEBY4mBCViamEyyrHNCf4ueSScMnIC8r2yY02Kl5QrzG6IIvC6dgt07eNsbl2G+vPhYEf1sBkz9oUA8y2LLQZ4G3jXt1dmALKHm18Mk/+fozgk5YQNMciJ+UzKWV11Wq3q3l5mcq3/9YKenYTrL3FGkihB1fMENWgoloVt8Ut0ZX1Me3xsM+On9bk86ImPep1kv+xdKuBsg/Wzyq+f6u1ood8vLTK6JUJGkxE7WnsSDcQRirOKMc97TtWCgqU1ZyJBvM+RZbSrv/l5mrg6sbJI4T1kId1ye0JhoaQgYg+XT1dnilMSZO4uko1jPSYVF0luqQjrmR/4X8X//jC7U8=";
 		String relayState = "_1037fbc88ec82ce8e770b2bed1119747bb812a07e6";
-		String sigAlg = Constants.SHA256;
+		String sigAlg = Constants.RSA_SHA256;
 
 		String queryString = "SAMLRequest=" + NaiveUrlEncoder.encode(samlRequestEncoded);
 		queryString += "&RelayState=" + NaiveUrlEncoder.encode(relayState);
 		queryString += "&SigAlg=" + NaiveUrlEncoder.encode(sigAlg);
 
 		//This signature is based on the query string above
-		String signatureNaiveEncoding = "Gj2mUq6RBPAPXI9VjDDlwAxueSEBlOfgpWKLpsQbqIp+2XPFtC/vPAZpuPjHCDNNnAI3WKZa4l8ijwQBTqQwKz88k9gTx6vcLxPl2L4SrWdLOokiGrIVYJ+0sK2hapHHMa7WzGiTgpeTuejHbD4ptneaRXl4nrJAEo0WJ/rNTSWbJpnb+ENtgBnsfkmj+6z1KFY70ruo7W/vme21Jg+4XNfBSGl6LLSjEnZHJG0ET80HKvJEZayv4BQGZ3MShcSMyab/w+rLfDvDRA5RcRxw+NHOXo/kxZ3qhpa6daOwG69+PiiWmusmB2gaSq6jy2L55zFks9a36Pt5l5fYA2dE4g==";
+		String signatureNaiveEncoding = "j/qDRTzgQw3cMDkkSkBOShqxi3t9qJxYnrADqwAECnJ3Y+iYgT33C0l/Vy3+ooQkFRyObYJqg9o7iIcMdgV6CXxpa6itVIUAI2VJewsMjzvJ4OdpePeSx7+/umVPKCfMvffsELlqo/UgxsyRZh8NMLej0ojCB7bUfIMKsiU7e0c=";
 
 		HttpRequest httpRequest = new HttpRequest(requestURL, queryString)
 				.addParameter("SAMLRequest", samlRequestEncoded)
@@ -904,7 +905,8 @@ public class LogoutRequestTest {
 				.addParameter("Signature", signatureNaiveEncoding);
 
 		LogoutRequest logoutRequest = new LogoutRequest(settings, httpRequest);
-		assertTrue("Signature validation failed", logoutRequest.isValid());
+		assertFalse(logoutRequest.isValid());
+		assertEquals("Signature validation failed. Logout Request rejected", logoutRequest.getError());
 	}
 
 	/**
@@ -921,10 +923,10 @@ public class LogoutRequestTest {
 		settings.setWantMessagesSigned(true);
 
 		final String requestURL = "https://pitbulk.no-ip.org/newonelogin/demo1/index.php?sls";
-		String samlRequestEncoded = "lVLBitswEP0Vo7tjeWzJtki8LIRCYLvbNksPewmyPc6K2pJqyXQ/v1LSQlroQi/DMJr33rwZbZ2cJysezNms/gt+X9H55G2etBOXlx1ZFy2MdMoJLWd0wvfieP/xQcCGCrsYb3ozkRvI+wjpHC5eGU2Sw35HTg3lA8hqZFwWFcMKsStpxbEsxoLXeQN9OdY1VAgk+YqLC8gdCUQB7tyKB+281D6UaF6mtEiBPudcABcMXkiyD26Ulv6CevXeOpFlVvlunb5ttEmV3ZjlnGn8YTRO5qx0NuBs8kzpAd829tXeucmR5NH4J/203I8el6gFRUqbFPJnyEV51Wq30by4TLW0/9ZyarYTxt4sBsjUYLMZvRykl1Fxm90SXVkfwx4P++T4KSafVzmpUcVJ/sfSrQZJPphllv79W8WKGtLx0ir8IrVTqD1pT2MH3QAMSs4KTvui71jeFFiwirOmprwPkYW063+5uRq4urHiiC4e8hCX3J5wqAEGaPpw9XB5JmkBdeDqSlkz6CmUXdl0Qae5kv2F/1384wu3PwE=";
+		String samlRequestEncoded = "lVLBitswEP0Vo7tjWbJkSyReFkIhsN1tm6WHvQTZHmdFbUmVZLqfXzlpIS10oZdhGM17b96MtkHNk5MP9myX+AW+LxBi9jZPJsjLyw4t3kirgg7SqBmCjL083n98kGSDpfM22t5O6AbyPkKFAD5qa1B22O/QSWA+EFWPjCtaM6gBugrXHCo6Ut6UgvTV2DSkBoKyr+BDQu5QIkrwEBY4mBCViamEyyrHNCf4ueSScMnIC8r2yY02Kl5QrzG6IIvC6dgt07eNsbl2G+vPhYEf1sBkz9oUA8y2LLQZ4G3jXt1dmALKHm18Mk/+fozgk5YQNMciJ+UzKWV11Wq3q3l5mcq3/9YKenYTrL3FGkihB1fMENWgoloVt8Ut0ZX1Me3xsM+On9bk86ImPep1kv+xdKuBsg/Wzyq+f6u1ood8vLTK6JUJGkxE7WnsSDcQRirOKMc97TtWCgqU1ZyJBvM+RZbSrv/l5mrg6sbJI4T1kId1ye0JhoaQgYg+XT1dnilMSZO4uko1jPSYVF0luqQjrmR/4X8X//jC7U8=";
 		String relayState = "_1037fbc88ec82ce8e770b2bed1119747bb812a07e6";
 		String sigAlg = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
-		String signature = "XCwCyI5cs7WhiJlB5ktSlWxSBxv+6q2xT3c8L7dLV6NQG9LHWhN7gf8qNsahSXfCzA0Ey9dp5BQ0EdRvAk2DIzKmJY6e3hvAIEp1zglHNjzkgcQmZCcrkK9Czi2Y1WkjOwR/WgUTUWsGJAVqVvlRZuS3zk3nxMrLH6f7toyvuJc=";
+		String signature = "j/qDRTzgQw3cMDkkSkBOShqxi3t9qJxYnrADqwAECnJ3Y+iYgT33C0l/Vy3+ooQkFRyObYJqg9o7iIcMdgV6CXxpa6itVIUAI2VJewsMjzvJ4OdpePeSx7+/umVPKCfMvffsELlqo/UgxsyRZh8NMLej0ojCB7bUfIMKsiU7e0c=";
 
 		HttpRequest httpRequest = new HttpRequest(requestURL, (String)null)
 						.addParameter("SAMLRequest", samlRequestEncoded)
