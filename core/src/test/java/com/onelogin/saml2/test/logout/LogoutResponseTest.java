@@ -23,6 +23,7 @@ import org.junit.Test;
 import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.http.HttpRequest;
+import com.onelogin.saml2.logout.LogoutRequest;
 import com.onelogin.saml2.logout.LogoutResponse;
 import com.onelogin.saml2.logout.LogoutResponseParams;
 import com.onelogin.saml2.model.SamlResponseStatus;
@@ -697,7 +698,7 @@ public class LogoutResponseTest {
 		final String requestURL = "https://pitbulk.no-ip.org/newonelogin/demo1/index.php?sls";
 		String samlResponseEncoded = "fZJva8IwEMa/Ssl7TZrW/gnqGHMMwSlM8cXeyLU9NaxNQi9lfvxVZczB5ptwSe733MPdjQma2qmFPdjOvyE5awiDU1MbUpevCetaoyyQJmWgQVK+VOvH14WSQ6Fca70tbc1ukPsEEGHrtTUsmM8mbDfKUhnFci8gliGINI/yXIAAiYnsw6JIRgWWAKlkwRZb6skJ64V6nKjDuSEPxvdPIowHIhpIsQkTFaYqSt9ZMEPy2oC/UEfvHSnOnfZFV38MjR1oN7TtgRv8tAZre9CGV9jYkGtT4Wnoju6Bauprme/ebOyErZbPi9XLfLnDoohwhHGc5WVSVhjCKM6rBMpYQpWJrIizfZ4IZNPxuTPqYrmd/m+EdONqPOfy8yG5rhxv0EMFHs52xvxWaHyd3tqD7+j37clWGGyh7vD+POiSrdZdWSIR49NrhR9R/teGTL8A";
 		String relayState = "https://pitbulk.no-ip.org/newonelogin/demo1/index.php";
-		String sigAlg = Constants.SHA256;
+		String sigAlg = Constants.RSA_SHA256;
 
 		String queryString = "SAMLResponse=" + Util.urlEncoder(samlResponseEncoded);
 		queryString += "&RelayState=" + Util.urlEncoder(relayState);
@@ -713,7 +714,8 @@ public class LogoutResponseTest {
 				.addParameter("Signature", signature);
 
 		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
-		assertTrue("Signature validation failed", logoutResponse.isValid());
+		assertFalse(logoutResponse.isValid());
+		assertEquals("Signature validation failed. Logout Response rejected", logoutResponse.getError());
 	}
 
 	@Test
@@ -725,7 +727,7 @@ public class LogoutResponseTest {
 		final String requestURL = "https://pitbulk.no-ip.org/newonelogin/demo1/index.php?sls";
 		String samlResponseEncoded = "fZJva8IwEMa/Ssl7TZrW/gnqGHMMwSlM8cXeyLU9NaxNQi9lfvxVZczB5ptwSe733MPdjQma2qmFPdjOvyE5awiDU1MbUpevCetaoyyQJmWgQVK+VOvH14WSQ6Fca70tbc1ukPsEEGHrtTUsmM8mbDfKUhnFci8gliGINI/yXIAAiYnsw6JIRgWWAKlkwRZb6skJ64V6nKjDuSEPxvdPIowHIhpIsQkTFaYqSt9ZMEPy2oC/UEfvHSnOnfZFV38MjR1oN7TtgRv8tAZre9CGV9jYkGtT4Wnoju6Bauprme/ebOyErZbPi9XLfLnDoohwhHGc5WVSVhjCKM6rBMpYQpWJrIizfZ4IZNPxuTPqYrmd/m+EdONqPOfy8yG5rhxv0EMFHs52xvxWaHyd3tqD7+j37clWGGyh7vD+POiSrdZdWSIR49NrhR9R/teGTL8A";
 		String relayState = "https://pitbulk.no-ip.org/newonelogin/demo1/index.php";
-		String sigAlg = Constants.SHA256;
+		String sigAlg = Constants.RSA_SHA256;
 
 		String queryString = "SAMLResponse=" + NaiveUrlEncoder.encode(samlResponseEncoded);
 		queryString += "&RelayState=" + NaiveUrlEncoder.encode(relayState);
@@ -741,7 +743,8 @@ public class LogoutResponseTest {
 				.addParameter("Signature", signature);
 
 		LogoutResponse logoutResponse = new LogoutResponse(settings, httpRequest);
-		assertTrue("Signature validation failed", logoutResponse.isValid());
+		assertFalse(logoutResponse.isValid());
+		assertEquals("Signature validation failed. Logout Response rejected", logoutResponse.getError());
 	}
 
 	/**

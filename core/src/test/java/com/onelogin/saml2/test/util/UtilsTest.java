@@ -14,8 +14,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -37,6 +35,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
@@ -1519,9 +1519,10 @@ public class UtilsTest {
 		PrivateKey key = Util.loadPrivateKey(keyString);
 		String signAlgorithmSha1 = Constants.RSA_SHA1;
 		
-		Document emptyDoc = mock(Document.class);
-	    when(emptyDoc.getDocumentElement()).thenReturn(null);
-		
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		DocumentBuilder builder = dbf.newDocumentBuilder();
+		Document emptyDoc = builder.newDocument();
+		assertNull(emptyDoc.getDocumentElement());
 		String docSigned = Util.addSign(emptyDoc, key, cert, signAlgorithmSha1);
 	}
 	
