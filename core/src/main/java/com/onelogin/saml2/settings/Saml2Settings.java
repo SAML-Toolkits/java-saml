@@ -76,6 +76,7 @@ public class Saml2Settings {
 	private List<String> requestedAuthnContext = new ArrayList<>();
 	private String requestedAuthnContextComparison = "exact";
 	private boolean wantXMLValidation = true;
+	private boolean wantDestinationUrlValidation = true;
 	private String signatureAlgorithm = Constants.RSA_SHA1;
 	private String digestAlgorithm = Constants.SHA1;
 	private boolean rejectUnsolicitedResponsesWithInResponseTo = false;
@@ -344,6 +345,13 @@ public class Saml2Settings {
 	 */
 	public boolean getWantXMLValidation() {
 		return wantXMLValidation;
+	}
+
+	/**
+	 * @return the wantDestinationUrlValidation setting value
+	 */
+	public boolean getWantDestinationUrlValidation() {
+		return wantDestinationUrlValidation;
 	}
 
 	/**
@@ -774,6 +782,17 @@ public class Saml2Settings {
 	 */
 	public void setWantXMLValidation(boolean wantXMLValidation) {
 		this.wantXMLValidation = wantXMLValidation;
+	}
+
+	/**
+	 * Set the wantDestinationUrlValidation setting value
+	 *
+	 * @param wantDestinationUrlValidation
+	 * 			the wantDestinationUrlValidation value to be set.
+	 * 			Based on it the SP will validate Destination attribute in SAML response XML.
+	 */
+	public void setWantDestinationUrlValidation(boolean wantDestinationUrlValidation) {
+		this.wantDestinationUrlValidation = wantDestinationUrlValidation;
 	}
 
 	/**

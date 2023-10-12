@@ -114,6 +114,7 @@ public class SettingsBuilder {
 	public final static String SECURITY_REQUESTED_AUTHNCONTEXT = "onelogin.saml2.security.requested_authncontext";
 	public final static String SECURITY_REQUESTED_AUTHNCONTEXTCOMPARISON = "onelogin.saml2.security.requested_authncontextcomparison";
 	public final static String SECURITY_WANT_XML_VALIDATION = "onelogin.saml2.security.want_xml_validation";
+	public final static String SECURITY_WANT_DESTINATION_URL_VALIDATION = "onelogin.saml2.security.want_destination_url_validation";
 	public final static String SECURITY_SIGNATURE_ALGORITHM = "onelogin.saml2.security.signature_algorithm";
 	public final static String SECURITY_DIGEST_ALGORITHM = "onelogin.saml2.security.digest_algorithm";
 	public final static String SECURITY_REJECT_UNSOLICITED_RESPONSES_WITH_INRESPONSETO = "onelogin.saml2.security.reject_unsolicited_responses_with_inresponseto";
@@ -398,6 +399,10 @@ public class SettingsBuilder {
 		Boolean wantXMLValidation = loadBooleanProperty(SECURITY_WANT_XML_VALIDATION);
 		if (wantXMLValidation != null)
 			saml2Setting.setWantXMLValidation(wantXMLValidation);
+
+		Boolean wantDestinationUrlvalidation = loadBooleanProperty(SECURITY_WANT_DESTINATION_URL_VALIDATION);
+		if (wantDestinationUrlvalidation != null)
+			saml2Setting.setWantDestinationUrlValidation(wantDestinationUrlvalidation);
 
 		Boolean signMetadata = loadBooleanProperty(SECURITY_SIGN_METADATA);
 		if (signMetadata != null)

@@ -1943,6 +1943,11 @@ public class AuthnResponseTest {
 		samlResponse.setDestinationUrl(ACS_URL);
 		samlResponse.isValid();
 		assertThat(samlResponse.getError(), not(containsString("The response was received at")));
+
+		settings.setWantDestinationUrlValidation(false);
+		samlResponse = new SamlResponse(settings, newHttpRequest(requestURL, samlResponseEncoded));
+		samlResponse.isValid();
+		assertThat(samlResponse.getError(), not(containsString("The response was received at")));
 	}
 
 	/**
