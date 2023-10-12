@@ -5,7 +5,7 @@ settings.setSPValidationOnly(true);
 List<String> errors = settings.checkSettings();
 
 if (errors.isEmpty()) {
-        String metadata = settings.getSPMetadata();
+    String metadata = settings.getSPMetadata();
 	out.println(metadata);
 } else {
 	response.setContentType("text/html; charset=UTF-8");
