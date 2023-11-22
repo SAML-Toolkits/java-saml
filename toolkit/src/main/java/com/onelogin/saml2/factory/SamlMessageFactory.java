@@ -1,6 +1,6 @@
 package com.onelogin.saml2.factory;
 
-import com.onelogin.saml2.Auth;
+import com.onelogin.saml2.BaseAuth;
 import com.onelogin.saml2.authn.AuthnRequest;
 import com.onelogin.saml2.authn.AuthnRequestParams;
 import com.onelogin.saml2.authn.SamlResponse;
@@ -14,7 +14,7 @@ import com.onelogin.saml2.settings.Saml2Settings;
 /**
  * Factory which can create all kind of SAML message objects.
  * <p>
- * One such factory is used by the {@link Auth} class to orchestrate login and
+ * One such factory is used by the {@link BaseAuth} class to orchestrate login and
  * logout operations.
  * <p>
  * Default implementations for all creation methods are provided: they create

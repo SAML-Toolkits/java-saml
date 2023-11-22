@@ -7,14 +7,26 @@
 	</parent>
 
 	<packaging>jar</packaging>
-	<name>java-saml Toolkit</name>
-	<artifactId>java-saml</artifactId>
+	<name>java-saml Jakarta servlet EE9 bindings</name>
+	<artifactId>java-saml-servlet-jakarta</artifactId>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.onelogin</groupId>
 			<artifactId>java-saml-core</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.onelogin</groupId>
+			<artifactId>java-saml</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<version>6.0.0</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- for test -->
@@ -45,36 +57,6 @@
 			<artifactId>mockito-core</artifactId>
 			<version>1.10.19</version>
 			<scope>test</scope>
-		</dependency>
-
-		<!-- for log -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>2.0.5</version>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<version>1.4.7</version>
-			<optional>true</optional>
-		</dependency>
-
-		<!-- commons -->
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>${apacheCommonsLangVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.santuario</groupId>
-			<artifactId>xmlsec</artifactId>
-			<version>3.0.2</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-codec</groupId>
-			<artifactId>commons-codec</artifactId>
-			<version>1.16.0</version>
 		</dependency>
 	</dependencies>
 

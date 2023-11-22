@@ -15,6 +15,7 @@ import java.util.Objects;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
+import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.model.hsm.HSM;
 
 import org.apache.commons.lang3.StringUtils;
@@ -28,7 +29,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import com.onelogin.saml2.exception.SettingsException;
 import com.onelogin.saml2.exception.ValidationError;
-import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.model.SamlResponseStatus;
 import com.onelogin.saml2.model.SubjectConfirmationIssue;
 import com.onelogin.saml2.settings.Saml2Settings;
