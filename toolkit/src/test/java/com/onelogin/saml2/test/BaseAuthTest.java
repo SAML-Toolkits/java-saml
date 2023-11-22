@@ -1,6 +1,6 @@
 package com.onelogin.saml2.test;
 
-import com.onelogin.saml2.Auth;
+import com.onelogin.saml2.BaseAuth;
 import com.onelogin.saml2.authn.AuthnRequest;
 import com.onelogin.saml2.authn.AuthnRequestParams;
 import com.onelogin.saml2.authn.SamlResponse;
@@ -60,7 +60,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class AuthTest {
+public class BaseAuthTest {
 
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
@@ -108,11 +108,11 @@ public class AuthTest {
 	 * @throws IOException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth
+	 * @see BaseAuth
 	 */
 	@Test
 	public void testConstructor() throws IOException, SettingsException, Error {
-		Auth auth = new Auth();
+		BaseAuth auth = new BaseAuth();
 		assertTrue(auth.getSettings() != null);
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("onelogin.saml.properties").build();
@@ -129,11 +129,11 @@ public class AuthTest {
 	 * @throws IOException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth
+	 * @see BaseAuth
 	 */
 	@Test
 	public void testConstructorWithFilename() throws IOException, SettingsException, Error {
-		Auth auth = new Auth("config/config.min.properties");
+		BaseAuth auth = new BaseAuth("config/config.min.properties");
 		assertTrue(auth.getSettings() != null);
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
@@ -153,12 +153,12 @@ public class AuthTest {
      * @throws KeyStoreException 
      * @throws UnrecoverableKeyException 
      *
-     * @see com.onelogin.saml2.Auth
+     * @see BaseAuth
      */
 	@Test
 	public void testConstructorWithFilenameAndKeyStore() throws IOException, SettingsException, Error, NoSuchAlgorithmException, CertificateException, KeyStoreException, UnrecoverableKeyException {
         
-		Auth auth = new Auth("config/config.min.properties", getKeyStoreSettings());
+		BaseAuth auth = new BaseAuth("config/config.min.properties", getKeyStoreSettings());
 		assertTrue(auth.getSettings() != null);
 		assertTrue(auth.getSettings().getSPcert() != null);
 		assertTrue(auth.getSettings().getSPkey() != null);
@@ -177,7 +177,7 @@ public class AuthTest {
 	 * @throws URISyntaxException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth
+	 * @see BaseAuth
 	 */
 	@Test
 	public void testConstructorWithReqRes() throws IOException, SettingsException, URISyntaxException, Error {
@@ -186,7 +186,7 @@ public class AuthTest {
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
 		when(request.getParameter(eq("SAMLResponse"))).thenReturn(samlResponseEncoded);
 
-		Auth auth = new Auth(request, response);
+		BaseAuth auth = new BaseAuth(request, response);
 		assertTrue(auth.getSettings() != null);
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("onelogin.saml.properties").build();
@@ -206,14 +206,14 @@ public class AuthTest {
 	 * @throws CertificateException 
 	 * @throws NoSuchAlgorithmException 
 	 *
-	 * @see com.onelogin.saml2.Auth
+	 * @see BaseAuth
 	 */
 	@Test
 	public void testConstructorWithReqResAndKeyStore() throws IOException, SettingsException, URISyntaxException, Error, KeyStoreException, NoSuchAlgorithmException, CertificateException {
 		HttpRequest request = mock(HttpRequest.class);
 		HttpResponse response = mock(HttpResponse.class);
 
-		Auth auth = new Auth(getKeyStoreSettings(), request, response);
+		BaseAuth auth = new BaseAuth(getKeyStoreSettings(), request, response);
 		assertTrue(auth.getSettings() != null);
 		assertTrue(auth.getSettings().getSPcert() != null);
 		assertTrue(auth.getSettings().getSPkey() != null);
@@ -232,7 +232,7 @@ public class AuthTest {
 	 * @throws URISyntaxException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth
+	 * @see BaseAuth
 	 */
 	@Test
 	public void testConstructorWithFilenameReqRes() throws IOException, SettingsException, URISyntaxException, Error {
@@ -241,7 +241,7 @@ public class AuthTest {
 		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
 		when(request.getParameter(eq("SAMLResponse"))).thenReturn(samlResponseEncoded);
 
-		Auth auth = new Auth("config/config.min.properties", request, response);
+		BaseAuth auth = new BaseAuth("config/config.min.properties", request, response);
 		assertTrue(auth.getSettings() != null);
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
@@ -258,7 +258,7 @@ public class AuthTest {
 	 * @throws URISyntaxException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth
+	 * @see BaseAuth
 	 */
 	@Test
 	public void testConstructorWithSettingsReqRes() throws IOException, SettingsException, URISyntaxException, Error {
@@ -268,7 +268,7 @@ public class AuthTest {
 		when(request.getParameter(eq("SAMLResponse"))).thenReturn(samlResponseEncoded);
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertEquals(settings.getIdpEntityId(), auth.getSettings().getIdpEntityId());
 		assertEquals(settings.getSpEntityId(), auth.getSettings().getSpEntityId());
 	}
@@ -282,7 +282,7 @@ public class AuthTest {
 	 * @throws URISyntaxException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth
+	 * @see BaseAuth
 	 */
 	@Test
 	public void testConstructorInvalidSettings() throws IOException, SettingsException, URISyntaxException, Error {
@@ -295,7 +295,7 @@ public class AuthTest {
 		
 		expectedEx.expect(SettingsException.class);
 		expectedEx.expectMessage("Invalid settings: sp_entityId_not_found, sp_acs_not_found, sp_cert_not_found_and_required, contact_not_enough_data, contact_type_invalid, organization_not_enough_data, idp_cert_or_fingerprint_not_found_and_required, idp_cert_not_found_and_required");
-		new Auth(settings, request, response);
+		new BaseAuth(settings, request, response);
 	}
 
 	/**
@@ -305,12 +305,12 @@ public class AuthTest {
 	 * @throws IOException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#getSettings
+	 * @see BaseAuth#getSettings
 	 */
 	@Test
 	public void testGetSettings() throws IOException, SettingsException, Error {
 		Saml2Settings settings = new SettingsBuilder().fromFile("onelogin.saml.properties").build();
-		Auth auth = new Auth();
+		BaseAuth auth = new BaseAuth();
 		assertEquals(settings.getIdpEntityId(), auth.getSettings().getIdpEntityId());
 		assertEquals(settings.getSpEntityId(), auth.getSettings().getSpEntityId());
 		assertEquals(settings.getIdpCertFingerprint(), auth.getSettings().getIdpCertFingerprint());
@@ -333,11 +333,11 @@ public class AuthTest {
 	 * @throws URISyntaxException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#setStrict
+	 * @see BaseAuth#setStrict
 	 */
 	@Test
 	public void testSetStrict() throws IOException, SettingsException, URISyntaxException, Error {
-		Auth auth = new Auth();
+		BaseAuth auth = new BaseAuth();
 
 		auth.setStrict(false);
 		assertFalse(auth.getSettings().isStrict());
@@ -354,7 +354,7 @@ public class AuthTest {
 	 * @throws URISyntaxException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#isDebugActive
+	 * @see BaseAuth#isDebugActive
 	 */
 	@Test
 	public void testIsDebugActive() throws IOException, SettingsException, URISyntaxException, Error {
@@ -366,11 +366,11 @@ public class AuthTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		settings.setDebug(false);
 
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertFalse(auth.isDebugActive());
 
 		settings.setDebug(true);
-		auth = new Auth(settings, request, response);
+		auth = new BaseAuth(settings, request, response);
 		assertTrue(auth.isDebugActive());
 	}
 
@@ -382,7 +382,7 @@ public class AuthTest {
 	 * @throws SettingsException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#getSSOurl
+	 * @see BaseAuth#getSSOurl
 	 */
 	@Test
 	public void testGetSSOurl() throws URISyntaxException, IOException, SettingsException, Error {
@@ -393,7 +393,7 @@ public class AuthTest {
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SSOService.php", auth.getSSOurl());
 	}
 
@@ -405,7 +405,7 @@ public class AuthTest {
 	 * @throws SettingsException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#getSLOurl
+	 * @see BaseAuth#getSLOurl
 	 */
 	@Test
 	public void testGetSLOurl() throws URISyntaxException, IOException, SettingsException, Error {
@@ -416,7 +416,7 @@ public class AuthTest {
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SingleLogoutService.php", auth.getSLOurl());
 	}
 
@@ -429,7 +429,7 @@ public class AuthTest {
 	 * @throws SettingsException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#getSLOResponseUrl
+	 * @see BaseAuth#getSLOResponseUrl
 	 */
 	@Test
 	public void testGetSLOResponseUrl() throws URISyntaxException, IOException, SettingsException, Error {
@@ -440,7 +440,7 @@ public class AuthTest {
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
 
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SingleLogoutServiceResponse.php", auth.getSLOResponseUrl());
 	}
 
@@ -452,7 +452,7 @@ public class AuthTest {
 	 * @throws SettingsException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#getSLOResponseUrl
+	 * @see BaseAuth#getSLOResponseUrl
 	 */
 	@Test
 	public void testGetSLOResponseUrlNull() throws URISyntaxException, IOException, SettingsException, Error {
@@ -463,7 +463,7 @@ public class AuthTest {
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertEquals("http://idp.example.com/simplesaml/saml2/idp/SingleLogoutService.php", auth.getSLOResponseUrl());
 	}
 
@@ -472,7 +472,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception
 	 *
-	 * @see com.onelogin.saml2.Auth#processResponse
+	 * @see BaseAuth#processResponse
 	 */
 	@Test
 	public void testProcessNoResponse() throws Exception {
@@ -481,7 +481,7 @@ public class AuthTest {
 		when(request.getRequestURL()).thenReturn("http://localhost:8080/java-saml-jspsample/acs.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getErrors().isEmpty());
 		try {
@@ -501,10 +501,10 @@ public class AuthTest {
 	 *
 	 * @throws Exception
 	 *
-	 * @see com.onelogin.saml2.Auth#processResponse
-	 * @see com.onelogin.saml2.Auth#getAttributes
-	 * @see com.onelogin.saml2.Auth#getAttribute
-	 * @see com.onelogin.saml2.Auth#getAttributesName
+	 * @see BaseAuth#processResponse
+	 * @see BaseAuth#getAttributes
+	 * @see BaseAuth#getAttribute
+	 * @see BaseAuth#getAttributesName
 	 */
 	@Test
 	public void testProcessResponse() throws Exception {
@@ -516,7 +516,7 @@ public class AuthTest {
 		when(request.getParameter(eq("SAMLResponse"))).thenReturn(samlResponseEncoded);
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getErrors().isEmpty());
 		auth.processResponse();
@@ -525,7 +525,7 @@ public class AuthTest {
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
 		when(request.getParameter(eq("SAMLResponse"))).thenReturn(samlResponseEncoded);
-		Auth auth2 = new Auth(settings, request, response);
+		BaseAuth auth2 = new BaseAuth(settings, request, response);
 
 		HashMap<String, List<String>> expectedAttributes = new LinkedHashMap<String, List<String>>();
 		List<String> attrValues = new ArrayList<String>();
@@ -564,7 +564,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception
 	 *
-	 * @see com.onelogin.saml2.Auth#processSLO
+	 * @see BaseAuth#processSLO
 	 */
 	@Test
 	public void testProcessResponseStatusResponder() throws Exception {
@@ -576,7 +576,7 @@ public class AuthTest {
 		Document samlResponseDoc = Util.loadXML(new String(Util.base64decoder(samlResponseEncoded)));
 		when(request.getParameter(eq("SAMLResponse"))).thenReturn(samlResponseEncoded);
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getErrors().isEmpty());
 		auth.processResponse();
@@ -593,7 +593,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception
 	 *
-	 * @see com.onelogin.saml2.Auth#processSLO
+	 * @see BaseAuth#processSLO
 	 */
 	@Test
 	public void testProcessSLONoMessage() throws Exception {
@@ -602,7 +602,7 @@ public class AuthTest {
 		when(request.getRequestURL()).thenReturn("http://localhost:8080/java-saml-jspsample/acs.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getErrors().isEmpty());
 		try {
@@ -623,7 +623,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception
 	 *
-	 * @see com.onelogin.saml2.Auth#processSLO
+	 * @see BaseAuth#processSLO
 	 */
 	@Test
 	public void testProcessSLORequestKeepSession() throws Exception {
@@ -635,7 +635,7 @@ public class AuthTest {
 		when(request.getParameter(eq("SAMLRequest"))).thenReturn(samlRequestEncoded);
 		
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getErrors().isEmpty());
 		auth.processSLO(true, null);
@@ -650,7 +650,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception
 	 *
-	 * @see com.onelogin.saml2.Auth#processSLO
+	 * @see BaseAuth#processSLO
 	 */
 	@Test
 	public void testProcessSLORequestRemoveSession() throws Exception {
@@ -661,7 +661,7 @@ public class AuthTest {
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
 		when(request.getParameter(eq("SAMLRequest"))).thenReturn(samlRequestEncoded);
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getErrors().isEmpty());
 		auth.processSLO();
@@ -676,7 +676,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception
 	 *
-	 * @see com.onelogin.saml2.Auth#processSLO
+	 * @see BaseAuth#processSLO
 	 */
 	@Test
 	public void testProcessSLORequestStay() throws Exception {
@@ -687,7 +687,7 @@ public class AuthTest {
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
 		when(request.getParameter(eq("SAMLRequest"))).thenReturn(samlRequestEncoded);
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getErrors().isEmpty());
 		auth.processSLO(false, null);
@@ -702,7 +702,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception
 	 *
-	 * @see com.onelogin.saml2.Auth#processSLO
+	 * @see BaseAuth#processSLO
 	 */
 	@Test
 	public void testProcessSLORequestStayFalse() throws Exception {
@@ -713,7 +713,7 @@ public class AuthTest {
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
 		when(request.getParameter(eq("SAMLRequest"))).thenReturn(samlRequestEncoded);
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getErrors().isEmpty());
 		String target = auth.processSLO(false, null, false);
@@ -730,7 +730,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception
 	 *
-	 * @see com.onelogin.saml2.Auth#processSLO
+	 * @see BaseAuth#processSLO
 	 */
 	@Test
 	public void testProcessSLORequestStayTrue() throws Exception {
@@ -741,7 +741,7 @@ public class AuthTest {
 		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
 		when(request.getParameter(eq("SAMLRequest"))).thenReturn(samlRequestEncoded);
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getErrors().isEmpty());
 		String target = auth.processSLO(false, null, true);
@@ -757,7 +757,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception
 	 *
-	 * @see com.onelogin.saml2.Auth#processSLO
+	 * @see BaseAuth#processSLO
 	 */
 	@Test
 	public void testProcessSLORequestSignRes() throws Exception {
@@ -772,7 +772,7 @@ public class AuthTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.all.properties").build();
 		settings.setWantMessagesSigned(false);
 		settings.setLogoutResponseSigned(true);
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getErrors().isEmpty());
 		auth.processSLO();
@@ -787,7 +787,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception
 	 *
-	 * @see com.onelogin.saml2.Auth#processSLO
+	 * @see BaseAuth#processSLO
 	 */
 	@Test
 	public void testProcessSLORequestInvalid() throws Exception {
@@ -799,7 +799,7 @@ public class AuthTest {
 		when(request.getParameter(eq("SAMLRequest"))).thenReturn(samlRequestEncoded);
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		settings.setStrict(true);
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getErrors().isEmpty());
 		auth.processSLO();		
@@ -816,7 +816,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception
 	 *
-	 * @see com.onelogin.saml2.Auth#processSLO
+	 * @see BaseAuth#processSLO
 	 */
 	@Test
 	public void testProcessSLOResponseKeepSession() throws Exception {
@@ -827,7 +827,7 @@ public class AuthTest {
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
 		when(request.getParameter(eq("SAMLResponse"))).thenReturn(samlResponseEncoded);
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getErrors().isEmpty());
 		auth.processSLO(true, null);
@@ -841,7 +841,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception
 	 *
-	 * @see com.onelogin.saml2.Auth#processSLO
+	 * @see BaseAuth#processSLO
 	 */
 	@Test
 	public void testProcessSLOResponseRemoveSession() throws Exception {
@@ -852,7 +852,7 @@ public class AuthTest {
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
 		when(request.getParameter(eq("SAMLResponse"))).thenReturn(samlResponseEncoded);
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getErrors().isEmpty());
 		auth.processSLO();
@@ -866,7 +866,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception
 	 *
-	 * @see com.onelogin.saml2.Auth#processSLO
+	 * @see BaseAuth#processSLO
 	 */
 	@Test
 	public void testProcessSLOResponseWrongRequestId() throws Exception {
@@ -878,7 +878,7 @@ public class AuthTest {
 		when(request.getParameter(eq("SAMLResponse"))).thenReturn(samlResponseEncoded);
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 		settings.setStrict(true);
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getErrors().isEmpty());
 		auth.processSLO(false, "wrong_request_id");
@@ -893,7 +893,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception
 	 *
-	 * @see com.onelogin.saml2.Auth#processSLO
+	 * @see BaseAuth#processSLO
 	 */
 	@Test
 	public void testProcessSLOResponseStatusResponder() throws Exception {
@@ -904,7 +904,7 @@ public class AuthTest {
 		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/invalids/status_code_responder.xml.base64");
 		when(request.getParameter(eq("SAMLResponse"))).thenReturn(samlResponseEncoded);
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getErrors().isEmpty());
 		auth.processSLO();
@@ -919,9 +919,9 @@ public class AuthTest {
 	 *
 	 * @throws Exception
 	 *
-	 * @see com.onelogin.saml2.Auth#isAuthenticated
-	 * @see com.onelogin.saml2.Auth#getErrors
-	 * @see com.onelogin.saml2.Auth#getLastErrorReason
+	 * @see BaseAuth#isAuthenticated
+	 * @see BaseAuth#getErrors
+	 * @see BaseAuth#getLastErrorReason
 	 */
 	@Test
 	public void testIsAuthenticated() throws Exception {
@@ -932,7 +932,7 @@ public class AuthTest {
 		when(request.getRequestURL()).thenReturn("http://localhost:8080/java-saml-jspsample/acs.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getErrors().isEmpty());
 		auth.processResponse();
@@ -946,7 +946,7 @@ public class AuthTest {
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
 		when(request.getParameter(eq("SAMLResponse"))).thenReturn(samlResponseEncoded);
-		Auth auth2 = new Auth(settings, request, response);
+		BaseAuth auth2 = new BaseAuth(settings, request, response);
 		assertFalse(auth2.isAuthenticated());
 		assertTrue(auth2.getErrors().isEmpty());
 		auth2.processResponse();
@@ -960,7 +960,7 @@ public class AuthTest {
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
 		when(request.getParameter(eq("SAMLResponse"))).thenReturn(samlResponseEncoded);
-		Auth auth3 = new Auth(settings, request, response);
+		BaseAuth auth3 = new BaseAuth(settings, request, response);
 		assertFalse(auth3.isAuthenticated());
 		assertTrue(auth3.getErrors().isEmpty());
 		auth3.processResponse();
@@ -976,7 +976,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception
 	 *
-	 * @see com.onelogin.saml2.Auth#getNameId
+	 * @see BaseAuth#getNameId
 	 */
 	@Test
 	public void testGetNameID() throws Exception {
@@ -987,7 +987,7 @@ public class AuthTest {
 		when(request.getRequestURL()).thenReturn("http://localhost:8080/java-saml-jspsample/acs.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertNull(auth.getNameId());
 		auth.processResponse();
 		assertFalse(auth.isAuthenticated());
@@ -995,7 +995,7 @@ public class AuthTest {
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
 		when(request.getParameter(eq("SAMLResponse"))).thenReturn(samlResponseEncoded);
-		Auth auth2 = new Auth(settings, request, response);
+		BaseAuth auth2 = new BaseAuth(settings, request, response);
 		assertNull(auth2.getNameId());
 		auth2.processResponse();
 		assertTrue(auth2.isAuthenticated());
@@ -1005,7 +1005,7 @@ public class AuthTest {
 		when(request.getParameter(eq("SAMLResponse"))).thenReturn(samlResponseEncoded);
 		when(request.getRequestURL()).thenReturn("https://pitbulk.no-ip.org/newonelogin/demo1/index.php?acs");
 		settings.setStrict(false);
-		Auth auth3 = new Auth(settings, request, response);
+		BaseAuth auth3 = new BaseAuth(settings, request, response);
 		assertNull(auth3.getNameId());
 		auth3.processResponse();
 		assertTrue(auth3.isAuthenticated());
@@ -1018,7 +1018,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception
 	 *
-	 * @see com.onelogin.saml2.Auth#getNameIdFormat
+	 * @see BaseAuth#getNameIdFormat
 	 */
 	@Test
 	public void testGetNameIdFormat() throws Exception {
@@ -1029,7 +1029,7 @@ public class AuthTest {
 		when(request.getRequestURL()).thenReturn("http://localhost:8080/java-saml-jspsample/acs.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertNull(auth.getNameIdFormat());
 		auth.processResponse();
 		assertFalse(auth.isAuthenticated());
@@ -1037,7 +1037,7 @@ public class AuthTest {
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
 		when(request.getParameter(eq("SAMLResponse"))).thenReturn(samlResponseEncoded);
-		Auth auth2 = new Auth(settings, request, response);
+		BaseAuth auth2 = new BaseAuth(settings, request, response);
 		assertNull(auth2.getNameIdFormat());
 		auth2.processResponse();
 		assertTrue(auth2.isAuthenticated());
@@ -1047,7 +1047,7 @@ public class AuthTest {
 		when(request.getParameter(eq("SAMLResponse"))).thenReturn(samlResponseEncoded);
 		when(request.getRequestURL()).thenReturn("https://pitbulk.no-ip.org/newonelogin/demo1/index.php?acs");
 		settings.setStrict(false);
-		Auth auth3 = new Auth(settings, request, response);
+		BaseAuth auth3 = new BaseAuth(settings, request, response);
 		assertNull(auth3.getNameIdFormat());
 		auth3.processResponse();
 		assertTrue(auth3.isAuthenticated());
@@ -1059,7 +1059,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception
 	 *
-	 * @see com.onelogin.saml2.Auth#getNameIdNameQualifier
+	 * @see BaseAuth#getNameIdNameQualifier
 	 */
 	@Test
 	public void testGetNameIdNameQualifier() throws Exception {
@@ -1070,7 +1070,7 @@ public class AuthTest {
 		when(request.getRequestURL()).thenReturn("http://localhost:8080/java-saml-jspsample/acs.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertNull(auth.getNameIdNameQualifier());
 		auth.processResponse();
 		assertFalse(auth.isAuthenticated());
@@ -1079,7 +1079,7 @@ public class AuthTest {
 		
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response_with_namequalifier.xml.base64");
 		when(request.getParameter(eq("SAMLResponse"))).thenReturn(samlResponseEncoded);
-		Auth auth2 = new Auth(settings, request, response);
+		BaseAuth auth2 = new BaseAuth(settings, request, response);
 		assertNull(auth2.getNameIdNameQualifier());
 		auth2.processResponse();
 		assertTrue(auth2.isAuthenticated());
@@ -1091,7 +1091,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception
 	 *
-	 * @see com.onelogin.saml2.Auth#getNameIdSPNameQualifier
+	 * @see BaseAuth#getNameIdSPNameQualifier
 	 */
 	@Test
 	public void testGetNameIdSPNameQualifier() throws Exception {
@@ -1102,7 +1102,7 @@ public class AuthTest {
 		when(request.getRequestURL()).thenReturn("http://localhost:8080/java-saml-jspsample/acs.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertNull(auth.getNameIdSPNameQualifier());
 		auth.processResponse();
 		assertFalse(auth.isAuthenticated());
@@ -1111,7 +1111,7 @@ public class AuthTest {
 		
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response_with_namequalifier.xml.base64");
 		when(request.getParameter(eq("SAMLResponse"))).thenReturn(samlResponseEncoded);
-		Auth auth2 = new Auth(settings, request, response);
+		BaseAuth auth2 = new BaseAuth(settings, request, response);
 		assertNull(auth2.getNameIdSPNameQualifier());
 		auth2.processResponse();
 		assertTrue(auth2.isAuthenticated());
@@ -1137,7 +1137,7 @@ public class AuthTest {
 
 		expectedEx.expect(SettingsException.class);
 		expectedEx.expectMessage("Invalid settings: idp_cert_not_found_and_required");
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 	}
 
 	/**
@@ -1156,7 +1156,7 @@ public class AuthTest {
 		when(request.getRequestURL()).thenReturn("http://localhost:8080/java-saml-jspsample/acs.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 
 		expectedEx.expect(ValidationError.class);
 		expectedEx.expectMessage("SAML Response could not be processed");
@@ -1168,7 +1168,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception
 	 *
-	 * @see com.onelogin.saml2.Auth#getSessionIndex
+	 * @see BaseAuth#getSessionIndex
 	 */
 	@Test
 	public void testGetSessionIndex() throws Exception {
@@ -1179,7 +1179,7 @@ public class AuthTest {
 		when(request.getRequestURL()).thenReturn("http://localhost:8080/java-saml-jspsample/acs.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertNull(auth.getSessionIndex());
 		auth.processResponse();
 		assertFalse(auth.isAuthenticated());
@@ -1187,7 +1187,7 @@ public class AuthTest {
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
 		when(request.getParameter(eq("SAMLResponse"))).thenReturn(samlResponseEncoded);
-		Auth auth2 = new Auth(settings, request, response);
+		BaseAuth auth2 = new BaseAuth(settings, request, response);
 		assertNull(auth2.getSessionIndex());
 		auth2.processResponse();
 		assertTrue(auth2.isAuthenticated());
@@ -1203,7 +1203,7 @@ public class AuthTest {
 		when(request.getRequestURL()).thenReturn("http://localhost:8080/java-saml-jspsample/acs.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		auth.processResponse();
 
 		assertThat(auth.getLastAssertionId(), is("pfxb26bb203-4e9d-8e74-a46e-def275ff4c7b"));
@@ -1215,7 +1215,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception
 	 *
-	 * @see com.onelogin.saml2.Auth#getSessionExpiration
+	 * @see BaseAuth#getSessionExpiration
 	 */
 	@Test
 	public void testGetSessionExpiration() throws Exception {
@@ -1226,7 +1226,7 @@ public class AuthTest {
 		when(request.getRequestURL()).thenReturn("http://localhost:8080/java-saml-jspsample/acs.jsp");
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		assertNull(auth.getSessionExpiration());
 		auth.processResponse();
 		assertFalse(auth.isAuthenticated());
@@ -1234,7 +1234,7 @@ public class AuthTest {
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
 		when(request.getParameter(eq("SAMLResponse"))).thenReturn(samlResponseEncoded);
-		Auth auth2 = new Auth(settings, request, response);
+		BaseAuth auth2 = new BaseAuth(settings, request, response);
 		assertNull(auth2.getSessionExpiration());
 		auth2.processResponse();
 		assertTrue(auth2.isAuthenticated());
@@ -1250,7 +1250,7 @@ public class AuthTest {
 	 * @throws URISyntaxException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#login
+	 * @see BaseAuth#login
 	 */
 	@Test
 	public void testLogin() throws IOException, SettingsException, URISyntaxException, Error {
@@ -1263,7 +1263,7 @@ public class AuthTest {
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		settings.setAuthnRequestsSigned(false);
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		auth.login();
 		verify(response).sendRedirect(matches("https:\\/\\/pitbulk.no-ip.org\\/simplesaml\\/saml2\\/idp\\/SSOService.php\\?SAMLRequest=(.)*&RelayState=http%3A%2F%2Flocalhost%3A8080%2Finitial.jsp"));
 		assertThat(auth.getLastRequestId(), startsWith(Util.UNIQUE_ID_PREFIX));
@@ -1278,7 +1278,7 @@ public class AuthTest {
 	 * @throws URISyntaxException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#login
+	 * @see BaseAuth#login
 	 */
 	@Test
 	public void testLoginWithRelayState() throws IOException, SettingsException, URISyntaxException, Error {
@@ -1292,7 +1292,7 @@ public class AuthTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		settings.setAuthnRequestsSigned(false);
 
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		String relayState = "http://localhost:8080/expected.jsp";
 		auth.login(relayState);
 		verify(response).sendRedirect(matches("https:\\/\\/pitbulk.no-ip.org\\/simplesaml\\/saml2\\/idp\\/SSOService.php\\?SAMLRequest=(.)*&RelayState=http%3A%2F%2Flocalhost%3A8080%2Fexpected.jsp"));
@@ -1307,7 +1307,7 @@ public class AuthTest {
 	 * @throws URISyntaxException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#login
+	 * @see BaseAuth#login
 	 */
 	@Test
 	public void testLoginWithoutRelayState() throws IOException, SettingsException, URISyntaxException, Error {
@@ -1321,7 +1321,7 @@ public class AuthTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		settings.setAuthnRequestsSigned(false);
 
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		auth.login("");
 		final ArgumentCaptor<String> urlCaptor = ArgumentCaptor.forClass(String.class);
 		verify(response).sendRedirect(urlCaptor.capture());
@@ -1338,7 +1338,7 @@ public class AuthTest {
 	 * @throws URISyntaxException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#login
+	 * @see BaseAuth#login
 	 */
 	@Test
 	public void testLoginWithExtraParameters() throws IOException, SettingsException, URISyntaxException, Error {
@@ -1352,7 +1352,7 @@ public class AuthTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		settings.setAuthnRequestsSigned(false);
 
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		Map<String, String> extraParameters = new HashMap<String, String>();
 		extraParameters.put("parameter1", "xxx");
 		String target = auth.login("", new AuthnRequestParams(false, false, false), true, extraParameters);
@@ -1369,7 +1369,7 @@ public class AuthTest {
 	 * @throws URISyntaxException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#login
+	 * @see BaseAuth#login
 	 */
 	@Test
 	public void testLoginStay() throws IOException, SettingsException, URISyntaxException, Error {
@@ -1383,7 +1383,7 @@ public class AuthTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		settings.setAuthnRequestsSigned(false);
 
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		String target = auth.login("", new AuthnRequestParams(false, false, false), true);
 		assertThat(target, startsWith("https://pitbulk.no-ip.org/simplesaml/saml2/idp/SSOService.php?SAMLRequest="));
 		assertThat(target, not(containsString("&RelayState=")));
@@ -1403,7 +1403,7 @@ public class AuthTest {
 	 * @throws URISyntaxException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#login
+	 * @see BaseAuth#login
 	 */
 	@Test
 	public void testLoginSubject() throws IOException, SettingsException, URISyntaxException, Error {
@@ -1416,7 +1416,7 @@ public class AuthTest {
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		String target = auth.login("", new AuthnRequestParams(false, false, false), true);
 		assertThat(target, startsWith("http://idp.example.com/simplesaml/saml2/idp/SSOService.php?SAMLRequest="));
 		String authNRequestStr = getSAMLRequestFromURL(target);
@@ -1432,7 +1432,7 @@ public class AuthTest {
 		assertThat(authNRequestStr, containsString("<saml:SubjectConfirmation Method=\"urn:oasis:names:tc:SAML:2.0:cm:bearer\">"));
 
 		settings = new SettingsBuilder().fromFile("config/config.emailaddressformat.properties").build();
-		auth = new Auth(settings, request, response);
+		auth = new BaseAuth(settings, request, response);
 		target = auth.login("", new AuthnRequestParams(false, false, false, "testuser@example.com"), true);
 		assertThat(target, startsWith("http://idp.example.com/simplesaml/saml2/idp/SSOService.php?SAMLRequest="));
 		authNRequestStr = getSAMLRequestFromURL(target);
@@ -1452,7 +1452,7 @@ public class AuthTest {
 	 * @throws URISyntaxException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#login
+	 * @see BaseAuth#login
 	 */
 	@Test
 	public void testLoginSignedFail() throws IOException, SettingsException, URISyntaxException, Error {
@@ -1469,7 +1469,7 @@ public class AuthTest {
 
 		expectedEx.expect(SettingsException.class);
 		expectedEx.expectMessage("Invalid settings: sp_cert_not_found_and_required");
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 	}
 	
 	/**
@@ -1481,7 +1481,7 @@ public class AuthTest {
 	 * @throws URISyntaxException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#login
+	 * @see BaseAuth#login
 	 */
 	@Test
 	public void testLoginSigned() throws IOException, SettingsException, URISyntaxException, Error {
@@ -1495,13 +1495,13 @@ public class AuthTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		settings.setAuthnRequestsSigned(true);
 		settings.setSignatureAlgorithm(Constants.RSA_SHA1);
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		String relayState = "http://localhost:8080/expected.jsp";
 		auth.login(relayState);
 		verify(response).sendRedirect(matches("https:\\/\\/pitbulk.no-ip.org\\/simplesaml\\/saml2\\/idp\\/SSOService.php\\?SigAlg=http%3A%2F%2Fwww.w3.org%2F2000%2F09%2Fxmldsig%23rsa-sha1&SAMLRequest=(.)*&RelayState=http%3A%2F%2Flocalhost%3A8080%2Fexpected.jsp&Signature=(.)*"));
 
 		settings.setSignatureAlgorithm(Constants.SHA512);
-		Auth auth2 = new Auth(settings, request, response);
+		BaseAuth auth2 = new BaseAuth(settings, request, response);
 		auth2.login(relayState);
 		verify(response).sendRedirect(matches("https:\\/\\/pitbulk.no-ip.org\\/simplesaml\\/saml2\\/idp\\/SSOService.php\\?SigAlg=http%3A%2F%2Fwww.w3.org%2F2000%2F09%2Fxmldsig%23rsa-sha1&SAMLRequest=(.)*&RelayState=http%3A%2F%2Flocalhost%3A8080%2Fexpected.jsp&Signature=(.)*"));
 	}
@@ -1515,7 +1515,7 @@ public class AuthTest {
 	 * @throws XMLEntityException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#logout
+	 * @see BaseAuth#logout
 	 */
 	@Test
 	public void testLogout() throws IOException, SettingsException, XMLEntityException, Error {
@@ -1528,7 +1528,7 @@ public class AuthTest {
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		settings.setLogoutRequestSigned(false);
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		auth.logout();
 
 		verify(response).sendRedirect(matches("https:\\/\\/pitbulk.no-ip.org\\/simplesaml\\/saml2\\/idp\\/SingleLogoutService.php\\?SAMLRequest=(.)*&RelayState=http%3A%2F%2Flocalhost%3A8080%2Finitial.jsp"));
@@ -1544,7 +1544,7 @@ public class AuthTest {
 	 * @throws XMLEntityException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#logout
+	 * @see BaseAuth#logout
 	 */
 	@Test
 	public void testLogoutWithExtraParameters() throws IOException, SettingsException, XMLEntityException, Error {
@@ -1557,7 +1557,7 @@ public class AuthTest {
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		settings.setLogoutRequestSigned(false);
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		Map<String, String> extraParameters = new HashMap<String, String>();
 		extraParameters.put("parameter1", "xxx");
 		String target = auth.logout("", new LogoutRequestParams(), true, extraParameters);
@@ -1574,7 +1574,7 @@ public class AuthTest {
 	 * @throws XMLEntityException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#logout
+	 * @see BaseAuth#logout
 	 */
 	@Test
 	public void testLogoutWithRelayState() throws IOException, SettingsException, XMLEntityException, Error {
@@ -1588,7 +1588,7 @@ public class AuthTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		settings.setLogoutRequestSigned(false);
 
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		String relayState = "http://localhost:8080/expected.jsp";
 		auth.logout(relayState);
 
@@ -1604,7 +1604,7 @@ public class AuthTest {
 	 * @throws XMLEntityException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#logout
+	 * @see BaseAuth#logout
 	 */
 	@Test
 	public void testLogoutWithoutRelayState() throws IOException, SettingsException, XMLEntityException, Error {
@@ -1618,7 +1618,7 @@ public class AuthTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		settings.setLogoutRequestSigned(false);
 
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		auth.logout("");
 
 		final ArgumentCaptor<String> urlCaptor = ArgumentCaptor.forClass(String.class);
@@ -1636,7 +1636,7 @@ public class AuthTest {
 	 * @throws XMLEntityException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#logout
+	 * @see BaseAuth#logout
 	 */
 	@Test
 	public void testLogoutStay() throws IOException, SettingsException, XMLEntityException, Error {
@@ -1650,7 +1650,7 @@ public class AuthTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		settings.setLogoutRequestSigned(false);
 
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		String target = auth.logout("", new LogoutRequestParams(), true);
 		assertThat(target, startsWith("https://pitbulk.no-ip.org/simplesaml/saml2/idp/SingleLogoutService.php?SAMLRequest="));
 		assertThat(target, not(containsString("&RelayState=")));
@@ -1670,7 +1670,7 @@ public class AuthTest {
 	 * @throws XMLEntityException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#logout
+	 * @see BaseAuth#logout
 	 */
 	@Test
 	public void testLogoutSignedFail() throws IOException, SettingsException, XMLEntityException, Error {
@@ -1687,7 +1687,7 @@ public class AuthTest {
 
 		expectedEx.expect(SettingsException.class);
 		expectedEx.expectMessage("Invalid settings: sp_cert_not_found_and_required");
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 	}
 	
 	/**
@@ -1699,7 +1699,7 @@ public class AuthTest {
 	 * @throws XMLEntityException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#logout
+	 * @see BaseAuth#logout
 	 */
 	@Test
 	public void testLogoutSigned() throws IOException, SettingsException, XMLEntityException, Error {
@@ -1713,13 +1713,13 @@ public class AuthTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		settings.setLogoutRequestSigned(true);
 		settings.setSignatureAlgorithm(Constants.RSA_SHA1);
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		String relayState = "http://localhost:8080/expected.jsp";
 		auth.logout(relayState);
 		verify(response).sendRedirect(matches("https:\\/\\/pitbulk.no-ip.org\\/simplesaml\\/saml2\\/idp\\/SingleLogoutService.php\\?SigAlg=http%3A%2F%2Fwww.w3.org%2F2000%2F09%2Fxmldsig%23rsa-sha1&SAMLRequest=(.)*&RelayState=http%3A%2F%2Flocalhost%3A8080%2Fexpected.jsp&Signature=(.)*"));
 
 		settings.setSignatureAlgorithm(Constants.SHA512);
-		Auth auth2 = new Auth(settings, request, response);
+		BaseAuth auth2 = new BaseAuth(settings, request, response);
 		auth2.logout(relayState);
 		verify(response).sendRedirect(matches("https:\\/\\/pitbulk.no-ip.org\\/simplesaml\\/saml2\\/idp\\/SingleLogoutService.php\\?SigAlg=http%3A%2F%2Fwww.w3.org%2F2000%2F09%2Fxmldsig%23rsa-sha1&SAMLRequest=(.)*&RelayState=http%3A%2F%2Flocalhost%3A8080%2Fexpected.jsp&Signature=(.)*"));
 	}
@@ -1733,7 +1733,7 @@ public class AuthTest {
 	 * @throws SettingsException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#buildRequestSignature
+	 * @see BaseAuth#buildRequestSignature
 	 */
 	@Test
 	public void testBuildRequestSignatureInvalidSP() throws URISyntaxException, IOException, SettingsException, Error {
@@ -1741,7 +1741,7 @@ public class AuthTest {
 		String relayState = "http://example.com";
 		String signAlgorithm = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
 
-		Auth auth = new Auth("config/config.invalidspcertstring.properties");
+		BaseAuth auth = new BaseAuth("config/config.invalidspcertstring.properties");
 		
 		expectedEx.expect(SettingsException.class);
 		expectedEx.expectMessage("Trying to sign the SAMLRequest but can't load the SP private key");
@@ -1757,7 +1757,7 @@ public class AuthTest {
 	 * @throws SettingsException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#buildRequestSignature
+	 * @see BaseAuth#buildRequestSignature
 	 */
 	@Test
 	public void testBuildRequestSignatureRsaSha1() throws URISyntaxException, IOException, SettingsException, Error {
@@ -1765,7 +1765,7 @@ public class AuthTest {
 		String relayState = "http://example.com";
 		String signAlgorithm = Constants.RSA_SHA1;
 
-		Auth auth = new Auth("config/config.certstring.properties");
+		BaseAuth auth = new BaseAuth("config/config.certstring.properties");
 		String signature = auth.buildRequestSignature(deflatedEncodedAuthNRequest, relayState, signAlgorithm);
 		String expectedSignature = "FqFJi9aIut9Gp/SUyLcj4ewwnU4ajjhfWpdr8pc4w//9m0QB1hzDUHR7YmKxXB6rrRuX7iy9CJy+o7zzhz2pTr0PHHE9mvFPsyk/mas9e2ZGUeLS2OzMPHYwJCdOg4uLrbqybWGKy0AgoDqTpAfpkQVxuunVKTj4pOPXGx156Oo=";
 		assertEquals(expectedSignature, signature);
@@ -1783,7 +1783,7 @@ public class AuthTest {
 	 * @throws SettingsException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#buildRequestSignature
+	 * @see BaseAuth#buildRequestSignature
 	 */
 	@Test(expected=IllegalArgumentException.class)
 	public void testBuildRequestSignatureDsaSha1() throws URISyntaxException, IOException, SettingsException, Error {
@@ -1791,7 +1791,7 @@ public class AuthTest {
 		String relayState = "http://example.com";
 		String signAlgorithm = Constants.DSA_SHA1;
 
-		Auth auth = new Auth("config/config.certstring.properties");
+		BaseAuth auth = new BaseAuth("config/config.certstring.properties");
 		String signature = auth.buildRequestSignature(deflatedEncodedAuthNRequest, relayState, signAlgorithm);
 	}
 	
@@ -1804,7 +1804,7 @@ public class AuthTest {
 	 * @throws SettingsException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#buildRequestSignature
+	 * @see BaseAuth#buildRequestSignature
 	 */
 	@Test
 	public void testBuildRequestSignatureRsaSha256() throws URISyntaxException, IOException, SettingsException, Error {
@@ -1812,7 +1812,7 @@ public class AuthTest {
 		String relayState = "http://example.com";
 		String signAlgorithm = Constants.RSA_SHA256;
 
-		Auth auth = new Auth("config/config.certstring.properties");
+		BaseAuth auth = new BaseAuth("config/config.certstring.properties");
 		String signature = auth.buildRequestSignature(deflatedEncodedAuthNRequest, relayState, signAlgorithm);
 		String expectedSignature = "PJoiwvBgKnRefzaYMaPqOTvlia7EhFoRrc+tFlJCi557VEpG0oY1x8YTmkOxC+oI0zWyQ0RiXA65q7hv1xyYgGnSFdMKr5s+qeD4+1BjPxEGwXVU6+gTX0gg2+UL+1o4YpoVTQ1aKSO85uyBEGO20WnK2zETuGA/Wgl1VBSxNSw=";
 		assertEquals(expectedSignature, signature);
@@ -1827,7 +1827,7 @@ public class AuthTest {
 	 * @throws SettingsException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#buildRequestSignature
+	 * @see BaseAuth#buildRequestSignature
 	 */
 	@Test
 	public void testBuildRequestSignatureRsaSha384() throws URISyntaxException, IOException, SettingsException, Error {
@@ -1835,7 +1835,7 @@ public class AuthTest {
 		String relayState = "http://example.com";
 		String signAlgorithm = Constants.RSA_SHA384;
 
-		Auth auth = new Auth("config/config.certstring.properties");
+		BaseAuth auth = new BaseAuth("config/config.certstring.properties");
 		String signature = auth.buildRequestSignature(deflatedEncodedAuthNRequest, relayState, signAlgorithm);
 		String expectedSignature = "rO7eswxuPsk/QPDLaZRHziTx8ndVXMDMfEsJI6ZSQDqVo0ZaHgOJJ8GC8UWcJrGg2qFrsl2mTozMh1Iqi5oBb2GSWTEC/WRAb/qnNi/02yLrLtoop1YfXb7yl0StpXoM0MwWeoPBroEyqdK+qcu2eWSOwrogffepVfcgghtUwo0=";
 		assertEquals(expectedSignature, signature);
@@ -1850,7 +1850,7 @@ public class AuthTest {
 	 * @throws SettingsException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#buildRequestSignature
+	 * @see BaseAuth#buildRequestSignature
 	 */
 	@Test
 	public void testBuildRequestSignatureRsaSha512() throws URISyntaxException, IOException, SettingsException, Error {
@@ -1858,7 +1858,7 @@ public class AuthTest {
 		String relayState = "http://example.com";		
 		String signAlgorithm = Constants.RSA_SHA512;
 
-		Auth auth = new Auth("config/config.certstring.properties");
+		BaseAuth auth = new BaseAuth("config/config.certstring.properties");
 		String signature = auth.buildRequestSignature(deflatedEncodedAuthNRequest, relayState, signAlgorithm);
 		String expectedSignature = "HbaAEGjXBtgvJA+JkZ74maWV/61SqgDd8gw2FmSziiMXyCV62KDA1BoSn/91/8yNepqpP9JQk+1VKnQxNpL1NgQuy/mWmXc/JseNT0UQ4Uy5Mp1QfMMBDM9hs+cfseCYr3aJJumlpjZ8xS2Oou1e4y5g8ZWfaXHJ86N+IaywcOI=";
 		assertEquals(expectedSignature, signature);
@@ -1873,7 +1873,7 @@ public class AuthTest {
 	 * @throws SettingsException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#buildResponseSignature
+	 * @see BaseAuth#buildResponseSignature
 	 */
 	@Test
 	public void testBuildResponseSignatureRsaSha1() throws URISyntaxException, IOException, SettingsException, Error {
@@ -1881,7 +1881,7 @@ public class AuthTest {
 		String relayState = "http://example.com";
 		String signAlgorithm = Constants.RSA_SHA1;
 
-		Auth auth = new Auth("config/config.certstring.properties");
+		BaseAuth auth = new BaseAuth("config/config.certstring.properties");
 		String signature = auth.buildResponseSignature(deflatedEncodedLogoutResponse, relayState, signAlgorithm);
 		String expectedSignature = "aCaiL+HwDdYMbzfEZugqqce87LBodp968USja0j8dsTzOdi6Cwc3emae/974ilUraRG19iggMVVe1XX+Y8PgxQ3iKsAVxyjZnlrArNp1ofSXgDvIqJi0EILOwHFC5Y6XUlsGLrFePmv8GfCxk0fKeVZSscfQTuxSMop6DNJ4lpQ=";
 		assertEquals(expectedSignature, signature);
@@ -1899,7 +1899,7 @@ public class AuthTest {
 	 * @throws SettingsException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#buildResponseSignature
+	 * @see BaseAuth#buildResponseSignature
 	 */
 	@Test(expected=IllegalArgumentException.class)
 	public void testBuildResponseSignatureDsaSha1() throws URISyntaxException, IOException, SettingsException, Error {
@@ -1907,7 +1907,7 @@ public class AuthTest {
 		String relayState = "http://example.com";
 		String signAlgorithm = Constants.DSA_SHA1;
 
-		Auth auth = new Auth("config/config.certstring.properties");
+		BaseAuth auth = new BaseAuth("config/config.certstring.properties");
 		String signature = auth.buildResponseSignature(deflatedEncodedLogoutResponse, relayState, signAlgorithm);
 	}
 	
@@ -1920,7 +1920,7 @@ public class AuthTest {
 	 * @throws SettingsException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#buildResponseSignature
+	 * @see BaseAuth#buildResponseSignature
 	 */
 	@Test
 	public void testBuildResponseSignatureRsaSha256() throws URISyntaxException, IOException, SettingsException, Error {
@@ -1928,7 +1928,7 @@ public class AuthTest {
 		String relayState = "http://example.com";
 		String signAlgorithm = Constants.RSA_SHA256;
 
-		Auth auth = new Auth("config/config.certstring.properties");
+		BaseAuth auth = new BaseAuth("config/config.certstring.properties");
 		String signature = auth.buildResponseSignature(deflatedEncodedLogoutResponse, relayState, signAlgorithm);
 		String expectedSignature = "XcEbaZ6BsmaHwDedzLu/t1lKr3I2Qu4ctIZKqz8OFSPGoZh40gLIPX4RBl71Fv6uFdf9xCyXxI27xoC1CV23xNZsWjK89502xcy3vPQvTWo03r9WA92Gu1+/d1JIpE5xX2xBBjLlOxwdi/aYhTHtzo0PChI2zjL5nkziM/uIv2E=";
 		assertEquals(expectedSignature, signature);
@@ -1943,7 +1943,7 @@ public class AuthTest {
 	 * @throws SettingsException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#buildResponseSignature
+	 * @see BaseAuth#buildResponseSignature
 	 */
 	@Test
 	public void testBuildResponseSignatureRsaSha384() throws URISyntaxException, IOException, SettingsException, Error {
@@ -1951,7 +1951,7 @@ public class AuthTest {
 		String relayState = "http://example.com";
 		String signAlgorithm = Constants.RSA_SHA384;
 
-		Auth auth = new Auth("config/config.certstring.properties");
+		BaseAuth auth = new BaseAuth("config/config.certstring.properties");
 		String signature = auth.buildResponseSignature(deflatedEncodedLogoutResponse, relayState, signAlgorithm);
 		String expectedSignature = "R+maoS+UmFkiPu0kkwqz2WnkPfMA9upqWVwvVhTQvhrmmc3Gcfm77cAyjnDilFYwKx4xfQhO9PTqd0zviPRx8F+9VaiVKrmEloKfQuHGB1IjdtP8S8X9YRk+dXoegZAFvr9lmrcB9qP6xn1QW3NeMLgRCvWSWa82CBtrvT9K5Ko=";
 		assertEquals(expectedSignature, signature);
@@ -1966,7 +1966,7 @@ public class AuthTest {
 	 * @throws SettingsException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#buildResponseSignature
+	 * @see BaseAuth#buildResponseSignature
 	 */
 	@Test
 	public void testBuildResponseSignatureRsaSha512() throws URISyntaxException, IOException, SettingsException, Error {
@@ -1974,7 +1974,7 @@ public class AuthTest {
 		String relayState = "http://example.com";		
 		String signAlgorithm = Constants.RSA_SHA512;
 
-		Auth auth = new Auth("config/config.certstring.properties");
+		BaseAuth auth = new BaseAuth("config/config.certstring.properties");
 		String signature = auth.buildResponseSignature(deflatedEncodedLogoutResponse, relayState, signAlgorithm);
 		String expectedSignature = "FUxepHZ0j7YWbZYrbXsgebGg37Ne4d7grp/Jdk8j/vvgbOplyyhgsEUzt5K9+7B3OGM+rN5YFHcz5EbCtBfXugy+RJLa893Ih6oKr0wRoOh3/79EGKmnzR1aUyDguhNUuQW0AG3/Fz+CzrKL9HK6+im6F/6YwOVRT7FzBsZxtXs=";
 		assertEquals(expectedSignature, signature);
@@ -1988,7 +1988,7 @@ public class AuthTest {
 	 * @throws SettingsException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#buildSignature
+	 * @see BaseAuth#buildSignature
 	 */
 	@Test
 	public void testBuildSignature() throws URISyntaxException, IOException, SettingsException, Error {
@@ -1997,7 +1997,7 @@ public class AuthTest {
 		String relayState = "http://example.com";		
 		String signAlgorithm = Constants.RSA_SHA1;
 
-		Auth auth = new Auth("config/config.certstring.properties");
+		BaseAuth auth = new BaseAuth("config/config.certstring.properties");
 		String signature = auth.buildResponseSignature(deflatedEncodedAuthNRequest, relayState, signAlgorithm);
 		String expectedSignature = "Cn5jkeZLdsMh4P+ALWfywHe8lADcRPKBYabYuenagBvp1CIYUNsN5T4oP+rtY+8ia09N5Xbi7wCW6hX5ZDihBi/AHznnjRRKdYGXOL9Oe/cNE48bqQRRyTMN27zBEXU9yKysOqTwhDXWDxXXzXafYULr+cTSSXTmllt42o9t/60=";
 		assertEquals(expectedSignature, signature);
@@ -2051,7 +2051,7 @@ public class AuthTest {
 	 * @throws SettingsException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#getLastRequestXML
+	 * @see BaseAuth#getLastRequestXML
 	 */
 	@Test
 	public void testGetLastAuthNRequest() throws IOException, SettingsException, Error {
@@ -2059,7 +2059,7 @@ public class AuthTest {
 		HttpResponse response = mock(HttpResponse.class);
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		String targetSSOURL = auth.login(null, new AuthnRequestParams(false, false, false), true);
 		String authNRequestXML = auth.getLastRequestXML();
 		assertThat(targetSSOURL, containsString(Util.urlEncoder(Util.deflatedBase64encoded(authNRequestXML))));
@@ -2077,7 +2077,7 @@ public class AuthTest {
 	 * @throws XMLEntityException
 	 * @throws Error
 	 *
-	 * @see com.onelogin.saml2.Auth#getLastRequestXML
+	 * @see BaseAuth#getLastRequestXML
 	 */
 	@Test
 	public void testGetLastLogoutRequestSent() throws IOException, SettingsException, XMLEntityException, Error {
@@ -2085,7 +2085,7 @@ public class AuthTest {
 		HttpResponse response = mock(HttpResponse.class);
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
 
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		String targetSLOURL = auth.logout(null, new LogoutRequestParams(), true);
 		String logoutRequestXML = auth.getLastRequestXML();
 		assertThat(targetSLOURL, containsString(Util.urlEncoder(Util.deflatedBase64encoded(logoutRequestXML))));
@@ -2100,7 +2100,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception 
 	 *
-	 * @see com.onelogin.saml2.Auth#getLastRequestXML
+	 * @see BaseAuth#getLastRequestXML
 	 */
 	@Test
 	public void testGetLastLogoutRequestReceived() throws Exception {
@@ -2111,7 +2111,7 @@ public class AuthTest {
 		when(request.getParameter(eq("SAMLRequest"))).thenReturn(samlRequestEncoded);
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		auth.processSLO();
 		String logoutRequestXML =  auth.getLastRequestXML();
 		assertThat(logoutRequestXML, containsString("<samlp:LogoutRequest"));
@@ -2123,7 +2123,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception
 	 * 
-	 * @see com.onelogin.saml2.Auth#getLastResponseXML
+	 * @see BaseAuth#getLastResponseXML
 	 */
 	@Test
 	public void testGetLastSAMLResponse() throws Exception {
@@ -2134,14 +2134,14 @@ public class AuthTest {
 		when(request.getParameter(eq("SAMLResponse"))).thenReturn(samlResponseEncoded);
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		auth.processResponse();
 		String samlResponseXML =  auth.getLastResponseXML();
 		assertThat(samlResponseXML, containsString("<samlp:Response"));
 		
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_encrypted_assertion.xml.base64");
 		when(request.getParameter(eq("SAMLResponse"))).thenReturn(samlResponseEncoded);
-		Auth auth2 = new Auth(settings, request, response);
+		BaseAuth auth2 = new BaseAuth(settings, request, response);
 		auth2.processResponse();
 		samlResponseXML =  auth2.getLastResponseXML();
 		assertThat(samlResponseXML, containsString("<samlp:Response"));
@@ -2154,7 +2154,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception 
 	 *
-	 * @see com.onelogin.saml2.Auth#getLastResponseXML
+	 * @see BaseAuth#getLastResponseXML
 	 */
 	@Test
 	public void testGetLastLogoutResponseSent() throws Exception {
@@ -2166,7 +2166,7 @@ public class AuthTest {
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		settings.setStrict(false);
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		auth.processSLO(true, null);
 		String logoutResponseXML =  auth.getLastResponseXML();
 		assertThat(logoutResponseXML, containsString("<samlp:LogoutResponse"));
@@ -2178,7 +2178,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception 
 	 *
-	 * @see com.onelogin.saml2.Auth#getLastResponseXML
+	 * @see BaseAuth#getLastResponseXML
 	 */
 	@Test
 	public void testGetLastLogoutResponseReceived() throws Exception {
@@ -2189,7 +2189,7 @@ public class AuthTest {
 		when(request.getParameter(eq("SAMLResponse"))).thenReturn(samlResponseEncoded);
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		auth.processSLO();
 		String logoutResponseXML =  auth.getLastResponseXML();
 		assertThat(logoutResponseXML, containsString("<samlp:LogoutResponse"));
@@ -2203,7 +2203,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception 
 	 *
-	 * @see com.onelogin.saml2.Auth#setAuthnRequestFactory(com.onelogin.saml2.factory.SamlOutgoingMessageFactory)
+	 * @see BaseAuth#setAuthnRequestFactory(com.onelogin.saml2.factory.SamlOutgoingMessageFactory)
 	 */
 	@Test(expected = FactoryInvokedException.class)
 	public void testAuthnRequestFactory() throws Exception {
@@ -2222,7 +2222,7 @@ public class AuthTest {
 			}
 		}
 		
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		auth.setSamlMessageFactory(new SamlMessageFactory() {
 			@Override
 			public AuthnRequest createAuthnRequest(Saml2Settings settings, AuthnRequestParams params) {
@@ -2237,7 +2237,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception 
 	 *
-	 * @see com.onelogin.saml2.Auth#setSamlMessageFactory(SamlMessageFactory)
+	 * @see BaseAuth#setSamlMessageFactory(SamlMessageFactory)
 	 */
 	@Test(expected = FactoryInvokedException.class)
 	public void testSamlResponseFactory() throws Exception {
@@ -2259,7 +2259,7 @@ public class AuthTest {
 			}
 		}
 		
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		auth.setSamlMessageFactory(new SamlMessageFactory() {
 			@Override
 			public SamlResponse createSamlResponse(Saml2Settings settings, HttpRequest request) throws Exception {
@@ -2274,7 +2274,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception 
 	 *
-	 * @see com.onelogin.saml2.Auth#setSamlMessageFactory(SamlMessageFactory)
+	 * @see BaseAuth#setSamlMessageFactory(SamlMessageFactory)
 	 */
 	@Test(expected = FactoryInvokedException.class)
 	public void testOutgoingLogoutRequestFactory() throws Exception {
@@ -2295,7 +2295,7 @@ public class AuthTest {
 			
 		}
 		
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		auth.setSamlMessageFactory(new SamlMessageFactory() {
 			@Override
 			public LogoutRequest createOutgoingLogoutRequest(Saml2Settings settings, LogoutRequestParams params) {
@@ -2310,7 +2310,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception 
 	 *
-	 * @see com.onelogin.saml2.Auth#setSamlMessageFactory(SamlMessageFactory)
+	 * @see BaseAuth#setSamlMessageFactory(SamlMessageFactory)
 	 */
 	@Test(expected = FactoryInvokedException.class)
 	public void testIncomingLogoutRequestFactory() throws Exception {
@@ -2333,7 +2333,7 @@ public class AuthTest {
 			
 		}
 		
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		auth.setSamlMessageFactory(new SamlMessageFactory() {
 			@Override
 			public LogoutRequest createIncomingLogoutRequest(Saml2Settings settings, HttpRequest request)
@@ -2349,7 +2349,7 @@ public class AuthTest {
 	 *
 	 * @throws Exception 
 	 *
-	 * @see com.onelogin.saml2.Auth#setSamlMessageFactory(SamlMessageFactory)
+	 * @see BaseAuth#setSamlMessageFactory(SamlMessageFactory)
 	 */
 	@Test(expected = FactoryInvokedException.class)
 	public void testOutgoingLogoutResponseFactory() throws Exception {
@@ -2376,7 +2376,7 @@ public class AuthTest {
 			
 		}
 		
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		auth.setSamlMessageFactory(new SamlMessageFactory() {
 			@Override
 			public LogoutResponse createOutgoingLogoutResponse(Saml2Settings settings,
@@ -2415,7 +2415,7 @@ public class AuthTest {
 			
 		}
 		
-		Auth auth = new Auth(settings, request, response);
+		BaseAuth auth = new BaseAuth(settings, request, response);
 		auth.setSamlMessageFactory(new SamlMessageFactory() {
 			@Override
 			public LogoutResponse createIncomingLogoutResponse(Saml2Settings settings, HttpRequest request) {

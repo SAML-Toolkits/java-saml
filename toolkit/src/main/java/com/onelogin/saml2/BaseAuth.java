@@ -49,11 +49,12 @@ import com.onelogin.saml2.util.Util;
  *
  * This is stateful and not thread-safe, you should create a new instance for each request/response.
  */
-public class Auth {
+public class BaseAuth {
+
 	/**
 	 * Private property to construct a logger for this class.
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(Auth.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(BaseAuth.class);
 
 	/**
 	 * Settings data.
@@ -179,7 +180,7 @@ public class Auth {
 	 * @throws SettingsException
 	 * @throws Error
 	 */
-	public Auth() throws IOException, SettingsException, Error {
+	public BaseAuth() throws IOException, SettingsException, Error {
 		this(new SettingsBuilder().fromFile("onelogin.saml.properties").build(), null, null);
 	}
 
@@ -192,7 +193,7 @@ public class Auth {
 	 * @throws SettingsException
 	 * @throws Error
 	 */
-	public Auth(KeyStoreSettings keyStoreSetting) throws IOException, SettingsException, Error {
+	public BaseAuth(KeyStoreSettings keyStoreSetting) throws IOException, SettingsException, Error {
 		this("onelogin.saml.properties", keyStoreSetting);
 	}
 
@@ -205,7 +206,7 @@ public class Auth {
 	 * @throws SettingsException
 	 * @throws Error
 	 */
-	public Auth(String filename) throws IOException, SettingsException, Error {
+	public BaseAuth(String filename) throws IOException, SettingsException, Error {
 		this(filename, null, null, null);
 	}
 
@@ -219,7 +220,7 @@ public class Auth {
 	 * @throws SettingsException
 	 * @throws Error
 	 */
-	public Auth(String filename, KeyStoreSettings keyStoreSetting)
+	public BaseAuth(String filename, KeyStoreSettings keyStoreSetting)
 			throws IOException, SettingsException, Error {
 		this(new SettingsBuilder().fromFile(filename, keyStoreSetting).build(), null, null);
 	}
@@ -234,7 +235,7 @@ public class Auth {
 	 * @throws SettingsException
 	 * @throws Error
 	 */
-	public Auth(HttpRequest request, HttpResponse response) throws IOException, SettingsException, Error {
+	public BaseAuth(HttpRequest request, HttpResponse response) throws IOException, SettingsException, Error {
 		this(new SettingsBuilder().fromFile("onelogin.saml.properties").build(), request, response);
 	}
 
@@ -249,7 +250,7 @@ public class Auth {
 	 * @throws SettingsException
 	 * @throws Error
 	 */
-	public Auth(KeyStoreSettings keyStoreSetting, HttpRequest request, HttpResponse response)
+	public BaseAuth(KeyStoreSettings keyStoreSetting, HttpRequest request, HttpResponse response)
 			throws IOException, SettingsException, Error {
 		this(new SettingsBuilder().fromFile("onelogin.saml.properties", keyStoreSetting).build(), request,
 				response);
@@ -266,7 +267,7 @@ public class Auth {
 	 * @throws IOException
 	 * @throws Error
 	 */
-	public Auth(String filename, HttpRequest request, HttpResponse response)
+	public BaseAuth(String filename, HttpRequest request, HttpResponse response)
 			throws SettingsException, IOException, Error {
 		this(filename, null, request, response);
 	}
@@ -283,8 +284,8 @@ public class Auth {
 	 * @throws IOException
 	 * @throws Error
 	 */
-	public Auth(String filename, KeyStoreSettings keyStoreSetting, HttpRequest request,
-			HttpResponse response) throws SettingsException, IOException, Error {
+	public BaseAuth(String filename, KeyStoreSettings keyStoreSetting, HttpRequest request,
+					HttpResponse response) throws SettingsException, IOException, Error {
 		this(new SettingsBuilder().fromFile(filename, keyStoreSetting).build(), request, response);
 	}
 
@@ -297,7 +298,7 @@ public class Auth {
 	 *
 	 * @throws SettingsException
 	 */
-	public Auth(Saml2Settings settings, HttpRequest request, HttpResponse response)
+	public BaseAuth(Saml2Settings settings, HttpRequest request, HttpResponse response)
 			throws SettingsException {
 		this.settings = settings;
 		this.request = request;
@@ -1647,7 +1648,7 @@ public class Auth {
 	}
 
 	/**
-	 * Sets the factory this {@link Auth} will use to create SAML messages.
+	 * Sets the factory this {@link BaseAuth} will use to create SAML messages.
 	 * <p>
 	 * This allows consumers to provide their own extension classes for SAML message
 	 * XML generation and/or processing.
@@ -1662,4 +1663,5 @@ public class Auth {
 	public void setSamlMessageFactory(final SamlMessageFactory samlMessageFactory) {
 		this.samlMessageFactory = samlMessageFactory != null ? samlMessageFactory : DEFAULT_SAML_MESSAGE_FACTORY;
 	}
+
 }
