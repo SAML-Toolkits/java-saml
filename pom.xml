@@ -14,7 +14,7 @@
                 <project.build.resourceEncoding>UTF-8</project.build.resourceEncoding>
 		<slf4jVersion>1.7.36</slf4jVersion>
 		<junitVersion>4.13.2</junitVersion>
-		<logbackVersion>1.2.12</logbackVersion>
+		<logbackVersion>1.2.13</logbackVersion>
 		<apacheCommonsLangVersion>3.13.0</apacheCommonsLangVersion>
 	</properties>
 
