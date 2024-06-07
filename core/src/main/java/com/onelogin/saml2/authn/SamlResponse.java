@@ -73,6 +73,11 @@ public class SamlResponse {
 	private Map<String,String> nameIdData = null;
 
 	/**
+	 * Context class (AuthnContextClassRef) in the response
+	 */
+	private String contextClass = null;
+
+	/**
 	 * URL of the current host + current view
 	 */
 	private String currentUrl;
@@ -88,7 +93,7 @@ public class SamlResponse {
 	private Exception validationException;
 
 	/**
-	 * The respone status code and messages
+	 * The response status code and messages
 	 */
 	private SamlResponseStatus responseStatus;
 
@@ -574,6 +579,18 @@ public class SamlResponse {
 			spNameQualifier = nameIdData.get("SPNameQualifier");
 		}
 		return spNameQualifier;
+	}
+
+	public String getContextClass() throws XPathExpressionException, ValidationError {
+		if (this.contextClass == null) {
+			NodeList nodes = this.queryAssertion("/saml:AuthnStatement/saml:AuthnContext/saml:AuthnContextClassRef");
+			switch(nodes.getLength()) {
+				case 0: break;	// None defined. There should be one, but no big deal if an IDP fails to provide it
+				case 1: this.contextClass = nodes.item(0).getTextContent(); break;
+				default: throw new ValidationError("Multiple AuthnContextClassRef found in the Assertion.", ValidationError.WRONG_NUMBER_OF_CONTEXT_CLASSES);
+			}
+		}
+		return this.contextClass;
 	}
 
 	/**

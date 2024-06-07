@@ -92,6 +92,11 @@ public class Auth {
 	private String nameidSPNameQualifier;
 
 	/**
+	 * AuthnContextClassRef - extracted from the AuthnStatement of the SAML Response
+	 */
+	private String contextClass;
+
+	/**
 	 * SessionIndex. When the user is logged, this stored it from the AuthnStatement of the SAML Response
 	 */
 	private String sessionIndex;
@@ -1209,6 +1214,7 @@ public class Auth {
 				nameidFormat = samlResponse.getNameIdFormat();
 				nameidNameQualifier = samlResponse.getNameIdNameQualifier();
 				nameidSPNameQualifier = samlResponse.getNameIdSPNameQualifier();
+				contextClass = samlResponse.getContextClass();
 				authenticated = true;
 				attributes = samlResponse.getAttributes();
 				sessionIndex = samlResponse.getSessionIndex();
@@ -1441,6 +1447,11 @@ public class Auth {
 	public final String getNameIdSPNameQualifier() {
 		return nameidSPNameQualifier;
 	}
+
+	/**
+	 * @return the context class (AuthnContextClassRef) of the assertion
+	 */
+	public String getContextClass() { return contextClass; }
 
 	/**
 	 * @return the SessionIndex of the assertion
