@@ -13,6 +13,7 @@ import java.util.Map;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import com.onelogin.saml2.http.HttpRequest;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,6 @@ import org.w3c.dom.NodeList;
 
 import com.onelogin.saml2.exception.ValidationError;
 import com.onelogin.saml2.exception.SettingsException;
-import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.util.Util;
 import com.onelogin.saml2.util.Constants;
@@ -593,7 +593,7 @@ public class LogoutRequest {
       /**
        * Returns the issue instant of the Logout Request Document.
        *
-       * @param samlLogoutRequestDocument
+       * @param samlLogoutRequestString
        * 				A DOMDocument object loaded from the SAML Logout Request.
        *
        * @return the issue instant of the Logout Request.

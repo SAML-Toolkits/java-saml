@@ -14,9 +14,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.onelogin.saml2.http.HttpRequestUtils;
+import com.onelogin.saml2.http.HttpResponseUtils;
+import com.onelogin.saml2.http.HttpRequest;
+import com.onelogin.saml2.http.HttpResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,14 +28,12 @@ import com.onelogin.saml2.authn.SamlResponse;
 import com.onelogin.saml2.exception.SettingsException;
 import com.onelogin.saml2.factory.SamlMessageFactory;
 import com.onelogin.saml2.exception.Error;
-import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.logout.LogoutRequest;
 import com.onelogin.saml2.logout.LogoutRequestParams;
 import com.onelogin.saml2.logout.LogoutResponse;
 import com.onelogin.saml2.logout.LogoutResponseParams;
 import com.onelogin.saml2.model.SamlResponseStatus;
 import com.onelogin.saml2.model.KeyStoreSettings;
-import com.onelogin.saml2.servlet.ServletUtils;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
 import com.onelogin.saml2.util.Constants;
@@ -50,11 +49,12 @@ import com.onelogin.saml2.util.Util;
  *
  * This is stateful and not thread-safe, you should create a new instance for each request/response.
  */
-public class Auth {
+public class BaseAuth {
+
 	/**
 	 * Private property to construct a logger for this class.
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(Auth.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(BaseAuth.class);
 
 	/**
 	 * Settings data.
@@ -62,14 +62,14 @@ public class Auth {
 	private Saml2Settings settings;
 
 	/**
-	 * HttpServletRequest object to be processed (Contains GET and POST parameters, session, ...).
+	 * HttpRequest object to be processed (Contains GET and POST parameters, session, ...).
 	 */
-	private HttpServletRequest request;
+	private HttpRequest request;
 
 	/**
-	 * HttpServletResponse object to be used (For example to execute the redirections).
+	 * HttpResponse object to be used (For example to execute the redirections).
 	 */
-	private HttpServletResponse response;
+	private HttpResponse response;
 
 	/**
 	 * NameID.
@@ -180,7 +180,7 @@ public class Auth {
 	 * @throws SettingsException
 	 * @throws Error
 	 */
-	public Auth() throws IOException, SettingsException, Error {
+	public BaseAuth() throws IOException, SettingsException, Error {
 		this(new SettingsBuilder().fromFile("onelogin.saml.properties").build(), null, null);
 	}
 
@@ -193,7 +193,7 @@ public class Auth {
 	 * @throws SettingsException
 	 * @throws Error
 	 */
-	public Auth(KeyStoreSettings keyStoreSetting) throws IOException, SettingsException, Error {
+	public BaseAuth(KeyStoreSettings keyStoreSetting) throws IOException, SettingsException, Error {
 		this("onelogin.saml.properties", keyStoreSetting);
 	}
 
@@ -206,7 +206,7 @@ public class Auth {
 	 * @throws SettingsException
 	 * @throws Error
 	 */
-	public Auth(String filename) throws IOException, SettingsException, Error {
+	public BaseAuth(String filename) throws IOException, SettingsException, Error {
 		this(filename, null, null, null);
 	}
 
@@ -220,7 +220,7 @@ public class Auth {
 	 * @throws SettingsException
 	 * @throws Error
 	 */
-	public Auth(String filename, KeyStoreSettings keyStoreSetting)
+	public BaseAuth(String filename, KeyStoreSettings keyStoreSetting)
 			throws IOException, SettingsException, Error {
 		this(new SettingsBuilder().fromFile(filename, keyStoreSetting).build(), null, null);
 	}
@@ -228,14 +228,14 @@ public class Auth {
 	/**
 	 * Initializes the SP SAML instance.
 	 *
-	 * @param request  HttpServletRequest object to be processed
-	 * @param response HttpServletResponse object to be used
+	 * @param request  HttpRequest object to be processed
+	 * @param response HttpResponse object to be used
 	 *
 	 * @throws IOException
 	 * @throws SettingsException
 	 * @throws Error
 	 */
-	public Auth(HttpServletRequest request, HttpServletResponse response) throws IOException, SettingsException, Error {
+	public BaseAuth(HttpRequest request, HttpResponse response) throws IOException, SettingsException, Error {
 		this(new SettingsBuilder().fromFile("onelogin.saml.properties").build(), request, response);
 	}
 
@@ -243,14 +243,14 @@ public class Auth {
 	 * Initializes the SP SAML instance.
 	 *
 	 * @param keyStoreSetting KeyStoreSettings is a KeyStore which have the Private/Public keys
-	 * @param request  HttpServletRequest object to be processed
-	 * @param response HttpServletResponse object to be used
+	 * @param request  HttpRequest object to be processed
+	 * @param response HttpResponse object to be used
 	 *
 	 * @throws IOException
 	 * @throws SettingsException
 	 * @throws Error
 	 */
-	public Auth(KeyStoreSettings keyStoreSetting, HttpServletRequest request, HttpServletResponse response)
+	public BaseAuth(KeyStoreSettings keyStoreSetting, HttpRequest request, HttpResponse response)
 			throws IOException, SettingsException, Error {
 		this(new SettingsBuilder().fromFile("onelogin.saml.properties", keyStoreSetting).build(), request,
 				response);
@@ -260,14 +260,14 @@ public class Auth {
 	 * Initializes the SP SAML instance.
 	 *
 	 * @param filename String Filename with the settings
-	 * @param request  HttpServletRequest object to be processed
-	 * @param response HttpServletResponse object to be used
+	 * @param request  HttpRequest object to be processed
+	 * @param response HttpResponse object to be used
 	 *
 	 * @throws SettingsException
 	 * @throws IOException
 	 * @throws Error
 	 */
-	public Auth(String filename, HttpServletRequest request, HttpServletResponse response)
+	public BaseAuth(String filename, HttpRequest request, HttpResponse response)
 			throws SettingsException, IOException, Error {
 		this(filename, null, request, response);
 	}
@@ -277,15 +277,15 @@ public class Auth {
 	 *
 	 * @param filename 			String Filename with the settings
 	 * @param keyStoreSetting 	KeyStoreSettings is a KeyStore which have the Private/Public keys
-	 * @param request  			HttpServletRequest object to be processed
-	 * @param response 			HttpServletResponse object to be used
+	 * @param request  			HttpRequest object to be processed
+	 * @param response 			HttpResponse object to be used
 	 *
 	 * @throws SettingsException
 	 * @throws IOException
 	 * @throws Error
 	 */
-	public Auth(String filename, KeyStoreSettings keyStoreSetting, HttpServletRequest request,
-			HttpServletResponse response) throws SettingsException, IOException, Error {
+	public BaseAuth(String filename, KeyStoreSettings keyStoreSetting, HttpRequest request,
+					HttpResponse response) throws SettingsException, IOException, Error {
 		this(new SettingsBuilder().fromFile(filename, keyStoreSetting).build(), request, response);
 	}
 
@@ -293,12 +293,12 @@ public class Auth {
 	 * Initializes the SP SAML instance.
 	 *
 	 * @param settings Saml2Settings object. Setting data
-	 * @param request  HttpServletRequest object to be processed
-	 * @param response HttpServletResponse object to be used
+	 * @param request  HttpRequest object to be processed
+	 * @param response HttpResponse object to be used
 	 *
 	 * @throws SettingsException
 	 */
-	public Auth(Saml2Settings settings, HttpServletRequest request, HttpServletResponse response)
+	public BaseAuth(Saml2Settings settings, HttpRequest request, HttpResponse response)
 			throws SettingsException {
 		this.settings = settings;
 		this.request = request;
@@ -625,7 +625,7 @@ public class Auth {
 		parameters.put("SAMLRequest", samlRequest);
 
 		if (relayState == null) {
-			relayState = ServletUtils.getSelfRoutedURLNoQuery(request);
+			relayState = HttpRequestUtils.getSelfRoutedURLNoQuery(request);
 		}
 
 		if (!relayState.isEmpty()) {
@@ -648,7 +648,7 @@ public class Auth {
 		if (!stay) {
 			LOGGER.debug("AuthNRequest sent to " + ssoUrl + " --> " + samlRequest);
 		}
-		return ServletUtils.sendRedirect(response, ssoUrl, parameters, stay);
+		return HttpResponseUtils.sendRedirect(response, ssoUrl, parameters, stay);
 	}
 
 	/**
@@ -795,7 +795,7 @@ public class Auth {
 		parameters.put("SAMLRequest", samlLogoutRequest);
 
 		if (relayState == null) {
-			relayState = ServletUtils.getSelfRoutedURLNoQuery(request);
+			relayState = HttpRequestUtils.getSelfRoutedURLNoQuery(request);
 		}
 
 		if (!relayState.isEmpty()) {
@@ -818,7 +818,7 @@ public class Auth {
 		if (!stay) {
 			LOGGER.debug("Logout request sent to " + sloUrl + " --> " + samlLogoutRequest);
 		}
-		return ServletUtils.sendRedirect(response, sloUrl, parameters, stay);
+		return HttpResponseUtils.sendRedirect(response, sloUrl, parameters, stay);
 	}
 
 	/**
@@ -1197,11 +1197,10 @@ public class Auth {
 	 */
 	public void processResponse(String requestId) throws Exception {
 		authenticated = false;
-		final HttpRequest httpRequest = ServletUtils.makeHttpRequest(this.request);
-		final String samlResponseParameter = httpRequest.getParameter("SAMLResponse");
+		final String samlResponseParameter = request.getParameter("SAMLResponse");
 
 		if (samlResponseParameter != null) {
-			SamlResponse samlResponse = samlMessageFactory.createSamlResponse(settings, httpRequest);
+			SamlResponse samlResponse = samlMessageFactory.createSamlResponse(settings, request);
 			lastResponse = samlResponse.getSAMLResponseXml();
 
 			if (samlResponse.isValid(requestId)) {
@@ -1268,13 +1267,11 @@ public class Auth {
 	 * @throws Exception
 	 */
 	public String processSLO(Boolean keepLocalSession, String requestId, Boolean stay) throws Exception {
-		final HttpRequest httpRequest = ServletUtils.makeHttpRequest(this.request);
-
-		final String samlRequestParameter = httpRequest.getParameter("SAMLRequest");
-		final String samlResponseParameter = httpRequest.getParameter("SAMLResponse");
+		final String samlRequestParameter = request.getParameter("SAMLRequest");
+		final String samlResponseParameter = request.getParameter("SAMLResponse");
 
 		if (samlResponseParameter != null) {
-			LogoutResponse logoutResponse = samlMessageFactory.createIncomingLogoutResponse(settings, httpRequest);
+			LogoutResponse logoutResponse = samlMessageFactory.createIncomingLogoutResponse(settings, request);
 			lastResponse = logoutResponse.getLogoutResponseXml();
 			if (!logoutResponse.isValid(requestId)) {
 				errors.add("invalid_logout_response");
@@ -1298,13 +1295,13 @@ public class Auth {
 					lastMessageIssueInstant = logoutResponse.getIssueInstant();
 					LOGGER.debug("processSLO success --> " + samlResponseParameter);
 					if (!keepLocalSession) {
-						request.getSession().invalidate();
+						request.invalidateSession();
 					}
 				}
 			}
 			return null;
 		} else if (samlRequestParameter != null) {
-			LogoutRequest logoutRequest = samlMessageFactory.createIncomingLogoutRequest(settings, httpRequest);
+			LogoutRequest logoutRequest = samlMessageFactory.createIncomingLogoutRequest(settings, request);
 			lastRequest = logoutRequest.getLogoutRequestXml();
 			if (!logoutRequest.isValid()) {
 				errors.add("invalid_logout_request");
@@ -1318,7 +1315,7 @@ public class Auth {
 				lastMessageIssueInstant = logoutRequest.getIssueInstant();
 				LOGGER.debug("processSLO success --> " + samlRequestParameter);
 				if (!keepLocalSession) {
-					request.getSession().invalidate();
+					request.invalidateSession();
 				}
 
 				String inResponseTo = logoutRequest.id;
@@ -1350,7 +1347,7 @@ public class Auth {
 				if (!stay) {
 					LOGGER.debug("Logout response sent to " + sloUrl + " --> " + samlLogoutResponse);
 				}
-				return ServletUtils.sendRedirect(response, sloUrl, parameters, stay);
+				return HttpResponseUtils.sendRedirect(response, sloUrl, parameters, stay);
 			}
 		} else {
 			errors.add("invalid_binding");
@@ -1651,7 +1648,7 @@ public class Auth {
 	}
 
 	/**
-	 * Sets the factory this {@link Auth} will use to create SAML messages.
+	 * Sets the factory this {@link BaseAuth} will use to create SAML messages.
 	 * <p>
 	 * This allows consumers to provide their own extension classes for SAML message
 	 * XML generation and/or processing.
@@ -1666,4 +1663,5 @@ public class Auth {
 	public void setSamlMessageFactory(final SamlMessageFactory samlMessageFactory) {
 		this.samlMessageFactory = samlMessageFactory != null ? samlMessageFactory : DEFAULT_SAML_MESSAGE_FACTORY;
 	}
+
 }

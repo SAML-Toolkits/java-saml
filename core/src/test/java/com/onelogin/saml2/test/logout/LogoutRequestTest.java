@@ -23,6 +23,8 @@ import javax.xml.xpath.XPathExpressionException;
 
 import java.security.PrivateKey;
 
+import com.onelogin.saml2.http.HttpRequest;
+import com.onelogin.saml2.http.TestHttpRequest;
 import org.w3c.dom.Document;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,7 +32,6 @@ import org.junit.rules.ExpectedException;
 
 import com.onelogin.saml2.logout.LogoutRequest;
 import com.onelogin.saml2.logout.LogoutRequestParams;
-import com.onelogin.saml2.http.HttpRequest;
 import com.onelogin.saml2.exception.XMLEntityException;
 import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.exception.SettingsException;
@@ -869,7 +870,7 @@ public class LogoutRequestTest {
 		//This signature is based on the query string above
 		String signature = "27tdJT0kmletQ/fSUhB6Y8L0S6Y7pcZlGFvOCCVcqZZDyxlZBaCfmLlDXhB3/oJrWRn8injiY44h1BnCsughYQjTGBWZi175J9HA/dYhMZ+IFw9V/oUrRTY8/o9kFQSIefhQcJoegY2BvJVDSKeqYg2mCcQnItyceLhS1eiEQy0=";
 
-		HttpRequest httpRequest = new HttpRequest(requestURL)
+		TestHttpRequest httpRequest = new TestHttpRequest(requestURL, queryString)
 				.addParameter("SAMLRequest", samlRequestEncoded)
 				.addParameter("RelayState", relayState)
 				.addParameter("SigAlg", sigAlg)
@@ -898,7 +899,7 @@ public class LogoutRequestTest {
 		//This signature is based on the query string above
 		String signatureNaiveEncoding = "j/qDRTzgQw3cMDkkSkBOShqxi3t9qJxYnrADqwAECnJ3Y+iYgT33C0l/Vy3+ooQkFRyObYJqg9o7iIcMdgV6CXxpa6itVIUAI2VJewsMjzvJ4OdpePeSx7+/umVPKCfMvffsELlqo/UgxsyRZh8NMLej0ojCB7bUfIMKsiU7e0c=";
 
-		HttpRequest httpRequest = new HttpRequest(requestURL, queryString)
+		TestHttpRequest httpRequest = new TestHttpRequest(requestURL, queryString)
 				.addParameter("SAMLRequest", samlRequestEncoded)
 				.addParameter("RelayState", relayState)
 				.addParameter("SigAlg", sigAlg)
@@ -928,7 +929,7 @@ public class LogoutRequestTest {
 		String sigAlg = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
 		String signature = "j/qDRTzgQw3cMDkkSkBOShqxi3t9qJxYnrADqwAECnJ3Y+iYgT33C0l/Vy3+ooQkFRyObYJqg9o7iIcMdgV6CXxpa6itVIUAI2VJewsMjzvJ4OdpePeSx7+/umVPKCfMvffsELlqo/UgxsyRZh8NMLej0ojCB7bUfIMKsiU7e0c=";
 
-		HttpRequest httpRequest = new HttpRequest(requestURL, (String)null)
+		TestHttpRequest httpRequest = new TestHttpRequest(requestURL, (String)null)
 						.addParameter("SAMLRequest", samlRequestEncoded)
 						.addParameter("RelayState", relayState)
 						.addParameter("SigAlg", sigAlg)
@@ -993,7 +994,7 @@ public class LogoutRequestTest {
 		String sigAlg = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
 		String signature = "XCwCyI5cs7WhiJlB5ktSlWxSBxv+6q2xT3c8L7dLV6NQG9LHWhN7gf8qNsahSXfCzA0Ey9dp5BQ0EdRvAk2DIzKmJY6e3hvAIEp1zglHNjzkgcQmZCcrkK9Czi2Y1WkjOwR/WgUTUWsGJAVqVvlRZuS3zk3nxMrLH6f7toyvuJc=";
 
-		HttpRequest httpRequest = new HttpRequest(requestURL, (String)null)
+		TestHttpRequest httpRequest = new TestHttpRequest(requestURL, (String)null)
 						.addParameter("SAMLRequest", samlRequestEncoded)
 						.addParameter("RelayState", relayState)
 						.addParameter("SigAlg", sigAlg)
@@ -1084,7 +1085,7 @@ public class LogoutRequestTest {
 	}
 
 	private static HttpRequest newHttpRequest(String requestURL, String samlRequestEncoded) {
-		return new HttpRequest(requestURL, (String)null).addParameter("SAMLRequest", samlRequestEncoded);
+		return new TestHttpRequest(requestURL, (String)null).addParameter("SAMLRequest", samlRequestEncoded);
 	}
 
 	/**
@@ -1092,7 +1093,7 @@ public class LogoutRequestTest {
 	 *
 	 * @throws Exception
 	 * 
-	 * @see com.onelogin.saml2.logout.LogoutRequest#postProcessXml
+	 * @see com.onelogin.saml2.logout.LogoutRequest#postProcessXml(String, LogoutRequestParams, Saml2Settings)
 	 */
 	@Test
 	public void testPostProcessXml() throws Exception {
