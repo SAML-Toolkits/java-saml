@@ -528,9 +528,11 @@ public class AuthTest {
 		Auth auth = new Auth(settings, request, response);
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getErrors().isEmpty());
+		assertNull(auth.getContextClass());
 		auth.processResponse();
 		assertFalse(auth.isAuthenticated());
 		assertTrue(auth.getAttributes().isEmpty());
+		assertNull(auth.getContextClass());
 
 		samlResponseEncoded = Util.getFileAsString("data/responses/valid_response.xml.base64");
 		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
@@ -564,6 +566,7 @@ public class AuthTest {
 		assertEquals(attrValues, auth2.getAttribute("uid"));
 		assertEquals(attrValues2, auth2.getAttribute("mail"));
 		assertEquals(attrValues3, auth2.getAttribute("eduPersonAffiliation"));
+		assertEquals("urn:oasis:names:tc:SAML:2.0:ac:classes:Password", auth2.getContextClass());
 		assertEquals(keys, auth2.getAttributesName());
 	}
 
