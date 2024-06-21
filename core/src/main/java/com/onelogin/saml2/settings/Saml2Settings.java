@@ -8,7 +8,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.onelogin.saml2.model.hsm.HSM;
 
@@ -17,6 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import com.onelogin.saml2.model.AssertionConsumerService;
 import com.onelogin.saml2.model.Contact;
 import com.onelogin.saml2.model.Organization;
 import com.onelogin.saml2.util.Constants;
@@ -40,8 +44,7 @@ public class Saml2Settings {
 
 	// SP
 	private String spEntityId = "";
-	private URL spAssertionConsumerServiceUrl = null;
-	private String spAssertionConsumerServiceBinding = Constants.BINDING_HTTP_POST;
+	private List<AssertionConsumerService> spAssertionConsumerServices = new ArrayList<>();
 	private URL spSingleLogoutServiceUrl = null;
 	private String spSingleLogoutServiceBinding = Constants.BINDING_HTTP_REDIRECT;
 	private String spNameIDFormat = Constants.NAMEID_UNSPECIFIED;
@@ -112,17 +115,78 @@ public class Saml2Settings {
 	}
 
 	/**
-	 * @return the spAssertionConsumerServiceUrl
+	 * @return the SP Assertion Consumer Services 
 	 */
-	public final URL getSpAssertionConsumerServiceUrl() {
-		return spAssertionConsumerServiceUrl;
+	public final List<AssertionConsumerService> getSpAssertionConsumerServices() {
+		  return spAssertionConsumerServices;
+	}
+	
+	/**
+	 * Returns the default Assertion Consumer Service (ACS) within the list of
+	 * configured Assertion Consumer Services, if one could be determined.
+	 * <p>
+	 * The default ACS is determined in this way:
+	 * <ol>
+	 * <li>if just one ACS is configured, it's the default one, unless it has
+	 * {@link AssertionConsumerService#isDefault()} <strong>explicitly</strong> set
+	 * to <code>false</code>
+	 * <li>if more than one ACS is configured, the one being the only one having
+	 * {@link AssertionConsumerService#isDefault()} set to <code>true</code> is the
+	 * default one
+	 * </ol>
+	 * In all the other (unusual) cases, a default ACS cannot be unambiguously
+	 * detected.
+	 * 
+	 * @return an {@link Optional} containing the default Assertion Consumer
+	 *         Service, if one could be unambiguously detected, an empty
+	 *         {@link Optional} otherwise
+	 * @see #getSpAssertionConsumerServices()
+	 */
+	public final Optional<AssertionConsumerService> getSpDefaultAssertionConsumerService() {
+		if(spAssertionConsumerServices.size() == 1) {
+			final AssertionConsumerService firstAcs = spAssertionConsumerServices.get(0);
+			if(Boolean.FALSE.equals(firstAcs.isDefault()))
+				return Optional.empty();
+			else
+				return Optional.of(firstAcs);
+		}
+		final List<AssertionConsumerService> allDefaults = spAssertionConsumerServices.stream()
+		            .filter(acs -> Boolean.TRUE.equals(acs.isDefault())).collect(Collectors.toList());
+		if (allDefaults.size() == 1)
+			return Optional.of(allDefaults.get(0));
+		else
+			return Optional.empty();
 	}
 
 	/**
-	 * @return the spAssertionConsumerServiceBinding setting value
+	 * @return the location of the first Assertion Consumer Service
+	 * @deprecated use {@link #getSpAssertionConsumerServices()} to retrieve the
+	 *             configured Assertion Consumer Services; this returns the location
+	 *             of the first configured ACS, or <code>null</code> if no ACS is
+	 *             currently defined
 	 */
+	@Deprecated
+	public final URL getSpAssertionConsumerServiceUrl() {
+		if(spAssertionConsumerServices.isEmpty())
+			return null;
+		else
+			return spAssertionConsumerServices.get(0).getLocation();
+	}
+
+	/**
+	 * @return the binding of the first Assertion Consumer Service
+	 * @deprecated use {@link #getSpAssertionConsumerServices()} to retrieve the
+	 *             configured Assertion Consumer Services; this returns the binding
+	 *             of the first configured ACS, but for backward compatibility it
+	 *             returns {@link Constants#BINDING_HTTP_POST} if no ACS is
+	 *             currently defined
+	 */
+	@Deprecated
 	public final String getSpAssertionConsumerServiceBinding() {
-		return spAssertionConsumerServiceBinding;
+		if(spAssertionConsumerServices.isEmpty())
+			return Constants.BINDING_HTTP_POST; // for backward compatibility
+		else
+			return spAssertionConsumerServices.get(0).getBinding();
 	}
 
 	/**
@@ -435,23 +499,53 @@ public class Saml2Settings {
 	}
 
 	/**
-	 * Set the spAssertionConsumerServiceUrl setting value
+	 * Set the Assertion Consumer Services to be exposed by the Service Provider
+	 * 
+	 * @param spAssertionConsumerServices
+	 *              the Assertion Consumer Services to set
+	 */
+	protected void setSpAssertionConsumerServices(List<AssertionConsumerService> spAssertionConsumerServices) {
+		this.spAssertionConsumerServices = spAssertionConsumerServices;
+	}
+	
+	/**
+	 * Set the location URL on the first defined Assertion Consumer Service
 	 *
 	 * @param spAssertionConsumerServiceUrl
-	 *            the spAssertionConsumerServiceUrl value to be set
+	 *              the spAssertionConsumerServiceUrl value to be set
+	 * @deprecated use {@link #setSpAssertionConsumerServices(List)} to set up one
+	 *             (or more) Assertion Consumer Services; if no ACS is currently
+	 *             defined, a new one will be created with the specified location
+	 *             and a {@link Constants#BINDING_HTTP_POST} binding
 	 */
+	@Deprecated
 	protected final void setSpAssertionConsumerServiceUrl(URL spAssertionConsumerServiceUrl) {
-		this.spAssertionConsumerServiceUrl = spAssertionConsumerServiceUrl;
+		if(spAssertionConsumerServices.isEmpty()) {
+			spAssertionConsumerServices.add(new AssertionConsumerService(spAssertionConsumerServiceUrl));
+		} else {
+			AssertionConsumerService firstAcs = spAssertionConsumerServices.get(0);
+			spAssertionConsumerServices.set(0, new AssertionConsumerService(firstAcs.getIndex(), firstAcs.isDefault(), firstAcs.getBinding(), spAssertionConsumerServiceUrl));
+		}
 	}
 
 	/**
-	 * Set the spAssertionConsumerServiceBinding setting value
+	 * Set the binding on the first defined Assertion Consumer Service
 	 *
 	 * @param spAssertionConsumerServiceBinding
-	 *            the spAssertionConsumerServiceBinding value to be set
+	 *              the spAssertionConsumerServiceBinding value to be set
+	 * @deprecated use {@link #setSpAssertionConsumerServices(List)} to set up one
+	 *             (or more) Assertion Consumer Services; if no ACS is currently
+	 *             defined, a new one will be created with the specified binding and
+	 *             no location
 	 */
+	@Deprecated
 	protected final void setSpAssertionConsumerServiceBinding(String spAssertionConsumerServiceBinding) {
-		this.spAssertionConsumerServiceBinding = spAssertionConsumerServiceBinding;
+		if(spAssertionConsumerServices.isEmpty()) {
+			spAssertionConsumerServices.add(new AssertionConsumerService(spAssertionConsumerServiceBinding, null));
+		} else {
+			AssertionConsumerService firstAcs = spAssertionConsumerServices.get(0);
+			spAssertionConsumerServices.set(0, new AssertionConsumerService(firstAcs.getIndex(), firstAcs.isDefault(), spAssertionConsumerServiceBinding, firstAcs.getLocation()));
+		}
 	}
 
 	/**
@@ -988,6 +1082,40 @@ public class Saml2Settings {
 
 		return this.getIdpx509certMulti() != null && !this.getIdpx509certMulti().isEmpty();
 	}
+	
+	/*
+	 * Auxiliary method to check Assertion Consumer Services are properly
+	 * configured.
+	 * 
+	 * @param errors the list to add to when an error is encountered
+	 */
+	private void checkAssertionConsumerServices(List<String> errors) {
+		String errorMsg;
+		// at least one ACS
+		/*
+		 * for backward compatibility, use error sp_acs_not_found even when there's 1
+		 * ACS but with no location.
+		 */
+		List<AssertionConsumerService> assertionConsumerServices = getSpAssertionConsumerServices();
+		if (assertionConsumerServices.size() == 0 || (assertionConsumerServices.size() == 1
+		            && assertionConsumerServices.get(0).getLocation() == null)) {
+			errorMsg = "sp_acs_not_found";
+			errors.add(errorMsg);
+			LOGGER.error(errorMsg);
+		}
+		// all ACSs must have a location
+		if(assertionConsumerServices.stream().anyMatch(acs -> acs.getLocation() == null)) {
+			errorMsg = "sp_acs_not_enough_data";
+			errors.add(errorMsg);
+			LOGGER.error(errorMsg);
+		}
+		// there must be at most one with default = true
+		if(assertionConsumerServices.stream().filter(acs -> Boolean.TRUE.equals(acs.isDefault())).count() > 1) {
+			errorMsg = "sp_acs_multiple_defaults";
+			errors.add(errorMsg);
+			LOGGER.error(errorMsg);
+		}
+	}
 
 	/**
 	 * Checks the SP settings .
@@ -1004,11 +1132,7 @@ public class Saml2Settings {
 			LOGGER.error(errorMsg);
 		}
 
-		if (!checkRequired(getSpAssertionConsumerServiceUrl())) {
-			errorMsg = "sp_acs_not_found";
-			errors.add(errorMsg);
-			LOGGER.error(errorMsg);
-		}
+		checkAssertionConsumerServices(errors);
 
 		if (this.getHsm() == null && (this.getAuthnRequestsSigned() || this.getLogoutRequestSigned()
 			|| this.getLogoutResponseSigned() || this.getWantAssertionsEncrypted() || this.getWantNameIdEncrypted()) && !this.checkSPCerts()) {

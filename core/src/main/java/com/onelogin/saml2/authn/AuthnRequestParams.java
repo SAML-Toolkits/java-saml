@@ -27,6 +27,12 @@ public class AuthnRequestParams {
 	 */
 	private final String nameIdValueReq;
 
+	/*
+	 * Selector to use to specify the Assertion Consumer Service that will consume
+	 * the response
+	 */
+	private final AssertionConsumerServiceSelector assertionConsumerServiceSelector;
+
 	/**
 	 * Create a set of authentication request input parameters.
 	 *
@@ -75,6 +81,27 @@ public class AuthnRequestParams {
 	 *              <code>true</code>
 	 * @param setNameIdPolicy
 	 *              whether a <code>NameIDPolicy</code> should be set
+	 * @param assertionConsumerServiceSelector
+	 *              the selector to use to specify the Assertion Consumer Service
+	 *              that will consume the response; if <code>null</code>,
+	 *              {@link AssertionConsumerServiceSelector#useImplicitDefault()} is used
+	 */
+	public AuthnRequestParams(boolean forceAuthn, boolean isPassive, boolean setNameIdPolicy,
+	            AssertionConsumerServiceSelector assertionConsumerServiceSelector) {
+		this(forceAuthn, isPassive, setNameIdPolicy, true, null, assertionConsumerServiceSelector);
+	}
+
+	/**
+	 * Create a set of authentication request input parameters.
+	 *
+	 * @param forceAuthn
+	 *              whether the <code>ForceAuthn</code> attribute should be set to
+	 *              <code>true</code>
+	 * @param isPassive
+	 *              whether the <code>IsPassive</code> attribute should be set to
+	 *              <code>true</code>
+	 * @param setNameIdPolicy
+	 *              whether a <code>NameIDPolicy</code> should be set
 	 * @param nameIdValueReq
 	 *              the subject that should be authenticated
 	 */
@@ -89,7 +116,7 @@ public class AuthnRequestParams {
 	 *              whether the <code>ForceAuthn</code> attribute should be set to
 	 *              <code>true</code>
 	 * @param isPassive
-	 *              whether the <code>IsPassive</code> attribute should be set to
+	 *              whether the <code>isPassive</code> attribute should be set to
 	 *              <code>true</code>
 	 * @param setNameIdPolicy
 	 *              whether a <code>NameIDPolicy</code> should be set
@@ -103,11 +130,42 @@ public class AuthnRequestParams {
 	 */
 	public AuthnRequestParams(boolean forceAuthn, boolean isPassive, boolean setNameIdPolicy, boolean allowCreate,
 	            String nameIdValueReq) {
+		this(forceAuthn, isPassive, setNameIdPolicy, allowCreate, nameIdValueReq, null);
+	}
+
+	/**
+	 * Create a set of authentication request input parameters.
+	 *
+	 * @param forceAuthn
+	 *              whether the <code>ForceAuthn</code> attribute should be set to
+	 *              <code>true</code>
+	 * @param isPassive
+	 *              whether the <code>isPassive</code> attribute should be set to
+	 *              <code>true</code>
+	 * @param setNameIdPolicy
+	 *              whether a <code>NameIDPolicy</code> should be set
+	 * @param allowCreate
+	 *              the value to set for the <code>allowCreate</code> attribute of
+	 *              <code>NameIDPolicy</code> element; <code>null</code> means it's
+	 *              not set at all; only meaningful when
+	 *              <code>setNameIdPolicy</code> is <code>true</code>
+	 * @param nameIdValueReq
+	 *              the subject that should be authenticated
+	 * @param assertionConsumerServiceSelector
+	 *              the selector to use to specify the Assertion Consumer Service
+	 *              that will consume the response; if <code>null</code>,
+	 *              {@link AssertionConsumerServiceSelector#useImplicitDefault()} is used
+	 */
+	public AuthnRequestParams(boolean forceAuthn, boolean isPassive, boolean setNameIdPolicy, boolean allowCreate, String nameIdValueReq,
+	            AssertionConsumerServiceSelector assertionConsumerServiceSelector) {
 		this.forceAuthn = forceAuthn;
 		this.isPassive = isPassive;
 		this.setNameIdPolicy = setNameIdPolicy;
 		this.allowCreate = allowCreate;
 		this.nameIdValueReq = nameIdValueReq;
+		this.assertionConsumerServiceSelector = assertionConsumerServiceSelector != null
+		            ? assertionConsumerServiceSelector
+		            : AssertionConsumerServiceSelector.useImplicitDefault();
 	}
 
 	/**
@@ -123,6 +181,7 @@ public class AuthnRequestParams {
 		this.setNameIdPolicy = source.isSetNameIdPolicy();
 		this.allowCreate = source.isAllowCreate();
 		this.nameIdValueReq = source.getNameIdValueReq();
+		this.assertionConsumerServiceSelector = source.getAssertionConsumerServiceSelector();
 	}
 
 	/**
@@ -162,5 +221,13 @@ public class AuthnRequestParams {
 	 */
 	public String getNameIdValueReq() {
 		return nameIdValueReq;
+	}
+
+	/**
+	 * @return the selector to use to specify the Assertion Consumer Service that
+	 *         will consume the response
+	 */
+	public AssertionConsumerServiceSelector getAssertionConsumerServiceSelector() {
+		return assertionConsumerServiceSelector;
 	}
 }

@@ -261,6 +261,18 @@ onelogin.saml2.sp.assertion_consumer_service.url = http://localhost:8080/java-sa
 # HTTP-POST binding only
 onelogin.saml2.sp.assertion_consumer_service.binding = urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST
 
+# The above two settings declare just one Assertion Consumer Service (ACS). As an alternative, it's also
+# possible to specify multiple Assertion Consumer Services by providing indexed properties: the index
+# is used as the ACS index as well and one of the defined services may be marked as the default one.
+# Please note that, when indexed ACS properties are present, the non-indexed ones are ignored.
+# Here is a complete example, but remember that Onelogin Toolkit still actually supports HTTP-POST binding 
+# only for response processing:
+#onelogin.saml2.sp.assertion_consumer_service[0].url = http://localhost:8081/java-saml-jspsample/acs1.jsp
+#onelogin.saml2.sp.assertion_consumer_service[0].binding = urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect
+#onelogin.saml2.sp.assertion_consumer_service[1].url = http://localhost:8081/java-saml-jspsample/acs2.jsp
+#onelogin.saml2.sp.assertion_consumer_service[1].binding = urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST
+#onelogin.saml2.sp.assertion_consumer_service[1].default = true
+
 # Specifies info about where and how the <Logout Response> message MUST be
 # returned to the requester, in this case our SP.
 onelogin.saml2.sp.single_logout_service.url = http://localhost:8080/java-saml-tookit-jspsample/sls.jsp
